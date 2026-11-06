@@ -829,6 +829,89 @@ pub fn key_bytes(
     shift: bool,
     application_cursor: bool,
 ) -> Option<Vec<u8>> {
+    // Ghostty's legacy PC-style function keys encode Shift, Alt and Ctrl as
+    // 1 + their bitmask. Modified cursor keys use CSI even in application
+    // cursor mode; only the unmodified form switches between CSI and SS3.
+    let modifiers = u8::from(shift) + 2 * u8::from(alt) + 4 * u8::from(control);
+    let cursor = match key {
+        "up" => Some('A'),
+        "down" => Some('B'),
+        "right" => Some('C'),
+        "left" => Some('D'),
+        "home" => Some('H'),
+        "end" => Some('F'),
+        _ => None,
+    };
+    if let Some(final_byte) = cursor {
+        return Some(
+            if modifiers == 0 {
+                format!(
+                    "\x1b{}{final_byte}",
+                    if application_cursor { "O" } else { "[" }
+                )
+            } else {
+                format!("\x1b[1;{}{final_byte}", modifiers + 1)
+            }
+            .into_bytes(),
+        );
+    }
+    let number_key = match key {
+        "insert" => Some(2),
+        "delete" => Some(3),
+        "pageup" => Some(5),
+        "pagedown" => Some(6),
+        "f5" => Some(15),
+        "f6" => Some(17),
+        "f7" => Some(18),
+        "f8" => Some(19),
+        "f9" => Some(20),
+        "f10" => Some(21),
+        "f11" => Some(23),
+        "f12" => Some(24),
+        "f13" => Some(25),
+        "f14" => Some(26),
+        "f15" => Some(28),
+        "f16" => Some(29),
+        "f17" => Some(31),
+        "f18" => Some(32),
+        "f19" => Some(33),
+        "f20" => Some(34),
+        "f21" => Some(42),
+        "f22" => Some(43),
+        "f23" => Some(44),
+        "f24" => Some(45),
+        "f25" => Some(46),
+        _ => None,
+    };
+    if let Some(number) = number_key {
+        return Some(
+            if modifiers == 0 {
+                format!("\x1b[{number}~")
+            } else {
+                format!("\x1b[{number};{}~", modifiers + 1)
+            }
+            .into_bytes(),
+        );
+    }
+    let function = match key {
+        "f1" => Some(('P', 1)),
+        "f2" => Some(('Q', 1)),
+        "f3" => Some(('R', 13)),
+        "f4" => Some(('S', 1)),
+        _ => None,
+    };
+    if let Some((final_byte, number)) = function {
+        return Some(
+            if modifiers == 0 {
+                format!("\x1bO{final_byte}")
+            } else if number == 13 {
+                format!("\x1b[13;{}~", modifiers + 1)
+            } else {
+                format!("\x1b[1;{}{final_byte}", modifiers + 1)
+            }
+            .into_bytes(),
+        );
+    }
     let mut bytes = if control {
         let b = match key {
             "@" | "space" => 0,
@@ -851,20 +934,6 @@ pub fn key_bytes(
             "escape" => vec![27],
             "tab" if shift => b"\x1b[Z".to_vec(),
             "tab" => vec![9],
-            "up" | "down" | "right" | "left" => {
-                let c = match key {
-                    "up" => 'A',
-                    "down" => 'B',
-                    "right" => 'C',
-                    _ => 'D',
-                };
-                format!("\x1b{}{c}", if application_cursor { "O" } else { "[" }).into_bytes()
-            }
-            "home" => b"\x1b[H".to_vec(),
-            "end" => b"\x1b[F".to_vec(),
-            "delete" => b"\x1b[3~".to_vec(),
-            "pageup" => b"\x1b[5~".to_vec(),
-            "pagedown" => b"\x1b[6~".to_vec(),
             _ => return None,
         }
     };
