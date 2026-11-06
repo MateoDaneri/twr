@@ -1,0 +1,194 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "shada": "NONE",
+  "plugins": false,
+  "layout": "content left, tree above agents on right; three distinct buffers",
+  "scope": "Neovim window focus, no tmux or GUI",
+  "cases": [
+    {
+      "label": "count-before",
+      "commands": [
+        [
+          "2",
+          "<C-w>",
+          "w"
+        ],
+        [
+          "1",
+          "<C-w>",
+          "W"
+        ],
+        [
+          "3",
+          "<C-w>",
+          "<C-w>"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 2,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "count-after",
+      "commands": [
+        [
+          "<C-w>",
+          "2",
+          "w"
+        ],
+        [
+          "<C-w>",
+          "1",
+          "W"
+        ],
+        [
+          "<C-w>",
+          "3",
+          "<C-w>"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 2,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "count-product",
+      "commands": [
+        [
+          "2",
+          "<C-w>",
+          "2",
+          "w"
+        ],
+        [
+          "2",
+          "<C-w>",
+          "1",
+          "w"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 2,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "count-clamp",
+      "commands": [
+        [
+          "9",
+          "<C-w>",
+          "W"
+        ],
+        [
+          "<C-w>",
+          "1",
+          "0",
+          "w"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "count-ignored",
+      "commands": [
+        [
+          "2",
+          "<C-w>",
+          "b"
+        ],
+        [
+          "2",
+          "<C-w>",
+          "t"
+        ],
+        [
+          "2",
+          "<C-w>",
+          "p"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "delayed-prefix",
+      "commands": [
+        [
+          "<C-w>",
+          "w"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 2,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    }
+  ]
+}

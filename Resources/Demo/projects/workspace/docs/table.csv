@@ -1,0 +1,4 @@
+name,status,note
+Editor,ready,"Unicode ñ 🦀"
+Agents,working,"parent, child"
+Terminal,ready,"tmux persistent"

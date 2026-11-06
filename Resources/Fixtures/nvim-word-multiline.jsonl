@@ -1,0 +1,1347 @@
+{"after":["café","","gato"],"row":1,"col":0,"register":"","regtype":"v","lines":["café","","gato"],"keys":"w"}
+{"after":["café","","gato"],"row":2,"col":0,"register":"","regtype":"v","lines":["café","","gato"],"keys":"2w"}
+{"after":["café","","gato"],"row":2,"col":3,"register":"","regtype":"v","lines":["café","","gato"],"keys":"3w"}
+{"after":["café","","gato"],"row":0,"col":3,"register":"","regtype":"v","lines":["café","","gato"],"keys":"e"}
+{"after":["café","","gato"],"row":2,"col":3,"register":"","regtype":"v","lines":["café","","gato"],"keys":"2e"}
+{"after":["café","","gato"],"row":0,"col":0,"register":"","regtype":"v","lines":["café","","gato"],"keys":"b"}
+{"after":["café","","gato"],"row":1,"col":0,"register":"","regtype":"v","lines":["café","","gato"],"keys":"W"}
+{"after":["café","","gato"],"row":0,"col":3,"register":"","regtype":"v","lines":["café","","gato"],"keys":"E"}
+{"after":["","","gato"],"row":0,"col":0,"register":"café","regtype":"v","lines":["café","","gato"],"keys":"dw"}
+{"after":["gato"],"row":0,"col":0,"register":"café\n\n","regtype":"V","lines":["café","","gato"],"keys":"d2w"}
+{"after":["café","","gato"],"row":0,"col":0,"register":"café","regtype":"v","lines":["café","","gato"],"keys":"yw"}
+{"after":["café","","gato"],"row":0,"col":0,"register":"café","regtype":"v","lines":["café","","gato"],"keys":"ye"}
+{"after":["café","","gato"],"row":2,"col":0,"register":"","regtype":"v","lines":["café","","gato"],"keys":"j0w"}
+{"after":["café","","gato"],"row":0,"col":0,"register":"","regtype":"v","lines":["café","","gato"],"keys":"j0b"}
+{"after":["café","","gato"],"row":2,"col":3,"register":"","regtype":"v","lines":["café","","gato"],"keys":"j0e"}
+{"after":["café","","gato"],"row":1,"col":0,"register":"","regtype":"v","lines":["café","","gato"],"keys":"G0b"}
+{"after":["café","","gato"],"row":2,"col":3,"register":"","regtype":"v","lines":["café","","gato"],"keys":"G0e"}
+{"after":["aé","😀z"],"row":1,"col":0,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"w"}
+{"after":["aé","😀z"],"row":1,"col":1,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"2w"}
+{"after":["aé","😀z"],"row":1,"col":1,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"3w"}
+{"after":["aé","😀z"],"row":0,"col":1,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"e"}
+{"after":["aé","😀z"],"row":1,"col":0,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"2e"}
+{"after":["aé","😀z"],"row":0,"col":0,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"b"}
+{"after":["aé","😀z"],"row":1,"col":0,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"W"}
+{"after":["aé","😀z"],"row":0,"col":1,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"E"}
+{"after":["","😀z"],"row":0,"col":0,"register":"aé","regtype":"v","lines":["aé","😀z"],"keys":"dw"}
+{"after":["z"],"row":0,"col":0,"register":"aé\n😀","regtype":"v","lines":["aé","😀z"],"keys":"d2w"}
+{"after":["aé","😀z"],"row":0,"col":0,"register":"aé","regtype":"v","lines":["aé","😀z"],"keys":"yw"}
+{"after":["aé","😀z"],"row":0,"col":0,"register":"aé","regtype":"v","lines":["aé","😀z"],"keys":"ye"}
+{"after":["aé","😀z"],"row":1,"col":1,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"j0w"}
+{"after":["aé","😀z"],"row":0,"col":0,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"j0b"}
+{"after":["aé","😀z"],"row":1,"col":1,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"j0e"}
+{"after":["aé","😀z"],"row":0,"col":0,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"G0b"}
+{"after":["aé","😀z"],"row":1,"col":1,"register":"","regtype":"v","lines":["aé","😀z"],"keys":"G0e"}
+{"after":["foo","","","bar"],"row":1,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"w"}
+{"after":["foo","","","bar"],"row":2,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"2w"}
+{"after":["foo","","","bar"],"row":3,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"3w"}
+{"after":["foo","","","bar"],"row":0,"col":2,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"e"}
+{"after":["foo","","","bar"],"row":3,"col":2,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"2e"}
+{"after":["foo","","","bar"],"row":0,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"b"}
+{"after":["foo","","","bar"],"row":1,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"W"}
+{"after":["foo","","","bar"],"row":0,"col":2,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"E"}
+{"after":["","","","bar"],"row":0,"col":0,"register":"foo","regtype":"v","lines":["foo","","","bar"],"keys":"dw"}
+{"after":["","bar"],"row":0,"col":0,"register":"foo\n\n","regtype":"V","lines":["foo","","","bar"],"keys":"d2w"}
+{"after":["foo","","","bar"],"row":0,"col":0,"register":"foo","regtype":"v","lines":["foo","","","bar"],"keys":"yw"}
+{"after":["foo","","","bar"],"row":0,"col":0,"register":"foo","regtype":"v","lines":["foo","","","bar"],"keys":"ye"}
+{"after":["foo","","","bar"],"row":2,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"j0w"}
+{"after":["foo","","","bar"],"row":0,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"j0b"}
+{"after":["foo","","","bar"],"row":3,"col":2,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"j0e"}
+{"after":["foo","","","bar"],"row":2,"col":0,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"G0b"}
+{"after":["foo","","","bar"],"row":3,"col":2,"register":"","regtype":"v","lines":["foo","","","bar"],"keys":"G0e"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":1,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"w"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":3,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"2w"}
+{"after":["a🇺🇸b","c","final"],"row":1,"col":0,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"3w"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":1,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"e"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":3,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"2e"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":0,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"b"}
+{"after":["a🇺🇸b","c","final"],"row":1,"col":0,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"W"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":3,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"E"}
+{"after":["🇺🇸b","c","final"],"row":0,"col":0,"register":"a","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"dw"}
+{"after":["b","c","final"],"row":0,"col":0,"register":"a🇺🇸","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"d2w"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":0,"register":"a","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"yw"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":0,"register":"a🇺🇸","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"ye"}
+{"after":["a🇺🇸b","c","final"],"row":2,"col":0,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"j0w"}
+{"after":["a🇺🇸b","c","final"],"row":0,"col":3,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"j0b"}
+{"after":["a🇺🇸b","c","final"],"row":2,"col":4,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"j0e"}
+{"after":["a🇺🇸b","c","final"],"row":1,"col":0,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"G0b"}
+{"after":["a🇺🇸b","c","final"],"row":2,"col":4,"register":"","regtype":"v","lines":["a🇺🇸b","c","final"],"keys":"G0e"}
+{"after":["","café","gato"],"row":1,"col":0,"register":"","regtype":"v","lines":["","café","gato"],"keys":"w"}
+{"after":["","café","gato"],"row":2,"col":0,"register":"","regtype":"v","lines":["","café","gato"],"keys":"2w"}
+{"after":["","café","gato"],"row":2,"col":3,"register":"","regtype":"v","lines":["","café","gato"],"keys":"3w"}
+{"after":["","café","gato"],"row":1,"col":3,"register":"","regtype":"v","lines":["","café","gato"],"keys":"e"}
+{"after":["","café","gato"],"row":2,"col":3,"register":"","regtype":"v","lines":["","café","gato"],"keys":"2e"}
+{"after":["","café","gato"],"row":0,"col":0,"register":"","regtype":"v","lines":["","café","gato"],"keys":"b"}
+{"after":["","café","gato"],"row":1,"col":0,"register":"","regtype":"v","lines":["","café","gato"],"keys":"W"}
+{"after":["","café","gato"],"row":1,"col":3,"register":"","regtype":"v","lines":["","café","gato"],"keys":"E"}
+{"after":["café","gato"],"row":0,"col":0,"register":"\n","regtype":"V","lines":["","café","gato"],"keys":"dw"}
+{"after":["gato"],"row":0,"col":0,"register":"\ncafé\n","regtype":"V","lines":["","café","gato"],"keys":"d2w"}
+{"after":["","café","gato"],"row":0,"col":0,"register":"\n","regtype":"V","lines":["","café","gato"],"keys":"yw"}
+{"after":["","café","gato"],"row":0,"col":0,"register":"\ncafé","regtype":"v","lines":["","café","gato"],"keys":"ye"}
+{"after":["","café","gato"],"row":2,"col":0,"register":"","regtype":"v","lines":["","café","gato"],"keys":"j0w"}
+{"after":["","café","gato"],"row":0,"col":0,"register":"","regtype":"v","lines":["","café","gato"],"keys":"j0b"}
+{"after":["","café","gato"],"row":1,"col":3,"register":"","regtype":"v","lines":["","café","gato"],"keys":"j0e"}
+{"after":["","café","gato"],"row":1,"col":0,"register":"","regtype":"v","lines":["","café","gato"],"keys":"G0b"}
+{"after":["","café","gato"],"row":2,"col":3,"register":"","regtype":"v","lines":["","café","gato"],"keys":"G0e"}
+{"after":["ab","  ","cd"],"row":2,"col":0,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"w"}
+{"after":["ab","  ","cd"],"row":2,"col":1,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"2w"}
+{"after":["ab","  ","cd"],"row":2,"col":1,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"3w"}
+{"after":["ab","  ","cd"],"row":0,"col":1,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"e"}
+{"after":["ab","  ","cd"],"row":2,"col":1,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"2e"}
+{"after":["ab","  ","cd"],"row":0,"col":0,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"b"}
+{"after":["ab","  ","cd"],"row":2,"col":0,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"W"}
+{"after":["ab","  ","cd"],"row":0,"col":1,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"E"}
+{"after":["","  ","cd"],"row":0,"col":0,"register":"ab","regtype":"v","lines":["ab","  ","cd"],"keys":"dw"}
+{"after":[""],"row":0,"col":0,"register":"ab\n  \ncd\n","regtype":"V","lines":["ab","  ","cd"],"keys":"d2w"}
+{"after":["ab","  ","cd"],"row":0,"col":0,"register":"ab","regtype":"v","lines":["ab","  ","cd"],"keys":"yw"}
+{"after":["ab","  ","cd"],"row":0,"col":0,"register":"ab","regtype":"v","lines":["ab","  ","cd"],"keys":"ye"}
+{"after":["ab","  ","cd"],"row":2,"col":0,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"j0w"}
+{"after":["ab","  ","cd"],"row":0,"col":0,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"j0b"}
+{"after":["ab","  ","cd"],"row":2,"col":1,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"j0e"}
+{"after":["ab","  ","cd"],"row":0,"col":0,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"G0b"}
+{"after":["ab","  ","cd"],"row":2,"col":1,"register":"","regtype":"v","lines":["ab","  ","cd"],"keys":"G0e"}
+{"after":["abc","def"],"row":1,"col":0,"register":"","regtype":"v","lines":["abc","def"],"keys":"w"}
+{"after":["abc","def"],"row":1,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"2w"}
+{"after":["abc","def"],"row":1,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"3w"}
+{"after":["abc","def"],"row":0,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"e"}
+{"after":["abc","def"],"row":1,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"2e"}
+{"after":["abc","def"],"row":0,"col":0,"register":"","regtype":"v","lines":["abc","def"],"keys":"b"}
+{"after":["abc","def"],"row":1,"col":0,"register":"","regtype":"v","lines":["abc","def"],"keys":"W"}
+{"after":["abc","def"],"row":0,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"E"}
+{"after":["","def"],"row":0,"col":0,"register":"abc","regtype":"v","lines":["abc","def"],"keys":"dw"}
+{"after":[""],"row":0,"col":0,"register":"abc\ndef\n","regtype":"V","lines":["abc","def"],"keys":"d2w"}
+{"after":["abc","def"],"row":0,"col":0,"register":"abc","regtype":"v","lines":["abc","def"],"keys":"yw"}
+{"after":["abc","def"],"row":0,"col":0,"register":"abc","regtype":"v","lines":["abc","def"],"keys":"ye"}
+{"after":["abc","def"],"row":1,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"j0w"}
+{"after":["abc","def"],"row":0,"col":0,"register":"","regtype":"v","lines":["abc","def"],"keys":"j0b"}
+{"after":["abc","def"],"row":1,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"j0e"}
+{"after":["abc","def"],"row":0,"col":0,"register":"","regtype":"v","lines":["abc","def"],"keys":"G0b"}
+{"after":["abc","def"],"row":1,"col":2,"register":"","regtype":"v","lines":["abc","def"],"keys":"G0e"}
+{"register":"abc","keys":"dw","regtype":"v","lines":["abc","def"],"after":["","def"],"row":0,"col":0}
+{"register":"bc","keys":"ldw","regtype":"v","lines":["abc","def"],"after":["a","def"],"row":0,"col":0}
+{"register":"c","keys":"2ldw","regtype":"v","lines":["abc","def"],"after":["ab","def"],"row":0,"col":1}
+{"register":"abc\ndef\n","keys":"d2w","regtype":"V","lines":["abc","def"],"after":[""],"row":0,"col":0}
+{"register":"bc\ndef","keys":"ld2w","regtype":"v","lines":["abc","def"],"after":["a"],"row":0,"col":0}
+{"register":"c\ndef","keys":"2ld2w","regtype":"v","lines":["abc","def"],"after":["ab"],"row":0,"col":1}
+{"register":"abc","keys":"yw","regtype":"v","lines":["abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":"abc\ndef","keys":"y2w","regtype":"v","lines":["abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":"abc","keys":"dW","regtype":"v","lines":["abc","def"],"after":["","def"],"row":0,"col":0}
+{"register":"abc\ndef\n","keys":"d2W","regtype":"V","lines":["abc","def"],"after":[""],"row":0,"col":0}
+{"register":"  ","keys":"dw","regtype":"v","lines":["  abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":" ","keys":"ldw","regtype":"v","lines":["  abc","def"],"after":[" abc","def"],"row":0,"col":1}
+{"register":"abc","keys":"2ldw","regtype":"v","lines":["  abc","def"],"after":["  ","def"],"row":0,"col":1}
+{"register":"  abc","keys":"d2w","regtype":"v","lines":["  abc","def"],"after":["","def"],"row":0,"col":0}
+{"register":" abc","keys":"ld2w","regtype":"v","lines":["  abc","def"],"after":[" ","def"],"row":0,"col":0}
+{"register":"  abc\ndef\n","keys":"2ld2w","regtype":"V","lines":["  abc","def"],"after":[""],"row":0,"col":0}
+{"register":"  ","keys":"yw","regtype":"v","lines":["  abc","def"],"after":["  abc","def"],"row":0,"col":0}
+{"register":"  abc","keys":"y2w","regtype":"v","lines":["  abc","def"],"after":["  abc","def"],"row":0,"col":0}
+{"register":"  ","keys":"dW","regtype":"v","lines":["  abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":"  abc","keys":"d2W","regtype":"v","lines":["  abc","def"],"after":["","def"],"row":0,"col":0}
+{"register":"abc ","keys":"dw","regtype":"v","lines":["abc xyz","def"],"after":["xyz","def"],"row":0,"col":0}
+{"register":"bc ","keys":"ldw","regtype":"v","lines":["abc xyz","def"],"after":["axyz","def"],"row":0,"col":1}
+{"register":"c ","keys":"2ldw","regtype":"v","lines":["abc xyz","def"],"after":["abxyz","def"],"row":0,"col":2}
+{"register":"abc xyz","keys":"d2w","regtype":"v","lines":["abc xyz","def"],"after":["","def"],"row":0,"col":0}
+{"register":"bc xyz","keys":"ld2w","regtype":"v","lines":["abc xyz","def"],"after":["a","def"],"row":0,"col":0}
+{"register":"c xyz","keys":"2ld2w","regtype":"v","lines":["abc xyz","def"],"after":["ab","def"],"row":0,"col":1}
+{"register":"abc ","keys":"yw","regtype":"v","lines":["abc xyz","def"],"after":["abc xyz","def"],"row":0,"col":0}
+{"register":"abc xyz","keys":"y2w","regtype":"v","lines":["abc xyz","def"],"after":["abc xyz","def"],"row":0,"col":0}
+{"register":"abc ","keys":"dW","regtype":"v","lines":["abc xyz","def"],"after":["xyz","def"],"row":0,"col":0}
+{"register":"abc xyz","keys":"d2W","regtype":"v","lines":["abc xyz","def"],"after":["","def"],"row":0,"col":0}
+{"register":"foo","keys":"dw","regtype":"v","lines":["foo","","bar"],"after":["","","bar"],"row":0,"col":0}
+{"register":"oo","keys":"ldw","regtype":"v","lines":["foo","","bar"],"after":["f","","bar"],"row":0,"col":0}
+{"register":"o","keys":"2ldw","regtype":"v","lines":["foo","","bar"],"after":["fo","","bar"],"row":0,"col":1}
+{"register":"foo\n\n","keys":"d2w","regtype":"V","lines":["foo","","bar"],"after":["bar"],"row":0,"col":0}
+{"register":"oo\n","keys":"ld2w","regtype":"v","lines":["foo","","bar"],"after":["f","bar"],"row":0,"col":0}
+{"register":"o\n","keys":"2ld2w","regtype":"v","lines":["foo","","bar"],"after":["fo","bar"],"row":0,"col":1}
+{"register":"foo","keys":"yw","regtype":"v","lines":["foo","","bar"],"after":["foo","","bar"],"row":0,"col":0}
+{"register":"foo\n\n","keys":"y2w","regtype":"V","lines":["foo","","bar"],"after":["foo","","bar"],"row":0,"col":0}
+{"register":"foo","keys":"dW","regtype":"v","lines":["foo","","bar"],"after":["","","bar"],"row":0,"col":0}
+{"register":"foo\n\n","keys":"d2W","regtype":"V","lines":["foo","","bar"],"after":["bar"],"row":0,"col":0}
+{"register":"\n","keys":"dw","regtype":"V","lines":["","abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":"\n","keys":"ldw","regtype":"V","lines":["","abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":"\n","keys":"2ldw","regtype":"V","lines":["","abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":"\nabc\n","keys":"d2w","regtype":"V","lines":["","abc","def"],"after":["def"],"row":0,"col":0}
+{"register":"\nabc\n","keys":"ld2w","regtype":"V","lines":["","abc","def"],"after":["def"],"row":0,"col":0}
+{"register":"\nabc\n","keys":"2ld2w","regtype":"V","lines":["","abc","def"],"after":["def"],"row":0,"col":0}
+{"register":"\n","keys":"yw","regtype":"V","lines":["","abc","def"],"after":["","abc","def"],"row":0,"col":0}
+{"register":"\nabc","keys":"y2w","regtype":"v","lines":["","abc","def"],"after":["","abc","def"],"row":0,"col":0}
+{"register":"\n","keys":"dW","regtype":"V","lines":["","abc","def"],"after":["abc","def"],"row":0,"col":0}
+{"register":"\nabc\n","keys":"d2W","regtype":"V","lines":["","abc","def"],"after":["def"],"row":0,"col":0}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"dw","after":["bar","éclair","  indented","foo bar"],"row":0,"col":0,"regtype":"v","register":"foo "}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"G0d2w","after":["foo bar","éclair","  indented",""],"row":3,"col":0,"regtype":"v","register":"foo bar"}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"2l3dw","after":["fo","  indented","foo bar"],"row":0,"col":1,"regtype":"v","register":"o bar\néclair"}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"2lyw","after":["foo bar","éclair","  indented","foo bar"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"ly2w","after":["foo bar","éclair","  indented","foo bar"],"row":0,"col":1,"regtype":"v","register":"oo bar"}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"2ldW","after":["fobar","éclair","  indented","foo bar"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"d2W","after":["","éclair","  indented","foo bar"],"row":0,"col":0,"regtype":"v","register":"foo bar"}
+{"lines":["foo bar","éclair","  indented","foo bar"],"keys":"lyW","after":["foo bar","éclair","  indented","foo bar"],"row":0,"col":1,"regtype":"v","register":"oo "}
+{"lines":["éclair","x"],"keys":"j0dw","after":["éclair",""],"row":1,"col":0,"regtype":"v","register":"x"}
+{"lines":["éclair","x"],"keys":"d2w","after":[""],"row":0,"col":0,"regtype":"V","register":"éclair\nx\n"}
+{"lines":["éclair","x"],"keys":"G03dw","after":["éclair",""],"row":1,"col":0,"regtype":"v","register":"x"}
+{"lines":["éclair","x"],"keys":"yw","after":["éclair","x"],"row":0,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["éclair","x"],"keys":"ly2w","after":["éclair","x"],"row":0,"col":1,"regtype":"v","register":"clair\nx"}
+{"lines":["éclair","x"],"keys":"dW","after":["","x"],"row":0,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["éclair","x"],"keys":"d2W","after":[""],"row":0,"col":0,"regtype":"V","register":"éclair\nx\n"}
+{"lines":["éclair","x"],"keys":"2lyW","after":["éclair","x"],"row":0,"col":2,"regtype":"v","register":"lair"}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"2ldw","after":["éc","","   ","A 🇺🇸 B"],"row":0,"col":1,"regtype":"v","register":"lair"}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"ld2w","after":["é","   ","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"clair\n"}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"2l3dw","after":["éc🇺🇸 B"],"row":0,"col":2,"regtype":"v","register":"lair\n\n   \nA "}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"2lyw","after":["éclair","","   ","A 🇺🇸 B"],"row":0,"col":2,"regtype":"v","register":"lair"}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"ly2w","after":["éclair","","   ","A 🇺🇸 B"],"row":0,"col":1,"regtype":"v","register":"clair\n"}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"dW","after":["","","   ","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"2ld2W","after":["éc","   ","A 🇺🇸 B"],"row":0,"col":1,"regtype":"v","register":"lair\n"}
+{"lines":["éclair","","   ","A 🇺🇸 B"],"keys":"yW","after":["éclair","","   ","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["","foo bar","   ","x"],"keys":"ldw","after":["foo bar","   ","x"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["","foo bar","   ","x"],"keys":"G0d2w","after":["","foo bar","   ",""],"row":3,"col":0,"regtype":"v","register":"x"}
+{"lines":["","foo bar","   ","x"],"keys":"G03dw","after":["","foo bar","   ",""],"row":3,"col":0,"regtype":"v","register":"x"}
+{"lines":["","foo bar","   ","x"],"keys":"2lyw","after":["","foo bar","   ","x"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["","foo bar","   ","x"],"keys":"ly2w","after":["","foo bar","   ","x"],"row":0,"col":0,"regtype":"v","register":"\nfoo "}
+{"lines":["","foo bar","   ","x"],"keys":"2ldW","after":["foo bar","   ","x"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["","foo bar","   ","x"],"keys":"d2W","after":["bar","   ","x"],"row":0,"col":0,"regtype":"v","register":"\nfoo "}
+{"lines":["","foo bar","   ","x"],"keys":"2lyW","after":["","foo bar","   ","x"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["café gato","  indented"],"keys":"dw","after":["gato","  indented"],"row":0,"col":0,"regtype":"v","register":"café "}
+{"lines":["café gato","  indented"],"keys":"d2w","after":["","  indented"],"row":0,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["café gato","  indented"],"keys":"2l3dw","after":["ca"],"row":0,"col":1,"regtype":"v","register":"fé gato\n  indented"}
+{"lines":["café gato","  indented"],"keys":"yw","after":["café gato","  indented"],"row":0,"col":0,"regtype":"v","register":"café "}
+{"lines":["café gato","  indented"],"keys":"j0y2w","after":["café gato","  indented"],"row":1,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["café gato","  indented"],"keys":"G0dW","after":["café gato","indented"],"row":1,"col":0,"regtype":"v","register":"  "}
+{"lines":["café gato","  indented"],"keys":"d2W","after":["","  indented"],"row":0,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["café gato","  indented"],"keys":"G0yW","after":["café gato","  indented"],"row":1,"col":0,"regtype":"v","register":"  "}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"ldw","after":["","A 🇺🇸 B","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"G0d2w","after":["x","A 🇺🇸 B","B"],"row":2,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"l3dw","after":["B","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x\nA 🇺🇸 "}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"G0yw","after":["x","A 🇺🇸 B","A 🇺🇸 B"],"row":2,"col":0,"regtype":"v","register":"A "}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"G0y2w","after":["x","A 🇺🇸 B","A 🇺🇸 B"],"row":2,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"G0dW","after":["x","A 🇺🇸 B","🇺🇸 B"],"row":2,"col":0,"regtype":"v","register":"A "}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"j0d2W","after":["x","B","A 🇺🇸 B"],"row":1,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["x","A 🇺🇸 B","A 🇺🇸 B"],"keys":"lyW","after":["x","A 🇺🇸 B","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["abc","   ","café gato","abc"],"keys":"2ldw","after":["ab","   ","café gato","abc"],"row":0,"col":1,"regtype":"v","register":"c"}
+{"lines":["abc","   ","café gato","abc"],"keys":"ld2w","after":["agato","abc"],"row":0,"col":1,"regtype":"v","register":"bc\n   \ncafé "}
+{"lines":["abc","   ","café gato","abc"],"keys":"j03dw","after":["abc","abc"],"row":1,"col":0,"regtype":"V","register":"   \ncafé gato\n"}
+{"lines":["abc","   ","café gato","abc"],"keys":"G0yw","after":["abc","   ","café gato","abc"],"row":3,"col":0,"regtype":"v","register":"abc"}
+{"lines":["abc","   ","café gato","abc"],"keys":"2ly2w","after":["abc","   ","café gato","abc"],"row":0,"col":2,"regtype":"v","register":"c\n   \ncafé "}
+{"lines":["abc","   ","café gato","abc"],"keys":"2ldW","after":["ab","   ","café gato","abc"],"row":0,"col":1,"regtype":"v","register":"c"}
+{"lines":["abc","   ","café gato","abc"],"keys":"ld2W","after":["agato","abc"],"row":0,"col":1,"regtype":"v","register":"bc\n   \ncafé "}
+{"lines":["abc","   ","café gato","abc"],"keys":"lyW","after":["abc","   ","café gato","abc"],"row":0,"col":1,"regtype":"v","register":"bc"}
+{"lines":["foo bar","foo bar","éclair"],"keys":"dw","after":["bar","foo bar","éclair"],"row":0,"col":0,"regtype":"v","register":"foo "}
+{"lines":["foo bar","foo bar","éclair"],"keys":"2ld2w","after":["fo","foo bar","éclair"],"row":0,"col":1,"regtype":"v","register":"o bar"}
+{"lines":["foo bar","foo bar","éclair"],"keys":"j03dw","after":["foo bar"],"row":0,"col":0,"regtype":"V","register":"foo bar\néclair\n"}
+{"lines":["foo bar","foo bar","éclair"],"keys":"2lyw","after":["foo bar","foo bar","éclair"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["foo bar","foo bar","éclair"],"keys":"ly2w","after":["foo bar","foo bar","éclair"],"row":0,"col":1,"regtype":"v","register":"oo bar"}
+{"lines":["foo bar","foo bar","éclair"],"keys":"2ldW","after":["fobar","foo bar","éclair"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["foo bar","foo bar","éclair"],"keys":"d2W","after":["","foo bar","éclair"],"row":0,"col":0,"regtype":"v","register":"foo bar"}
+{"lines":["foo bar","foo bar","éclair"],"keys":"2lyW","after":["foo bar","foo bar","éclair"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["café gato","  indented"],"keys":"G0dw","after":["café gato","indented"],"row":1,"col":0,"regtype":"v","register":"  "}
+{"lines":["café gato","  indented"],"keys":"j0d2w","after":["café gato",""],"row":1,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["café gato","  indented"],"keys":"2l3dw","after":["ca"],"row":0,"col":1,"regtype":"v","register":"fé gato\n  indented"}
+{"lines":["café gato","  indented"],"keys":"2lyw","after":["café gato","  indented"],"row":0,"col":2,"regtype":"v","register":"fé "}
+{"lines":["café gato","  indented"],"keys":"2ly2w","after":["café gato","  indented"],"row":0,"col":2,"regtype":"v","register":"fé gato"}
+{"lines":["café gato","  indented"],"keys":"G0dW","after":["café gato","indented"],"row":1,"col":0,"regtype":"v","register":"  "}
+{"lines":["café gato","  indented"],"keys":"2ld2W","after":["ca","  indented"],"row":0,"col":1,"regtype":"v","register":"fé gato"}
+{"lines":["café gato","  indented"],"keys":"lyW","after":["café gato","  indented"],"row":0,"col":1,"regtype":"v","register":"afé "}
+{"lines":["café gato","foo bar","end  "],"keys":"G0dw","after":["café gato","foo bar",""],"row":2,"col":0,"regtype":"v","register":"end  "}
+{"lines":["café gato","foo bar","end  "],"keys":"G0d2w","after":["café gato","foo bar",""],"row":2,"col":0,"regtype":"v","register":"end  "}
+{"lines":["café gato","foo bar","end  "],"keys":"3dw","after":["bar","end  "],"row":0,"col":0,"regtype":"v","register":"café gato\nfoo "}
+{"lines":["café gato","foo bar","end  "],"keys":"lyw","after":["café gato","foo bar","end  "],"row":0,"col":1,"regtype":"v","register":"afé "}
+{"lines":["café gato","foo bar","end  "],"keys":"G0y2w","after":["café gato","foo bar","end  "],"row":2,"col":0,"regtype":"v","register":"end  "}
+{"lines":["café gato","foo bar","end  "],"keys":"2ldW","after":["cagato","foo bar","end  "],"row":0,"col":2,"regtype":"v","register":"fé "}
+{"lines":["café gato","foo bar","end  "],"keys":"d2W","after":["","foo bar","end  "],"row":0,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["café gato","foo bar","end  "],"keys":"lyW","after":["café gato","foo bar","end  "],"row":0,"col":1,"regtype":"v","register":"afé "}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"G0dw","after":["foo bar","café gato","éclair",""],"row":3,"col":0,"regtype":"v","register":"x"}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"ld2w","after":["f","café gato","éclair","x"],"row":0,"col":0,"regtype":"v","register":"oo bar"}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"2l3dw","after":["fogato","éclair","x"],"row":0,"col":2,"regtype":"v","register":"o bar\ncafé "}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"G0yw","after":["foo bar","café gato","éclair","x"],"row":3,"col":0,"regtype":"v","register":"x"}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"G0y2w","after":["foo bar","café gato","éclair","x"],"row":3,"col":0,"regtype":"v","register":"x"}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"ldW","after":["fbar","café gato","éclair","x"],"row":0,"col":1,"regtype":"v","register":"oo "}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"j0d2W","after":["foo bar","","éclair","x"],"row":1,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["foo bar","café gato","éclair","x"],"keys":"lyW","after":["foo bar","café gato","éclair","x"],"row":0,"col":1,"regtype":"v","register":"oo "}
+{"lines":["x","end  "],"keys":"2ldw","after":["","end  "],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","end  "],"keys":"d2w","after":[""],"row":0,"col":0,"regtype":"V","register":"x\nend  \n"}
+{"lines":["x","end  "],"keys":"l3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"x\nend  \n"}
+{"lines":["x","end  "],"keys":"lyw","after":["x","end  "],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","end  "],"keys":"j0y2w","after":["x","end  "],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["x","end  "],"keys":"ldW","after":["","end  "],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","end  "],"keys":"j0d2W","after":["x",""],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["x","end  "],"keys":"yW","after":["x","end  "],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"ldw","after":[" ","end  ","  indented","café gato"],"row":0,"col":0,"regtype":"v","register":"  "}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"2ld2w","after":["  indented","café gato"],"row":0,"col":2,"regtype":"V","register":"   \nend  \n"}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"G03dw","after":["   ","end  ","  indented",""],"row":3,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"lyw","after":["   ","end  ","  indented","café gato"],"row":0,"col":1,"regtype":"v","register":"  "}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"ly2w","after":["   ","end  ","  indented","café gato"],"row":0,"col":1,"regtype":"v","register":"  \nend  "}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"j0dW","after":["   ","","  indented","café gato"],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"j0d2W","after":["   ","café gato"],"row":1,"col":0,"regtype":"V","register":"end  \n  indented\n"}
+{"lines":["   ","end  ","  indented","café gato"],"keys":"yW","after":["   ","end  ","  indented","café gato"],"row":0,"col":0,"regtype":"v","register":"   "}
+{"lines":["x","A 🇺🇸 B"],"keys":"dw","after":["","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","A 🇺🇸 B"],"keys":"2ld2w","after":["🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x\nA "}
+{"lines":["x","A 🇺🇸 B"],"keys":"G03dw","after":["x",""],"row":1,"col":0,"regtype":"v","register":"A 🇺🇸 B"}
+{"lines":["x","A 🇺🇸 B"],"keys":"lyw","after":["x","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","A 🇺🇸 B"],"keys":"j0y2w","after":["x","A 🇺🇸 B"],"row":1,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["x","A 🇺🇸 B"],"keys":"ldW","after":["","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","A 🇺🇸 B"],"keys":"G0d2W","after":["x","B"],"row":1,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["x","A 🇺🇸 B"],"keys":"2lyW","after":["x","A 🇺🇸 B"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["  indented","abc"],"keys":"2ldw","after":["  ","abc"],"row":0,"col":1,"regtype":"v","register":"indented"}
+{"lines":["  indented","abc"],"keys":"d2w","after":["","abc"],"row":0,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["  indented","abc"],"keys":"3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"  indented\nabc\n"}
+{"lines":["  indented","abc"],"keys":"lyw","after":["  indented","abc"],"row":0,"col":1,"regtype":"v","register":" "}
+{"lines":["  indented","abc"],"keys":"ly2w","after":["  indented","abc"],"row":0,"col":1,"regtype":"v","register":" indented"}
+{"lines":["  indented","abc"],"keys":"2ldW","after":["  ","abc"],"row":0,"col":1,"regtype":"v","register":"indented"}
+{"lines":["  indented","abc"],"keys":"j0d2W","after":["  indented",""],"row":1,"col":0,"regtype":"v","register":"abc"}
+{"lines":["  indented","abc"],"keys":"lyW","after":["  indented","abc"],"row":0,"col":1,"regtype":"v","register":" "}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"2ldw","after":["A B","A 🇺🇸 B","end  "],"row":0,"col":2,"regtype":"v","register":"🇺🇸 "}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"ld2w","after":["AB","A 🇺🇸 B","end  "],"row":0,"col":1,"regtype":"v","register":" 🇺🇸 "}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"l3dw","after":["A","A 🇺🇸 B","end  "],"row":0,"col":0,"regtype":"v","register":" 🇺🇸 B"}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"yw","after":["A 🇺🇸 B","A 🇺🇸 B","end  "],"row":0,"col":0,"regtype":"v","register":"A "}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"j0y2w","after":["A 🇺🇸 B","A 🇺🇸 B","end  "],"row":1,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"dW","after":["🇺🇸 B","A 🇺🇸 B","end  "],"row":0,"col":0,"regtype":"v","register":"A "}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"ld2W","after":["AB","A 🇺🇸 B","end  "],"row":0,"col":1,"regtype":"v","register":" 🇺🇸 "}
+{"lines":["A 🇺🇸 B","A 🇺🇸 B","end  "],"keys":"yW","after":["A 🇺🇸 B","A 🇺🇸 B","end  "],"row":0,"col":0,"regtype":"v","register":"A "}
+{"lines":["x","   ","x"],"keys":"2ldw","after":["","   ","x"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","   ","x"],"keys":"j0d2w","after":["x"],"row":0,"col":0,"regtype":"V","register":"   \nx\n"}
+{"lines":["x","   ","x"],"keys":"3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"x\n   \nx\n"}
+{"lines":["x","   ","x"],"keys":"lyw","after":["x","   ","x"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","   ","x"],"keys":"j0y2w","after":["x","   ","x"],"row":1,"col":0,"regtype":"v","register":"   \nx"}
+{"lines":["x","   ","x"],"keys":"2ldW","after":["","   ","x"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","   ","x"],"keys":"d2W","after":[""],"row":0,"col":0,"regtype":"V","register":"x\n   \nx\n"}
+{"lines":["x","   ","x"],"keys":"j0yW","after":["x","   ","x"],"row":1,"col":0,"regtype":"v","register":"   "}
+{"lines":["abc","x","éclair"],"keys":"G0dw","after":["abc","x",""],"row":2,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["abc","x","éclair"],"keys":"d2w","after":["éclair"],"row":0,"col":0,"regtype":"V","register":"abc\nx\n"}
+{"lines":["abc","x","éclair"],"keys":"G03dw","after":["abc","x",""],"row":2,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["abc","x","éclair"],"keys":"2lyw","after":["abc","x","éclair"],"row":0,"col":2,"regtype":"v","register":"c"}
+{"lines":["abc","x","éclair"],"keys":"y2w","after":["abc","x","éclair"],"row":0,"col":0,"regtype":"v","register":"abc\nx"}
+{"lines":["abc","x","éclair"],"keys":"j0dW","after":["abc","","éclair"],"row":1,"col":0,"regtype":"v","register":"x"}
+{"lines":["abc","x","éclair"],"keys":"G0d2W","after":["abc","x",""],"row":2,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["abc","x","éclair"],"keys":"lyW","after":["abc","x","éclair"],"row":0,"col":1,"regtype":"v","register":"bc"}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"2ldw","after":["éc","foo bar","  indented","café gato"],"row":0,"col":1,"regtype":"v","register":"lair"}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"G0d2w","after":["éclair","foo bar","  indented",""],"row":3,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"2l3dw","after":["éc","  indented","café gato"],"row":0,"col":1,"regtype":"v","register":"lair\nfoo bar"}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"2lyw","after":["éclair","foo bar","  indented","café gato"],"row":0,"col":2,"regtype":"v","register":"lair"}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"j0y2w","after":["éclair","foo bar","  indented","café gato"],"row":1,"col":0,"regtype":"v","register":"foo bar"}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"G0dW","after":["éclair","foo bar","  indented","gato"],"row":3,"col":0,"regtype":"v","register":"café "}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"2ld2W","after":["écbar","  indented","café gato"],"row":0,"col":2,"regtype":"v","register":"lair\nfoo "}
+{"lines":["éclair","foo bar","  indented","café gato"],"keys":"G0yW","after":["éclair","foo bar","  indented","café gato"],"row":3,"col":0,"regtype":"v","register":"café "}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"j0dw","after":["A 🇺🇸 B","bar"],"row":1,"col":0,"regtype":"v","register":"foo "}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"2ld2w","after":["A ","foo bar"],"row":0,"col":1,"regtype":"v","register":"🇺🇸 B"}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"2l3dw","after":["A bar"],"row":0,"col":2,"regtype":"v","register":"🇺🇸 B\nfoo "}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"2lyw","after":["A 🇺🇸 B","foo bar"],"row":0,"col":2,"regtype":"v","register":"🇺🇸 "}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"y2w","after":["A 🇺🇸 B","foo bar"],"row":0,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"G0dW","after":["A 🇺🇸 B","bar"],"row":1,"col":0,"regtype":"v","register":"foo "}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"ld2W","after":["AB","foo bar"],"row":0,"col":1,"regtype":"v","register":" 🇺🇸 "}
+{"lines":["A 🇺🇸 B","foo bar"],"keys":"j0yW","after":["A 🇺🇸 B","foo bar"],"row":1,"col":0,"regtype":"v","register":"foo "}
+{"lines":["abc","end  ","café gato"],"keys":"ldw","after":["a","end  ","café gato"],"row":0,"col":0,"regtype":"v","register":"bc"}
+{"lines":["abc","end  ","café gato"],"keys":"2ld2w","after":["ab","café gato"],"row":0,"col":1,"regtype":"v","register":"c\nend  "}
+{"lines":["abc","end  ","café gato"],"keys":"j03dw","after":["abc"],"row":0,"col":0,"regtype":"V","register":"end  \ncafé gato\n"}
+{"lines":["abc","end  ","café gato"],"keys":"2lyw","after":["abc","end  ","café gato"],"row":0,"col":2,"regtype":"v","register":"c"}
+{"lines":["abc","end  ","café gato"],"keys":"ly2w","after":["abc","end  ","café gato"],"row":0,"col":1,"regtype":"v","register":"bc\nend  "}
+{"lines":["abc","end  ","café gato"],"keys":"j0dW","after":["abc","","café gato"],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["abc","end  ","café gato"],"keys":"ld2W","after":["a","café gato"],"row":0,"col":0,"regtype":"v","register":"bc\nend  "}
+{"lines":["abc","end  ","café gato"],"keys":"yW","after":["abc","end  ","café gato"],"row":0,"col":0,"regtype":"v","register":"abc"}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"dw","after":["indented","  indented","  indented","  indented"],"row":0,"col":0,"regtype":"v","register":"  "}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"j0d2w","after":["  indented","","  indented","  indented"],"row":1,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"2l3dw","after":["  indented"],"row":0,"col":2,"regtype":"V","register":"  indented\n  indented\n  indented\n"}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"j0yw","after":["  indented","  indented","  indented","  indented"],"row":1,"col":0,"regtype":"v","register":"  "}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"2ly2w","after":["  indented","  indented","  indented","  indented"],"row":0,"col":2,"regtype":"v","register":"indented\n  indented"}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"ldW","after":[" indented","  indented","  indented","  indented"],"row":0,"col":1,"regtype":"v","register":" "}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"j0d2W","after":["  indented","","  indented","  indented"],"row":1,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["  indented","  indented","  indented","  indented"],"keys":"G0yW","after":["  indented","  indented","  indented","  indented"],"row":3,"col":0,"regtype":"v","register":"  "}
+{"lines":["  indented","éclair"],"keys":"j0dw","after":["  indented",""],"row":1,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["  indented","éclair"],"keys":"G0d2w","after":["  indented",""],"row":1,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["  indented","éclair"],"keys":"2l3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"  indented\néclair\n"}
+{"lines":["  indented","éclair"],"keys":"j0yw","after":["  indented","éclair"],"row":1,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["  indented","éclair"],"keys":"j0y2w","after":["  indented","éclair"],"row":1,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["  indented","éclair"],"keys":"dW","after":["indented","éclair"],"row":0,"col":0,"regtype":"v","register":"  "}
+{"lines":["  indented","éclair"],"keys":"d2W","after":["","éclair"],"row":0,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["  indented","éclair"],"keys":"2lyW","after":["  indented","éclair"],"row":0,"col":2,"regtype":"v","register":"indented"}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"j0dw","after":["A 🇺🇸 B","","  indented","abc"],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"d2w","after":["B","end  ","  indented","abc"],"row":0,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"2l3dw","after":["A ","  indented","abc"],"row":0,"col":1,"regtype":"v","register":"🇺🇸 B\nend  "}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"2lyw","after":["A 🇺🇸 B","end  ","  indented","abc"],"row":0,"col":2,"regtype":"v","register":"🇺🇸 "}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"y2w","after":["A 🇺🇸 B","end  ","  indented","abc"],"row":0,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"2ldW","after":["A B","end  ","  indented","abc"],"row":0,"col":2,"regtype":"v","register":"🇺🇸 "}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"d2W","after":["B","end  ","  indented","abc"],"row":0,"col":0,"regtype":"v","register":"A 🇺🇸 "}
+{"lines":["A 🇺🇸 B","end  ","  indented","abc"],"keys":"j0yW","after":["A 🇺🇸 B","end  ","  indented","abc"],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["éclair","end  ","café gato"],"keys":"G0dw","after":["éclair","end  ","gato"],"row":2,"col":0,"regtype":"v","register":"café "}
+{"lines":["éclair","end  ","café gato"],"keys":"j0d2w","after":["éclair","gato"],"row":1,"col":0,"regtype":"v","register":"end  \ncafé "}
+{"lines":["éclair","end  ","café gato"],"keys":"G03dw","after":["éclair","end  ",""],"row":2,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["éclair","end  ","café gato"],"keys":"G0yw","after":["éclair","end  ","café gato"],"row":2,"col":0,"regtype":"v","register":"café "}
+{"lines":["éclair","end  ","café gato"],"keys":"2ly2w","after":["éclair","end  ","café gato"],"row":0,"col":2,"regtype":"v","register":"lair\nend  "}
+{"lines":["éclair","end  ","café gato"],"keys":"G0dW","after":["éclair","end  ","gato"],"row":2,"col":0,"regtype":"v","register":"café "}
+{"lines":["éclair","end  ","café gato"],"keys":"d2W","after":["café gato"],"row":0,"col":0,"regtype":"V","register":"éclair\nend  \n"}
+{"lines":["éclair","end  ","café gato"],"keys":"G0yW","after":["éclair","end  ","café gato"],"row":2,"col":0,"regtype":"v","register":"café "}
+{"lines":["café gato","foo bar","foo bar"],"keys":"2ldw","after":["cagato","foo bar","foo bar"],"row":0,"col":2,"regtype":"v","register":"fé "}
+{"lines":["café gato","foo bar","foo bar"],"keys":"ld2w","after":["c","foo bar","foo bar"],"row":0,"col":0,"regtype":"v","register":"afé gato"}
+{"lines":["café gato","foo bar","foo bar"],"keys":"j03dw","after":["café gato","bar"],"row":1,"col":0,"regtype":"v","register":"foo bar\nfoo "}
+{"lines":["café gato","foo bar","foo bar"],"keys":"G0yw","after":["café gato","foo bar","foo bar"],"row":2,"col":0,"regtype":"v","register":"foo "}
+{"lines":["café gato","foo bar","foo bar"],"keys":"y2w","after":["café gato","foo bar","foo bar"],"row":0,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["café gato","foo bar","foo bar"],"keys":"ldW","after":["cgato","foo bar","foo bar"],"row":0,"col":1,"regtype":"v","register":"afé "}
+{"lines":["café gato","foo bar","foo bar"],"keys":"G0d2W","after":["café gato","foo bar",""],"row":2,"col":0,"regtype":"v","register":"foo bar"}
+{"lines":["café gato","foo bar","foo bar"],"keys":"yW","after":["café gato","foo bar","foo bar"],"row":0,"col":0,"regtype":"v","register":"café "}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"2ldw","after":["éc","foo bar","  indented","abc"],"row":0,"col":1,"regtype":"v","register":"lair"}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"ld2w","after":["ébar","  indented","abc"],"row":0,"col":1,"regtype":"v","register":"clair\nfoo "}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"G03dw","after":["éclair","foo bar","  indented",""],"row":3,"col":0,"regtype":"v","register":"abc"}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"2lyw","after":["éclair","foo bar","  indented","abc"],"row":0,"col":2,"regtype":"v","register":"lair"}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"G0y2w","after":["éclair","foo bar","  indented","abc"],"row":3,"col":0,"regtype":"v","register":"abc"}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"j0dW","after":["éclair","bar","  indented","abc"],"row":1,"col":0,"regtype":"v","register":"foo "}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"2ld2W","after":["écbar","  indented","abc"],"row":0,"col":2,"regtype":"v","register":"lair\nfoo "}
+{"lines":["éclair","foo bar","  indented","abc"],"keys":"2lyW","after":["éclair","foo bar","  indented","abc"],"row":0,"col":2,"regtype":"v","register":"lair"}
+{"lines":["x","  indented"],"keys":"2ldw","after":["","  indented"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","  indented"],"keys":"ld2w","after":[""],"row":0,"col":0,"regtype":"V","register":"x\n  indented\n"}
+{"lines":["x","  indented"],"keys":"2l3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"x\n  indented\n"}
+{"lines":["x","  indented"],"keys":"lyw","after":["x","  indented"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","  indented"],"keys":"j0y2w","after":["x","  indented"],"row":1,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["x","  indented"],"keys":"dW","after":["","  indented"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["x","  indented"],"keys":"d2W","after":[""],"row":0,"col":0,"regtype":"V","register":"x\n  indented\n"}
+{"lines":["x","  indented"],"keys":"lyW","after":["x","  indented"],"row":0,"col":0,"regtype":"v","register":"x"}
+{"lines":["","éclair"],"keys":"ldw","after":["éclair"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["","éclair"],"keys":"2ld2w","after":[""],"row":0,"col":0,"regtype":"V","register":"\néclair\n"}
+{"lines":["","éclair"],"keys":"2l3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"\néclair\n"}
+{"lines":["","éclair"],"keys":"2lyw","after":["","éclair"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["","éclair"],"keys":"2ly2w","after":["","éclair"],"row":0,"col":0,"regtype":"v","register":"\néclair"}
+{"lines":["","éclair"],"keys":"G0dW","after":["",""],"row":1,"col":0,"regtype":"v","register":"éclair"}
+{"lines":["","éclair"],"keys":"2ld2W","after":[""],"row":0,"col":0,"regtype":"V","register":"\néclair\n"}
+{"lines":["","éclair"],"keys":"2lyW","after":["","éclair"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["","foo bar","  indented"],"keys":"G0dw","after":["","foo bar","indented"],"row":2,"col":0,"regtype":"v","register":"  "}
+{"lines":["","foo bar","  indented"],"keys":"2ld2w","after":["bar","  indented"],"row":0,"col":0,"regtype":"v","register":"\nfoo "}
+{"lines":["","foo bar","  indented"],"keys":"G03dw","after":["","foo bar",""],"row":2,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["","foo bar","  indented"],"keys":"lyw","after":["","foo bar","  indented"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["","foo bar","  indented"],"keys":"ly2w","after":["","foo bar","  indented"],"row":0,"col":0,"regtype":"v","register":"\nfoo "}
+{"lines":["","foo bar","  indented"],"keys":"j0dW","after":["","bar","  indented"],"row":1,"col":0,"regtype":"v","register":"foo "}
+{"lines":["","foo bar","  indented"],"keys":"d2W","after":["bar","  indented"],"row":0,"col":0,"regtype":"v","register":"\nfoo "}
+{"lines":["","foo bar","  indented"],"keys":"lyW","after":["","foo bar","  indented"],"row":0,"col":0,"regtype":"V","register":"\n"}
+{"lines":["end  ","foo bar"],"keys":"dw","after":["","foo bar"],"row":0,"col":0,"regtype":"v","register":"end  "}
+{"lines":["end  ","foo bar"],"keys":"d2w","after":["bar"],"row":0,"col":0,"regtype":"v","register":"end  \nfoo "}
+{"lines":["end  ","foo bar"],"keys":"3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"end  \nfoo bar\n"}
+{"lines":["end  ","foo bar"],"keys":"yw","after":["end  ","foo bar"],"row":0,"col":0,"regtype":"v","register":"end  "}
+{"lines":["end  ","foo bar"],"keys":"2ly2w","after":["end  ","foo bar"],"row":0,"col":2,"regtype":"v","register":"d  \nfoo "}
+{"lines":["end  ","foo bar"],"keys":"G0dW","after":["end  ","bar"],"row":1,"col":0,"regtype":"v","register":"foo "}
+{"lines":["end  ","foo bar"],"keys":"G0d2W","after":["end  ",""],"row":1,"col":0,"regtype":"v","register":"foo bar"}
+{"lines":["end  ","foo bar"],"keys":"G0yW","after":["end  ","foo bar"],"row":1,"col":0,"regtype":"v","register":"foo "}
+{"lines":["foo bar","café gato"],"keys":"2ldw","after":["fobar","café gato"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["foo bar","café gato"],"keys":"d2w","after":["","café gato"],"row":0,"col":0,"regtype":"v","register":"foo bar"}
+{"lines":["foo bar","café gato"],"keys":"2l3dw","after":["fogato"],"row":0,"col":2,"regtype":"v","register":"o bar\ncafé "}
+{"lines":["foo bar","café gato"],"keys":"yw","after":["foo bar","café gato"],"row":0,"col":0,"regtype":"v","register":"foo "}
+{"lines":["foo bar","café gato"],"keys":"2ly2w","after":["foo bar","café gato"],"row":0,"col":2,"regtype":"v","register":"o bar"}
+{"lines":["foo bar","café gato"],"keys":"dW","after":["bar","café gato"],"row":0,"col":0,"regtype":"v","register":"foo "}
+{"lines":["foo bar","café gato"],"keys":"G0d2W","after":["foo bar",""],"row":1,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["foo bar","café gato"],"keys":"2lyW","after":["foo bar","café gato"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["foo bar","x","café gato"],"keys":"2ldw","after":["fobar","x","café gato"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["foo bar","x","café gato"],"keys":"G0d2w","after":["foo bar","x",""],"row":2,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["foo bar","x","café gato"],"keys":"j03dw","after":["foo bar"],"row":0,"col":0,"regtype":"V","register":"x\ncafé gato\n"}
+{"lines":["foo bar","x","café gato"],"keys":"lyw","after":["foo bar","x","café gato"],"row":0,"col":1,"regtype":"v","register":"oo "}
+{"lines":["foo bar","x","café gato"],"keys":"2ly2w","after":["foo bar","x","café gato"],"row":0,"col":2,"regtype":"v","register":"o bar"}
+{"lines":["foo bar","x","café gato"],"keys":"ldW","after":["fbar","x","café gato"],"row":0,"col":1,"regtype":"v","register":"oo "}
+{"lines":["foo bar","x","café gato"],"keys":"ld2W","after":["f","x","café gato"],"row":0,"col":0,"regtype":"v","register":"oo bar"}
+{"lines":["foo bar","x","café gato"],"keys":"2lyW","after":["foo bar","x","café gato"],"row":0,"col":2,"regtype":"v","register":"o "}
+{"lines":["abc","end  "],"keys":"dw","after":["","end  "],"row":0,"col":0,"regtype":"v","register":"abc"}
+{"lines":["abc","end  "],"keys":"j0d2w","after":["abc",""],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["abc","end  "],"keys":"G03dw","after":["abc",""],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["abc","end  "],"keys":"G0yw","after":["abc","end  "],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["abc","end  "],"keys":"j0y2w","after":["abc","end  "],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["abc","end  "],"keys":"ldW","after":["a","end  "],"row":0,"col":0,"regtype":"v","register":"bc"}
+{"lines":["abc","end  "],"keys":"j0d2W","after":["abc",""],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["abc","end  "],"keys":"G0yW","after":["abc","end  "],"row":1,"col":0,"regtype":"v","register":"end  "}
+{"lines":["  indented","abc"],"keys":"G0dw","after":["  indented",""],"row":1,"col":0,"regtype":"v","register":"abc"}
+{"lines":["  indented","abc"],"keys":"d2w","after":["","abc"],"row":0,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["  indented","abc"],"keys":"2l3dw","after":[""],"row":0,"col":0,"regtype":"V","register":"  indented\nabc\n"}
+{"lines":["  indented","abc"],"keys":"j0yw","after":["  indented","abc"],"row":1,"col":0,"regtype":"v","register":"abc"}
+{"lines":["  indented","abc"],"keys":"y2w","after":["  indented","abc"],"row":0,"col":0,"regtype":"v","register":"  indented"}
+{"lines":["  indented","abc"],"keys":"j0dW","after":["  indented",""],"row":1,"col":0,"regtype":"v","register":"abc"}
+{"lines":["  indented","abc"],"keys":"G0d2W","after":["  indented",""],"row":1,"col":0,"regtype":"v","register":"abc"}
+{"lines":["  indented","abc"],"keys":"2lyW","after":["  indented","abc"],"row":0,"col":2,"regtype":"v","register":"indented"}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"j0dw","after":["café gato","🇺🇸 B","foo bar","éclair"],"row":1,"col":0,"regtype":"v","register":"A "}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"2ld2w","after":["ca","A 🇺🇸 B","foo bar","éclair"],"row":0,"col":1,"regtype":"v","register":"fé gato"}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"2l3dw","after":["ca🇺🇸 B","foo bar","éclair"],"row":0,"col":2,"regtype":"v","register":"fé gato\nA "}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"j0yw","after":["café gato","A 🇺🇸 B","foo bar","éclair"],"row":1,"col":0,"regtype":"v","register":"A "}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"ly2w","after":["café gato","A 🇺🇸 B","foo bar","éclair"],"row":0,"col":1,"regtype":"v","register":"afé gato"}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"dW","after":["gato","A 🇺🇸 B","foo bar","éclair"],"row":0,"col":0,"regtype":"v","register":"café "}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"d2W","after":["","A 🇺🇸 B","foo bar","éclair"],"row":0,"col":0,"regtype":"v","register":"café gato"}
+{"lines":["café gato","A 🇺🇸 B","foo bar","éclair"],"keys":"2lyW","after":["café gato","A 🇺🇸 B","foo bar","éclair"],"row":0,"col":2,"regtype":"v","register":"fé "}
+{"after":["","é\té  😀","b éé","a"],"row":0,"col":0,"regtype":"v","register":"ébb","lines":["ébb","é\té  😀","b éé","a"],"keys":"dw"}
+{"after":["ébb","é\té  😀","b éé",""],"row":3,"col":0,"regtype":"v","register":"a","lines":["ébb","é\té  😀","b éé","a"],"keys":"G0d2w"}
+{"after":["ébb","","b éé","a"],"row":1,"col":0,"regtype":"v","register":"é\té  😀","lines":["ébb","é\té  😀","b éé","a"],"keys":"j03dw"}
+{"after":["ébb","é\té  😀","b éé","a"],"row":0,"col":1,"regtype":"v","register":"bb","lines":["ébb","é\té  😀","b éé","a"],"keys":"lyw"}
+{"after":["ébb","é\té  😀","b éé","a"],"row":0,"col":0,"regtype":"v","register":"ébb\né\t","lines":["ébb","é\té  😀","b éé","a"],"keys":"y2w"}
+{"after":["ébb","é  😀","b éé","a"],"row":1,"col":0,"regtype":"v","register":"é\t","lines":["ébb","é\té  😀","b éé","a"],"keys":"j0dW"}
+{"after":["ébé  😀","b éé","a"],"row":0,"col":2,"regtype":"v","register":"b\né\t","lines":["ébb","é\té  😀","b éé","a"],"keys":"2ld2W"}
+{"after":["ébb","é\té  😀","b éé","a"],"row":0,"col":0,"regtype":"v","register":"ébb","lines":["ébb","é\té  😀","b éé","a"],"keys":"yW"}
+{"after":["😀é ","_ \t😀","😀 é__é.a😀b","aé\t."],"row":0,"col":1,"regtype":"v","register":" \t","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"ldw"}
+{"after":["","_ \t😀","😀 é__é.a😀b","aé\t."],"row":0,"col":0,"regtype":"v","register":"😀 \té ","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"d2w"}
+{"after":["😀","😀 é__é.a😀b","aé\t."],"row":0,"col":0,"regtype":"v","register":"😀 \té \n_ \t","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"3dw"}
+{"after":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"row":0,"col":2,"regtype":"v","register":"\t","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"2lyw"}
+{"after":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"row":0,"col":2,"regtype":"v","register":"\té ","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"2ly2w"}
+{"after":["😀 \té ","😀","😀 é__é.a😀b","aé\t."],"row":1,"col":0,"regtype":"v","register":"_ \t","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"j0dW"}
+{"after":["😀 \té ","_ \t😀","😀 é__é.a😀b",""],"row":3,"col":0,"regtype":"v","register":"aé\t.","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"G0d2W"}
+{"after":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"row":0,"col":2,"regtype":"v","register":"\t","lines":["😀 \té ","_ \t😀","😀 é__é.a😀b","aé\t."],"keys":"2lyW"}
+{"after":["ab\téé😀bé",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["ab\téé😀bé","a"],"keys":"j0dw"}
+{"after":["ab\téé😀bé",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["ab\téé😀bé","a"],"keys":"j0d2w"}
+{"after":["abbé","a"],"row":0,"col":2,"regtype":"v","register":"\téé😀","lines":["ab\téé😀bé","a"],"keys":"2l3dw"}
+{"after":["ab\téé😀bé","a"],"row":0,"col":1,"regtype":"v","register":"b\t","lines":["ab\téé😀bé","a"],"keys":"lyw"}
+{"after":["ab\téé😀bé","a"],"row":0,"col":2,"regtype":"v","register":"\téé","lines":["ab\téé😀bé","a"],"keys":"2ly2w"}
+{"after":["éé😀bé","a"],"row":0,"col":0,"regtype":"v","register":"ab\t","lines":["ab\téé😀bé","a"],"keys":"dW"}
+{"after":["ab\téé😀bé",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["ab\téé😀bé","a"],"keys":"j0d2W"}
+{"after":["ab\téé😀bé","a"],"row":0,"col":0,"regtype":"v","register":"ab\t","lines":["ab\téé😀bé","a"],"keys":"yW"}
+{"after":["",""," 😀 aab\t\téé"],"row":0,"col":0,"regtype":"v","register":"é","lines":["é",""," 😀 aab\t\téé"],"keys":"dw"}
+{"after":[" 😀 aab\t\téé"],"row":0,"col":1,"regtype":"V","register":"é\n\n","lines":["é",""," 😀 aab\t\téé"],"keys":"d2w"}
+{"after":["é","éé"],"row":1,"col":0,"regtype":"v","register":"\n 😀 aab\t\t","lines":["é",""," 😀 aab\t\téé"],"keys":"j03dw"}
+{"after":["é",""," 😀 aab\t\téé"],"row":0,"col":0,"regtype":"v","register":"é","lines":["é",""," 😀 aab\t\téé"],"keys":"2lyw"}
+{"after":["é",""," 😀 aab\t\téé"],"row":1,"col":0,"regtype":"v","register":"\n 😀 ","lines":["é",""," 😀 aab\t\téé"],"keys":"j0y2w"}
+{"after":["",""," 😀 aab\t\téé"],"row":0,"col":0,"regtype":"v","register":"é","lines":["é",""," 😀 aab\t\téé"],"keys":"2ldW"}
+{"after":[" 😀 aab\t\téé"],"row":0,"col":1,"regtype":"V","register":"é\n\n","lines":["é",""," 😀 aab\t\téé"],"keys":"d2W"}
+{"after":["é",""," 😀 aab\t\téé"],"row":0,"col":0,"regtype":"v","register":"é","lines":["é",""," 😀 aab\t\téé"],"keys":"2lyW"}
+{"after":["ab \t\taéa😀bé","","_.\té.","😀é_."],"row":0,"col":1,"regtype":"v","register":"😀","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"ldw"}
+{"after":["a😀b \t\taéa😀bé","","_.\té.","."],"row":3,"col":0,"regtype":"v","register":"😀é_","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"G0d2w"}
+{"after":["a😀b \t\taéa😀bé","","_.\té.",""],"row":3,"col":0,"regtype":"v","register":"😀é_.","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"G03dw"}
+{"after":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"row":0,"col":1,"regtype":"v","register":"😀","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"lyw"}
+{"after":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"row":1,"col":0,"regtype":"v","register":"\n_","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"j0y2w"}
+{"after":["aaéa😀bé","","_.\té.","😀é_."],"row":0,"col":1,"regtype":"v","register":"😀b \t\t","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"ldW"}
+{"after":["a😀b \t\taéa😀bé","é.","😀é_."],"row":1,"col":0,"regtype":"v","register":"\n_.\t","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"j0d2W"}
+{"after":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"row":1,"col":0,"regtype":"V","register":"\n","lines":["a😀b \t\taéa😀bé","","_.\té.","😀é_."],"keys":"j0yW"}
+{"after":[".é..b_.aa ","😀é.aé"," 😀"],"row":0,"col":1,"regtype":"v","register":" ","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"ldw"}
+{"after":[". é..b_.aa ",".aé"," 😀"],"row":1,"col":0,"regtype":"v","register":"😀é","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"j0d2w"}
+{"after":["b_.aa ","😀é.aé"," 😀"],"row":0,"col":0,"regtype":"v","register":". é..","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"3dw"}
+{"after":[". é..b_.aa ","😀é.aé"," 😀"],"row":0,"col":2,"regtype":"v","register":"é","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"2lyw"}
+{"after":[". é..b_.aa ","😀é.aé"," 😀"],"row":2,"col":0,"regtype":"v","register":" 😀","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"G0y2w"}
+{"after":[". é..b_.aa ","😀é.aé","😀"],"row":2,"col":0,"regtype":"v","register":" ","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"G0dW"}
+{"after":[". "," 😀"],"row":0,"col":1,"regtype":"v","register":"é..b_.aa \n😀é.aé","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"2ld2W"}
+{"after":[". é..b_.aa ","😀é.aé"," 😀"],"row":1,"col":0,"regtype":"v","register":"😀é.aé","lines":[". é..b_.aa ","😀é.aé"," 😀"],"keys":"j0yW"}
+{"after":["_a😀\téa😀é_","","\ta.😀é"],"row":1,"col":0,"regtype":"v","register":"é","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"j0dw"}
+{"after":["_a😀é_","é","\ta.😀é"],"row":0,"col":2,"regtype":"v","register":"😀\téa","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"2ld2w"}
+{"after":["_😀é_","é","\ta.😀é"],"row":0,"col":1,"regtype":"v","register":"a😀\téa","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"l3dw"}
+{"after":["_a😀\téa😀é_","é","\ta.😀é"],"row":0,"col":0,"regtype":"v","register":"_a","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"yw"}
+{"after":["_a😀\téa😀é_","é","\ta.😀é"],"row":2,"col":0,"regtype":"v","register":"\ta","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"G0y2w"}
+{"after":["_a😀\téa😀é_","é","a.😀é"],"row":2,"col":0,"regtype":"v","register":"\t","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"G0dW"}
+{"after":["_a","é","\ta.😀é"],"row":0,"col":1,"regtype":"v","register":"😀\téa😀é_","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"2ld2W"}
+{"after":["_a😀\téa😀é_","é","\ta.😀é"],"row":1,"col":0,"regtype":"v","register":"é","lines":["_a😀\téa😀é_","é","\ta.😀é"],"keys":"j0yW"}
+{"after":["é\t   _éé",".é 😀😀","_éé"],"row":1,"col":0,"regtype":"v","register":"b\t","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"j0dw"}
+{"after":["é","b\t.é 😀😀","_éé"],"row":0,"col":0,"regtype":"v","register":"\t   _éé","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"ld2w"}
+{"after":["é\t.é 😀😀","_éé"],"row":0,"col":3,"regtype":"v","register":"   _éé\nb\t","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"2l3dw"}
+{"after":["é\t   _éé","b\t.é 😀😀","_éé"],"row":0,"col":3,"regtype":"v","register":"   ","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"2lyw"}
+{"after":["é\t   _éé","b\t.é 😀😀","_éé"],"row":0,"col":0,"regtype":"v","register":"é\t   _éé","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"y2w"}
+{"after":["é\t_éé","b\t.é 😀😀","_éé"],"row":0,"col":3,"regtype":"v","register":"   ","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"2ldW"}
+{"after":["é\t   _éé","😀😀","_éé"],"row":1,"col":0,"regtype":"v","register":"b\t.é ","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"j0d2W"}
+{"after":["é\t   _éé","b\t.é 😀😀","_éé"],"row":0,"col":2,"regtype":"v","register":"\t   ","lines":["é\t   _éé","b\t.é 😀😀","_éé"],"keys":"lyW"}
+{"after":["😀\tb\t. b","b.éé",".éébéé_."," éé"],"row":0,"col":0,"regtype":"v","register":"é ","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"dw"}
+{"after":["é 😀\tb\t. b","b.éé",".éébéé_.",""],"row":3,"col":0,"regtype":"v","register":" éé","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"G0d2w"}
+{"after":[". b","b.éé",".éébéé_."," éé"],"row":0,"col":0,"regtype":"v","register":"é 😀\tb\t","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"3dw"}
+{"after":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"row":0,"col":0,"regtype":"v","register":"é ","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"yw"}
+{"after":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"row":0,"col":2,"regtype":"v","register":" 😀\t","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"ly2w"}
+{"after":["é 😀\tb\t. b","b.éé",".éébéé_.","éé"],"row":3,"col":0,"regtype":"v","register":" ","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"G0dW"}
+{"after":["é . b","b.éé",".éébéé_."," éé"],"row":0,"col":3,"regtype":"v","register":"😀\tb\t","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"2ld2W"}
+{"after":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"row":0,"col":2,"regtype":"v","register":" ","lines":["é 😀\tb\t. b","b.éé",".éébéé_."," éé"],"keys":"lyW"}
+{"after":[" 😀é\t\tb_😀","b_éa","","\té\t\t"],"row":0,"col":1,"regtype":"v","register":"é_","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"ldw"}
+{"after":[" éé\t\tb_😀","b_éa","","\té\t\t"],"row":0,"col":2,"regtype":"v","register":"_😀","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"2ld2w"}
+{"after":[" é_😀é\t\tb_😀","b_éa","",""],"row":3,"col":0,"regtype":"v","register":"\té\t\t","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"G03dw"}
+{"after":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"row":1,"col":0,"regtype":"v","register":"b_éa","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"j0yw"}
+{"after":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"row":0,"col":0,"regtype":"v","register":" é_","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"y2w"}
+{"after":[" é_😀é\t\tb_😀","","","\té\t\t"],"row":1,"col":0,"regtype":"v","register":"b_éa","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"j0dW"}
+{"after":[" é_😀é\t\tb_😀","\té\t\t"],"row":1,"col":1,"regtype":"V","register":"b_éa\n\n","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"j0d2W"}
+{"after":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" é_😀é\t\tb_😀","b_éa","","\té\t\t"],"keys":"yW"}
+{"after":["b.b",""," \té_éa ."],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","b.b",""," \té_éa ."],"keys":"2ldw"}
+{"after":["","b",""," \té_éa ."],"row":1,"col":0,"regtype":"v","register":"b.","lines":["","b.b",""," \té_éa ."],"keys":"j0d2w"}
+{"after":["b",""," \té_éa ."],"row":0,"col":0,"regtype":"v","register":"\nb.","lines":["","b.b",""," \té_éa ."],"keys":"3dw"}
+{"after":["","b.b",""," \té_éa ."],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","b.b",""," \té_éa ."],"keys":"2lyw"}
+{"after":["","b.b",""," \té_éa ."],"row":0,"col":0,"regtype":"v","register":"\nb","lines":["","b.b",""," \té_éa ."],"keys":"ly2w"}
+{"after":["b.b",""," \té_éa ."],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","b.b",""," \té_éa ."],"keys":"ldW"}
+{"after":["","b.b","","."],"row":3,"col":0,"regtype":"v","register":" \té_éa ","lines":["","b.b",""," \té_éa ."],"keys":"G0d2W"}
+{"after":["","b.b",""," \té_éa ."],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","b.b",""," \té_éa ."],"keys":"2lyW"}
+{"after":["😀_😀","_éé"," "],"row":0,"col":1,"regtype":"v","register":"é  \t","lines":["😀é  \t_😀","_éé"," "],"keys":"ldw"}
+{"after":["😀😀","_éé"," "],"row":0,"col":1,"regtype":"v","register":"é  \t_","lines":["😀é  \t_😀","_éé"," "],"keys":"ld2w"}
+{"after":["😀","_éé"," "],"row":0,"col":0,"regtype":"v","register":"é  \t_😀","lines":["😀é  \t_😀","_éé"," "],"keys":"l3dw"}
+{"after":["😀é  \t_😀","_éé"," "],"row":2,"col":0,"regtype":"v","register":" ","lines":["😀é  \t_😀","_éé"," "],"keys":"G0yw"}
+{"after":["😀é  \t_😀","_éé"," "],"row":2,"col":0,"regtype":"v","register":" ","lines":["😀é  \t_😀","_éé"," "],"keys":"G0y2w"}
+{"after":["😀é  \t_😀",""," "],"row":1,"col":0,"regtype":"v","register":"_éé","lines":["😀é  \t_😀","_éé"," "],"keys":"j0dW"}
+{"after":["😀","_éé"," "],"row":0,"col":0,"regtype":"v","register":"é  \t_😀","lines":["😀é  \t_😀","_éé"," "],"keys":"ld2W"}
+{"after":["😀é  \t_😀","_éé"," "],"row":0,"col":1,"regtype":"v","register":"é  \t","lines":["😀é  \t_😀","_éé"," "],"keys":"lyW"}
+{"after":["","b_.éaéba"],"row":0,"col":0,"regtype":"v","register":"aéa \t","lines":["aéa \t","b_.éaéba"],"keys":"dw"}
+{"after":["a.éaéba"],"row":0,"col":1,"regtype":"v","register":"éa \t\nb_","lines":["aéa \t","b_.éaéba"],"keys":"ld2w"}
+{"after":["aéa \t",""],"row":1,"col":0,"regtype":"v","register":"b_.éaéba","lines":["aéa \t","b_.éaéba"],"keys":"G03dw"}
+{"after":["aéa \t","b_.éaéba"],"row":1,"col":0,"regtype":"v","register":"b_","lines":["aéa \t","b_.éaéba"],"keys":"j0yw"}
+{"after":["aéa \t","b_.éaéba"],"row":0,"col":0,"regtype":"v","register":"aéa \t\nb_","lines":["aéa \t","b_.éaéba"],"keys":"y2w"}
+{"after":["a","b_.éaéba"],"row":0,"col":0,"regtype":"v","register":"éa \t","lines":["aéa \t","b_.éaéba"],"keys":"ldW"}
+{"after":[""],"row":0,"col":0,"regtype":"V","register":"aéa \t\nb_.éaéba\n","lines":["aéa \t","b_.éaéba"],"keys":"d2W"}
+{"after":["aéa \t","b_.éaéba"],"row":0,"col":0,"regtype":"v","register":"aéa \t","lines":["aéa \t","b_.éaéba"],"keys":"yW"}
+{"after":["é ..é.","éé.. 😀😀",".\tééé😀é.","😀aéa.a"],"row":3,"col":0,"regtype":"v","register":"é","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"G0dw"}
+{"after":["é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"row":0,"col":0,"regtype":"v","register":"é ..","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"d2w"}
+{"after":["é ","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"row":0,"col":2,"regtype":"v","register":"..é.","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"2l3dw"}
+{"after":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"row":0,"col":2,"regtype":"v","register":" ","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"lyw"}
+{"after":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"row":0,"col":2,"regtype":"v","register":" ..","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"ly2w"}
+{"after":["é ","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"row":0,"col":2,"regtype":"v","register":"..é.","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"2ldW"}
+{"after":["é ..é.","éé.. 😀😀",".\tééé😀é.",""],"row":3,"col":0,"regtype":"v","register":"é😀aéa.a","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"G0d2W"}
+{"after":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"row":1,"col":0,"regtype":"v","register":"éé.. ","lines":["é ..é.","éé.. 😀😀",".\tééé😀é.","é😀aéa.a"],"keys":"j0yW"}
+{"after":["abéa","b\t.a"],"row":0,"col":1,"regtype":"v","register":"😀","lines":["a😀béa","b\t.a"],"keys":"ldw"}
+{"after":["a😀béa","a"],"row":1,"col":0,"regtype":"v","register":"b\t.","lines":["a😀béa","b\t.a"],"keys":"j0d2w"}
+{"after":["a😀a"],"row":0,"col":2,"regtype":"v","register":"béa\nb\t.","lines":["a😀béa","b\t.a"],"keys":"2l3dw"}
+{"after":["a😀béa","b\t.a"],"row":1,"col":0,"regtype":"v","register":"b\t","lines":["a😀béa","b\t.a"],"keys":"j0yw"}
+{"after":["a😀béa","b\t.a"],"row":0,"col":1,"regtype":"v","register":"😀béa","lines":["a😀béa","b\t.a"],"keys":"ly2w"}
+{"after":["a😀béa",".a"],"row":1,"col":0,"regtype":"v","register":"b\t","lines":["a😀béa","b\t.a"],"keys":"G0dW"}
+{"after":[".a"],"row":0,"col":0,"regtype":"v","register":"a😀béa\nb\t","lines":["a😀béa","b\t.a"],"keys":"d2W"}
+{"after":["a😀béa","b\t.a"],"row":0,"col":0,"regtype":"v","register":"a😀béa","lines":["a😀béa","b\t.a"],"keys":"yW"}
+{"after":[" aé__😀 bb","😀 😀  aéb"],"row":1,"col":0,"regtype":"v","register":"bab","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"j0dw"}
+{"after":[" aé__😀 bb","😀  aéb"],"row":1,"col":0,"regtype":"v","register":"bab😀 ","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"G0d2w"}
+{"after":[" aé__😀 bb","aéb"],"row":1,"col":0,"regtype":"v","register":"bab😀 😀  ","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"G03dw"}
+{"after":[" aé__😀 bb","bab😀 😀  aéb"],"row":0,"col":2,"regtype":"v","register":"é__","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"2lyw"}
+{"after":[" aé__😀 bb","bab😀 😀  aéb"],"row":1,"col":0,"regtype":"v","register":"bab😀 ","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"G0y2w"}
+{"after":[" aé__😀 bb","😀  aéb"],"row":1,"col":0,"regtype":"v","register":"bab😀 ","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"G0dW"}
+{"after":[" aé__😀 bb","aéb"],"row":1,"col":0,"regtype":"v","register":"bab😀 😀  ","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"j0d2W"}
+{"after":[" aé__😀 bb","bab😀 😀  aéb"],"row":0,"col":1,"regtype":"v","register":"aé__😀 ","lines":[" aé__😀 bb","bab😀 😀  aéb"],"keys":"lyW"}
+{"after":["é","a"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀é","a"],"keys":"dw"}
+{"after":["😀é",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["😀é","a"],"keys":"j0d2w"}
+{"after":["😀é",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["😀é","a"],"keys":"j03dw"}
+{"after":["😀é","a"],"row":1,"col":0,"regtype":"v","register":"a","lines":["😀é","a"],"keys":"G0yw"}
+{"after":["😀é","a"],"row":1,"col":0,"regtype":"v","register":"a","lines":["😀é","a"],"keys":"j0y2w"}
+{"after":["😀é",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["😀é","a"],"keys":"G0dW"}
+{"after":["😀"],"row":0,"col":0,"regtype":"v","register":"é\na","lines":["😀é","a"],"keys":"ld2W"}
+{"after":["😀é","a"],"row":0,"col":0,"regtype":"v","register":"😀é","lines":["😀é","a"],"keys":"yW"}
+{"after":["éé ab😀😀",""],"row":1,"col":0,"regtype":"v","register":"_aéb","lines":["éé ab😀😀","_aéb"],"keys":"j0dw"}
+{"after":["é😀😀","_aéb"],"row":0,"col":2,"regtype":"v","register":"é ab","lines":["éé ab😀😀","_aéb"],"keys":"ld2w"}
+{"after":["","_aéb"],"row":0,"col":0,"regtype":"v","register":"éé ab😀😀","lines":["éé ab😀😀","_aéb"],"keys":"3dw"}
+{"after":["éé ab😀😀","_aéb"],"row":0,"col":2,"regtype":"v","register":"é ","lines":["éé ab😀😀","_aéb"],"keys":"lyw"}
+{"after":["éé ab😀😀","_aéb"],"row":0,"col":2,"regtype":"v","register":"é ab","lines":["éé ab😀😀","_aéb"],"keys":"ly2w"}
+{"after":["éab😀😀","_aéb"],"row":0,"col":2,"regtype":"v","register":"é ","lines":["éé ab😀😀","_aéb"],"keys":"ldW"}
+{"after":["","_aéb"],"row":0,"col":0,"regtype":"v","register":"éé ab😀😀","lines":["éé ab😀😀","_aéb"],"keys":"d2W"}
+{"after":["éé ab😀😀","_aéb"],"row":0,"col":0,"regtype":"v","register":"éé ","lines":["éé ab😀😀","_aéb"],"keys":"yW"}
+{"after":["b.😀😀b.\t😀.a",".","b.  "],"row":0,"col":2,"regtype":"v","register":"..","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"2ldw"}
+{"after":["b...😀😀b.\t😀.a",".  "],"row":1,"col":0,"regtype":"v","register":".\nb","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"j0d2w"}
+{"after":["b..\t😀.a",".","b.  "],"row":0,"col":2,"regtype":"v","register":"..😀😀b","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"2l3dw"}
+{"after":["b...😀😀b.\t😀.a",".","b.  "],"row":2,"col":0,"regtype":"v","register":"b","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"G0yw"}
+{"after":["b...😀😀b.\t😀.a",".","b.  "],"row":0,"col":0,"regtype":"v","register":"b...","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"y2w"}
+{"after":["b😀.a",".","b.  "],"row":0,"col":1,"regtype":"v","register":"...😀😀b.\t","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"ldW"}
+{"after":["b.",".","b.  "],"row":0,"col":1,"regtype":"v","register":"..😀😀b.\t😀.a","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"2ld2W"}
+{"after":["b...😀😀b.\t😀.a",".","b.  "],"row":0,"col":0,"regtype":"v","register":"b...😀😀b.\t","lines":["b...😀😀b.\t😀.a",".","b.  "],"keys":"yW"}
+{"after":["__é😀😀",". éé😀_😀é _","baéé"],"row":2,"col":0,"regtype":"v","register":"a \t","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"G0dw"}
+{"after":["__é😀😀",". éé😀_😀é _",""],"row":2,"col":0,"regtype":"v","register":"a \tbaéé","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"G0d2w"}
+{"after":["éé😀_😀é _","a \tbaéé"],"row":0,"col":0,"regtype":"v","register":"__é😀😀\n. ","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"3dw"}
+{"after":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"row":2,"col":0,"regtype":"v","register":"a \t","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"G0yw"}
+{"after":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"row":0,"col":2,"regtype":"v","register":"é😀😀","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"2ly2w"}
+{"after":["__é😀😀","éé😀_😀é _","a \tbaéé"],"row":1,"col":0,"regtype":"v","register":". ","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"j0dW"}
+{"after":["éé😀_😀é _","a \tbaéé"],"row":0,"col":0,"regtype":"v","register":"__é😀😀\n. ","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"d2W"}
+{"after":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"row":0,"col":0,"regtype":"v","register":"__é😀😀","lines":["__é😀😀",". éé😀_😀é _","a \tbaéé"],"keys":"yW"}
+{"after":[" éa","\té éa\tbé",".aé"],"row":0,"col":1,"regtype":"v","register":"ééaéé_b\t","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"ldw"}
+{"after":[" é","\té éa\tbé",".aé"],"row":0,"col":1,"regtype":"v","register":"éaéé_b\téa","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"2ld2w"}
+{"after":[" éa\tbé",".aé"],"row":0,"col":1,"regtype":"v","register":"ééaéé_b\téa\n\té ","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"l3dw"}
+{"after":[" ééaéé_b\téa","\té éa\tbé",".aé"],"row":1,"col":0,"regtype":"v","register":"\t","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"j0yw"}
+{"after":[" ééaéé_b\téa","\té éa\tbé",".aé"],"row":0,"col":2,"regtype":"v","register":"éaéé_b\téa","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"2ly2w"}
+{"after":["ééaéé_b\téa","\té éa\tbé",".aé"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"dW"}
+{"after":[" ","\té éa\tbé",".aé"],"row":0,"col":0,"regtype":"v","register":"ééaéé_b\téa","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"ld2W"}
+{"after":[" ééaéé_b\téa","\té éa\tbé",".aé"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" ééaéé_b\téa","\té éa\tbé",".aé"],"keys":"yW"}
+{"after":["b._aé_","\téé_","\té"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀b._aé_","\téé_","\té"],"keys":"dw"}
+{"after":["😀_aé_","\téé_","\té"],"row":0,"col":1,"regtype":"v","register":"b.","lines":["😀b._aé_","\téé_","\té"],"keys":"ld2w"}
+{"after":["_aé_","\téé_","\té"],"row":0,"col":0,"regtype":"v","register":"😀b.","lines":["😀b._aé_","\téé_","\té"],"keys":"3dw"}
+{"after":["😀b._aé_","\téé_","\té"],"row":0,"col":1,"regtype":"v","register":"b","lines":["😀b._aé_","\téé_","\té"],"keys":"lyw"}
+{"after":["😀b._aé_","\téé_","\té"],"row":0,"col":2,"regtype":"v","register":"._aé_","lines":["😀b._aé_","\téé_","\té"],"keys":"2ly2w"}
+{"after":["","\téé_","\té"],"row":0,"col":0,"regtype":"v","register":"😀b._aé_","lines":["😀b._aé_","\téé_","\té"],"keys":"dW"}
+{"after":["😀b._aé_","\téé_",""],"row":2,"col":0,"regtype":"v","register":"\té","lines":["😀b._aé_","\téé_","\té"],"keys":"G0d2W"}
+{"after":["😀b._aé_","\téé_","\té"],"row":1,"col":0,"regtype":"v","register":"\t","lines":["😀b._aé_","\téé_","\té"],"keys":"j0yW"}
+{"after":["é","😀\té","é ééé "],"row":2,"col":0,"regtype":"v","register":".","lines":["é","😀\té",".é ééé "],"keys":"G0dw"}
+{"after":["é","",".é ééé "],"row":1,"col":0,"regtype":"v","register":"😀\té","lines":["é","😀\té",".é ééé "],"keys":"j0d2w"}
+{"after":["é","😀\té",""],"row":2,"col":0,"regtype":"v","register":".é ééé ","lines":["é","😀\té",".é ééé "],"keys":"G03dw"}
+{"after":["é","😀\té",".é ééé "],"row":2,"col":0,"regtype":"v","register":".","lines":["é","😀\té",".é ééé "],"keys":"G0yw"}
+{"after":["é","😀\té",".é ééé "],"row":0,"col":0,"regtype":"v","register":"é\n😀\t","lines":["é","😀\té",".é ééé "],"keys":"ly2w"}
+{"after":["é","😀\té","ééé "],"row":2,"col":0,"regtype":"v","register":".é ","lines":["é","😀\té",".é ééé "],"keys":"G0dW"}
+{"after":["é",".é ééé "],"row":0,"col":0,"regtype":"v","register":"é\n😀\t","lines":["é","😀\té",".é ééé "],"keys":"2ld2W"}
+{"after":["é","😀\té",".é ééé "],"row":0,"col":0,"regtype":"v","register":"é","lines":["é","😀\té",".é ééé "],"keys":"2lyW"}
+{"after":["😀ééab",".\t .é 😀.\té"],"row":1,"col":0,"regtype":"v","register":"ab","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"j0dw"}
+{"after":["😀ééab",".é 😀.\té"],"row":1,"col":0,"regtype":"v","register":"ab.\t ","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"G0d2w"}
+{"after":["😀é.é 😀.\té"],"row":0,"col":2,"regtype":"v","register":"éab\nab.\t ","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"2l3dw"}
+{"after":["😀ééab","ab.\t .é 😀.\té"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"yw"}
+{"after":["😀ééab","ab.\t .é 😀.\té"],"row":1,"col":0,"regtype":"v","register":"ab.\t ","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"G0y2w"}
+{"after":["😀","ab.\t .é 😀.\té"],"row":0,"col":0,"regtype":"v","register":"ééab","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"ldW"}
+{"after":["😀ééab","😀.\té"],"row":1,"col":0,"regtype":"v","register":"ab.\t .é ","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"G0d2W"}
+{"after":["😀ééab","ab.\t .é 😀.\té"],"row":0,"col":2,"regtype":"v","register":"éab","lines":["😀ééab","ab.\t .é 😀.\té"],"keys":"2lyW"}
+{"after":["é😀a😀","a.é😀","😀b\t.","😀\t"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"dw"}
+{"after":[" a😀","a.é😀","😀b\t.","😀\t"],"row":0,"col":1,"regtype":"v","register":"é😀","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"ld2w"}
+{"after":[" é😀a😀","😀","😀b\t.","😀\t"],"row":1,"col":0,"regtype":"v","register":"a.é","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"j03dw"}
+{"after":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"row":0,"col":1,"regtype":"v","register":"é","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"lyw"}
+{"after":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"row":0,"col":0,"regtype":"v","register":" é","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"y2w"}
+{"after":[" é","a.é😀","😀b\t.","😀\t"],"row":0,"col":1,"regtype":"v","register":"😀a😀","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"2ldW"}
+{"after":[" é","😀b\t.","😀\t"],"row":0,"col":1,"regtype":"v","register":"😀a😀\na.é😀","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"2ld2W"}
+{"after":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" é😀a😀","a.é😀","😀b\t.","😀\t"],"keys":"yW"}
+{"after":["a😀bé"," ééb\t"],"row":0,"col":1,"regtype":"v","register":"é","lines":["aé😀bé"," ééb\t"],"keys":"ldw"}
+{"after":["bé"," ééb\t"],"row":0,"col":0,"regtype":"v","register":"aé😀","lines":["aé😀bé"," ééb\t"],"keys":"d2w"}
+{"after":[""," ééb\t"],"row":0,"col":0,"regtype":"v","register":"aé😀bé","lines":["aé😀bé"," ééb\t"],"keys":"3dw"}
+{"after":["aé😀bé"," ééb\t"],"row":1,"col":0,"regtype":"v","register":" ","lines":["aé😀bé"," ééb\t"],"keys":"G0yw"}
+{"after":["aé😀bé"," ééb\t"],"row":1,"col":0,"regtype":"v","register":" ééb\t","lines":["aé😀bé"," ééb\t"],"keys":"G0y2w"}
+{"after":["aé😀bé","ééb\t"],"row":1,"col":0,"regtype":"v","register":" ","lines":["aé😀bé"," ééb\t"],"keys":"G0dW"}
+{"after":[""],"row":0,"col":0,"regtype":"V","register":"aé😀bé\n ééb\t\n","lines":["aé😀bé"," ééb\t"],"keys":"d2W"}
+{"after":["aé😀bé"," ééb\t"],"row":1,"col":0,"regtype":"v","register":" ","lines":["aé😀bé"," ééb\t"],"keys":"G0yW"}
+{"after":["\t_  .é","bébé","a\t. a  bé😀"],"row":1,"col":0,"regtype":"v","register":"éé ","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"j0dw"}
+{"after":[".é","éé bébé","a\t. a  bé😀"],"row":0,"col":0,"regtype":"v","register":"\t_  ","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"d2w"}
+{"after":["\t_  .é","éé bébé","bé😀"],"row":2,"col":0,"regtype":"v","register":"a\t. a  ","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"G03dw"}
+{"after":["\t_  .é","éé bébé","a\t. a  bé😀"],"row":0,"col":2,"regtype":"v","register":"  ","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"2lyw"}
+{"after":["\t_  .é","éé bébé","a\t. a  bé😀"],"row":0,"col":1,"regtype":"v","register":"_  .","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"ly2w"}
+{"after":["\t_  .é","éé bébé",". a  bé😀"],"row":2,"col":0,"regtype":"v","register":"a\t","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"G0dW"}
+{"after":["\t","éé bébé","a\t. a  bé😀"],"row":0,"col":0,"regtype":"v","register":"_  .é","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"ld2W"}
+{"after":["\t_  .é","éé bébé","a\t. a  bé😀"],"row":0,"col":0,"regtype":"v","register":"\t","lines":["\t_  .é","éé bébé","a\t. a  bé😀"],"keys":"yW"}
+{"after":[".b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"row":0,"col":1,"regtype":"v","register":".","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"ldw"}
+{"after":["_éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"row":0,"col":0,"regtype":"v","register":"..b ","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"d2w"}
+{"after":["..é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"row":0,"col":2,"regtype":"v","register":"b _éa😀","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"2l3dw"}
+{"after":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"row":0,"col":2,"regtype":"v","register":"b ","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"2lyw"}
+{"after":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"row":1,"col":0,"regtype":"v","register":"_b_aé\n \t.","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"j0y2w"}
+{"after":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ",""],"row":3,"col":0,"regtype":"v","register":"ébb_😀_.","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"G0dW"}
+{"after":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ",""],"row":3,"col":0,"regtype":"v","register":"ébb_😀_.","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"G0d2W"}
+{"after":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"row":0,"col":2,"regtype":"v","register":"b ","lines":["..b _éa😀é.éé","_b_aé"," \t.ééé\tééé. ","ébb_😀_."],"keys":"2lyW"}
+{"after":["_😀 éa",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["_😀 éa","a"],"keys":"G0dw"}
+{"after":["_😀 éa",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["_😀 éa","a"],"keys":"j0d2w"}
+{"after":["_😀"],"row":0,"col":1,"regtype":"v","register":" éa\na","lines":["_😀 éa","a"],"keys":"2l3dw"}
+{"after":["_😀 éa","a"],"row":1,"col":0,"regtype":"v","register":"a","lines":["_😀 éa","a"],"keys":"j0yw"}
+{"after":["_😀 éa","a"],"row":0,"col":0,"regtype":"v","register":"_😀 ","lines":["_😀 éa","a"],"keys":"y2w"}
+{"after":["_😀 éa",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["_😀 éa","a"],"keys":"j0dW"}
+{"after":["_😀 éa",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["_😀 éa","a"],"keys":"G0d2W"}
+{"after":["_😀 éa","a"],"row":1,"col":0,"regtype":"v","register":"a","lines":["_😀 éa","a"],"keys":"G0yW"}
+{"after":["","b\t\tb.\té"],"row":1,"col":0,"regtype":"v","register":"b\t","lines":["","b\tb\t\tb.\té"],"keys":"j0dw"}
+{"after":["","b.\té"],"row":1,"col":0,"regtype":"v","register":"b\tb\t\t","lines":["","b\tb\t\tb.\té"],"keys":"j0d2w"}
+{"after":["b.\té"],"row":0,"col":0,"regtype":"v","register":"\nb\tb\t\t","lines":["","b\tb\t\tb.\té"],"keys":"3dw"}
+{"after":["","b\tb\t\tb.\té"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","b\tb\t\tb.\té"],"keys":"lyw"}
+{"after":["","b\tb\t\tb.\té"],"row":1,"col":0,"regtype":"v","register":"b\tb\t\t","lines":["","b\tb\t\tb.\té"],"keys":"j0y2w"}
+{"after":["b\tb\t\tb.\té"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","b\tb\t\tb.\té"],"keys":"2ldW"}
+{"after":["","b.\té"],"row":1,"col":0,"regtype":"v","register":"b\tb\t\t","lines":["","b\tb\t\tb.\té"],"keys":"j0d2W"}
+{"after":["","b\tb\t\tb.\té"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","b\tb\t\tb.\té"],"keys":"lyW"}
+{"after":["b😀😀b é\ta","_b😀_ \t_abé_a","a"],"row":0,"col":1,"regtype":"v","register":"aéb ","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"ldw"}
+{"after":["b é\ta","_b😀_ \t_abé_a","a"],"row":0,"col":0,"regtype":"v","register":"baéb 😀😀","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"d2w"}
+{"after":["bé\ta","_b😀_ \t_abé_a","a"],"row":0,"col":1,"regtype":"v","register":"aéb 😀😀b ","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"l3dw"}
+{"after":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"row":0,"col":2,"regtype":"v","register":"éb ","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"2lyw"}
+{"after":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"row":1,"col":0,"regtype":"v","register":"_b😀","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"j0y2w"}
+{"after":["baéb 😀😀b é\ta","_b😀_ \t_abé_a",""],"row":2,"col":0,"regtype":"v","register":"a","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"G0dW"}
+{"after":["baéb 😀😀b é\ta","_b😀_ \t_abé_a",""],"row":2,"col":0,"regtype":"v","register":"a","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"G0d2W"}
+{"after":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"row":0,"col":2,"regtype":"v","register":"éb ","lines":["baéb 😀😀b é\ta","_b😀_ \t_abé_a","a"],"keys":"2lyW"}
+{"after":["\t.é\t_béb😀","\t.😀\tb 😀.\té",""],"row":2,"col":0,"regtype":"v","register":" ","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"G0dw"}
+{"after":["\t.😀","\t.😀\tb 😀.\té"," "],"row":0,"col":2,"regtype":"v","register":"é\t_béb","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"2ld2w"}
+{"after":["\t.é\t_béb😀","b 😀.\té"," "],"row":1,"col":0,"regtype":"v","register":"\t.😀\t","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"j03dw"}
+{"after":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"row":0,"col":2,"regtype":"v","register":"é\t","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"2lyw"}
+{"after":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"row":0,"col":2,"regtype":"v","register":"é\t_béb","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"2ly2w"}
+{"after":["\t_béb😀","\t.😀\tb 😀.\té"," "],"row":0,"col":1,"regtype":"v","register":".é\t","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"ldW"}
+{"after":["_béb😀","\t.😀\tb 😀.\té"," "],"row":0,"col":0,"regtype":"v","register":"\t.é\t","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"d2W"}
+{"after":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"row":2,"col":0,"regtype":"v","register":" ","lines":["\t.é\t_béb😀","\t.😀\tb 😀.\té"," "],"keys":"G0yW"}
+{"after":[" ébé\téé_","b😀😀 😀é\t","__éb._. .é_"],"row":1,"col":0,"regtype":"V","register":"\n","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"j0dw"}
+{"after":["éé_","","b😀😀 😀é\t","__éb._. .é_"],"row":0,"col":0,"regtype":"v","register":" ébé\t","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"d2w"}
+{"after":[" ébé\téé_","😀é\t","__éb._. .é_"],"row":1,"col":0,"regtype":"v","register":"\nb😀😀 ","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"j03dw"}
+{"after":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"row":0,"col":2,"regtype":"v","register":"bé\t","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"2lyw"}
+{"after":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"row":1,"col":0,"regtype":"v","register":"\nb","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"j0y2w"}
+{"after":[" ébé\téé_","b😀😀 😀é\t","__éb._. .é_"],"row":1,"col":0,"regtype":"V","register":"\n","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"j0dW"}
+{"after":[" ébé\téé_","","b😀😀 😀é\t",""],"row":3,"col":0,"regtype":"v","register":"__éb._. .é_","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"G0d2W"}
+{"after":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"row":0,"col":2,"regtype":"v","register":"bé\t","lines":[" ébé\téé_","","b😀😀 😀é\t","__éb._. .é_"],"keys":"2lyW"}
+{"after":[" ","","_é é\ta.😀","éb\t._ b"],"row":1,"col":0,"regtype":"v","register":"_","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"j0dw"}
+{"after":[" ","_","_é é\ta.😀","_ b"],"row":3,"col":0,"regtype":"v","register":"éb\t.","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"G0d2w"}
+{"after":["é\ta.😀","éb\t._ b"],"row":0,"col":0,"regtype":"v","register":" \n_\n_é ","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"2l3dw"}
+{"after":[" ","_","_é é\ta.😀","éb\t._ b"],"row":1,"col":0,"regtype":"v","register":"_","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"j0yw"}
+{"after":[" ","_","_é é\ta.😀","éb\t._ b"],"row":3,"col":0,"regtype":"v","register":"éb\t.","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"G0y2w"}
+{"after":["","_","_é é\ta.😀","éb\t._ b"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"dW"}
+{"after":["_é é\ta.😀","éb\t._ b"],"row":0,"col":0,"regtype":"V","register":" \n_\n","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"ld2W"}
+{"after":[" ","_","_é é\ta.😀","éb\t._ b"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" ","_","_é é\ta.😀","éb\t._ b"],"keys":"2lyW"}
+{"after":["b😀éé","é😀","é","é"],"row":0,"col":1,"regtype":"v","register":"é ","lines":["bé 😀éé","é😀","é","é"],"keys":"ldw"}
+{"after":["bé 😀éé","é😀","é",""],"row":3,"col":0,"regtype":"v","register":"é","lines":["bé 😀éé","é😀","é","é"],"keys":"G0d2w"}
+{"after":["b","é😀","é","é"],"row":0,"col":0,"regtype":"v","register":"é 😀éé","lines":["bé 😀éé","é😀","é","é"],"keys":"l3dw"}
+{"after":["bé 😀éé","é😀","é","é"],"row":1,"col":0,"regtype":"v","register":"é","lines":["bé 😀éé","é😀","é","é"],"keys":"j0yw"}
+{"after":["bé 😀éé","é😀","é","é"],"row":3,"col":0,"regtype":"v","register":"é","lines":["bé 😀éé","é😀","é","é"],"keys":"G0y2w"}
+{"after":["bé 😀éé","é😀","é",""],"row":3,"col":0,"regtype":"v","register":"é","lines":["bé 😀éé","é😀","é","é"],"keys":"G0dW"}
+{"after":["bé 😀éé","é"],"row":1,"col":0,"regtype":"V","register":"é😀\né\n","lines":["bé 😀éé","é😀","é","é"],"keys":"j0d2W"}
+{"after":["bé 😀éé","é😀","é","é"],"row":0,"col":1,"regtype":"v","register":"é ","lines":["bé 😀éé","é😀","é","é"],"keys":"lyW"}
+{"after":[" a_\t.__a_é","éé éé","b","_é a"],"row":1,"col":0,"regtype":"v","register":"\t  ","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"j0dw"}
+{"after":[" a_\t.__a_é","éé","b","_é a"],"row":1,"col":0,"regtype":"v","register":"\t  éé ","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"j0d2w"}
+{"after":[" a_\t.__a_é","","b","_é a"],"row":1,"col":0,"regtype":"v","register":"\t  éé éé","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"j03dw"}
+{"after":[" a_\t.__a_é","\t  éé éé","b","_é a"],"row":1,"col":0,"regtype":"v","register":"\t  ","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"j0yw"}
+{"after":[" a_\t.__a_é","\t  éé éé","b","_é a"],"row":0,"col":2,"regtype":"v","register":"_\t.","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"2ly2w"}
+{"after":["a_\t.__a_é","\t  éé éé","b","_é a"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"dW"}
+{"after":[" ","\t  éé éé","b","_é a"],"row":0,"col":0,"regtype":"v","register":"a_\t.__a_é","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"ld2W"}
+{"after":[" a_\t.__a_é","\t  éé éé","b","_é a"],"row":3,"col":0,"regtype":"v","register":"_é ","lines":[" a_\t.__a_é","\t  éé éé","b","_é a"],"keys":"G0yW"}
+{"after":["_a._ b.éa_.",".a_é_é_é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"ldw"}
+{"after":["._ b.éa_.",".a_é_é_é"],"row":0,"col":0,"regtype":"v","register":"\n_a","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"ld2w"}
+{"after":["","b.éa_.",".a_é_é_é"],"row":1,"col":0,"regtype":"v","register":"_a._ ","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"j03dw"}
+{"after":["","_a._ b.éa_.",".a_é_é_é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"2lyw"}
+{"after":["","_a._ b.éa_.",".a_é_é_é"],"row":1,"col":0,"regtype":"v","register":"_a.","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"j0y2w"}
+{"after":["_a._ b.éa_.",".a_é_é_é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"dW"}
+{"after":["b.éa_.",".a_é_é_é"],"row":0,"col":0,"regtype":"v","register":"\n_a._ ","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"d2W"}
+{"after":["","_a._ b.éa_.",".a_é_é_é"],"row":2,"col":0,"regtype":"v","register":".a_é_é_é","lines":["","_a._ b.éa_.",".a_é_é_é"],"keys":"G0yW"}
+{"after":["","a.aé__"," 😀é"],"row":0,"col":0,"regtype":"v","register":"bb","lines":["bb","a.aé__"," 😀é"],"keys":"dw"}
+{"after":["b.aé__"," 😀é"],"row":0,"col":1,"regtype":"v","register":"b\na","lines":["bb","a.aé__"," 😀é"],"keys":"2ld2w"}
+{"after":["aé__"," 😀é"],"row":0,"col":0,"regtype":"v","register":"bb\na.","lines":["bb","a.aé__"," 😀é"],"keys":"3dw"}
+{"after":["bb","a.aé__"," 😀é"],"row":0,"col":1,"regtype":"v","register":"b","lines":["bb","a.aé__"," 😀é"],"keys":"lyw"}
+{"after":["bb","a.aé__"," 😀é"],"row":0,"col":0,"regtype":"v","register":"bb\na","lines":["bb","a.aé__"," 😀é"],"keys":"y2w"}
+{"after":["b","a.aé__"," 😀é"],"row":0,"col":0,"regtype":"v","register":"b","lines":["bb","a.aé__"," 😀é"],"keys":"ldW"}
+{"after":["b"," 😀é"],"row":0,"col":0,"regtype":"v","register":"b\na.aé__","lines":["bb","a.aé__"," 😀é"],"keys":"2ld2W"}
+{"after":["bb","a.aé__"," 😀é"],"row":1,"col":0,"regtype":"v","register":"a.aé__","lines":["bb","a.aé__"," 😀é"],"keys":"j0yW"}
+{"after":["\t...😀 éébaa",".b \tb"],"row":1,"col":0,"regtype":"v","register":"é","lines":["\t...😀 éébaa","é.b \tb"],"keys":"j0dw"}
+{"after":["\t.éébaa","é.b \tb"],"row":0,"col":2,"regtype":"v","register":"..😀 ","lines":["\t...😀 éébaa","é.b \tb"],"keys":"2ld2w"}
+{"after":["\t...😀 éébaa","b"],"row":1,"col":0,"regtype":"v","register":"é.b \t","lines":["\t...😀 éébaa","é.b \tb"],"keys":"j03dw"}
+{"after":["\t...😀 éébaa","é.b \tb"],"row":0,"col":1,"regtype":"v","register":"...","lines":["\t...😀 éébaa","é.b \tb"],"keys":"lyw"}
+{"after":["\t...😀 éébaa","é.b \tb"],"row":0,"col":2,"regtype":"v","register":"..😀 ","lines":["\t...😀 éébaa","é.b \tb"],"keys":"2ly2w"}
+{"after":["\t...😀 éébaa","b"],"row":1,"col":0,"regtype":"v","register":"é.b \t","lines":["\t...😀 éébaa","é.b \tb"],"keys":"G0dW"}
+{"after":["éébaa","é.b \tb"],"row":0,"col":0,"regtype":"v","register":"\t...😀 ","lines":["\t...😀 éébaa","é.b \tb"],"keys":"d2W"}
+{"after":["\t...😀 éébaa","é.b \tb"],"row":1,"col":0,"regtype":"v","register":"é.b \t","lines":["\t...😀 éébaa","é.b \tb"],"keys":"j0yW"}
+{"after":["é._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"row":0,"col":1,"regtype":"v","register":"aé","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"ldw"}
+{"after":["_éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"row":0,"col":0,"regtype":"v","register":"éaé.","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"d2w"}
+{"after":["é😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"row":0,"col":1,"regtype":"v","register":"aé._éa_","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"l3dw"}
+{"after":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"row":0,"col":0,"regtype":"v","register":"éaé","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"yw"}
+{"after":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"row":1,"col":0,"regtype":"v","register":"éé.","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"j0y2w"}
+{"after":["é","éé."," 😀b_éb_\t"," ._ a é\t"],"row":0,"col":0,"regtype":"v","register":"aé._éa_😀b ","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"ldW"}
+{"after":[" 😀b_éb_\t"," ._ a é\t"],"row":0,"col":0,"regtype":"V","register":"éaé._éa_😀b \néé.\n","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"d2W"}
+{"after":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"row":0,"col":2,"regtype":"v","register":"é._éa_😀b ","lines":["éaé._éa_😀b ","éé."," 😀b_éb_\t"," ._ a é\t"],"keys":"2lyW"}
+{"after":["é","a \t\t_😀_é"],"row":1,"col":0,"regtype":"v","register":"😀","lines":["é","😀a \t\t_😀_é"],"keys":"G0dw"}
+{"after":["a \t\t_😀_é"],"row":0,"col":0,"regtype":"v","register":"é\n😀","lines":["é","😀a \t\t_😀_é"],"keys":"2ld2w"}
+{"after":["_😀_é"],"row":0,"col":0,"regtype":"v","register":"é\n😀a \t\t","lines":["é","😀a \t\t_😀_é"],"keys":"l3dw"}
+{"after":["é","😀a \t\t_😀_é"],"row":1,"col":0,"regtype":"v","register":"😀","lines":["é","😀a \t\t_😀_é"],"keys":"j0yw"}
+{"after":["é","😀a \t\t_😀_é"],"row":1,"col":0,"regtype":"v","register":"😀a \t\t","lines":["é","😀a \t\t_😀_é"],"keys":"j0y2w"}
+{"after":["","😀a \t\t_😀_é"],"row":0,"col":0,"regtype":"v","register":"é","lines":["é","😀a \t\t_😀_é"],"keys":"dW"}
+{"after":["_😀_é"],"row":0,"col":0,"regtype":"v","register":"é\n😀a \t\t","lines":["é","😀a \t\t_😀_é"],"keys":"2ld2W"}
+{"after":["é","😀a \t\t_😀_é"],"row":0,"col":0,"regtype":"v","register":"é","lines":["é","😀a \t\t_😀_é"],"keys":"yW"}
+{"after":["a ","__aé__.😀 éa","\téa😀éé",". 😀"],"row":3,"col":0,"regtype":"v","register":"é_","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"G0dw"}
+{"after":["a.😀 éa","\téa😀éé","é_. 😀"],"row":0,"col":1,"regtype":"v","register":" \n__aé__","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"2ld2w"}
+{"after":["😀 éa","\téa😀éé","é_. 😀"],"row":0,"col":0,"regtype":"v","register":"a \n__aé__.","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"3dw"}
+{"after":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"row":0,"col":0,"regtype":"v","register":"a ","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"yw"}
+{"after":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"row":0,"col":0,"regtype":"v","register":"a \n__aé__","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"y2w"}
+{"after":["a ","éa","\téa😀éé","é_. 😀"],"row":1,"col":0,"regtype":"v","register":"__aé__.😀 ","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"j0dW"}
+{"after":["a ","","\téa😀éé","é_. 😀"],"row":1,"col":0,"regtype":"v","register":"__aé__.😀 éa","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"j0d2W"}
+{"after":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"row":3,"col":0,"regtype":"v","register":"é_. ","lines":["a ","__aé__.😀 éa","\téa😀éé","é_. 😀"],"keys":"G0yW"}
+{"after":["","aééé.a😀.a\t","é _é😀a"],"row":0,"col":0,"regtype":"v","register":"_","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"dw"}
+{"after":["_","aééé.a😀.a\t","😀a"],"row":2,"col":0,"regtype":"v","register":"é _é","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"G0d2w"}
+{"after":["_","aééé.a😀.a\t","a"],"row":2,"col":0,"regtype":"v","register":"é _é😀","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"G03dw"}
+{"after":["_","aééé.a😀.a\t","é _é😀a"],"row":1,"col":0,"regtype":"v","register":"aééé","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"j0yw"}
+{"after":["_","aééé.a😀.a\t","é _é😀a"],"row":0,"col":0,"regtype":"v","register":"_\naééé","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"ly2w"}
+{"after":["","aééé.a😀.a\t","é _é😀a"],"row":0,"col":0,"regtype":"v","register":"_","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"dW"}
+{"after":["_","_é😀a"],"row":1,"col":0,"regtype":"v","register":"aééé.a😀.a\t\né ","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"j0d2W"}
+{"after":["_","aééé.a😀.a\t","é _é😀a"],"row":1,"col":0,"regtype":"v","register":"aééé.a😀.a\t","lines":["_","aééé.a😀.a\t","é _é😀a"],"keys":"j0yW"}
+{"after":["a","éé 😀😀baé😀\t","\té"],"row":1,"col":0,"regtype":"v","register":" ","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"j0dw"}
+{"after":["😀😀baé😀\t","\té"],"row":0,"col":0,"regtype":"v","register":"a\n éé ","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"d2w"}
+{"after":["baé😀\t","\té"],"row":0,"col":0,"regtype":"v","register":"a\n éé 😀😀","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"2l3dw"}
+{"after":["a"," éé 😀😀baé😀\t","\té"],"row":0,"col":0,"regtype":"v","register":"a","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"yw"}
+{"after":["a"," éé 😀😀baé😀\t","\té"],"row":0,"col":0,"regtype":"v","register":"a\n éé ","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"ly2w"}
+{"after":[""," éé 😀😀baé😀\t","\té"],"row":0,"col":0,"regtype":"v","register":"a","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"ldW"}
+{"after":["😀😀baé😀\t","\té"],"row":0,"col":0,"regtype":"v","register":"a\n éé ","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"d2W"}
+{"after":["a"," éé 😀😀baé😀\t","\té"],"row":2,"col":0,"regtype":"v","register":"\t","lines":["a"," éé 😀😀baé😀\t","\té"],"keys":"G0yW"}
+{"after":["","éabé.baéb.","😀é\t_é"],"row":2,"col":0,"regtype":"v","register":"\t","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"G0dw"}
+{"after":["","éabé.baéb.","é\t_é"],"row":2,"col":0,"regtype":"v","register":"\t😀","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"G0d2w"}
+{"after":["baéb.","\t😀é\t_é"],"row":0,"col":0,"regtype":"v","register":"\néabé.","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"l3dw"}
+{"after":["","éabé.baéb.","\t😀é\t_é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"lyw"}
+{"after":["","éabé.baéb.","\t😀é\t_é"],"row":0,"col":0,"regtype":"v","register":"\néabé","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"y2w"}
+{"after":["éabé.baéb.","\t😀é\t_é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"ldW"}
+{"after":["","_é"],"row":1,"col":0,"regtype":"v","register":"éabé.baéb.\n\t😀é\t","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"j0d2W"}
+{"after":["","éabé.baéb.","\t😀é\t_é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","éabé.baéb.","\t😀é\t_é"],"keys":"yW"}
+{"after":[" ","😀..\té😀é",".é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":[""," ","😀..\té😀é",".é"],"keys":"dw"}
+{"after":["..\té😀é",".é"],"row":0,"col":0,"regtype":"v","register":"\n \n😀","lines":[""," ","😀..\té😀é",".é"],"keys":"ld2w"}
+{"after":["é😀é",".é"],"row":0,"col":0,"regtype":"v","register":"\n \n😀..\t","lines":[""," ","😀..\té😀é",".é"],"keys":"l3dw"}
+{"after":[""," ","😀..\té😀é",".é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":[""," ","😀..\té😀é",".é"],"keys":"yw"}
+{"after":[""," ","😀..\té😀é",".é"],"row":1,"col":0,"regtype":"v","register":" \n😀","lines":[""," ","😀..\té😀é",".é"],"keys":"j0y2w"}
+{"after":["","","😀..\té😀é",".é"],"row":1,"col":0,"regtype":"v","register":" ","lines":[""," ","😀..\té😀é",".é"],"keys":"j0dW"}
+{"after":["é😀é",".é"],"row":0,"col":0,"regtype":"v","register":"\n \n😀..\t","lines":[""," ","😀..\té😀é",".é"],"keys":"d2W"}
+{"after":[""," ","😀..\té😀é",".é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":[""," ","😀..\té😀é",".é"],"keys":"yW"}
+{"after":["a","éaé😀é \t_a"],"row":0,"col":0,"regtype":"v","register":"abé","lines":["aabé","éaé😀é \t_a"],"keys":"ldw"}
+{"after":["aa😀é \t_a"],"row":0,"col":2,"regtype":"v","register":"bé\néaé","lines":["aabé","éaé😀é \t_a"],"keys":"2ld2w"}
+{"after":["aé \t_a"],"row":0,"col":1,"regtype":"v","register":"abé\néaé😀","lines":["aabé","éaé😀é \t_a"],"keys":"l3dw"}
+{"after":["aabé","éaé😀é \t_a"],"row":0,"col":2,"regtype":"v","register":"bé","lines":["aabé","éaé😀é \t_a"],"keys":"2lyw"}
+{"after":["aabé","éaé😀é \t_a"],"row":0,"col":0,"regtype":"v","register":"aabé\néaé","lines":["aabé","éaé😀é \t_a"],"keys":"y2w"}
+{"after":["aabé","_a"],"row":1,"col":0,"regtype":"v","register":"éaé😀é \t","lines":["aabé","éaé😀é \t_a"],"keys":"G0dW"}
+{"after":["aabé",""],"row":1,"col":0,"regtype":"v","register":"éaé😀é \t_a","lines":["aabé","éaé😀é \t_a"],"keys":"G0d2W"}
+{"after":["aabé","éaé😀é \t_a"],"row":0,"col":1,"regtype":"v","register":"abé","lines":["aabé","éaé😀é \t_a"],"keys":"lyW"}
+{"after":["é ","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":0,"col":1,"regtype":"v","register":"_é","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"2ldw"}
+{"after":["é éébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":0,"col":2,"regtype":"v","register":"_é\na\t","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"2ld2w"}
+{"after":["ééébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":0,"col":1,"regtype":"v","register":" _é\na\t","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"l3dw"}
+{"after":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":0,"col":2,"regtype":"v","register":"_é","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"2lyw"}
+{"after":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":1,"col":0,"regtype":"v","register":"a\téébé","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"j0y2w"}
+{"after":["é _é","éébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":1,"col":0,"regtype":"v","register":"a\t","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"j0dW"}
+{"after":["é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":0,"col":0,"regtype":"v","register":" _é","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"ld2W"}
+{"after":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"row":0,"col":2,"regtype":"v","register":"_é","lines":["é _é","a\téébé.éb","😀éa 😀é_😀aé"," b 😀.bb b_\té"],"keys":"2lyW"}
+{"after":["b😀_.b\ta","éé","ééaéb."," \té .\t"],"row":0,"col":1,"regtype":"v","register":"_","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"ldw"}
+{"after":["_.b\ta","éé","ééaéb."," \té .\t"],"row":0,"col":0,"regtype":"v","register":"b_😀","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"d2w"}
+{"after":["b_😀_.b\ta"," \té .\t"],"row":1,"col":0,"regtype":"V","register":"éé\nééaéb.\n","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"j03dw"}
+{"after":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"row":0,"col":1,"regtype":"v","register":"_","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"lyw"}
+{"after":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"row":0,"col":1,"regtype":"v","register":"_😀","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"ly2w"}
+{"after":["b_😀_.b\ta","","ééaéb."," \té .\t"],"row":1,"col":0,"regtype":"v","register":"éé","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"j0dW"}
+{"after":["b_😀_.b\ta"," \té .\t"],"row":1,"col":0,"regtype":"V","register":"éé\nééaéb.\n","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"j0d2W"}
+{"after":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"row":0,"col":1,"regtype":"v","register":"_😀_.b\t","lines":["b_😀_.b\ta","éé","ééaéb."," \té .\t"],"keys":"lyW"}
+{"after":[" 😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"row":0,"col":1,"regtype":"v","register":"aa","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"ldw"}
+{"after":["😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"row":0,"col":0,"regtype":"v","register":" aa","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"d2w"}
+{"after":[" 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"row":0,"col":1,"regtype":"v","register":"aa😀é ","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"l3dw"}
+{"after":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"yw"}
+{"after":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"row":0,"col":1,"regtype":"v","register":"aa😀","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"ly2w"}
+{"after":["aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"dW"}
+{"after":[" aa😀é 😀\t_ aa","ab_",".bé_é.é  \t é",".é\t😀"],"row":1,"col":0,"regtype":"v","register":"a\t_ ","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"j0d2W"}
+{"after":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"row":0,"col":1,"regtype":"v","register":"aa😀é ","lines":[" aa😀é 😀\t_ aa","a\t_ ab_",".bé_é.é  \t é",".é\t😀"],"keys":"lyW"}
+{"after":["😀😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"row":0,"col":1,"regtype":"v","register":"é","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"ldw"}
+{"after":["😀é"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"row":0,"col":1,"regtype":"v","register":"😀é_b","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"2ld2w"}
+{"after":["😀é😀é_b","bbé"," 😀a aéb_b a\t"," _.bbé\ta"],"row":1,"col":0,"regtype":"v","register":" 😀b\t","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"j03dw"}
+{"after":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"row":0,"col":2,"regtype":"v","register":"😀","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"2lyw"}
+{"after":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"row":3,"col":0,"regtype":"v","register":" _","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"G0y2w"}
+{"after":["😀"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"row":0,"col":0,"regtype":"v","register":"é😀é_b","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"ldW"}
+{"after":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t","a"],"row":3,"col":0,"regtype":"v","register":" _.bbé\t","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"G0d2W"}
+{"after":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"row":0,"col":2,"regtype":"v","register":"😀é_b","lines":["😀é😀é_b"," 😀b\tbbé"," 😀a aéb_b a\t"," _.bbé\ta"],"keys":"2lyW"}
+{"after":["😀é ","ébé.","b_😀\ta_","é\t😀a😀éé _éé"],"row":1,"col":0,"regtype":"v","register":"\t","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"j0dw"}
+{"after":["😀é.","b_😀\ta_","é\t😀a😀éé _éé"],"row":0,"col":3,"regtype":"v","register":" \n\tébé","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"2ld2w"}
+{"after":[".","b_😀\ta_","é\t😀a😀éé _éé"],"row":0,"col":0,"regtype":"v","register":"😀é \n\tébé","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"3dw"}
+{"after":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"row":3,"col":0,"regtype":"v","register":"é\t","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"G0yw"}
+{"after":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"row":1,"col":0,"regtype":"v","register":"\tébé","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"j0y2w"}
+{"after":["😀é ","ébé.","b_😀\ta_","é\t😀a😀éé _éé"],"row":1,"col":0,"regtype":"v","register":"\t","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"j0dW"}
+{"after":["b_😀\ta_","é\t😀a😀éé _éé"],"row":0,"col":0,"regtype":"V","register":"😀é \n\tébé.\n","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"d2W"}
+{"after":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"row":1,"col":0,"regtype":"v","register":"\t","lines":["😀é ","\tébé.","b_😀\ta_","é\t😀a😀éé _éé"],"keys":"j0yW"}
+{"after":[" 😀é","é😀b😀 .éabé","a","."],"row":0,"col":1,"regtype":"v","register":"é","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"ldw"}
+{"after":[" é😀é","b😀 .éabé","a","."],"row":1,"col":0,"regtype":"v","register":"é😀","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"j0d2w"}
+{"after":["é","é😀b😀 .éabé","a","."],"row":0,"col":0,"regtype":"v","register":" é😀","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"3dw"}
+{"after":[" é😀é","é😀b😀 .éabé","a","."],"row":0,"col":3,"regtype":"v","register":"😀","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"2lyw"}
+{"after":[" é😀é","é😀b😀 .éabé","a","."],"row":0,"col":1,"regtype":"v","register":"é😀","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"ly2w"}
+{"after":[" é","é😀b😀 .éabé","a","."],"row":0,"col":1,"regtype":"v","register":"😀é","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"2ldW"}
+{"after":[" é😀é","","a","."],"row":1,"col":0,"regtype":"v","register":"é😀b😀 .éabé","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"j0d2W"}
+{"after":[" é😀é","é😀b😀 .éabé","a","."],"row":1,"col":0,"regtype":"v","register":"é😀b😀 ","lines":[" é😀é","é😀b😀 .éabé","a","."],"keys":"j0yW"}
+{"after":["_a. .é","a.aé "],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","_a. .é","a.aé "],"keys":"dw"}
+{"after":[". .é","a.aé "],"row":0,"col":0,"regtype":"v","register":"\n_a","lines":["","_a. .é","a.aé "],"keys":"2ld2w"}
+{"after":[".é","a.aé "],"row":0,"col":0,"regtype":"v","register":"\n_a. ","lines":["","_a. .é","a.aé "],"keys":"2l3dw"}
+{"after":["","_a. .é","a.aé "],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","_a. .é","a.aé "],"keys":"yw"}
+{"after":["","_a. .é","a.aé "],"row":0,"col":0,"regtype":"v","register":"\n_a","lines":["","_a. .é","a.aé "],"keys":"2ly2w"}
+{"after":["","_a. .é",""],"row":2,"col":0,"regtype":"v","register":"a.aé ","lines":["","_a. .é","a.aé "],"keys":"G0dW"}
+{"after":["","","a.aé "],"row":1,"col":0,"regtype":"v","register":"_a. .é","lines":["","_a. .é","a.aé "],"keys":"j0d2W"}
+{"after":["","_a. .é","a.aé "],"row":2,"col":0,"regtype":"v","register":"a.aé ","lines":["","_a. .é","a.aé "],"keys":"G0yW"}
+{"after":["😀","","b_"],"row":0,"col":0,"regtype":"v","register":".","lines":["😀.","","b_"],"keys":"2ldw"}
+{"after":["😀","b_"],"row":0,"col":0,"regtype":"v","register":".\n","lines":["😀.","","b_"],"keys":"ld2w"}
+{"after":["😀"],"row":0,"col":0,"regtype":"v","register":".\n\nb_","lines":["😀.","","b_"],"keys":"2l3dw"}
+{"after":["😀.","","b_"],"row":2,"col":0,"regtype":"v","register":"b_","lines":["😀.","","b_"],"keys":"G0yw"}
+{"after":["😀.","","b_"],"row":1,"col":0,"regtype":"v","register":"\nb_","lines":["😀.","","b_"],"keys":"j0y2w"}
+{"after":["😀","","b_"],"row":0,"col":0,"regtype":"v","register":".","lines":["😀.","","b_"],"keys":"ldW"}
+{"after":["😀","b_"],"row":0,"col":0,"regtype":"v","register":".\n","lines":["😀.","","b_"],"keys":"2ld2W"}
+{"after":["😀.","","b_"],"row":0,"col":1,"regtype":"v","register":".","lines":["😀.","","b_"],"keys":"2lyW"}
+{"after":["😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"row":0,"col":0,"regtype":"v","register":"😀 ","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"dw"}
+{"after":["😀 😀. \t_é","b😀b😀","ééa.a","_aa"],"row":1,"col":0,"regtype":"v","register":"aé😀","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"j0d2w"}
+{"after":["😀_é","aé😀b😀b😀","ééa.a","_aa"],"row":0,"col":1,"regtype":"v","register":" 😀. \t","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"l3dw"}
+{"after":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"row":1,"col":0,"regtype":"v","register":"aé","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"j0yw"}
+{"after":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"row":3,"col":0,"regtype":"v","register":"_aa","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"G0y2w"}
+{"after":["😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"row":0,"col":0,"regtype":"v","register":"😀 ","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"dW"}
+{"after":["😀 😀. \t_é","_aa"],"row":1,"col":0,"regtype":"V","register":"aé😀b😀b😀\nééa.a\n","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"j0d2W"}
+{"after":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"row":0,"col":2,"regtype":"v","register":"😀. \t","lines":["😀 😀. \t_é","aé😀b😀b😀","ééa.a","_aa"],"keys":"2lyW"}
+{"after":["baéé😀 ","_😀aababéé","a"],"row":1,"col":0,"regtype":"v","register":". ","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"j0dw"}
+{"after":["b",". _😀aababéé","a"],"row":0,"col":0,"regtype":"v","register":"aéé😀 ","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"ld2w"}
+{"after":["baéé😀 ","aababéé","a"],"row":1,"col":0,"regtype":"v","register":". _😀","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"j03dw"}
+{"after":["baéé😀 ",". _😀aababéé","a"],"row":1,"col":0,"regtype":"v","register":". ","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"j0yw"}
+{"after":["baéé😀 ",". _😀aababéé","a"],"row":0,"col":0,"regtype":"v","register":"baéé😀 ","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"y2w"}
+{"after":["baéé😀 ","_😀aababéé","a"],"row":1,"col":0,"regtype":"v","register":". ","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"j0dW"}
+{"after":["ba_😀aababéé","a"],"row":0,"col":2,"regtype":"v","register":"éé😀 \n. ","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"2ld2W"}
+{"after":["baéé😀 ",". _😀aababéé","a"],"row":1,"col":0,"regtype":"v","register":". ","lines":["baéé😀 ",". _😀aababéé","a"],"keys":"j0yW"}
+{"after":["éa😀\t😀é \t 😀",".b...😀\t"],"row":1,"col":0,"regtype":"v","register":"\t\t","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"G0dw"}
+{"after":["éaé \t 😀","\t\t.b...😀\t"],"row":0,"col":2,"regtype":"v","register":"😀\t😀","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"2ld2w"}
+{"after":["éa😀\t😀é \t 😀","...😀\t"],"row":1,"col":0,"regtype":"v","register":"\t\t.b","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"G03dw"}
+{"after":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"row":1,"col":0,"regtype":"v","register":"\t\t","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"j0yw"}
+{"after":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"row":0,"col":0,"regtype":"v","register":"éa😀\t","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"y2w"}
+{"after":["éa😀é \t 😀","\t\t.b...😀\t"],"row":0,"col":2,"regtype":"v","register":"😀\t","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"2ldW"}
+{"after":["éa😀\t😀é \t 😀",""],"row":1,"col":0,"regtype":"v","register":"\t\t.b...😀\t","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"G0d2W"}
+{"after":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"row":0,"col":1,"regtype":"v","register":"a😀\t","lines":["éa😀\t😀é \t 😀","\t\t.b...😀\t"],"keys":"lyW"}
+{"after":["bb é.. _ é","ébab"],"row":1,"col":0,"regtype":"v","register":"é_\t","lines":["bb é.. _ é","é_\tébab"],"keys":"j0dw"}
+{"after":["bb.. _ é","é_\tébab"],"row":0,"col":2,"regtype":"v","register":" é","lines":["bb é.. _ é","é_\tébab"],"keys":"2ld2w"}
+{"after":["b_ é","é_\tébab"],"row":0,"col":1,"regtype":"v","register":"b é.. ","lines":["bb é.. _ é","é_\tébab"],"keys":"l3dw"}
+{"after":["bb é.. _ é","é_\tébab"],"row":0,"col":2,"regtype":"v","register":" ","lines":["bb é.. _ é","é_\tébab"],"keys":"2lyw"}
+{"after":["bb é.. _ é","é_\tébab"],"row":1,"col":0,"regtype":"v","register":"é_\tébab","lines":["bb é.. _ é","é_\tébab"],"keys":"j0y2w"}
+{"after":["é.. _ é","é_\tébab"],"row":0,"col":0,"regtype":"v","register":"bb ","lines":["bb é.. _ é","é_\tébab"],"keys":"dW"}
+{"after":["bb é.. _ é",""],"row":1,"col":0,"regtype":"v","register":"é_\tébab","lines":["bb é.. _ é","é_\tébab"],"keys":"j0d2W"}
+{"after":["bb é.. _ é","é_\tébab"],"row":0,"col":1,"regtype":"v","register":"b ","lines":["bb é.. _ é","é_\tébab"],"keys":"lyW"}
+{"after":["",".a_ \té é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","",".a_ \té é"],"keys":"2ldw"}
+{"after":[".a_ \té é"],"row":0,"col":0,"regtype":"V","register":"\n\n","lines":["","",".a_ \té é"],"keys":"d2w"}
+{"after":["a_ \té é"],"row":0,"col":0,"regtype":"v","register":"\n\n.","lines":["","",".a_ \té é"],"keys":"3dw"}
+{"after":["","",".a_ \té é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","",".a_ \té é"],"keys":"2lyw"}
+{"after":["","",".a_ \té é"],"row":0,"col":0,"regtype":"V","register":"\n\n","lines":["","",".a_ \té é"],"keys":"ly2w"}
+{"after":["",".a_ \té é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","",".a_ \té é"],"keys":"dW"}
+{"after":["","é é"],"row":1,"col":0,"regtype":"v","register":"\n.a_ \t","lines":["","",".a_ \té é"],"keys":"j0d2W"}
+{"after":["","",".a_ \té é"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","",".a_ \té é"],"keys":"yW"}
+{"after":["é","é\téé.éa","   b"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" é","é\téé.éa","   b"],"keys":"dw"}
+{"after":[" éé.éa","   b"],"row":0,"col":1,"regtype":"v","register":"é\né\t","lines":[" é","é\téé.éa","   b"],"keys":"ld2w"}
+{"after":[" é","éa","   b"],"row":1,"col":0,"regtype":"v","register":"é\téé.","lines":[" é","é\téé.éa","   b"],"keys":"j03dw"}
+{"after":[" é","é\téé.éa","   b"],"row":0,"col":1,"regtype":"v","register":"é","lines":[" é","é\téé.éa","   b"],"keys":"2lyw"}
+{"after":[" é","é\téé.éa","   b"],"row":2,"col":0,"regtype":"v","register":"   b","lines":[" é","é\téé.éa","   b"],"keys":"G0y2w"}
+{"after":[" é","é\téé.éa","b"],"row":2,"col":0,"regtype":"v","register":"   ","lines":[" é","é\téé.éa","   b"],"keys":"G0dW"}
+{"after":[" éé.éa","   b"],"row":0,"col":1,"regtype":"v","register":"é\né\t","lines":[" é","é\téé.éa","   b"],"keys":"ld2W"}
+{"after":[" é","é\téé.éa","   b"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" é","é\téé.éa","   b"],"keys":"yW"}
+{"after":[".😀a_\t.éba.é_","_b.é__a"],"row":1,"col":0,"regtype":"v","register":"_b_ ","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"G0dw"}
+{"after":["a_\t.éba.é_","_b_ _b.é__a"],"row":0,"col":0,"regtype":"v","register":".😀","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"d2w"}
+{"after":[".😀.é_","_b_ _b.é__a"],"row":0,"col":2,"regtype":"v","register":"a_\t.éba","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"2l3dw"}
+{"after":[".😀a_\t.éba.é_","_b_ _b.é__a"],"row":1,"col":0,"regtype":"v","register":"_b_ ","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"G0yw"}
+{"after":[".😀a_\t.éba.é_","_b_ _b.é__a"],"row":1,"col":0,"regtype":"v","register":"_b_ _b","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"G0y2w"}
+{"after":[".😀a_\t.éba.é_","_b.é__a"],"row":1,"col":0,"regtype":"v","register":"_b_ ","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"j0dW"}
+{"after":["","_b_ _b.é__a"],"row":0,"col":0,"regtype":"v","register":".😀a_\t.éba.é_","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"d2W"}
+{"after":[".😀a_\t.éba.é_","_b_ _b.é__a"],"row":1,"col":0,"regtype":"v","register":"_b_ ","lines":[".😀a_\t.éba.é_","_b_ _b.é__a"],"keys":"j0yW"}
+{"after":[".\tbé","  __😀ééba.","\ta_éé \t ","éa"],"row":3,"col":0,"regtype":"v","register":"😀","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"G0dw"}
+{"after":[".\tbé","😀ééba.","\ta_éé \t ","😀éa"],"row":1,"col":0,"regtype":"v","register":"  __","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"j0d2w"}
+{"after":[".😀ééba.","\ta_éé \t ","😀éa"],"row":0,"col":1,"regtype":"v","register":"\tbé\n  __","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"l3dw"}
+{"after":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"row":0,"col":0,"regtype":"v","register":".\t","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"yw"}
+{"after":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"row":3,"col":0,"regtype":"v","register":"😀éa","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"G0y2w"}
+{"after":["bé","  __😀ééba.","\ta_éé \t ","😀éa"],"row":0,"col":0,"regtype":"v","register":".\t","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"dW"}
+{"after":[".\t","\ta_éé \t ","😀éa"],"row":0,"col":1,"regtype":"v","register":"bé\n  __😀ééba.","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"2ld2W"}
+{"after":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"row":0,"col":1,"regtype":"v","register":"\t","lines":[".\tbé","  __😀ééba.","\ta_éé \t ","😀éa"],"keys":"lyW"}
+{"after":["b..",".é.é"],"row":0,"col":2,"regtype":"v","register":"aéaé_","lines":["b.aéaé_.",".é.é"],"keys":"2ldw"}
+{"after":["b.",".é.é"],"row":0,"col":1,"regtype":"v","register":"aéaé_.","lines":["b.aéaé_.",".é.é"],"keys":"2ld2w"}
+{"after":["b.é.é"],"row":0,"col":2,"regtype":"v","register":"aéaé_.\n.","lines":["b.aéaé_.",".é.é"],"keys":"2l3dw"}
+{"after":["b.aéaé_.",".é.é"],"row":0,"col":1,"regtype":"v","register":".","lines":["b.aéaé_.",".é.é"],"keys":"lyw"}
+{"after":["b.aéaé_.",".é.é"],"row":0,"col":0,"regtype":"v","register":"b.","lines":["b.aéaé_.",".é.é"],"keys":"y2w"}
+{"after":["b",".é.é"],"row":0,"col":0,"regtype":"v","register":".aéaé_.","lines":["b.aéaé_.",".é.é"],"keys":"ldW"}
+{"after":["b"],"row":0,"col":0,"regtype":"v","register":".aéaé_.\n.é.é","lines":["b.aéaé_.",".é.é"],"keys":"ld2W"}
+{"after":["b.aéaé_.",".é.é"],"row":0,"col":2,"regtype":"v","register":"aéaé_.","lines":["b.aéaé_.",".é.é"],"keys":"2lyW"}
+{"after":["\t..aéééb😀\t","aa","é\t😀a_é😀a é_a"],"row":0,"col":2,"regtype":"v","register":"a","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"2ldw"}
+{"after":["\t.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"row":0,"col":2,"regtype":"v","register":"a.","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"2ld2w"}
+{"after":["\t.😀\t","aa","é\t😀a_é😀a é_a"],"row":0,"col":2,"regtype":"v","register":"a.aéééb","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"2l3dw"}
+{"after":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"row":0,"col":0,"regtype":"v","register":"\t","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"yw"}
+{"after":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"row":1,"col":0,"regtype":"v","register":"aa\né\t","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"j0y2w"}
+{"after":["\t.a.aéééb😀\t","aa","😀a_é😀a é_a"],"row":2,"col":0,"regtype":"v","register":"é\t","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"G0dW"}
+{"after":["\t.a.aéééb😀\t","aa","é_a"],"row":2,"col":0,"regtype":"v","register":"é\t😀a_é😀a ","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"G0d2W"}
+{"after":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"row":0,"col":2,"regtype":"v","register":"a.aéééb😀\t","lines":["\t.a.aéééb😀\t","aa","é\t😀a_é😀a é_a"],"keys":"2lyW"}
+{"after":["","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":0,"col":0,"regtype":"v","register":"b","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"ldw"}
+{"after":["b","éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":1,"col":0,"regtype":"v","register":"😀.","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"j0d2w"}
+{"after":["b",". b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":1,"col":0,"regtype":"v","register":"😀.éb","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"j03dw"}
+{"after":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":0,"col":0,"regtype":"v","register":"b","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"2lyw"}
+{"after":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":0,"col":0,"regtype":"v","register":"b\n😀","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"ly2w"}
+{"after":["","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":0,"col":0,"regtype":"v","register":"b","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"dW"}
+{"after":["b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":0,"col":0,"regtype":"v","register":"b\n😀.éb. ","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"d2W"}
+{"after":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"row":0,"col":0,"regtype":"v","register":"b","lines":["b","😀.éb. b\t"," ","é\t.\t😀é.😀😀_\tb"],"keys":"yW"}
+{"after":["é😀._éééé_ é",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["é😀._éééé_ é","a"],"keys":"G0dw"}
+{"after":["é_éééé_ é","a"],"row":0,"col":1,"regtype":"v","register":"😀.","lines":["é😀._éééé_ é","a"],"keys":"ld2w"}
+{"after":["é😀._éééé_ é",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["é😀._éééé_ é","a"],"keys":"j03dw"}
+{"after":["é😀._éééé_ é","a"],"row":0,"col":1,"regtype":"v","register":"😀","lines":["é😀._éééé_ é","a"],"keys":"lyw"}
+{"after":["é😀._éééé_ é","a"],"row":0,"col":2,"regtype":"v","register":"._éééé_ ","lines":["é😀._éééé_ é","a"],"keys":"2ly2w"}
+{"after":["é😀._éééé_ é",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["é😀._éééé_ é","a"],"keys":"G0dW"}
+{"after":["é😀._éééé_ é",""],"row":1,"col":0,"regtype":"v","register":"a","lines":["é😀._éééé_ é","a"],"keys":"j0d2W"}
+{"after":["é😀._éééé_ é","a"],"row":0,"col":1,"regtype":"v","register":"😀._éééé_ ","lines":["é😀._éééé_ é","a"],"keys":"lyW"}
+{"after":["😀😀","é"],"row":0,"col":1,"regtype":"v","register":"aaaaéé","lines":["😀😀aaaaéé","é"],"keys":"2ldw"}
+{"after":["😀😀aaaaéé",""],"row":1,"col":0,"regtype":"v","register":"é","lines":["😀😀aaaaéé","é"],"keys":"G0d2w"}
+{"after":["😀😀"],"row":0,"col":1,"regtype":"v","register":"aaaaéé\né","lines":["😀😀aaaaéé","é"],"keys":"2l3dw"}
+{"after":["😀😀aaaaéé","é"],"row":1,"col":0,"regtype":"v","register":"é","lines":["😀😀aaaaéé","é"],"keys":"j0yw"}
+{"after":["😀😀aaaaéé","é"],"row":0,"col":1,"regtype":"v","register":"😀aaaaéé","lines":["😀😀aaaaéé","é"],"keys":"ly2w"}
+{"after":["😀😀aaaaéé",""],"row":1,"col":0,"regtype":"v","register":"é","lines":["😀😀aaaaéé","é"],"keys":"j0dW"}
+{"after":["😀😀aaaaéé",""],"row":1,"col":0,"regtype":"v","register":"é","lines":["😀😀aaaaéé","é"],"keys":"G0d2W"}
+{"after":["😀😀aaaaéé","é"],"row":0,"col":2,"regtype":"v","register":"aaaaéé","lines":["😀😀aaaaéé","é"],"keys":"2lyW"}
+{"after":["_éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"row":0,"col":0,"regtype":"v","register":".","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"dw"}
+{"after":[".__😀a"," __é é._._","é 😀 a😀"],"row":0,"col":2,"regtype":"v","register":"éb\t\téa\t","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"2ld2w"}
+{"after":["_😀a"," __é é._._","é 😀 a😀"],"row":0,"col":0,"regtype":"v","register":"._éb\t\téa\t","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"3dw"}
+{"after":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"row":0,"col":1,"regtype":"v","register":"_éb\t\t","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"lyw"}
+{"after":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"row":0,"col":0,"regtype":"v","register":"._éb\t\t","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"y2w"}
+{"after":["éa\t_😀a"," __é é._._","é 😀 a😀"],"row":0,"col":0,"regtype":"v","register":"._éb\t\t","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"dW"}
+{"after":["._😀a"," __é é._._","é 😀 a😀"],"row":0,"col":1,"regtype":"v","register":"_éb\t\téa\t","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"ld2W"}
+{"after":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"row":0,"col":1,"regtype":"v","register":"_éb\t\t","lines":["._éb\t\téa\t_😀a"," __é é._._","é 😀 a😀"],"keys":"lyW"}
+{"after":["é \t","é_éé_é"],"row":1,"col":0,"regtype":"v","register":"b__ ","lines":["é \t","b__ é_éé_é"],"keys":"j0dw"}
+{"after":["é \t",""],"row":1,"col":0,"regtype":"v","register":"b__ é_éé_é","lines":["é \t","b__ é_éé_é"],"keys":"G0d2w"}
+{"after":["é \t",""],"row":1,"col":0,"regtype":"v","register":"b__ é_éé_é","lines":["é \t","b__ é_éé_é"],"keys":"j03dw"}
+{"after":["é \t","b__ é_éé_é"],"row":1,"col":0,"regtype":"v","register":"b__ ","lines":["é \t","b__ é_éé_é"],"keys":"j0yw"}
+{"after":["é \t","b__ é_éé_é"],"row":0,"col":0,"regtype":"v","register":"é \t\nb__ ","lines":["é \t","b__ é_éé_é"],"keys":"y2w"}
+{"after":["é","b__ é_éé_é"],"row":0,"col":0,"regtype":"v","register":" \t","lines":["é \t","b__ é_éé_é"],"keys":"ldW"}
+{"after":["é_éé_é"],"row":0,"col":0,"regtype":"v","register":"é \t\nb__ ","lines":["é \t","b__ é_éé_é"],"keys":"d2W"}
+{"after":["é \t","b__ é_éé_é"],"row":1,"col":0,"regtype":"v","register":"b__ ","lines":["é \t","b__ é_éé_é"],"keys":"j0yW"}
+{"after":[""," 😀a."],"row":0,"col":0,"regtype":"v","register":".","lines":["."," 😀a."],"keys":"2ldw"}
+{"after":["a."],"row":0,"col":0,"regtype":"v","register":".\n 😀","lines":["."," 😀a."],"keys":"2ld2w"}
+{"after":["."],"row":0,"col":0,"regtype":"v","register":".\n 😀a","lines":["."," 😀a."],"keys":"2l3dw"}
+{"after":["."," 😀a."],"row":1,"col":0,"regtype":"v","register":" ","lines":["."," 😀a."],"keys":"j0yw"}
+{"after":["."," 😀a."],"row":1,"col":0,"regtype":"v","register":" 😀","lines":["."," 😀a."],"keys":"j0y2w"}
+{"after":[""," 😀a."],"row":0,"col":0,"regtype":"v","register":".","lines":["."," 😀a."],"keys":"dW"}
+{"after":[".",""],"row":1,"col":0,"regtype":"v","register":" 😀a.","lines":["."," 😀a."],"keys":"j0d2W"}
+{"after":["."," 😀a."],"row":1,"col":0,"regtype":"v","register":" ","lines":["."," 😀a."],"keys":"j0yW"}
+{"after":["","b.😀é😀.😀a _.\t"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"2ldw"}
+{"after":["😀","😀é😀.😀a _.\t"],"row":1,"col":0,"regtype":"v","register":"b.","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"G0d2w"}
+{"after":["😀é😀.😀a _.\t"],"row":0,"col":0,"regtype":"v","register":"😀\nb.","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"2l3dw"}
+{"after":["😀","b.😀é😀.😀a _.\t"],"row":1,"col":0,"regtype":"v","register":"b","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"j0yw"}
+{"after":["😀","b.😀é😀.😀a _.\t"],"row":1,"col":0,"regtype":"v","register":"b.","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"G0y2w"}
+{"after":["😀","_.\t"],"row":1,"col":0,"regtype":"v","register":"b.😀é😀.😀a ","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"j0dW"}
+{"after":["_.\t"],"row":0,"col":0,"regtype":"v","register":"😀\nb.😀é😀.😀a ","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"d2W"}
+{"after":["😀","b.😀é😀.😀a _.\t"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀","b.😀é😀.😀a _.\t"],"keys":"yW"}
+{"after":["😀abaé","","😀aaa__ é",".ba_ b😀"],"row":0,"col":1,"regtype":"v","register":"é ","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"ldw"}
+{"after":["abaé","","😀aaa__ é",".ba_ b😀"],"row":0,"col":0,"regtype":"v","register":"😀é ","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"d2w"}
+{"after":["😀é abaé","é",".ba_ b😀"],"row":1,"col":0,"regtype":"v","register":"\n😀aaa__ ","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"j03dw"}
+{"after":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"row":0,"col":1,"regtype":"v","register":"é ","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"lyw"}
+{"after":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"row":3,"col":0,"regtype":"v","register":".ba_ ","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"G0y2w"}
+{"after":["abaé","","😀aaa__ é",".ba_ b😀"],"row":0,"col":0,"regtype":"v","register":"😀é ","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"dW"}
+{"after":["","","😀aaa__ é",".ba_ b😀"],"row":0,"col":0,"regtype":"v","register":"😀é abaé","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"d2W"}
+{"after":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"row":3,"col":0,"regtype":"v","register":".ba_ ","lines":["😀é abaé","","😀aaa__ é",".ba_ b😀"],"keys":"G0yW"}
+{"after":["é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"row":0,"col":0,"regtype":"v","register":".","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"dw"}
+{"after":[".ééa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"row":0,"col":2,"regtype":"v","register":"😀a\t","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"2ld2w"}
+{"after":[".é😀a\téa a_ é"," .\tb","éaaab\té_",".aé\t."],"row":3,"col":0,"regtype":"v","register":"é\t.. a ","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"G03dw"}
+{"after":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"row":0,"col":1,"regtype":"v","register":"é","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"lyw"}
+{"after":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"row":3,"col":0,"regtype":"v","register":"é\t.. ","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"G0y2w"}
+{"after":[".ééa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"row":0,"col":2,"regtype":"v","register":"😀a\t","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"2ldW"}
+{"after":[".éa_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"row":0,"col":2,"regtype":"v","register":"😀a\téa ","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"2ld2W"}
+{"after":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"row":1,"col":0,"regtype":"v","register":" ","lines":[".é😀a\téa a_ é"," .\tb","éaaab\té_","é\t.. a .aé\t."],"keys":"j0yW"}
+{"after":["","é_ b._.éé","aé.é",".😀 b_ba."],"row":0,"col":0,"regtype":"v","register":"é","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"2ldw"}
+{"after":["é","é_ b._.éé","aé.é","b_ba."],"row":3,"col":0,"regtype":"v","register":".😀 ","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"G0d2w"}
+{"after":["._.éé","aé.é",".😀 b_ba."],"row":0,"col":0,"regtype":"v","register":"é\né_ b","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"2l3dw"}
+{"after":["é","é_ b._.éé","aé.é",".😀 b_ba."],"row":0,"col":0,"regtype":"v","register":"é","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"lyw"}
+{"after":["é","é_ b._.éé","aé.é",".😀 b_ba."],"row":0,"col":0,"regtype":"v","register":"é\né_ ","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"2ly2w"}
+{"after":["","é_ b._.éé","aé.é",".😀 b_ba."],"row":0,"col":0,"regtype":"v","register":"é","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"dW"}
+{"after":["é","é_ b._.éé","aé.é",""],"row":3,"col":0,"regtype":"v","register":".😀 b_ba.","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"G0d2W"}
+{"after":["é","é_ b._.éé","aé.é",".😀 b_ba."],"row":0,"col":0,"regtype":"v","register":"é","lines":["é","é_ b._.éé","aé.é",".😀 b_ba."],"keys":"yW"}
+{"after":["baa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"row":0,"col":1,"regtype":"v","register":"b_\t","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"ldw"}
+{"after":["bb_\taa_éé","😀é . ._ \t","😀bé ab\té  ","é"],"row":1,"col":0,"regtype":"v","register":"__.","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"j0d2w"}
+{"after":["bb_\taa_éé","é . ._ \t","😀bé ab\té  ","é"],"row":1,"col":0,"regtype":"v","register":"__.😀","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"j03dw"}
+{"after":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"row":0,"col":0,"regtype":"v","register":"bb_\t","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"yw"}
+{"after":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"row":1,"col":0,"regtype":"v","register":"__.","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"j0y2w"}
+{"after":["bb_\taa_éé",". ._ \t","😀bé ab\té  ","é"],"row":1,"col":0,"regtype":"v","register":"__.😀é ","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"j0dW"}
+{"after":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ",""],"row":3,"col":0,"regtype":"v","register":"é","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"G0d2W"}
+{"after":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"row":0,"col":2,"regtype":"v","register":"_\t","lines":["bb_\taa_éé","__.😀é . ._ \t","😀bé ab\té  ","é"],"keys":"2lyW"}
+{"after":["éaé","éb","a\ta..é","😀é.abé"],"row":3,"col":0,"regtype":"v","register":"ébé\t","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"G0dw"}
+{"after":["a\ta..é","ébé\t😀é.abé"],"row":0,"col":0,"regtype":"V","register":"éaé\néb\n","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"d2w"}
+{"after":["éaé","..é","ébé\t😀é.abé"],"row":1,"col":0,"regtype":"v","register":"éb\na\ta","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"j03dw"}
+{"after":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"row":0,"col":1,"regtype":"v","register":"aé","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"lyw"}
+{"after":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"row":0,"col":0,"regtype":"v","register":"éaé\néb","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"y2w"}
+{"after":["é","éb","a\ta..é","ébé\t😀é.abé"],"row":0,"col":0,"regtype":"v","register":"aé","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"ldW"}
+{"after":["éaé","a..é","ébé\t😀é.abé"],"row":1,"col":0,"regtype":"v","register":"éb\na\t","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"j0d2W"}
+{"after":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"row":0,"col":2,"regtype":"v","register":"é","lines":["éaé","éb","a\ta..é","ébé\t😀é.abé"],"keys":"2lyW"}
+{"after":["\té_ aéé","é\t😀bébaé\t","."],"row":2,"col":0,"regtype":"v","register":"b ","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"G0dw"}
+{"after":["\t","é\t😀bébaé\t","b ."],"row":0,"col":0,"regtype":"v","register":"é_ aéé","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"ld2w"}
+{"after":["\té😀bébaé\t","b ."],"row":0,"col":2,"regtype":"v","register":"_ aéé\né\t","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"2l3dw"}
+{"after":["\té_ aéé","é\t😀bébaé\t","b ."],"row":2,"col":0,"regtype":"v","register":"b ","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"G0yw"}
+{"after":["\té_ aéé","é\t😀bébaé\t","b ."],"row":0,"col":0,"regtype":"v","register":"\té_ ","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"y2w"}
+{"after":["\té_ aéé","😀bébaé\t","b ."],"row":1,"col":0,"regtype":"v","register":"é\t","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"j0dW"}
+{"after":["aéé","é\t😀bébaé\t","b ."],"row":0,"col":0,"regtype":"v","register":"\té_ ","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"d2W"}
+{"after":["\té_ aéé","é\t😀bébaé\t","b ."],"row":1,"col":0,"regtype":"v","register":"é\t","lines":["\té_ aéé","é\t😀bébaé\t","b ."],"keys":"j0yW"}
+{"after":["é","ab _éé","."],"row":0,"col":0,"regtype":"v","register":"éééab","lines":["ééééab","ab _éé","."],"keys":"ldw"}
+{"after":["é_éé","."],"row":0,"col":1,"regtype":"v","register":"éééab\nab ","lines":["ééééab","ab _éé","."],"keys":"ld2w"}
+{"after":["."],"row":0,"col":0,"regtype":"V","register":"ééééab\nab _éé\n","lines":["ééééab","ab _éé","."],"keys":"3dw"}
+{"after":["ééééab","ab _éé","."],"row":1,"col":0,"regtype":"v","register":"ab ","lines":["ééééab","ab _éé","."],"keys":"j0yw"}
+{"after":["ééééab","ab _éé","."],"row":0,"col":1,"regtype":"v","register":"éééab\nab ","lines":["ééééab","ab _éé","."],"keys":"ly2w"}
+{"after":["ééééab","ab _éé",""],"row":2,"col":0,"regtype":"v","register":".","lines":["ééééab","ab _éé","."],"keys":"G0dW"}
+{"after":["é_éé","."],"row":0,"col":1,"regtype":"v","register":"éééab\nab ","lines":["ééééab","ab _éé","."],"keys":"ld2W"}
+{"after":["ééééab","ab _éé","."],"row":0,"col":0,"regtype":"v","register":"ééééab","lines":["ééééab","ab _éé","."],"keys":"yW"}
+{"after":["bééé"," a😀","\té","éab \t\t"],"row":0,"col":3,"regtype":"v","register":"😀","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"2ldw"}
+{"after":["béé"," a😀","\té","éab \t\t"],"row":0,"col":1,"regtype":"v","register":"é😀","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"ld2w"}
+{"after":[""," a😀","\té","éab \t\t"],"row":0,"col":0,"regtype":"v","register":"bé😀éé","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"3dw"}
+{"after":["bé😀éé"," a😀","\té","éab \t\t"],"row":0,"col":1,"regtype":"v","register":"é","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"lyw"}
+{"after":["bé😀éé"," a😀","\té","éab \t\t"],"row":0,"col":3,"regtype":"v","register":"😀éé","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"2ly2w"}
+{"after":["b"," a😀","\té","éab \t\t"],"row":0,"col":0,"regtype":"v","register":"é😀éé","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"ldW"}
+{"after":["bé😀éé","","\té","éab \t\t"],"row":1,"col":0,"regtype":"v","register":" a😀","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"j0d2W"}
+{"after":["bé😀éé"," a😀","\té","éab \t\t"],"row":0,"col":0,"regtype":"v","register":"bé😀éé","lines":["bé😀éé"," a😀","\té","éab \t\t"],"keys":"yW"}
+{"after":["😀a",". éé_ "],"row":1,"col":0,"regtype":"v","register":".\t","lines":["😀a",".\t. éé_ "],"keys":"G0dw"}
+{"after":["😀. éé_ "],"row":0,"col":1,"regtype":"v","register":"a\n.\t","lines":["😀a",".\t. éé_ "],"keys":"2ld2w"}
+{"after":["😀éé_ "],"row":0,"col":1,"regtype":"v","register":"a\n.\t. ","lines":["😀a",".\t. éé_ "],"keys":"2l3dw"}
+{"after":["😀a",".\t. éé_ "],"row":0,"col":1,"regtype":"v","register":"a","lines":["😀a",".\t. éé_ "],"keys":"2lyw"}
+{"after":["😀a",".\t. éé_ "],"row":0,"col":0,"regtype":"v","register":"😀a","lines":["😀a",".\t. éé_ "],"keys":"y2w"}
+{"after":["😀a",". éé_ "],"row":1,"col":0,"regtype":"v","register":".\t","lines":["😀a",".\t. éé_ "],"keys":"G0dW"}
+{"after":["😀a","éé_ "],"row":1,"col":0,"regtype":"v","register":".\t. ","lines":["😀a",".\t. éé_ "],"keys":"G0d2W"}
+{"after":["😀a",".\t. éé_ "],"row":0,"col":1,"regtype":"v","register":"a","lines":["😀a",".\t. éé_ "],"keys":"lyW"}
+{"after":["😀ébb😀","_é😀a._a éa."],"row":0,"col":1,"regtype":"v","register":"baa ","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"ldw"}
+{"after":["ébb😀","_é😀a._a éa."],"row":0,"col":0,"regtype":"v","register":"😀baa ","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"d2w"}
+{"after":["😀baa ébb😀","._a éa."],"row":1,"col":0,"regtype":"v","register":"_é😀a","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"j03dw"}
+{"after":["😀baa ébb😀","_é😀a._a éa."],"row":0,"col":1,"regtype":"v","register":"baa ","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"lyw"}
+{"after":["😀baa ébb😀","_é😀a._a éa."],"row":1,"col":0,"regtype":"v","register":"_é😀","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"G0y2w"}
+{"after":["😀ébb😀","_é😀a._a éa."],"row":0,"col":1,"regtype":"v","register":"baa ","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"ldW"}
+{"after":["😀baa ébb😀",""],"row":1,"col":0,"regtype":"v","register":"_é😀a._a éa.","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"j0d2W"}
+{"after":["😀baa ébb😀","_é😀a._a éa."],"row":1,"col":0,"regtype":"v","register":"_é😀a._a ","lines":["😀baa ébb😀","_é😀a._a éa."],"keys":"G0yW"}
+{"after":["bé",".\t\téé.","é._ aaa","é\téé"],"row":0,"col":1,"regtype":"v","register":"a","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"2ldw"}
+{"after":["béa",".","é._ aaa","é\téé"],"row":1,"col":0,"regtype":"v","register":".\t\téé","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"j0d2w"}
+{"after":["béa","","é._ aaa","é\téé"],"row":1,"col":0,"regtype":"v","register":".\t\téé.","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"j03dw"}
+{"after":["béa",".\t\téé.","é._ aaa","é\téé"],"row":3,"col":0,"regtype":"v","register":"é\t","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"G0yw"}
+{"after":["béa",".\t\téé.","é._ aaa","é\téé"],"row":0,"col":0,"regtype":"v","register":"béa\n.\t\t","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"y2w"}
+{"after":["bé",".\t\téé.","é._ aaa","é\téé"],"row":0,"col":1,"regtype":"v","register":"a","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"2ldW"}
+{"after":["béa",".\t\téé.","é._ aaa",""],"row":3,"col":0,"regtype":"v","register":"é\téé","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"G0d2W"}
+{"after":["béa",".\t\téé.","é._ aaa","é\téé"],"row":0,"col":1,"regtype":"v","register":"éa","lines":["béa",".\t\téé.","é._ aaa","é\téé"],"keys":"lyW"}
+{"after":["béé é","aéa😀 ba_b.","😀😀é_ ","."],"row":0,"col":1,"regtype":"v","register":"😀  ","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"ldw"}
+{"after":["b😀é","aéa😀 ba_b.","😀😀é_ ","."],"row":0,"col":2,"regtype":"v","register":"  éé ","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"2ld2w"}
+{"after":["b","aéa😀 ba_b.","😀😀é_ ","."],"row":0,"col":0,"regtype":"v","register":"😀  éé é","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"l3dw"}
+{"after":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"row":3,"col":0,"regtype":"v","register":".","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"G0yw"}
+{"after":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"row":0,"col":1,"regtype":"v","register":"😀  éé ","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"ly2w"}
+{"after":["b😀  éé é","ba_b.","😀😀é_ ","."],"row":1,"col":0,"regtype":"v","register":"aéa😀 ","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"j0dW"}
+{"after":["b😀é","aéa😀 ba_b.","😀😀é_ ","."],"row":0,"col":2,"regtype":"v","register":"  éé ","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"2ld2W"}
+{"after":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"row":1,"col":0,"regtype":"v","register":"aéa😀 ","lines":["b😀  éé é","aéa😀 ba_b.","😀😀é_ ","."],"keys":"j0yW"}
+{"after":["","😀_ .é"],"row":0,"col":0,"regtype":"v","register":".","lines":[".","😀_ .é"],"keys":"dw"}
+{"after":[".",".é"],"row":1,"col":0,"regtype":"v","register":"😀_ ","lines":[".","😀_ .é"],"keys":"j0d2w"}
+{"after":[".","é"],"row":1,"col":0,"regtype":"v","register":"😀_ .","lines":[".","😀_ .é"],"keys":"G03dw"}
+{"after":[".","😀_ .é"],"row":0,"col":0,"regtype":"v","register":".","lines":[".","😀_ .é"],"keys":"2lyw"}
+{"after":[".","😀_ .é"],"row":1,"col":0,"regtype":"v","register":"😀_ ","lines":[".","😀_ .é"],"keys":"j0y2w"}
+{"after":[".",".é"],"row":1,"col":0,"regtype":"v","register":"😀_ ","lines":[".","😀_ .é"],"keys":"G0dW"}
+{"after":[".é"],"row":0,"col":0,"regtype":"v","register":".\n😀_ ","lines":[".","😀_ .é"],"keys":"2ld2W"}
+{"after":[".","😀_ .é"],"row":0,"col":0,"regtype":"v","register":".","lines":[".","😀_ .é"],"keys":"yW"}
+{"after":["😀."," \t"],"row":0,"col":0,"regtype":"v","register":"ééaéé","lines":["ééaéé😀."," \t"],"keys":"dw"}
+{"after":["é."," \t"],"row":0,"col":1,"regtype":"v","register":"éaéé😀","lines":["ééaéé😀."," \t"],"keys":"ld2w"}
+{"after":["é"," \t"],"row":0,"col":0,"regtype":"v","register":"éaéé😀.","lines":["ééaéé😀."," \t"],"keys":"l3dw"}
+{"after":["ééaéé😀."," \t"],"row":0,"col":1,"regtype":"v","register":"éaéé","lines":["ééaéé😀."," \t"],"keys":"lyw"}
+{"after":["ééaéé😀."," \t"],"row":0,"col":2,"regtype":"v","register":"aéé😀","lines":["ééaéé😀."," \t"],"keys":"2ly2w"}
+{"after":["ééaéé😀.",""],"row":1,"col":0,"regtype":"v","register":" \t","lines":["ééaéé😀."," \t"],"keys":"G0dW"}
+{"after":["ééaéé😀.",""],"row":1,"col":0,"regtype":"v","register":" \t","lines":["ééaéé😀."," \t"],"keys":"j0d2W"}
+{"after":["ééaéé😀."," \t"],"row":0,"col":0,"regtype":"v","register":"ééaéé😀.","lines":["ééaéé😀."," \t"],"keys":"yW"}
+{"after":["","","é é"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" ","","é é"],"keys":"ldw"}
+{"after":[" ","é"],"row":1,"col":0,"regtype":"v","register":"\né ","lines":[" ","","é é"],"keys":"j0d2w"}
+{"after":[" "],"row":0,"col":0,"regtype":"V","register":"\né é\n","lines":[" ","","é é"],"keys":"j03dw"}
+{"after":[" ","","é é"],"row":1,"col":0,"regtype":"V","register":"\n","lines":[" ","","é é"],"keys":"j0yw"}
+{"after":[" ","","é é"],"row":0,"col":0,"regtype":"V","register":" \n\n","lines":[" ","","é é"],"keys":"y2w"}
+{"after":["","","é é"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" ","","é é"],"keys":"ldW"}
+{"after":["é é"],"row":0,"col":0,"regtype":"V","register":" \n\n","lines":[" ","","é é"],"keys":"d2W"}
+{"after":[" ","","é é"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" ","","é é"],"keys":"yW"}
+{"after":[".","😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"row":1,"col":0,"regtype":"v","register":"éb","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"j0dw"}
+{"after":["😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"row":0,"col":0,"regtype":"v","register":".\néb","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"d2w"}
+{"after":[".","😀 .\t","éé__é","😀éb\t\t _a\t"],"row":1,"col":0,"regtype":"v","register":"éb😀bbé","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"j03dw"}
+{"after":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"row":0,"col":0,"regtype":"v","register":".","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"lyw"}
+{"after":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"row":1,"col":0,"regtype":"v","register":"éb😀","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"j0y2w"}
+{"after":[".","éb😀bbé😀 .\t","éé__é","_a\t"],"row":3,"col":0,"regtype":"v","register":"😀éb\t\t ","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"G0dW"}
+{"after":[".\t","éé__é","😀éb\t\t _a\t"],"row":0,"col":0,"regtype":"v","register":".\néb😀bbé😀 ","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"d2W"}
+{"after":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"row":0,"col":0,"regtype":"v","register":".","lines":[".","éb😀bbé😀 .\t","éé__é","😀éb\t\t _a\t"],"keys":"yW"}
+{"after":["","_a é_😀 _"],"row":1,"col":0,"regtype":"v","register":"_  ","lines":["","_  _a é_😀 _"],"keys":"j0dw"}
+{"after":["_a é_😀 _"],"row":0,"col":0,"regtype":"v","register":"\n_  ","lines":["","_  _a é_😀 _"],"keys":"d2w"}
+{"after":["é_😀 _"],"row":0,"col":0,"regtype":"v","register":"\n_  _a ","lines":["","_  _a é_😀 _"],"keys":"2l3dw"}
+{"after":["","_  _a é_😀 _"],"row":1,"col":0,"regtype":"v","register":"_  ","lines":["","_  _a é_😀 _"],"keys":"j0yw"}
+{"after":["","_  _a é_😀 _"],"row":0,"col":0,"regtype":"v","register":"\n_  ","lines":["","_  _a é_😀 _"],"keys":"2ly2w"}
+{"after":["","_a é_😀 _"],"row":1,"col":0,"regtype":"v","register":"_  ","lines":["","_  _a é_😀 _"],"keys":"j0dW"}
+{"after":["","é_😀 _"],"row":1,"col":0,"regtype":"v","register":"_  _a ","lines":["","_  _a é_😀 _"],"keys":"G0d2W"}
+{"after":["","_  _a é_😀 _"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","_  _a é_😀 _"],"keys":"lyW"}
+{"after":["😀😀éa","😀","a"],"row":0,"col":0,"regtype":"V","register":"\n","lines":["","😀😀éa","😀","a"],"keys":"2ldw"}
+{"after":["éa","😀","a"],"row":0,"col":0,"regtype":"v","register":"\n😀😀","lines":["","😀😀éa","😀","a"],"keys":"ld2w"}
+{"after":["","a"],"row":1,"col":0,"regtype":"V","register":"😀😀éa\n😀\n","lines":["","😀😀éa","😀","a"],"keys":"j03dw"}
+{"after":["","😀😀éa","😀","a"],"row":1,"col":0,"regtype":"v","register":"😀😀","lines":["","😀😀éa","😀","a"],"keys":"j0yw"}
+{"after":["","😀😀éa","😀","a"],"row":0,"col":0,"regtype":"v","register":"\n😀😀","lines":["","😀😀éa","😀","a"],"keys":"2ly2w"}
+{"after":["","","😀","a"],"row":1,"col":0,"regtype":"v","register":"😀😀éa","lines":["","😀😀éa","😀","a"],"keys":"j0dW"}
+{"after":["","😀😀éa","😀",""],"row":3,"col":0,"regtype":"v","register":"a","lines":["","😀😀éa","😀","a"],"keys":"G0d2W"}
+{"after":["","😀😀éa","😀","a"],"row":3,"col":0,"regtype":"v","register":"a","lines":["","😀😀éa","😀","a"],"keys":"G0yW"}
+{"after":["aé_._b","_a.éaa_ééé",".  _éé._"],"row":0,"col":0,"regtype":"v","register":" ","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"dw"}
+{"after":["._b","_a.éaa_ééé",".  _éé._"],"row":0,"col":0,"regtype":"v","register":" aé_","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"d2w"}
+{"after":[" aé_._b","",".  _éé._"],"row":1,"col":0,"regtype":"v","register":"_a.éaa_ééé","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"j03dw"}
+{"after":[" aé_._b","_a.éaa_ééé",".  _éé._"],"row":1,"col":0,"regtype":"v","register":"_a","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"j0yw"}
+{"after":[" aé_._b","_a.éaa_ééé",".  _éé._"],"row":0,"col":2,"regtype":"v","register":"é_.","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"2ly2w"}
+{"after":[" aé_._b","",".  _éé._"],"row":1,"col":0,"regtype":"v","register":"_a.éaa_ééé","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"j0dW"}
+{"after":[".  _éé._"],"row":0,"col":1,"regtype":"V","register":" aé_._b\n_a.éaa_ééé\n","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"ld2W"}
+{"after":[" aé_._b","_a.éaa_ééé",".  _éé._"],"row":0,"col":2,"regtype":"v","register":"é_._b","lines":[" aé_._b","_a.éaa_ééé",".  _éé._"],"keys":"2lyW"}
+{"after":[".bé\ta_éé \t ",""],"row":1,"col":0,"regtype":"v","register":"\t","lines":[".bé\ta_éé \t ","\t"],"keys":"G0dw"}
+{"after":[".b","\t"],"row":0,"col":1,"regtype":"v","register":"é\ta_éé \t ","lines":[".bé\ta_éé \t ","\t"],"keys":"2ld2w"}
+{"after":[".bé\ta_éé \t ",""],"row":1,"col":0,"regtype":"v","register":"\t","lines":[".bé\ta_éé \t ","\t"],"keys":"j03dw"}
+{"after":[".bé\ta_éé \t ","\t"],"row":1,"col":0,"regtype":"v","register":"\t","lines":[".bé\ta_éé \t ","\t"],"keys":"G0yw"}
+{"after":[".bé\ta_éé \t ","\t"],"row":0,"col":2,"regtype":"v","register":"é\ta_éé \t ","lines":[".bé\ta_éé \t ","\t"],"keys":"2ly2w"}
+{"after":[".a_éé \t ","\t"],"row":0,"col":1,"regtype":"v","register":"bé\t","lines":[".bé\ta_éé \t ","\t"],"keys":"ldW"}
+{"after":[".","\t"],"row":0,"col":0,"regtype":"v","register":"bé\ta_éé \t ","lines":[".bé\ta_éé \t ","\t"],"keys":"ld2W"}
+{"after":[".bé\ta_éé \t ","\t"],"row":1,"col":0,"regtype":"v","register":"\t","lines":[".bé\ta_éé \t ","\t"],"keys":"j0yW"}
+{"after":["😀é ","._\tb😀é"],"row":1,"col":0,"regtype":"v","register":"éébé","lines":["😀é ","éébé._\tb😀é"],"keys":"G0dw"}
+{"after":["","éébé._\tb😀é"],"row":0,"col":0,"regtype":"v","register":"😀é ","lines":["😀é ","éébé._\tb😀é"],"keys":"d2w"}
+{"after":["😀é ","b😀é"],"row":1,"col":0,"regtype":"v","register":"éébé._\t","lines":["😀é ","éébé._\tb😀é"],"keys":"G03dw"}
+{"after":["😀é ","éébé._\tb😀é"],"row":1,"col":0,"regtype":"v","register":"éébé","lines":["😀é ","éébé._\tb😀é"],"keys":"G0yw"}
+{"after":["😀é ","éébé._\tb😀é"],"row":1,"col":0,"regtype":"v","register":"éébé.","lines":["😀é ","éébé._\tb😀é"],"keys":"G0y2w"}
+{"after":["","éébé._\tb😀é"],"row":0,"col":0,"regtype":"v","register":"😀é ","lines":["😀é ","éébé._\tb😀é"],"keys":"dW"}
+{"after":["😀é ",""],"row":1,"col":0,"regtype":"v","register":"éébé._\tb😀é","lines":["😀é ","éébé._\tb😀é"],"keys":"G0d2W"}
+{"after":["😀é ","éébé._\tb😀é"],"row":1,"col":0,"regtype":"v","register":"éébé._\t","lines":["😀é ","éébé._\tb😀é"],"keys":"j0yW"}
+{"after":["","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"2ldw"}
+{"after":["😀a \t.aa\t é","","éb😀éba\t é\t"],"row":0,"col":0,"regtype":"v","register":"😀\néé","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"ld2w"}
+{"after":["😀",".aa\t é","","éb😀éba\t é\t"],"row":1,"col":0,"regtype":"v","register":"éé😀a \t","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"j03dw"}
+{"after":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"row":1,"col":0,"regtype":"v","register":"éé","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"j0yw"}
+{"after":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"row":3,"col":0,"regtype":"v","register":"éb😀","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"G0y2w"}
+{"after":["","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"dW"}
+{"after":["😀","éé😀a \t.aa\t é","",""],"row":3,"col":0,"regtype":"v","register":"éb😀éba\t é\t","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"G0d2W"}
+{"after":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"row":0,"col":0,"regtype":"v","register":"😀","lines":["😀","éé😀a \t.aa\t é","","éb😀éba\t é\t"],"keys":"lyW"}
+{"after":["éé_é\ta"," 😀😀 \t_."],"row":0,"col":0,"regtype":"v","register":" \t\t\t","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"dw"}
+{"after":["a"," 😀😀 \t_."],"row":0,"col":0,"regtype":"v","register":" \t\t\téé_é\t","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"d2w"}
+{"after":[""," 😀😀 \t_."],"row":0,"col":0,"regtype":"v","register":" \t\t\téé_é\ta","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"3dw"}
+{"after":[" \t\t\téé_é\ta"," 😀😀 \t_."],"row":0,"col":2,"regtype":"v","register":"\t\t","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"2lyw"}
+{"after":[" \t\t\téé_é\ta"," 😀😀 \t_."],"row":1,"col":0,"regtype":"v","register":" 😀😀 \t","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"G0y2w"}
+{"after":[" \t\t\téé_é\ta","😀😀 \t_."],"row":1,"col":0,"regtype":"v","register":" ","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"G0dW"}
+{"after":[" a"," 😀😀 \t_."],"row":0,"col":1,"regtype":"v","register":"\t\t\téé_é\t","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"ld2W"}
+{"after":[" \t\t\téé_é\ta"," 😀😀 \t_."],"row":1,"col":0,"regtype":"v","register":" ","lines":[" \t\t\téé_é\ta"," 😀😀 \t_."],"keys":"j0yW"}
+{"after":["béé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"row":0,"col":0,"regtype":"v","register":"\t","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"dw"}
+{"after":["\tééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"row":0,"col":1,"regtype":"v","register":"béé😀","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"ld2w"}
+{"after":["\tb."," aé\t😀bbé.b_\t","é_😀 \tb a "],"row":0,"col":2,"regtype":"v","register":"éé😀ééé","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"2l3dw"}
+{"after":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"row":0,"col":1,"regtype":"v","register":"béé","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"lyw"}
+{"after":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"row":0,"col":2,"regtype":"v","register":"éé😀","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"2ly2w"}
+{"after":["\tbéé😀ééé."," aé\t😀bbé.b_\t","b a "],"row":2,"col":0,"regtype":"v","register":"é_😀 \t","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"G0dW"}
+{"after":[""," aé\t😀bbé.b_\t","é_😀 \tb a "],"row":0,"col":0,"regtype":"v","register":"\tbéé😀ééé.","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"d2W"}
+{"after":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"row":0,"col":1,"regtype":"v","register":"béé😀ééé.","lines":["\tbéé😀ééé."," aé\t😀bbé.b_\t","é_😀 \tb a "],"keys":"lyW"}
+{"after":["é😀ba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"row":0,"col":3,"regtype":"v","register":"b\t","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"2ldw"}
+{"after":["éba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"row":0,"col":2,"regtype":"v","register":"😀b\t","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"ld2w"}
+{"after":["é😀._é","b_aéé \t_a","._😀éé😀_éb"],"row":0,"col":3,"regtype":"v","register":"b\tba_é\t\néé","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"2l3dw"}
+{"after":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"row":0,"col":0,"regtype":"v","register":"é","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"yw"}
+{"after":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"row":1,"col":0,"regtype":"v","register":"éé.","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"j0y2w"}
+{"after":["é😀b\tba_é\t","éé._é","b_aéé \t_a",""],"row":3,"col":0,"regtype":"v","register":"._😀éé😀_éb","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"G0dW"}
+{"after":["é😀b\tba_é\t","éé._é","b_aéé \t_a",""],"row":3,"col":0,"regtype":"v","register":"._😀éé😀_éb","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"G0d2W"}
+{"after":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"row":3,"col":0,"regtype":"v","register":"._😀éé😀_éb","lines":["é😀b\tba_é\t","éé._é","b_aéé \t_a","._😀éé😀_éb"],"keys":"G0yW"}
+{"after":[".....bé😀\ta.é","_😀é😀","\t_éébbb"],"row":1,"col":0,"regtype":"v","register":"_\t ","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"j0dw"}
+{"after":[".....bé😀\ta.é","_\t _😀é😀",""],"row":2,"col":0,"regtype":"v","register":"\t_éébbb","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"G0d2w"}
+{"after":[".a.é","_\t _😀é😀","\t_éébbb"],"row":0,"col":1,"regtype":"v","register":"....bé😀\t","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"l3dw"}
+{"after":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"row":0,"col":2,"regtype":"v","register":"...","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"2lyw"}
+{"after":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"row":0,"col":2,"regtype":"v","register":"...bé","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"2ly2w"}
+{"after":["a.é","_\t _😀é😀","\t_éébbb"],"row":0,"col":0,"regtype":"v","register":".....bé😀\t","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"dW"}
+{"after":["..","_\t _😀é😀","\t_éébbb"],"row":0,"col":1,"regtype":"v","register":"...bé😀\ta.é","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"2ld2W"}
+{"after":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"row":0,"col":0,"regtype":"v","register":".....bé😀\t","lines":[".....bé😀\ta.é","_\t _😀é😀","\t_éébbb"],"keys":"yW"}
+{"after":["é","bb😀.éé\t"],"row":0,"col":0,"regtype":"v","register":".","lines":["é.","bb😀.éé\t"],"keys":"2ldw"}
+{"after":["é😀.éé\t"],"row":0,"col":1,"regtype":"v","register":".\nbb","lines":["é.","bb😀.éé\t"],"keys":"2ld2w"}
+{"after":["é.","éé\t"],"row":1,"col":0,"regtype":"v","register":"bb😀.","lines":["é.","bb😀.éé\t"],"keys":"G03dw"}
+{"after":["é.","bb😀.éé\t"],"row":1,"col":0,"regtype":"v","register":"bb","lines":["é.","bb😀.éé\t"],"keys":"j0yw"}
+{"after":["é.","bb😀.éé\t"],"row":0,"col":1,"regtype":"v","register":".\nbb","lines":["é.","bb😀.éé\t"],"keys":"ly2w"}
+{"after":["é.",""],"row":1,"col":0,"regtype":"v","register":"bb😀.éé\t","lines":["é.","bb😀.éé\t"],"keys":"G0dW"}
+{"after":["é.",""],"row":1,"col":0,"regtype":"v","register":"bb😀.éé\t","lines":["é.","bb😀.éé\t"],"keys":"j0d2W"}
+{"after":["é.","bb😀.éé\t"],"row":0,"col":1,"regtype":"v","register":".","lines":["é.","bb😀.éé\t"],"keys":"lyW"}
+{"after":["a_ _ é.é\t.","b .😀é."],"row":1,"col":0,"regtype":"v","register":" ","lines":["a_ _ é.é\t."," b .😀é."],"keys":"j0dw"}
+{"after":["a_é.é\t."," b .😀é."],"row":0,"col":2,"regtype":"v","register":" _ ","lines":["a_ _ é.é\t."," b .😀é."],"keys":"2ld2w"}
+{"after":["a_ _ é.é\t.","😀é."],"row":1,"col":0,"regtype":"v","register":" b .","lines":["a_ _ é.é\t."," b .😀é."],"keys":"j03dw"}
+{"after":["a_ _ é.é\t."," b .😀é."],"row":1,"col":0,"regtype":"v","register":" ","lines":["a_ _ é.é\t."," b .😀é."],"keys":"G0yw"}
+{"after":["a_ _ é.é\t."," b .😀é."],"row":0,"col":2,"regtype":"v","register":" _ ","lines":["a_ _ é.é\t."," b .😀é."],"keys":"2ly2w"}
+{"after":["a__ é.é\t."," b .😀é."],"row":0,"col":2,"regtype":"v","register":" ","lines":["a_ _ é.é\t."," b .😀é."],"keys":"2ldW"}
+{"after":["a_ _ é.é\t.",".😀é."],"row":1,"col":0,"regtype":"v","register":" b ","lines":["a_ _ é.é\t."," b .😀é."],"keys":"G0d2W"}
+{"after":["a_ _ é.é\t."," b .😀é."],"row":0,"col":1,"regtype":"v","register":"_ ","lines":["a_ _ é.é\t."," b .😀é."],"keys":"lyW"}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"w","lines":["abc",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"2w","lines":["abc",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"3w","lines":["abc",""]}
+{"after":["abc",""],"row":0,"col":2,"register":"","regtype":"v","keys":"e","lines":["abc",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"2e","lines":["abc",""]}
+{"after":["abc",""],"row":0,"col":0,"register":"","regtype":"v","keys":"b","lines":["abc",""]}
+{"after":["",""],"row":0,"col":0,"register":"abc","regtype":"v","keys":"dw","lines":["abc",""]}
+{"after":[""],"row":0,"col":0,"register":"abc\n","regtype":"V","keys":"d2w","lines":["abc",""]}
+{"after":["abc",""],"row":0,"col":0,"register":"abc","regtype":"v","keys":"yw","lines":["abc",""]}
+{"after":["abc",""],"row":0,"col":0,"register":"abc\n","regtype":"V","keys":"y2w","lines":["abc",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"G0dw","lines":["abc",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"G0yw","lines":["abc",""]}
+{"after":["abc",""],"row":0,"col":0,"register":"","regtype":"v","keys":"G0b","lines":["abc",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"j0dw","lines":["abc",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"j0w","lines":["abc",""]}
+{"after":["abc","",""],"row":1,"col":0,"register":"","regtype":"v","keys":"w","lines":["abc","",""]}
+{"after":["abc","",""],"row":2,"col":0,"register":"","regtype":"v","keys":"2w","lines":["abc","",""]}
+{"after":["abc","",""],"row":2,"col":0,"register":"","regtype":"v","keys":"3w","lines":["abc","",""]}
+{"after":["abc","",""],"row":0,"col":2,"register":"","regtype":"v","keys":"e","lines":["abc","",""]}
+{"after":["abc","",""],"row":2,"col":0,"register":"","regtype":"v","keys":"2e","lines":["abc","",""]}
+{"after":["abc","",""],"row":0,"col":0,"register":"","regtype":"v","keys":"b","lines":["abc","",""]}
+{"after":["","",""],"row":0,"col":0,"register":"abc","regtype":"v","keys":"dw","lines":["abc","",""]}
+{"after":[""],"row":0,"col":0,"register":"abc\n\n","regtype":"V","keys":"d2w","lines":["abc","",""]}
+{"after":["abc","",""],"row":0,"col":0,"register":"abc","regtype":"v","keys":"yw","lines":["abc","",""]}
+{"after":["abc","",""],"row":0,"col":0,"register":"abc\n\n","regtype":"V","keys":"y2w","lines":["abc","",""]}
+{"after":["abc","",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0dw","lines":["abc","",""]}
+{"after":["abc","",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0yw","lines":["abc","",""]}
+{"after":["abc","",""],"row":1,"col":0,"register":"","regtype":"v","keys":"G0b","lines":["abc","",""]}
+{"after":["abc",""],"row":1,"col":0,"register":"\n","regtype":"V","keys":"j0dw","lines":["abc","",""]}
+{"after":["abc","",""],"row":2,"col":0,"register":"","regtype":"v","keys":"j0w","lines":["abc","",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"w","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"2w","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"3w","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"e","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"2e","lines":["",""]}
+{"after":["",""],"row":0,"col":0,"register":"","regtype":"v","keys":"b","lines":["",""]}
+{"after":[""],"row":0,"col":0,"register":"\n","regtype":"V","keys":"dw","lines":["",""]}
+{"after":[""],"row":0,"col":0,"register":"\n","regtype":"V","keys":"d2w","lines":["",""]}
+{"after":["",""],"row":0,"col":0,"register":"\n","regtype":"V","keys":"yw","lines":["",""]}
+{"after":["",""],"row":0,"col":0,"register":"\n","regtype":"V","keys":"y2w","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"G0dw","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"G0yw","lines":["",""]}
+{"after":["",""],"row":0,"col":0,"register":"","regtype":"v","keys":"G0b","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"j0dw","lines":["",""]}
+{"after":["",""],"row":1,"col":0,"register":"","regtype":"v","keys":"j0w","lines":["",""]}
+{"after":["foo","  ",""],"row":2,"col":0,"register":"","regtype":"v","keys":"w","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":2,"col":0,"register":"","regtype":"v","keys":"2w","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":2,"col":0,"register":"","regtype":"v","keys":"3w","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":0,"col":2,"register":"","regtype":"v","keys":"e","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":2,"col":0,"register":"","regtype":"v","keys":"2e","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":0,"col":0,"register":"","regtype":"v","keys":"b","lines":["foo","  ",""]}
+{"after":["","  ",""],"row":0,"col":0,"register":"foo","regtype":"v","keys":"dw","lines":["foo","  ",""]}
+{"after":[""],"row":0,"col":0,"register":"foo\n  \n","regtype":"V","keys":"d2w","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":0,"col":0,"register":"foo","regtype":"v","keys":"yw","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":0,"col":0,"register":"foo\n  \n","regtype":"V","keys":"y2w","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0dw","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0yw","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":0,"col":0,"register":"","regtype":"v","keys":"G0b","lines":["foo","  ",""]}
+{"after":["foo","",""],"row":1,"col":0,"register":"  ","regtype":"v","keys":"j0dw","lines":["foo","  ",""]}
+{"after":["foo","  ",""],"row":2,"col":0,"register":"","regtype":"v","keys":"j0w","lines":["foo","  ",""]}
+{"after":["café","😀",""],"row":1,"col":0,"register":"","regtype":"v","keys":"w","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":2,"col":0,"register":"","regtype":"v","keys":"2w","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":2,"col":0,"register":"","regtype":"v","keys":"3w","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":0,"col":3,"register":"","regtype":"v","keys":"e","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":1,"col":0,"register":"","regtype":"v","keys":"2e","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":0,"col":0,"register":"","regtype":"v","keys":"b","lines":["café","😀",""]}
+{"after":["","😀",""],"row":0,"col":0,"register":"café","regtype":"v","keys":"dw","lines":["café","😀",""]}
+{"after":[""],"row":0,"col":0,"register":"café\n😀\n","regtype":"V","keys":"d2w","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":0,"col":0,"register":"café","regtype":"v","keys":"yw","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":0,"col":0,"register":"café\n😀","regtype":"v","keys":"y2w","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0dw","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0yw","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":1,"col":0,"register":"","regtype":"v","keys":"G0b","lines":["café","😀",""]}
+{"after":["café","",""],"row":1,"col":0,"register":"😀","regtype":"v","keys":"j0dw","lines":["café","😀",""]}
+{"after":["café","😀",""],"row":2,"col":0,"register":"","regtype":"v","keys":"j0w","lines":["café","😀",""]}
+{"after":["","abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"w","lines":["","abc",""]}
+{"after":["","abc",""],"row":2,"col":0,"register":"","regtype":"v","keys":"2w","lines":["","abc",""]}
+{"after":["","abc",""],"row":2,"col":0,"register":"","regtype":"v","keys":"3w","lines":["","abc",""]}
+{"after":["","abc",""],"row":1,"col":2,"register":"","regtype":"v","keys":"e","lines":["","abc",""]}
+{"after":["","abc",""],"row":2,"col":0,"register":"","regtype":"v","keys":"2e","lines":["","abc",""]}
+{"after":["","abc",""],"row":0,"col":0,"register":"","regtype":"v","keys":"b","lines":["","abc",""]}
+{"after":["abc",""],"row":0,"col":0,"register":"\n","regtype":"V","keys":"dw","lines":["","abc",""]}
+{"after":[""],"row":0,"col":0,"register":"\nabc\n","regtype":"V","keys":"d2w","lines":["","abc",""]}
+{"after":["","abc",""],"row":0,"col":0,"register":"\n","regtype":"V","keys":"yw","lines":["","abc",""]}
+{"after":["","abc",""],"row":0,"col":0,"register":"\nabc","regtype":"v","keys":"y2w","lines":["","abc",""]}
+{"after":["","abc",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0dw","lines":["","abc",""]}
+{"after":["","abc",""],"row":2,"col":0,"register":"","regtype":"v","keys":"G0yw","lines":["","abc",""]}
+{"after":["","abc",""],"row":1,"col":0,"register":"","regtype":"v","keys":"G0b","lines":["","abc",""]}
+{"after":["","",""],"row":1,"col":0,"register":"abc","regtype":"v","keys":"j0dw","lines":["","abc",""]}
+{"after":["","abc",""],"row":2,"col":0,"register":"","regtype":"v","keys":"j0w","lines":["","abc",""]}

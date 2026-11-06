@@ -1,0 +1,60 @@
+{"after": "Z Z gamma", "cursor": 2, "register": "beta", "regtype": "v", "line": "alpha beta gamma", "keys": "ciwZ<Esc>w."}
+{"register": " gamma", "regtype": "v", "line": "alpha beta gamma", "keys": "cawZ<Esc>w.", "after": "ZbetaZ", "cursor": 5}
+{"keys": "ciWZ<Esc>w.", "cursor": 2, "register": "beta", "after": "Z Z gamma", "regtype": "v", "line": "alpha beta gamma"}
+{"regtype": "v", "line": "alpha beta gamma", "keys": "c2iwZ<Esc>w.", "after": "Zbeta gamma", "register": "alpha ", "cursor": 10}
+{"after": "Zbeta gamma", "register": "alpha ", "cursor": 10, "regtype": "v", "line": "alpha beta gamma", "keys": "2ciwZ<Esc>w."}
+{"register": "beta", "cursor": 2, "line": "alpha beta gamma", "keys": "ciwZ<Esc>w.u", "after": "Z beta gamma", "regtype": "v"}
+{"register": "beta", "cursor": 0, "regtype": "v", "line": "alpha beta gamma", "keys": "ciwZ<Esc>w.2u", "after": "alpha beta gamma"}
+{"regtype": "v", "line": "alpha beta gamma", "keys": "diww.", "after": "  gamma", "cursor": 1, "register": "beta"}
+{"register": " gamma", "cursor": 3, "line": "alpha beta gamma", "keys": "dawww.", "regtype": "v", "after": "beta"}
+{"keys": "yiwwp", "after": "alpha balphaeta gamma", "register": "alpha", "line": "alpha beta gamma", "regtype": "v", "cursor": 11}
+{"register": "漢字", "regtype": "v", "line": "a漢字あb c", "keys": "ciwZ<Esc>w.", "cursor": 1, "after": "ZZあb c"}
+{"line": "a漢字あb c", "keys": "cawZ<Esc>w.", "after": "ZZあb c", "register": "漢字", "cursor": 1, "regtype": "v"}
+{"keys": "ciWZ<Esc>w.", "cursor": 2, "register": "c", "after": "Z Z", "regtype": "v", "line": "a漢字あb c"}
+{"after": "ZZ c", "register": "あb", "regtype": "v", "cursor": 1, "line": "a漢字あb c", "keys": "c2iwZ<Esc>w."}
+{"register": "あb", "regtype": "v", "line": "a漢字あb c", "keys": "2ciwZ<Esc>w.", "cursor": 1, "after": "ZZ c"}
+{"after": "Z漢字あb c", "register": "漢字", "cursor": 1, "line": "a漢字あb c", "keys": "ciwZ<Esc>w.u", "regtype": "v"}
+{"after": "a漢字あb c", "register": "漢字", "regtype": "v", "line": "a漢字あb c", "keys": "ciwZ<Esc>w.2u", "cursor": 0}
+{"register": "あ", "regtype": "v", "line": "a漢字あb c", "keys": "diww.", "cursor": 2, "after": "漢字b c"}
+{"register": "b ", "regtype": "v", "cursor": 3, "keys": "dawww.", "after": "漢字あc", "line": "a漢字あb c"}
+{"register": "a", "regtype": "v", "line": "a漢字あb c", "keys": "yiwwp", "cursor": 2, "after": "a漢a字あb c"}
+{"line": "x😀y  z", "keys": "ciwZ<Esc>w.", "after": "ZZy  z", "register": "😀", "cursor": 1, "regtype": "v"}
+{"register": "😀", "regtype": "v", "line": "x😀y  z", "keys": "cawZ<Esc>w.", "cursor": 1, "after": "ZZy  z"}
+{"keys": "ciWZ<Esc>w.", "cursor": 3, "register": "z", "after": "Z  Z", "regtype": "v", "line": "x😀y  z"}
+{"keys": "c2iwZ<Esc>w.", "after": "Zy  z", "cursor": 4, "register": "x😀", "regtype": "v", "line": "x😀y  z"}
+{"register": "x😀", "cursor": 4, "line": "x😀y  z", "keys": "2ciwZ<Esc>w.", "after": "Zy  z", "regtype": "v"}
+{"line": "x😀y  z", "keys": "ciwZ<Esc>w.u", "after": "Z😀y  z", "register": "😀", "regtype": "v", "cursor": 1}
+{"keys": "ciwZ<Esc>w.2u", "after": "x😀y  z", "cursor": 0, "register": "😀", "regtype": "v", "line": "x😀y  z"}
+{"regtype": "v", "line": "x😀y  z", "keys": "diww.", "after": "😀  z", "register": "y", "cursor": 1}
+{"register": "  z", "regtype": "v", "line": "x😀y  z", "keys": "dawww.", "cursor": 1, "after": "😀y"}
+{"line": "x😀y  z", "keys": "yiwwp", "after": "x😀xy  z", "register": "x", "cursor": 2, "regtype": "v"}
+{"line": "café gato pez", "keys": "ciwZ<Esc>w.", "after": "Z Z pez", "cursor": 2, "register": "gato", "regtype": "v"}
+{"keys": "cawZ<Esc>w.", "after": "ZgatoZ", "regtype": "v", "register": " pez", "cursor": 5, "line": "café gato pez"}
+{"regtype": "v", "line": "café gato pez", "keys": "ciWZ<Esc>w.", "after": "Z Z pez", "register": "gato", "cursor": 2}
+{"line": "café gato pez", "keys": "c2iwZ<Esc>w.", "cursor": 8, "register": "café ", "after": "Zgato pez", "regtype": "v"}
+{"regtype": "v", "line": "café gato pez", "keys": "2ciwZ<Esc>w.", "cursor": 8, "after": "Zgato pez", "register": "café "}
+{"line": "café gato pez", "keys": "ciwZ<Esc>w.u", "after": "Z gato pez", "cursor": 2, "register": "gato", "regtype": "v"}
+{"after": "café gato pez", "register": "gato", "regtype": "v", "cursor": 0, "line": "café gato pez", "keys": "ciwZ<Esc>w.2u"}
+{"cursor": 1, "regtype": "v", "line": "café gato pez", "keys": "diww.", "register": "gato", "after": "  pez"}
+{"regtype": "v", "line": "café gato pez", "keys": "dawww.", "after": "gato", "register": " pez", "cursor": 3}
+{"register": "café", "cursor": 10, "regtype": "v", "line": "café gato pez", "keys": "yiwwp", "after": "café gcaféato pez"}
+{"register": "..", "regtype": "v", "line": "a..b  c", "keys": "ciwZ<Esc>w.", "after": "ZZb  c", "cursor": 1}
+{"after": "ZZb  c", "register": "..", "regtype": "v", "line": "a..b  c", "keys": "cawZ<Esc>w.", "cursor": 1}
+{"regtype": "v", "line": "a..b  c", "keys": "ciWZ<Esc>w.", "cursor": 3, "after": "Z  Z", "register": "c"}
+{"cursor": 4, "register": "a..", "after": "Zb  c", "regtype": "v", "line": "a..b  c", "keys": "c2iwZ<Esc>w."}
+{"cursor": 4, "line": "a..b  c", "keys": "2ciwZ<Esc>w.", "after": "Zb  c", "register": "a..", "regtype": "v"}
+{"after": "Z..b  c", "register": "..", "cursor": 1, "line": "a..b  c", "keys": "ciwZ<Esc>w.u", "regtype": "v"}
+{"regtype": "v", "line": "a..b  c", "keys": "ciwZ<Esc>w.2u", "after": "a..b  c", "register": "..", "cursor": 0}
+{"cursor": 2, "after": "..  c", "register": "b", "regtype": "v", "line": "a..b  c", "keys": "diww."}
+{"line": "a..b  c", "keys": "dawww.", "after": "..b", "register": "  c", "cursor": 2, "regtype": "v"}
+{"cursor": 2, "regtype": "v", "line": "a..b  c", "keys": "yiwwp", "after": "a.a.b  c", "register": "a"}
+{"register": "two", "regtype": "v", "line": "one two", "keys": "ciwZ<Esc>w.", "after": "Z Z", "cursor": 2}
+{"after": "Z", "register": "Ztwo", "cursor": 0, "regtype": "v", "line": "one two", "keys": "cawZ<Esc>w."}
+{"cursor": 2, "regtype": "v", "line": "one two", "keys": "ciWZ<Esc>w.", "register": "two", "after": "Z Z"}
+{"line": "one two", "keys": "c2iwZ<Esc>w.", "cursor": 3, "register": "one ", "after": "Ztwo", "regtype": "v"}
+{"cursor": 3, "regtype": "v", "line": "one two", "keys": "2ciwZ<Esc>w.", "after": "Ztwo", "register": "one "}
+{"register": "two", "cursor": 2, "line": "one two", "keys": "ciwZ<Esc>w.u", "after": "Z two", "regtype": "v"}
+{"cursor": 0, "regtype": "v", "line": "one two", "keys": "ciwZ<Esc>w.2u", "after": "one two", "register": "two"}
+{"regtype": "v", "line": "one two", "keys": "diww.", "after": " ", "register": "two", "cursor": 0}
+{"cursor": 0, "after": "", "register": "two", "regtype": "v", "line": "one two", "keys": "dawww."}
+{"regtype": "v", "line": "one two", "keys": "yiwwp", "after": "one tonewo", "register": "one", "cursor": 7}

@@ -1,0 +1,110 @@
+{
+  "cases": {
+    "back": {
+      "buffer": "first",
+      "cursor": [
+        2,
+        1
+      ],
+      "index": 0,
+      "marks": [
+        {
+          "buffer": "first",
+          "col": 1,
+          "row": 2
+        },
+        {
+          "buffer": "second",
+          "col": 2,
+          "row": 3
+        }
+      ]
+    },
+    "back_after_buffer": {
+      "buffer": "second",
+      "cursor": [
+        3,
+        2
+      ],
+      "index": 0,
+      "marks": [
+        {
+          "buffer": "second",
+          "col": 2,
+          "row": 3
+        },
+        {
+          "buffer": "first",
+          "col": 1,
+          "row": 2
+        }
+      ]
+    },
+    "before": {
+      "buffer": "first",
+      "cursor": [
+        2,
+        1
+      ],
+      "index": 0,
+      "marks": []
+    },
+    "explicit_first": {
+      "buffer": "first",
+      "cursor": [
+        2,
+        1
+      ],
+      "index": 2,
+      "marks": [
+        {
+          "buffer": "first",
+          "col": 1,
+          "row": 2
+        },
+        {
+          "buffer": "second",
+          "col": 2,
+          "row": 3
+        }
+      ]
+    },
+    "forward": {
+      "buffer": "second",
+      "cursor": [
+        3,
+        2
+      ],
+      "index": 1,
+      "marks": [
+        {
+          "buffer": "first",
+          "col": 1,
+          "row": 2
+        },
+        {
+          "buffer": "second",
+          "col": 2,
+          "row": 3
+        }
+      ]
+    },
+    "second": {
+      "buffer": "second",
+      "cursor": [
+        3,
+        2
+      ],
+      "index": 1,
+      "marks": [
+        {
+          "buffer": "first",
+          "col": 1,
+          "row": 2
+        }
+      ]
+    }
+  },
+  "jumpoptions": "view",
+  "nvim_version": "0.12.1"
+}

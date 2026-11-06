@@ -1,0 +1,6 @@
+Datos sintéticos. Este proyecto no contiene configuraciones personales.
+Probá Ctrl-h para el árbol y Ctrl-j para Agents.
+Space fp abre proyectos. Doble Escape deja el terminal en modo normal.
+TODO: probar la navegación por marcadores.
+FIXME: ejemplo sintético de un pendiente.
+NOTE: estos archivos no contienen información personal.

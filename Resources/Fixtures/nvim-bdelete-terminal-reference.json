@@ -1,0 +1,16 @@
+{
+  "listed": 0,
+  "forced": true,
+  "alive_after": false,
+  "exists": 0,
+  "current": 1,
+  "windows_after": 1,
+  "plain": {
+    "ok": false,
+    "listed": 1,
+    "e89": true,
+    "alive": true
+  },
+  "before_count": 2,
+  "file": 1
+}

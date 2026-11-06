@@ -1,0 +1,3538 @@
+{
+  "autoindent": true,
+  "cases": [
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "",
+      "regtype": "v",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  ",
+      "regtype": "v",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  ",
+      "regtype": "v",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "bravo\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "bravo\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "bravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "bravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "avo",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbr",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        1
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "br",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "avo",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "avo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbr",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "avo\n\ncharlie",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "avo\n\ncharlie",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "charlie\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "charlie\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "charlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "charlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        2
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "arlie",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\nch",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        4,
+        1
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "ch",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "arlie",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "arlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\nch",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        4,
+        2
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "arlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        4,
+        2
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "arlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "arlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\nch",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "arlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\nch",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\n\ndelta",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie"
+      ],
+      "reg": "\n\ndelta\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\n\ndelta",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie"
+      ],
+      "reg": "\n\ndelta\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ndelta",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        ""
+      ],
+      "reg": "\ndelta\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ndelta",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        ""
+      ],
+      "reg": "\ndelta\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        0
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "delta",
+      "regtype": "v",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\n",
+      "regtype": "V",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        0
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        ""
+      ],
+      "reg": "delta",
+      "regtype": "v",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "delta"
+      ],
+      "reg": "\n",
+      "regtype": "V",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        0
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        0
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n\n",
+      "regtype": "V",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n\n",
+      "regtype": "V",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        2
+      ],
+      "keys": "y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "lta",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "y{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\nde",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        7,
+        1
+      ],
+      "keys": "d}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "de"
+      ],
+      "reg": "lta",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "lta"
+      ],
+      "reg": "\nde",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        7,
+        2
+      ],
+      "keys": "2y}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        7,
+        2
+      ],
+      "keys": "y2}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2d{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "lta"
+      ],
+      "reg": "\ncharlie\n\n\nde",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "d2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "lta"
+      ],
+      "reg": "\ncharlie\n\n\nde",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    }
+  ],
+  "changes": [
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c}",
+      "lines": [
+        "  X",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "X  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c}",
+      "lines": [
+        "  X",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "Xalpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  ",
+      "regtype": "v",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        1,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "X",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "bravo\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c{",
+      "lines": [
+        "  X",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "bravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        0
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        2,
+        0
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "brX",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "avo",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "Xavo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbr",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "brX",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "avo\n\ncharlie",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        2,
+        2
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        2,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c{",
+      "lines": [
+        "  X",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X"
+      ],
+      "reg": "\ncharlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c{",
+      "lines": [
+        "  X",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n",
+      "regtype": "V",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X"
+      ],
+      "reg": "\ncharlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        3,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "charlie\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "X"
+      ],
+      "reg": "charlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  X",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\n",
+      "regtype": "V",
+      "start": [
+        4,
+        0
+      ]
+    },
+    {
+      "finish": [
+        4,
+        2
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "chX",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "arlie",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "Xarlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\nch",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        4,
+        2
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "chX"
+      ],
+      "reg": "arlie\n\n\ndelta",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        1,
+        0
+      ],
+      "keys": "c2{",
+      "lines": [
+        "Xarlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\nch",
+      "regtype": "v",
+      "start": [
+        4,
+        2
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "X"
+      ],
+      "reg": "\n\ndelta",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "X"
+      ],
+      "reg": "\n\ndelta",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        5,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  X",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n",
+      "regtype": "V",
+      "start": [
+        5,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "X"
+      ],
+      "reg": "\ndelta",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  X",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "X"
+      ],
+      "reg": "\ndelta",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        1,
+        2
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  X",
+        "",
+        "delta"
+      ],
+      "reg": "  alpha\nbravo\n\ncharlie\n\n",
+      "regtype": "V",
+      "start": [
+        6,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        0
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "X"
+      ],
+      "reg": "delta",
+      "regtype": "v",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "X",
+        "delta"
+      ],
+      "reg": "\n",
+      "regtype": "V",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        0
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "X",
+        "delta"
+      ],
+      "reg": "\ncharlie\n\n\n",
+      "regtype": "V",
+      "start": [
+        7,
+        0
+      ]
+    },
+    {
+      "finish": [
+        7,
+        2
+      ],
+      "keys": "c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "deX"
+      ],
+      "reg": "lta",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        6,
+        0
+      ],
+      "keys": "c{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "Xlta"
+      ],
+      "reg": "\nde",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        7,
+        2
+      ],
+      "keys": "2c}",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "",
+        "charlie",
+        "",
+        "",
+        "delta"
+      ],
+      "reg": "__SENTINEL__",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    },
+    {
+      "finish": [
+        3,
+        0
+      ],
+      "keys": "c2{",
+      "lines": [
+        "  alpha",
+        "bravo",
+        "Xlta"
+      ],
+      "reg": "\ncharlie\n\n\nde",
+      "regtype": "v",
+      "start": [
+        7,
+        2
+      ]
+    }
+  ],
+  "lines": [
+    "  alpha",
+    "bravo",
+    "",
+    "charlie",
+    "",
+    "",
+    "delta"
+  ],
+  "version": "0.12.1"
+}

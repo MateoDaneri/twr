@@ -1,0 +1,1988 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "shada": "NONE",
+  "plugins": false,
+  "cases": [
+    {
+      "label": ":edit-mid",
+      "prefix": ":",
+      "query": "abc",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "X",
+        "<Del>",
+        "<Home>",
+        "<End>"
+      ],
+      "observations": [
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "aXbc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 4
+        }
+      ]
+    },
+    {
+      "label": ":unicode",
+      "prefix": ":",
+      "query": "á界z",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "X",
+        "<BS>",
+        "<Home>",
+        "<Right>",
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "áX界z",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "界z",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": ":combining",
+      "prefix": ":",
+      "query": "aéz",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Right>",
+        "<Del>"
+      ],
+      "observations": [
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "aé",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": ":combining-insert",
+      "prefix": ":",
+      "query": "aéz",
+      "keys": [
+        "<Home>",
+        "<Right>",
+        "́",
+        "<Left>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "éz",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": ":emoji",
+      "prefix": ":",
+      "query": "a👩‍💻z",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 14
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "az",
+          "mode": "c",
+          "pos": 2
+        }
+      ]
+    },
+    {
+      "label": ":word-spaces-mid",
+      "prefix": ":",
+      "query": "one two   three",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 16
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 15
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 14
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 12
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 11
+        },
+        {
+          "line": "one three",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": ":word-mid",
+      "prefix": ":",
+      "query": "one two",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "one wo",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": ":word-arrows",
+      "prefix": ":",
+      "query": "foo.bar  baz-qux",
+      "keys": [
+        "<S-Left>",
+        "<S-Left>",
+        "<S-Left>",
+        "<S-Right>",
+        "<C-Right>",
+        "<C-Left>"
+      ],
+      "observations": [
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 17
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": ":word-unicode",
+      "prefix": ":",
+      "query": "á界  😀x",
+      "keys": [
+        "<C-Left>",
+        "<C-Left>",
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Right>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 13
+        }
+      ]
+    },
+    {
+      "label": ":word-nbsp",
+      "prefix": ":",
+      "query": "foo bar",
+      "keys": [
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Left>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        }
+      ]
+    },
+    {
+      "label": ":word-ideographic-space",
+      "prefix": ":",
+      "query": "foo　bar",
+      "keys": [
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Left>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        }
+      ]
+    },
+    {
+      "label": ":word-edges",
+      "prefix": ":",
+      "query": "   abc   ",
+      "keys": [
+        "<Home>",
+        "<C-Left>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Left>"
+      ],
+      "observations": [
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 8
+        }
+      ]
+    },
+    {
+      "label": ":backspace-start",
+      "prefix": ":",
+      "query": "abc",
+      "keys": [
+        "<Home>",
+        "<BS>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "bc",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": ":controls",
+      "prefix": ":",
+      "query": "abcdef",
+      "keys": [
+        "<C-b>",
+        "<C-e>",
+        "<Left>",
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "f",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": ":empty",
+      "prefix": ":",
+      "query": "",
+      "keys": [
+        "<C-u>",
+        "<C-w>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "n",
+          "pos": 0
+        }
+      ]
+    },
+    {
+      "label": "/edit-mid",
+      "prefix": "/",
+      "query": "abc",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "X",
+        "<Del>",
+        "<Home>",
+        "<End>"
+      ],
+      "observations": [
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "aXbc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 4
+        }
+      ]
+    },
+    {
+      "label": "/unicode",
+      "prefix": "/",
+      "query": "á界z",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "X",
+        "<BS>",
+        "<Home>",
+        "<Right>",
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "áX界z",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "界z",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "/combining",
+      "prefix": "/",
+      "query": "aéz",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Right>",
+        "<Del>"
+      ],
+      "observations": [
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "aé",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "/combining-insert",
+      "prefix": "/",
+      "query": "aéz",
+      "keys": [
+        "<Home>",
+        "<Right>",
+        "́",
+        "<Left>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "éz",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "/emoji",
+      "prefix": "/",
+      "query": "a👩‍💻z",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 14
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "az",
+          "mode": "c",
+          "pos": 2
+        }
+      ]
+    },
+    {
+      "label": "/word-spaces-mid",
+      "prefix": "/",
+      "query": "one two   three",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 16
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 15
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 14
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 12
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 11
+        },
+        {
+          "line": "one three",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "/word-mid",
+      "prefix": "/",
+      "query": "one two",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "one wo",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "/word-arrows",
+      "prefix": "/",
+      "query": "foo.bar  baz-qux",
+      "keys": [
+        "<S-Left>",
+        "<S-Left>",
+        "<S-Left>",
+        "<S-Right>",
+        "<C-Right>",
+        "<C-Left>"
+      ],
+      "observations": [
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 17
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "/word-unicode",
+      "prefix": "/",
+      "query": "á界  😀x",
+      "keys": [
+        "<C-Left>",
+        "<C-Left>",
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Right>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 13
+        }
+      ]
+    },
+    {
+      "label": "/word-nbsp",
+      "prefix": "/",
+      "query": "foo bar",
+      "keys": [
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Left>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        }
+      ]
+    },
+    {
+      "label": "/word-ideographic-space",
+      "prefix": "/",
+      "query": "foo　bar",
+      "keys": [
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Left>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        }
+      ]
+    },
+    {
+      "label": "/word-edges",
+      "prefix": "/",
+      "query": "   abc   ",
+      "keys": [
+        "<Home>",
+        "<C-Left>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Left>"
+      ],
+      "observations": [
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 8
+        }
+      ]
+    },
+    {
+      "label": "/backspace-start",
+      "prefix": "/",
+      "query": "abc",
+      "keys": [
+        "<Home>",
+        "<BS>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "bc",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "/controls",
+      "prefix": "/",
+      "query": "abcdef",
+      "keys": [
+        "<C-b>",
+        "<C-e>",
+        "<Left>",
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "f",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "/empty",
+      "prefix": "/",
+      "query": "",
+      "keys": [
+        "<C-u>",
+        "<C-w>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "n",
+          "pos": 0
+        }
+      ]
+    },
+    {
+      "label": "?edit-mid",
+      "prefix": "?",
+      "query": "abc",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "X",
+        "<Del>",
+        "<Home>",
+        "<End>"
+      ],
+      "observations": [
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "aXbc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "aXc",
+          "mode": "c",
+          "pos": 4
+        }
+      ]
+    },
+    {
+      "label": "?unicode",
+      "prefix": "?",
+      "query": "á界z",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "X",
+        "<BS>",
+        "<Home>",
+        "<Right>",
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "áX界z",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "á界z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "界z",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "?combining",
+      "prefix": "?",
+      "query": "aéz",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Right>",
+        "<Del>"
+      ],
+      "observations": [
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "aé",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "?combining-insert",
+      "prefix": "?",
+      "query": "aéz",
+      "keys": [
+        "<Home>",
+        "<Right>",
+        "́",
+        "<Left>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "aéz",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "áéz",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "éz",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "?emoji",
+      "prefix": "?",
+      "query": "a👩‍💻z",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 14
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "a👩‍💻z",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "az",
+          "mode": "c",
+          "pos": 2
+        }
+      ]
+    },
+    {
+      "label": "?word-spaces-mid",
+      "prefix": "?",
+      "query": "one two   three",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 16
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 15
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 14
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 12
+        },
+        {
+          "line": "one two   three",
+          "mode": "c",
+          "pos": 11
+        },
+        {
+          "line": "one three",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "?word-mid",
+      "prefix": "?",
+      "query": "one two",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "one two",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "one wo",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "?word-arrows",
+      "prefix": "?",
+      "query": "foo.bar  baz-qux",
+      "keys": [
+        "<S-Left>",
+        "<S-Left>",
+        "<S-Left>",
+        "<S-Right>",
+        "<C-Right>",
+        "<C-Left>"
+      ],
+      "observations": [
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 17
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo.bar  baz-qux",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "?word-unicode",
+      "prefix": "?",
+      "query": "á界  😀x",
+      "keys": [
+        "<C-Left>",
+        "<C-Left>",
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Right>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 13
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "á界  😀x",
+          "mode": "c",
+          "pos": 13
+        }
+      ]
+    },
+    {
+      "label": "?word-nbsp",
+      "prefix": "?",
+      "query": "foo bar",
+      "keys": [
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Left>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo bar",
+          "mode": "c",
+          "pos": 9
+        }
+      ]
+    },
+    {
+      "label": "?word-ideographic-space",
+      "prefix": "?",
+      "query": "foo　bar",
+      "keys": [
+        "<C-Left>",
+        "<C-Right>",
+        "<S-Left>",
+        "<S-Right>"
+      ],
+      "observations": [
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "foo　bar",
+          "mode": "c",
+          "pos": 10
+        }
+      ]
+    },
+    {
+      "label": "?word-edges",
+      "prefix": "?",
+      "query": "   abc   ",
+      "keys": [
+        "<Home>",
+        "<C-Left>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Right>",
+        "<C-Left>"
+      ],
+      "observations": [
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 8
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "   abc   ",
+          "mode": "c",
+          "pos": 8
+        }
+      ]
+    },
+    {
+      "label": "?backspace-start",
+      "prefix": "?",
+      "query": "abc",
+      "keys": [
+        "<Home>",
+        "<BS>",
+        "<Right>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abc",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "bc",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "?controls",
+      "prefix": "?",
+      "query": "abcdef",
+      "keys": [
+        "<C-b>",
+        "<C-e>",
+        "<Left>",
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "abcdef",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "f",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "?empty",
+      "prefix": "?",
+      "query": "",
+      "keys": [
+        "<C-u>",
+        "<C-w>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "n",
+          "pos": 0
+        }
+      ]
+    }
+  ]
+}

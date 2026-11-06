@@ -1,0 +1,4719 @@
+{
+  "cases": [
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n",
+      "row": 1,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h",
+      "row": 1,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n\n",
+      "row": 1,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h",
+      "row": 1,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n",
+      "row": 1,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\n",
+      "row": 1,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n\n",
+      "row": 1,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\n",
+      "row": 1,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h\né\n ",
+      "row": 1,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h",
+      "row": 1,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h\né\n \n \n ",
+      "row": 1,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h",
+      "row": 1,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        1
+      ],
+      "reg": "__SENTINEL__",
+      "row": 1,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        1
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        1
+      ],
+      "reg": "éllo\néclair\n\n",
+      "row": 1,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "hé",
+      "row": 1,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        1
+      ],
+      "reg": "éllo\néclair\n\n界world\n\n",
+      "row": 1,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        1
+      ],
+      "reg": "é",
+      "row": 1,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        1
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n",
+      "row": 1,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\n",
+      "row": 1,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n\n",
+      "row": 1,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\n",
+      "row": 1,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        1
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "hé\néc\n  ",
+      "row": 1,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "hé",
+      "row": 1,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "hé\néc\n  \n界\n  ",
+      "row": 1,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        1,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        1
+      ],
+      "reg": "é",
+      "row": 1,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        1
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        2,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n\n",
+      "row": 2,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\né",
+      "row": 2,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n\n界world\n\n",
+      "row": 2,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "é",
+      "row": 2,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        2,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n\n",
+      "row": 2,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n",
+      "row": 2,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n\n界world\n\n",
+      "row": 2,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n",
+      "row": 2,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        2,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "é\n ",
+      "row": 2,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h\né",
+      "row": 2,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "é\n \n \n ",
+      "row": 2,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        2,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "é",
+      "row": 2,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        2,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        2,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 2,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        2,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        2,
+        3
+      ],
+      "reg": "clair\n\n",
+      "row": 2,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néc",
+      "row": 2,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        2,
+        3
+      ],
+      "reg": "clair\n\n界world\n\n",
+      "row": 2,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        2,
+        3
+      ],
+      "reg": "c",
+      "row": 2,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        2,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n\n",
+      "row": 2,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n",
+      "row": 2,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n\n界world\n\n",
+      "row": 2,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éclair\n",
+      "row": 2,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        2,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éc\n  ",
+      "row": 2,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "hé\néc",
+      "row": 2,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        2,
+        0
+      ],
+      "reg": "éc\n  \n界\n  ",
+      "row": 2,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        2,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        2,
+        3
+      ],
+      "reg": "c",
+      "row": 2,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        2,
+        3
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 3,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n",
+      "row": 3,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \nend☕",
+      "row": 3,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n",
+      "row": 3,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 3,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n",
+      "row": 3,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \nend☕\n",
+      "row": 3,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n",
+      "row": 3,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " \n \n ",
+      "row": 3,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h\né\n ",
+      "row": 3,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "     \n界wor\n     \n     \nend☕",
+      "row": 3,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00165",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " ",
+      "row": 3,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 3,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 3,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n",
+      "row": 3,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \nend☕",
+      "row": 3,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n",
+      "row": 3,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 3,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n",
+      "row": 3,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \nend☕\n",
+      "row": 3,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n",
+      "row": 3,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " \n \n ",
+      "row": 3,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h\né\n ",
+      "row": 3,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "     \n界wor\n     \n     \nend☕",
+      "row": 3,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00165",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " ",
+      "row": 3,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界world\n\n",
+      "row": 4,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界",
+      "row": 4,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界world\n\n   \nend☕",
+      "row": 4,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界",
+      "row": 4,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界world\n\n",
+      "row": 4,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n",
+      "row": 4,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界world\n\n   \nend☕\n",
+      "row": 4,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n",
+      "row": 4,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界\n  ",
+      "row": 4,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "  \n界",
+      "row": 4,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界wor\n     \n     \nend☕",
+      "row": 4,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00165",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        4,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "hé\néc\n  \n界",
+      "row": 4,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 4,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        4,
+        3
+      ],
+      "reg": "world\n\n",
+      "row": 4,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界w",
+      "row": 4,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        4,
+        3
+      ],
+      "reg": "world\n\n   \nend☕",
+      "row": 4,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界w",
+      "row": 4,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界world\n\n",
+      "row": 4,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n",
+      "row": 4,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界world\n\n   \nend☕\n",
+      "row": 4,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n",
+      "row": 4,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        4,
+        0
+      ],
+      "reg": "界w\n   ",
+      "row": 4,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00163",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "   \n界w",
+      "row": 4,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00163",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        4,
+        3
+      ],
+      "reg": "wor\n   \n   \nd☕",
+      "row": 4,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00163",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        4,
+        3
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "hél\nécl\n   \n界w",
+      "row": 4,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00163",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \nend☕",
+      "row": 5,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 5,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n",
+      "row": 5,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n\n",
+      "row": 5,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \nend☕\n",
+      "row": 5,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 5,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n",
+      "row": 5,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n\n",
+      "row": 5,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "     \n     \nend☕",
+      "row": 5,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00165",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " \n \n ",
+      "row": 5,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": " ",
+      "row": 5,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h\né\n \n \n ",
+      "row": 5,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        1,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 5,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \nend☕",
+      "row": 5,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 5,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n",
+      "row": 5,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n\n",
+      "row": 5,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \nend☕\n",
+      "row": 5,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n",
+      "row": 5,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n",
+      "row": 5,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "héllo\néclair\n\n界world\n\n",
+      "row": 5,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "     \n     \nend☕",
+      "row": 5,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00165",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " \n \n ",
+      "row": 5,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": " ",
+      "row": 5,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        1,
+        0
+      ],
+      "reg": "h\né\n \n \n ",
+      "row": 5,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        1,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        6,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": "   \nend☕",
+      "row": 6,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n ",
+      "row": 6,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": " ",
+      "row": 6,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        6,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n ",
+      "row": 6,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": "   \nend☕\n",
+      "row": 6,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \n",
+      "row": 6,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": "   \n",
+      "row": 6,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        6,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \n",
+      "row": 6,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": "     \nend☕",
+      "row": 6,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00165",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": " \n ",
+      "row": 6,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": " ",
+      "row": 6,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        6,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        6,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " \n \n \n ",
+      "row": 6,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        6,
+        1
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        6,
+        1
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 6,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        6,
+        1
+      ],
+      "reg": "  \nend☕",
+      "row": 6,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n  ",
+      "row": 6,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        6,
+        1
+      ],
+      "reg": " ",
+      "row": 6,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        6,
+        1
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n  ",
+      "row": 6,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": "   \nend☕\n",
+      "row": 6,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \n",
+      "row": 6,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        6,
+        0
+      ],
+      "reg": "   \n",
+      "row": 6,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        6,
+        1
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \n",
+      "row": 6,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        6,
+        1
+      ],
+      "reg": "    \nnd☕",
+      "row": 6,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00164",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "  \n  ",
+      "row": 6,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        6,
+        1
+      ],
+      "reg": " ",
+      "row": 6,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        6,
+        1
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        6,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "  \n界\n  \n  ",
+      "row": 6,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "end☕",
+      "row": 7,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \ne",
+      "row": 7,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "e",
+      "row": 7,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \ne",
+      "row": 7,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "end☕\n",
+      "row": 7,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \nend☕\n",
+      "row": 7,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "end☕\n",
+      "row": 7,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \nend☕\n",
+      "row": 7,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "end☕",
+      "row": 7,
+      "origin": "",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00165",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": " \n \ne",
+      "row": 7,
+      "origin": "",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "e",
+      "row": 7,
+      "origin": "",
+      "motion": "2}",
+      "finish": [
+        7,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        0
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": " \n \n \n \ne",
+      "row": 7,
+      "origin": "",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        3
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        3
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        5,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        7,
+        1
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        1
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        3,
+        0
+      ],
+      "observed_mode": "n",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "__SENTINEL__",
+      "row": 7,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "normal"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        7,
+        1
+      ],
+      "reg": "nd☕",
+      "row": 7,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \nen",
+      "row": 7,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        7,
+        1
+      ],
+      "reg": "n",
+      "row": 7,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        1
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "v",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \nen",
+      "row": 7,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "v",
+      "mode": "visual"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "end☕\n",
+      "row": 7,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "\n   \nend☕\n",
+      "row": 7,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        7,
+        0
+      ],
+      "reg": "end☕\n",
+      "row": 7,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        1
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "V",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "\n界world\n\n   \nend☕\n",
+      "row": 7,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "V",
+      "mode": "line"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        7,
+        1
+      ],
+      "reg": "nd☕",
+      "row": 7,
+      "origin": "l",
+      "motion": "}",
+      "finish": [
+        7,
+        3
+      ],
+      "regtype": "\u00164",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        5,
+        0
+      ],
+      "reg": "  \n  \nen",
+      "row": 7,
+      "origin": "l",
+      "motion": "{",
+      "finish": [
+        5,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        7,
+        1
+      ],
+      "reg": "n",
+      "row": 7,
+      "origin": "l",
+      "motion": "2}",
+      "finish": [
+        7,
+        1
+      ],
+      "regtype": "\u00161",
+      "mode": "block"
+    },
+    {
+      "anchor": [
+        7,
+        1
+      ],
+      "observed_mode": "\u0016",
+      "yank_position": [
+        3,
+        0
+      ],
+      "reg": "  \n界\n  \n  \nen",
+      "row": 7,
+      "origin": "l",
+      "motion": "2{",
+      "finish": [
+        3,
+        0
+      ],
+      "regtype": "\u00162",
+      "mode": "block"
+    }
+  ],
+  "version": "0.12.1",
+  "lines": [
+    "héllo",
+    "éclair",
+    "",
+    "界world",
+    "",
+    "   ",
+    "end☕"
+  ],
+  "virtualedit": "block"
+}

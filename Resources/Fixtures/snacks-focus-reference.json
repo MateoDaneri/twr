@@ -1,0 +1,621 @@
+{
+  "timeoutlen": 300,
+  "neovim": "NVIM v0.12.1",
+  "snacks_commit": "882c996cf28183f4d63640de0b4c02ec886d01f2",
+  "scope": "Plugin runtime, synthetic items, no preview window, isolated HOME/XDG and RPC UI80x24",
+  "source_sha256": {
+    "lua/snacks/picker/actions.lua": "c648231ca169b32527d4736556311987d6247ad7c330a24dbfef9b89a90c123b",
+    "lua/snacks/picker/config/defaults.lua": "62ae47a4e9f3a649dbd206faa36218e9faae0f5b369b254057e41836b1ea8598",
+    "lua/snacks/picker/core/input.lua": "ea4864afa885b6541c4015c28be9b83a1b058539a70d3d4050ae6175cda16cb6"
+  },
+  "cases": [
+    {
+      "label": "slash-roundtrip",
+      "keys": [
+        "<Esc>",
+        "/",
+        "j",
+        "/"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 3,
+          "mode": "i",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        }
+      ]
+    },
+    {
+      "label": "alt-roundtrip",
+      "keys": [
+        "<M-w>",
+        "j",
+        "<M-w>"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 3,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 3,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 3,
+          "mode": "i",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        }
+      ]
+    },
+    {
+      "label": "list-insert",
+      "keys": [
+        "<Esc>",
+        "/",
+        "i"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 3,
+          "mode": "i",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        }
+      ]
+    },
+    {
+      "label": "list-escape",
+      "keys": [
+        "<Esc>",
+        "/",
+        "<Esc>"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "origin",
+          "query": "",
+          "marks": 0,
+          "cursor": 0,
+          "mode": "n",
+          "open": false,
+          "selected": 0
+        }
+      ]
+    },
+    {
+      "label": "list-q",
+      "keys": [
+        "<Esc>",
+        "/",
+        "q"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "origin",
+          "query": "",
+          "marks": 0,
+          "cursor": 0,
+          "mode": "n",
+          "open": false,
+          "selected": 0
+        }
+      ]
+    },
+    {
+      "label": "slash-literal",
+      "keys": [
+        "/"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row/",
+          "marks": 0,
+          "cursor": 4,
+          "mode": "i",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        }
+      ]
+    },
+    {
+      "label": "extremes",
+      "keys": [
+        "<Esc>",
+        "G",
+        "j",
+        "k",
+        "gg",
+        "k"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        }
+      ]
+    },
+    {
+      "label": "list-extremes",
+      "keys": [
+        "<Esc>",
+        "/",
+        "G",
+        "j",
+        "k",
+        "gg",
+        "k"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        }
+      ]
+    },
+    {
+      "label": "marks-last",
+      "keys": [
+        "<Esc>",
+        "G",
+        "<Tab>",
+        "<S-Tab>"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 1,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 2,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 59
+        }
+      ]
+    },
+    {
+      "label": "marks-focus",
+      "keys": [
+        "<Esc>",
+        "/",
+        "<Tab>",
+        "/",
+        "<Esc>",
+        "/"
+      ],
+      "initial": {
+        "focus": "input",
+        "query": "row",
+        "marks": 0,
+        "cursor": 3,
+        "mode": "i",
+        "open": true,
+        "count": 60,
+        "selected": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 0,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 0
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 1,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 1,
+          "cursor": 3,
+          "mode": "i",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        },
+        {
+          "focus": "input",
+          "query": "row",
+          "marks": 1,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        },
+        {
+          "focus": "list",
+          "query": "row",
+          "marks": 1,
+          "cursor": 2,
+          "mode": "n",
+          "open": true,
+          "count": 60,
+          "selected": 1
+        }
+      ]
+    }
+  ]
+}

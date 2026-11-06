@@ -1,0 +1,282 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "plugins": false,
+  "shada": "NONE",
+  "ignorecase": true,
+  "smartcase": true,
+  "source": "/private/tmp/tw-search-reference-r85ytcwb/results.json",
+  "cases": [
+    {
+      "query": "uno",
+      "text": "uno UNO Uno",
+      "label": "smart",
+      "expected_positions": [
+        0,
+        4,
+        8
+      ]
+    },
+    {
+      "query": "Uno",
+      "text": "uno UNO Uno",
+      "label": "capital",
+      "expected_positions": [
+        8
+      ]
+    },
+    {
+      "query": "\\cUno",
+      "text": "uno UNO Uno",
+      "label": "force",
+      "expected_positions": [
+        0,
+        4,
+        8
+      ]
+    },
+    {
+      "query": "\\Cuno",
+      "text": "uno UNO Uno",
+      "label": "exact",
+      "expected_positions": [
+        0
+      ]
+    },
+    {
+      "query": "foo.bar",
+      "text": "foo.bar fooXbar",
+      "label": "dot",
+      "expected_positions": [
+        0,
+        8
+      ]
+    },
+    {
+      "query": "foo\\.bar",
+      "text": "foo.bar fooXbar",
+      "label": "literal-dot",
+      "expected_positions": [
+        0
+      ]
+    },
+    {
+      "query": "id\\d\\+",
+      "text": "id12 id3",
+      "label": "plus",
+      "expected_positions": [
+        0,
+        5
+      ]
+    },
+    {
+      "query": "\\vid\\d+",
+      "text": "id12 id3",
+      "label": "very",
+      "expected_positions": [
+        0,
+        5
+      ]
+    },
+    {
+      "query": "\\(uno\\|id\\)\\d*",
+      "text": "uno id12 UNO id3",
+      "label": "group",
+      "expected_positions": [
+        0,
+        4,
+        9,
+        13
+      ]
+    },
+    {
+      "query": "\\Vfoo.bar",
+      "text": "foo.bar fooXbar",
+      "label": "literal",
+      "expected_positions": [
+        0
+      ]
+    },
+    {
+      "query": "\\<abc\\>",
+      "text": "abc abcabc",
+      "label": "word",
+      "expected_positions": [
+        0
+      ]
+    },
+    {
+      "query": "^id",
+      "text": "x\nid12\nid3",
+      "label": "start",
+      "expected_positions": [
+        2,
+        7
+      ]
+    },
+    {
+      "query": "$",
+      "text": "ab\nxyz\n",
+      "label": "end",
+      "expected_positions": [
+        1,
+        5
+      ]
+    },
+    {
+      "query": "^",
+      "text": "ab\nxyz\n",
+      "label": "empty",
+      "expected_positions": [
+        0,
+        3
+      ]
+    },
+    {
+      "query": "\\l\\+",
+      "text": "abc ABC aBc",
+      "label": "lower",
+      "expected_positions": [
+        0,
+        8,
+        10
+      ]
+    },
+    {
+      "query": "[a-z]\\+",
+      "text": "abc ABC aBc",
+      "label": "class",
+      "expected_positions": [
+        0,
+        4,
+        8
+      ]
+    },
+    {
+      "query": "aa",
+      "text": "aaaa",
+      "label": "overlap",
+      "expected_positions": [
+        0,
+        2
+      ]
+    },
+    {
+      "query": "ñ",
+      "text": "ñÑ ññ",
+      "label": "unicode",
+      "expected_positions": [
+        0,
+        1,
+        3,
+        4
+      ]
+    },
+    {
+      "query": "a\\{2,3}",
+      "text": "a aa aaa aaaa",
+      "label": "range",
+      "expected_positions": [
+        2,
+        5,
+        9
+      ]
+    },
+    {
+      "query": "a\\{-}",
+      "text": "a aa aaa",
+      "label": "lazy",
+      "expected_positions": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "query": "[[:digit:]]\\+",
+      "text": "id12 id3",
+      "label": "posix",
+      "expected_positions": [
+        2,
+        7
+      ]
+    },
+    {
+      "query": "\\Mfoo.bar",
+      "text": "foo.bar fooXbar",
+      "label": "nomagic",
+      "expected_positions": [
+        0
+      ]
+    },
+    {
+      "query": "b\\_s\\+c",
+      "text": "ab\ncd",
+      "label": "newline",
+      "expected_positions": [
+        1
+      ]
+    },
+    {
+      "query": "\\<abc\\>",
+      "text": "abc xabc abc!",
+      "label": "boundary",
+      "expected_positions": [
+        0,
+        9
+      ]
+    },
+    {
+      "query": "\\_.\\{3}",
+      "text": "a\nb\nc\nd",
+      "label": "multiline-repeat",
+      "expected_positions": [
+        0,
+        2,
+        4
+      ]
+    },
+    {
+      "query": "bar$\\c",
+      "text": "fooBAR\nbar",
+      "label": "case-flag-after-end",
+      "expected_positions": [
+        3,
+        7
+      ]
+    },
+    {
+      "query": "[[:space:]]",
+      "text": "a \nb\tc",
+      "label": "collection-space",
+      "expected_positions": [
+        1,
+        4
+      ]
+    },
+    {
+      "query": "[\\n]",
+      "text": "a\nb\nc",
+      "label": "collection-newline",
+      "expected_positions": [
+        0,
+        2,
+        4
+      ]
+    },
+    {
+      "query": "[^a\\n]",
+      "text": "a\nb\nc",
+      "label": "negative-collection-newline",
+      "expected_positions": [
+        2,
+        4
+      ]
+    }
+  ]
+}

@@ -1,0 +1,937 @@
+{"keys":"d2iw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["alpha","beta"],"register":"alpha\nbeta","regtype":"v","after":["alpha","beta"]}
+{"keys":"d2iw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["ab","xyz"],"register":"ab\nxyz","regtype":"v","after":["ab","xyz"]}
+{"keys":"d2iw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["漢字","カナ"],"register":"漢字\nカナ","regtype":"v","after":["漢字","カナ"]}
+{"keys":"d2iw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["café","piña"],"register":"café\npiña","regtype":"v","after":["café","piña"]}
+{"keys":"d2iw","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["42","100"],"register":"42\n100\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["42","100"],"register":"42\n100","regtype":"v","after":["42","100"]}
+{"keys":"d2iw","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["é","á"],"register":"é\ná\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["é","á"],"register":"é\ná","regtype":"v","after":["é","á"]}
+{"keys":"d2iw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["x","😀"],"register":"x\n😀","regtype":"v","after":["x","😀"]}
+{"keys":"d2iw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"d2aw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"y2iw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"keys":"y2aw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"keys":"d2iW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"d2aW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"y2iW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"keys":"y2aW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"keys":"$d2iw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"$d2aw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"$y2iw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"keys":"$y2aw","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"keys":"$d2iW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"$d2aW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux\n","regtype":"V","after":[""]}
+{"keys":"$y2iW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"keys":"$y2aW","row":0,"col":0,"lines":["foo_bar","quux"],"register":"foo_bar\nquux","regtype":"v","after":["foo_bar","quux"]}
+{"after":["prefix","suffix"],"keys":"jd2iw","row":1,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jd2aw","row":1,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jy2iw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jy2aw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jd2iW","row":1,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jd2aW","row":1,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jy2iW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jy2aW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"j$d2iw","row":1,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"j$d2aw","row":1,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"j$y2iw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"j$y2aw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"j$d2iW","row":1,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"j$d2aW","row":1,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"j$y2iW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"j$y2aW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jld2iw","row":1,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jld2aw","row":1,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jly2iw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jly2aw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jld2iW","row":1,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jld2aW","row":1,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta","suffix"],"regtype":"V"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jly2iW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix","alpha","beta","suffix"],"keys":"jly2aW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"],"regtype":"v"}
+{"after":["prefix"],"keys":"jd2iw","row":0,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix"],"keys":"jd2aw","row":0,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix","alpha","beta"],"keys":"jy2iw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix","alpha","beta"],"keys":"jy2aw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix"],"keys":"jd2iW","row":0,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix"],"keys":"jd2aW","row":0,"col":0,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix","alpha","beta"],"keys":"jy2iW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix","alpha","beta"],"keys":"jy2aW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2iw","row":0,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix"],"keys":"j$d2aw","row":0,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix","alpha","beta"],"keys":"j$y2iw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix","alpha","beta"],"keys":"j$y2aw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2iW","row":0,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix"],"keys":"j$d2aW","row":0,"col":5,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix","alpha","beta"],"keys":"j$y2iW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix","alpha","beta"],"keys":"j$y2aW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix"],"keys":"jld2iw","row":0,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix"],"keys":"jld2aw","row":0,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix","alpha","beta"],"keys":"jly2iw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix","alpha","beta"],"keys":"jly2aw","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix"],"keys":"jld2iW","row":0,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix"],"keys":"jld2aW","row":0,"col":1,"register":"alpha\nbeta\n","lines":["prefix","alpha","beta"],"regtype":"V"}
+{"after":["prefix","alpha","beta"],"keys":"jly2iW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix","alpha","beta"],"keys":"jly2aW","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jd2iw","row":1,"col":0,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jd2aw","row":1,"col":0,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jy2iw","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jy2aw","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jd2iW","row":1,"col":0,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jd2aW","row":1,"col":0,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jy2iW","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jy2aW","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"j$d2iw","row":1,"col":5,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"j$d2aw","row":1,"col":5,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"j$y2iw","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"j$y2aw","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"j$d2iW","row":1,"col":5,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"j$d2aW","row":1,"col":5,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"j$y2iW","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"j$y2aW","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jld2iw","row":1,"col":2,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jld2aw","row":1,"col":2,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jly2iw","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jly2aw","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jld2iW","row":1,"col":2,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jld2aW","row":1,"col":2,"register":"漢字\nカナ\n","lines":["prefix","漢字","カナ","suffix"],"regtype":"V"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jly2iW","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","漢字","カナ","suffix"],"keys":"jly2aW","row":1,"col":0,"register":"漢字\nカナ","lines":["prefix","漢字","カナ","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jd2iw","row":1,"col":0,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jd2aw","row":1,"col":0,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","42","100","suffix"],"keys":"jy2iw","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","42","100","suffix"],"keys":"jy2aw","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jd2iW","row":1,"col":0,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jd2aW","row":1,"col":0,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","42","100","suffix"],"keys":"jy2iW","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","42","100","suffix"],"keys":"jy2aW","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"j$d2iw","row":1,"col":5,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"j$d2aw","row":1,"col":5,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","42","100","suffix"],"keys":"j$y2iw","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","42","100","suffix"],"keys":"j$y2aw","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"j$d2iW","row":1,"col":5,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"j$d2aW","row":1,"col":5,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","42","100","suffix"],"keys":"j$y2iW","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","42","100","suffix"],"keys":"j$y2aW","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jld2iw","row":1,"col":1,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jld2aw","row":1,"col":1,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","42","100","suffix"],"keys":"jly2iw","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","42","100","suffix"],"keys":"jly2aw","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","suffix"],"keys":"jld2iW","row":1,"col":1,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","suffix"],"keys":"jld2aW","row":1,"col":1,"register":"42\n100\n","lines":["prefix","42","100","suffix"],"regtype":"V"}
+{"after":["prefix","42","100","suffix"],"keys":"jly2iW","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"after":["prefix","42","100","suffix"],"keys":"jly2aW","row":1,"col":0,"register":"42\n100","lines":["prefix","42","100","suffix"],"regtype":"v"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jd2iw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jd2aw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jy2iw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jy2aw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jd2iW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jd2aW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jy2iW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jy2aW"}
+{"lines":["prefix","café","piña","末尾"],"col":1,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"j$d2iw"}
+{"lines":["prefix","café","piña","末尾"],"col":1,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"j$d2aw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"j$y2iw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"j$y2aw"}
+{"lines":["prefix","café","piña","末尾"],"col":1,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"j$d2iW"}
+{"lines":["prefix","café","piña","末尾"],"col":1,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"j$d2aW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"j$y2iW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"j$y2aW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jld2iw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jld2aw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jly2iw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jly2aw"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jld2iW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña\n","row":1,"regtype":"V","after":["prefix","末尾"],"keys":"jld2aW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jly2iW"}
+{"lines":["prefix","café","piña","末尾"],"col":0,"register":"café\npiña","row":1,"regtype":"v","after":["prefix","café","piña","末尾"],"keys":"jly2aW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jd2iw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jd2aw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jy2iw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jy2aw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jd2iW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jd2aW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jy2iW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jy2aW"}
+{"lines":["prefix","😀","👍","suffix"],"col":5,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"j$d2iw"}
+{"lines":["prefix","😀","👍","suffix"],"col":5,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"j$d2aw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"j$y2iw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"j$y2aw"}
+{"lines":["prefix","😀","👍","suffix"],"col":5,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"j$d2iW"}
+{"lines":["prefix","😀","👍","suffix"],"col":5,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"j$d2aW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"j$y2iW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"j$y2aW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jld2iw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jld2aw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jly2iw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jly2aw"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jld2iW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jld2aW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jly2iW"}
+{"lines":["prefix","😀","👍","suffix"],"col":0,"register":"😀\n👍","row":1,"regtype":"v","after":["prefix","😀","👍","suffix"],"keys":"jly2aW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jd2iw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jd2aw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jy2iw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jy2aw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jd2iW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jd2aW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jy2iW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jy2aW"}
+{"lines":["prefix","é","漢字","wide界"],"col":4,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"j$d2iw"}
+{"lines":["prefix","é","漢字","wide界"],"col":4,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"j$d2aw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"j$y2iw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"j$y2aw"}
+{"lines":["prefix","é","漢字","wide界"],"col":4,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"j$d2iW"}
+{"lines":["prefix","é","漢字","wide界"],"col":4,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"j$d2aW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"j$y2iW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"j$y2aW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jld2iw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jld2aw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jly2iw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jly2aw"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jld2iW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字\n","row":1,"regtype":"V","after":["prefix","wide界"],"keys":"jld2aW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jly2iW"}
+{"lines":["prefix","é","漢字","wide界"],"col":0,"register":"é\n漢字","row":1,"regtype":"v","after":["prefix","é","漢字","wide界"],"keys":"jly2aW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jd2iw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jd2aw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jy2iw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jy2aw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jd2iW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jd2aW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jy2iW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jy2aW"}
+{"lines":["prefix","abc","def","café"],"col":3,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"j$d2iw"}
+{"lines":["prefix","abc","def","café"],"col":3,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"j$d2aw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"j$y2iw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"j$y2aw"}
+{"lines":["prefix","abc","def","café"],"col":3,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"j$d2iW"}
+{"lines":["prefix","abc","def","café"],"col":3,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"j$d2aW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"j$y2iW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"j$y2aW"}
+{"lines":["prefix","abc","def","café"],"col":1,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jld2iw"}
+{"lines":["prefix","abc","def","café"],"col":1,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jld2aw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jly2iw"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jly2aw"}
+{"lines":["prefix","abc","def","café"],"col":1,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jld2iW"}
+{"lines":["prefix","abc","def","café"],"col":1,"register":"abc\ndef\n","row":1,"regtype":"V","after":["prefix","café"],"keys":"jld2aW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jly2iW"}
+{"lines":["prefix","abc","def","café"],"col":0,"register":"abc\ndef","row":1,"regtype":"v","after":["prefix","abc","def","café"],"keys":"jly2aW"}
+{"after":["one  four"],"keys":"$d2iw","row":0,"lines":["one two","three four"],"register":"two\nthree","col":4,"regtype":"v"}
+{"after":["one two","three four"],"keys":"$y2iw","row":0,"lines":["one two","three four"],"register":"two\nthree","col":4,"regtype":"v"}
+{"after":["one  four"],"keys":"$d2iW","row":0,"lines":["one two","three four"],"register":"two\nthree","col":4,"regtype":"v"}
+{"after":["one two","three four"],"keys":"$y2iW","row":0,"lines":["one two","three four"],"register":"two\nthree","col":4,"regtype":"v"}
+{"after":["alphabeta"],"keys":"$d2iw","row":0,"lines":["alpha  "," beta"],"register":"  \n ","col":5,"regtype":"v"}
+{"after":["alpha  "," beta"],"keys":"$y2iw","row":0,"lines":["alpha  "," beta"],"register":"  \n ","col":5,"regtype":"v"}
+{"after":["alphabeta"],"keys":"$d2iW","row":0,"lines":["alpha  "," beta"],"register":"  \n ","col":5,"regtype":"v"}
+{"after":["alpha  "," beta"],"keys":"$y2iW","row":0,"lines":["alpha  "," beta"],"register":"  \n ","col":5,"regtype":"v"}
+{"after":["漢字 カナ"],"keys":"$d2iw","row":0,"lines":["漢字 あ","  カナ"],"register":"あ\n  ","col":3,"regtype":"v"}
+{"after":["漢字 あ","  カナ"],"keys":"$y2iw","row":0,"lines":["漢字 あ","  カナ"],"register":"あ\n  ","col":3,"regtype":"v"}
+{"after":["漢字 カナ"],"keys":"$d2iW","row":0,"lines":["漢字 あ","  カナ"],"register":"あ\n  ","col":3,"regtype":"v"}
+{"after":["漢字 あ","  カナ"],"keys":"$y2iW","row":0,"lines":["漢字 あ","  カナ"],"register":"あ\n  ","col":3,"regtype":"v"}
+{"after":[" baz"],"keys":"$d2iw","row":0,"lines":["foo","bar baz"],"register":"foo\nbar","col":0,"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"$y2iw","row":0,"lines":["foo","bar baz"],"register":"foo\nbar","col":0,"regtype":"v"}
+{"after":[" baz"],"keys":"$d2iW","row":0,"lines":["foo","bar baz"],"register":"foo\nbar","col":0,"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"$y2iW","row":0,"lines":["foo","bar baz"],"register":"foo\nbar","col":0,"regtype":"v"}
+{"after":["bar baz"],"keys":"$d2iw","row":0,"lines":["foo"," bar baz"],"register":"foo\n ","col":0,"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"$y2iw","row":0,"lines":["foo"," bar baz"],"register":"foo\n ","col":0,"regtype":"v"}
+{"after":["bar baz"],"keys":"$d2iW","row":0,"lines":["foo"," bar baz"],"register":"foo\n ","col":0,"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"$y2iW","row":0,"lines":["foo"," bar baz"],"register":"foo\n ","col":0,"regtype":"v"}
+{"after":["x  dog"],"keys":"$d2iw","row":0,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","col":2,"regtype":"v"}
+{"after":["x 😀","🐈 dog"],"keys":"$y2iw","row":0,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","col":2,"regtype":"v"}
+{"after":["x  dog"],"keys":"$d2iW","row":0,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","col":2,"regtype":"v"}
+{"after":["x 😀","🐈 dog"],"keys":"$y2iW","row":0,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","col":2,"regtype":"v"}
+{"after":["x más texto"],"keys":"$d2iw","row":0,"lines":["x café"," más texto"],"register":"café\n ","col":2,"regtype":"v"}
+{"after":["x café"," más texto"],"keys":"$y2iw","row":0,"lines":["x café"," más texto"],"register":"café\n ","col":2,"regtype":"v"}
+{"after":["x más texto"],"keys":"$d2iW","row":0,"lines":["x café"," más texto"],"register":"café\n ","col":2,"regtype":"v"}
+{"after":["x café"," más texto"],"keys":"$y2iW","row":0,"lines":["x café"," más texto"],"register":"café\n ","col":2,"regtype":"v"}
+{"after":["foo. next"],"keys":"$d2iw","row":0,"lines":["foo.bar","thing next"],"register":"bar\nthing","col":4,"regtype":"v"}
+{"after":["foo.bar","thing next"],"keys":"$y2iw","row":0,"lines":["foo.bar","thing next"],"register":"bar\nthing","col":4,"regtype":"v"}
+{"after":[" next"],"keys":"$d2iW","row":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","col":0,"regtype":"v"}
+{"after":["foo.bar","thing next"],"keys":"$y2iW","row":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","col":0,"regtype":"v"}
+{"after":["q  x"],"keys":"$d2iw","row":0,"lines":["q .","! x"],"register":".\n!","col":2,"regtype":"v"}
+{"after":["q .","! x"],"keys":"$y2iw","row":0,"lines":["q .","! x"],"register":".\n!","col":2,"regtype":"v"}
+{"after":["q  x"],"keys":"$d2iW","row":0,"lines":["q .","! x"],"register":".\n!","col":2,"regtype":"v"}
+{"after":["q .","! x"],"keys":"$y2iW","row":0,"lines":["q .","! x"],"register":".\n!","col":2,"regtype":"v"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["two","three four"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["one two","three four"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["two","three four"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["one two","three four"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["two","three four"],"keys":"ld2iw"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["one two","three four"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["two","three four"],"keys":"ld2iW"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["one two","three four"],"keys":"ly2iW"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["two","three four"],"keys":"lld2iw"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["one two","three four"],"keys":"lly2iw"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["two","three four"],"keys":"lld2iW"}
+{"row":0,"col":0,"lines":["one two","three four"],"register":"one ","regtype":"v","after":["one two","three four"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":[""," beta"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":["alpha  "," beta"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":[""," beta"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":["alpha  "," beta"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":[""," beta"],"keys":"ld2iw"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":["alpha  "," beta"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":[""," beta"],"keys":"ld2iW"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":["alpha  "," beta"],"keys":"ly2iW"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":[""," beta"],"keys":"lld2iw"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":["alpha  "," beta"],"keys":"lly2iw"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":[""," beta"],"keys":"lld2iW"}
+{"row":0,"col":0,"lines":["alpha  "," beta"],"register":"alpha  ","regtype":"v","after":["alpha  "," beta"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["あ","  カナ"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["漢字 あ","  カナ"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["あ","  カナ"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["漢字 あ","  カナ"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["あ","  カナ"],"keys":"ld2iw"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["漢字 あ","  カナ"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["あ","  カナ"],"keys":"ld2iW"}
+{"row":0,"col":0,"lines":["漢字 あ","  カナ"],"register":"漢字 ","regtype":"v","after":["漢字 あ","  カナ"],"keys":"ly2iW"}
+{"row":0,"col":1,"lines":["漢字 あ","  カナ"],"register":" あ","regtype":"v","after":["漢字","  カナ"],"keys":"lld2iw"}
+{"row":0,"col":2,"lines":["漢字 あ","  カナ"],"register":" あ","regtype":"v","after":["漢字 あ","  カナ"],"keys":"lly2iw"}
+{"row":0,"col":1,"lines":["漢字 あ","  カナ"],"register":" あ","regtype":"v","after":["漢字","  カナ"],"keys":"lld2iW"}
+{"row":0,"col":2,"lines":["漢字 あ","  カナ"],"register":" あ","regtype":"v","after":["漢字 あ","  カナ"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":[" baz"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":["foo","bar baz"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":[" baz"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":["foo","bar baz"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":[" baz"],"keys":"ld2iw"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":["foo","bar baz"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":[" baz"],"keys":"ld2iW"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":["foo","bar baz"],"keys":"ly2iW"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":[" baz"],"keys":"lld2iw"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":["foo","bar baz"],"keys":"lly2iw"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":[" baz"],"keys":"lld2iW"}
+{"row":0,"col":0,"lines":["foo","bar baz"],"register":"foo\nbar","regtype":"v","after":["foo","bar baz"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["bar baz"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["foo"," bar baz"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["bar baz"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["foo"," bar baz"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["bar baz"],"keys":"ld2iw"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["foo"," bar baz"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["bar baz"],"keys":"ld2iW"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["foo"," bar baz"],"keys":"ly2iW"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["bar baz"],"keys":"lld2iw"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["foo"," bar baz"],"keys":"lly2iw"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["bar baz"],"keys":"lld2iW"}
+{"row":0,"col":0,"lines":["foo"," bar baz"],"register":"foo\n ","regtype":"v","after":["foo"," bar baz"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["x 😀","🐈 dog"],"register":"x ","regtype":"v","after":["😀","🐈 dog"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["x 😀","🐈 dog"],"register":"x ","regtype":"v","after":["x 😀","🐈 dog"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["x 😀","🐈 dog"],"register":"x ","regtype":"v","after":["😀","🐈 dog"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["x 😀","🐈 dog"],"register":"x ","regtype":"v","after":["x 😀","🐈 dog"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["x 😀","🐈 dog"],"register":" 😀","regtype":"v","after":["x","🐈 dog"],"keys":"ld2iw"}
+{"row":0,"col":1,"lines":["x 😀","🐈 dog"],"register":" 😀","regtype":"v","after":["x 😀","🐈 dog"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["x 😀","🐈 dog"],"register":" 😀","regtype":"v","after":["x","🐈 dog"],"keys":"ld2iW"}
+{"row":0,"col":1,"lines":["x 😀","🐈 dog"],"register":" 😀","regtype":"v","after":["x 😀","🐈 dog"],"keys":"ly2iW"}
+{"row":0,"col":2,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","regtype":"v","after":["x  dog"],"keys":"lld2iw"}
+{"row":0,"col":2,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","regtype":"v","after":["x 😀","🐈 dog"],"keys":"lly2iw"}
+{"row":0,"col":2,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","regtype":"v","after":["x  dog"],"keys":"lld2iW"}
+{"row":0,"col":2,"lines":["x 😀","🐈 dog"],"register":"😀\n🐈","regtype":"v","after":["x 😀","🐈 dog"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["x café"," más texto"],"register":"x ","regtype":"v","after":["café"," más texto"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["x café"," más texto"],"register":"x ","regtype":"v","after":["x café"," más texto"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["x café"," más texto"],"register":"x ","regtype":"v","after":["café"," más texto"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["x café"," más texto"],"register":"x ","regtype":"v","after":["x café"," más texto"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["x café"," más texto"],"register":" café","regtype":"v","after":["x"," más texto"],"keys":"ld2iw"}
+{"row":0,"col":1,"lines":["x café"," más texto"],"register":" café","regtype":"v","after":["x café"," más texto"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["x café"," más texto"],"register":" café","regtype":"v","after":["x"," más texto"],"keys":"ld2iW"}
+{"row":0,"col":1,"lines":["x café"," más texto"],"register":" café","regtype":"v","after":["x café"," más texto"],"keys":"ly2iW"}
+{"row":0,"col":2,"lines":["x café"," más texto"],"register":"café\n ","regtype":"v","after":["x más texto"],"keys":"lld2iw"}
+{"row":0,"col":2,"lines":["x café"," más texto"],"register":"café\n ","regtype":"v","after":["x café"," más texto"],"keys":"lly2iw"}
+{"row":0,"col":2,"lines":["x café"," más texto"],"register":"café\n ","regtype":"v","after":["x más texto"],"keys":"lld2iW"}
+{"row":0,"col":2,"lines":["x café"," más texto"],"register":"café\n ","regtype":"v","after":["x café"," más texto"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.","regtype":"v","after":["bar","thing next"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.","regtype":"v","after":["foo.bar","thing next"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","regtype":"v","after":[" next"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","regtype":"v","after":["foo.bar","thing next"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.","regtype":"v","after":["bar","thing next"],"keys":"ld2iw"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.","regtype":"v","after":["foo.bar","thing next"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","regtype":"v","after":[" next"],"keys":"ld2iW"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","regtype":"v","after":["foo.bar","thing next"],"keys":"ly2iW"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.","regtype":"v","after":["bar","thing next"],"keys":"lld2iw"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.","regtype":"v","after":["foo.bar","thing next"],"keys":"lly2iw"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","regtype":"v","after":[" next"],"keys":"lld2iW"}
+{"row":0,"col":0,"lines":["foo.bar","thing next"],"register":"foo.bar\nthing","regtype":"v","after":["foo.bar","thing next"],"keys":"lly2iW"}
+{"row":0,"col":0,"lines":["q .","! x"],"register":"q ","regtype":"v","after":[".","! x"],"keys":"d2iw"}
+{"row":0,"col":0,"lines":["q .","! x"],"register":"q ","regtype":"v","after":["q .","! x"],"keys":"y2iw"}
+{"row":0,"col":0,"lines":["q .","! x"],"register":"q ","regtype":"v","after":[".","! x"],"keys":"d2iW"}
+{"row":0,"col":0,"lines":["q .","! x"],"register":"q ","regtype":"v","after":["q .","! x"],"keys":"y2iW"}
+{"row":0,"col":0,"lines":["q .","! x"],"register":" .","regtype":"v","after":["q","! x"],"keys":"ld2iw"}
+{"row":0,"col":1,"lines":["q .","! x"],"register":" .","regtype":"v","after":["q .","! x"],"keys":"ly2iw"}
+{"row":0,"col":0,"lines":["q .","! x"],"register":" .","regtype":"v","after":["q","! x"],"keys":"ld2iW"}
+{"row":0,"col":1,"lines":["q .","! x"],"register":" .","regtype":"v","after":["q .","! x"],"keys":"ly2iW"}
+{"row":0,"col":2,"lines":["q .","! x"],"register":".\n!","regtype":"v","after":["q  x"],"keys":"lld2iw"}
+{"row":0,"col":2,"lines":["q .","! x"],"register":".\n!","regtype":"v","after":["q .","! x"],"keys":"lly2iw"}
+{"row":0,"col":2,"lines":["q .","! x"],"register":".\n!","regtype":"v","after":["q  x"],"keys":"lld2iW"}
+{"row":0,"col":2,"lines":["q .","! x"],"register":".\n!","regtype":"v","after":["q .","! x"],"keys":"lly2iW"}
+{"after":["alpha"],"keys":"$d2iw","row":0,"col":4,"register":"  \nbeta","regtype":"v","lines":["alpha  ","beta"]}
+{"after":["alpha  ","beta"],"keys":"$y2iw","row":0,"col":5,"register":"  \nbeta","regtype":"v","lines":["alpha  ","beta"]}
+{"after":["alpha"],"keys":"$d2iW","row":0,"col":4,"register":"  \nbeta","regtype":"v","lines":["alpha  ","beta"]}
+{"after":["alpha  ","beta"],"keys":"$y2iW","row":0,"col":5,"register":"  \nbeta","regtype":"v","lines":["alpha  ","beta"]}
+{"after":["one beta"],"keys":"$d2iw","row":0,"col":4,"register":"two\n ","regtype":"v","lines":["one two"," beta"]}
+{"after":["one two"," beta"],"keys":"$y2iw","row":0,"col":4,"register":"two\n ","regtype":"v","lines":["one two"," beta"]}
+{"after":["one beta"],"keys":"$d2iW","row":0,"col":4,"register":"two\n ","regtype":"v","lines":["one two"," beta"]}
+{"after":["one two"," beta"],"keys":"$y2iW","row":0,"col":4,"register":"two\n ","regtype":"v","lines":["one two"," beta"]}
+{"after":["aa"],"keys":"$d2iw","row":0,"col":1,"register":"  \n👍","regtype":"v","lines":["aa  ","👍"]}
+{"after":["aa  ","👍"],"keys":"$y2iw","row":0,"col":2,"register":"  \n👍","regtype":"v","lines":["aa  ","👍"]}
+{"after":["aa"],"keys":"$d2iW","row":0,"col":1,"register":"  \n👍","regtype":"v","lines":["aa  ","👍"]}
+{"after":["aa  ","👍"],"keys":"$y2iW","row":0,"col":2,"register":"  \n👍","regtype":"v","lines":["aa  ","👍"]}
+{"after":["x 汉字 rest"],"keys":"$d2iw","row":0,"col":2,"register":"test\n ","regtype":"v","lines":["x test"," 汉字 rest"]}
+{"after":["x test"," 汉字 rest"],"keys":"$y2iw","row":0,"col":2,"register":"test\n ","regtype":"v","lines":["x test"," 汉字 rest"]}
+{"after":["x 汉字 rest"],"keys":"$d2iW","row":0,"col":2,"register":"test\n ","regtype":"v","lines":["x test"," 汉字 rest"]}
+{"after":["x test"," 汉字 rest"],"keys":"$y2iW","row":0,"col":2,"register":"test\n ","regtype":"v","lines":["x test"," 汉字 rest"]}
+{"after":["one four"],"keys":"$d2aw","row":0,"col":4,"register":"two\nthree ","lines":["one two","three four"],"regtype":"v"}
+{"after":["one two","three four"],"keys":"$y2aw","row":0,"col":4,"register":"two\nthree ","lines":["one two","three four"],"regtype":"v"}
+{"after":["one four"],"keys":"$d2aW","row":0,"col":4,"register":"two\nthree ","lines":["one two","three four"],"regtype":"v"}
+{"after":["one two","three four"],"keys":"$y2aW","row":0,"col":4,"register":"two\nthree ","lines":["one two","three four"],"regtype":"v"}
+{"after":["","three four"],"keys":"ld2aw","row":0,"col":0,"register":"one two","lines":["one two","three four"],"regtype":"v"}
+{"after":["one two","three four"],"keys":"ly2aw","row":0,"col":0,"register":"one two","lines":["one two","three four"],"regtype":"v"}
+{"after":["","three four"],"keys":"ld2aW","row":0,"col":0,"register":"one two","lines":["one two","three four"],"regtype":"v"}
+{"after":["one two","three four"],"keys":"ly2aW","row":0,"col":0,"register":"one two","lines":["one two","three four"],"regtype":"v"}
+{"after":["漢字"],"keys":"$d2aw","row":0,"col":1,"register":" あ\n  カナ","lines":["漢字 あ","  カナ"],"regtype":"v"}
+{"after":["漢字 あ","  カナ"],"keys":"$y2aw","row":0,"col":2,"register":" あ\n  カナ","lines":["漢字 あ","  カナ"],"regtype":"v"}
+{"after":["漢字"],"keys":"$d2aW","row":0,"col":1,"register":" あ\n  カナ","lines":["漢字 あ","  カナ"],"regtype":"v"}
+{"after":["漢字 あ","  カナ"],"keys":"$y2aW","row":0,"col":2,"register":" あ\n  カナ","lines":["漢字 あ","  カナ"],"regtype":"v"}
+{"after":["baz"],"keys":"d2aw","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"y2aw","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["baz"],"keys":"d2aW","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"y2aW","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["baz"],"keys":"ld2aw","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"ly2aw","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["baz"],"keys":"ld2aW","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"ly2aW","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["baz"],"keys":"$d2aw","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"$y2aw","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["baz"],"keys":"$d2aW","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":["foo","bar baz"],"keys":"$y2aW","row":0,"col":0,"register":"foo\nbar ","lines":["foo","bar baz"],"regtype":"v"}
+{"after":[" baz"],"keys":"d2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"y2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":[" baz"],"keys":"d2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"y2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":[" baz"],"keys":"ld2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"ly2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":[" baz"],"keys":"ld2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"ly2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":[" baz"],"keys":"$d2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"$y2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":[" baz"],"keys":"$d2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":["foo"," bar baz"],"keys":"$y2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar baz"],"regtype":"v"}
+{"after":[""],"keys":"d2aw","row":0,"col":0,"register":"alpha  \n beta\n","lines":["alpha  "," beta"],"regtype":"V"}
+{"after":["alpha  "," beta"],"keys":"y2aw","row":0,"col":0,"register":"alpha  \n beta","lines":["alpha  "," beta"],"regtype":"v"}
+{"after":[""],"keys":"d2aW","row":0,"col":0,"register":"alpha  \n beta\n","lines":["alpha  "," beta"],"regtype":"V"}
+{"after":["alpha  "," beta"],"keys":"y2aW","row":0,"col":0,"register":"alpha  \n beta","lines":["alpha  "," beta"],"regtype":"v"}
+{"after":[""],"keys":"ld2aw","row":0,"col":0,"register":"alpha  \n beta\n","lines":["alpha  "," beta"],"regtype":"V"}
+{"after":["alpha  "," beta"],"keys":"ly2aw","row":0,"col":0,"register":"alpha  \n beta","lines":["alpha  "," beta"],"regtype":"v"}
+{"after":[""],"keys":"ld2aW","row":0,"col":0,"register":"alpha  \n beta\n","lines":["alpha  "," beta"],"regtype":"V"}
+{"after":["alpha  "," beta"],"keys":"ly2aW","row":0,"col":0,"register":"alpha  \n beta","lines":["alpha  "," beta"],"regtype":"v"}
+{"after":["left value"],"keys":"5ld2aw","row":0,"col":4,"register":" end  \n next","lines":["left end  "," next value"],"regtype":"v"}
+{"after":["left end  "," next value"],"keys":"5ly2aw","row":0,"col":4,"register":" end  \n next","lines":["left end  "," next value"],"regtype":"v"}
+{"after":["left value"],"keys":"5ld2aW","row":0,"col":4,"register":" end  \n next","lines":["left end  "," next value"],"regtype":"v"}
+{"after":["left end  "," next value"],"keys":"5ly2aW","row":0,"col":4,"register":" end  \n next","lines":["left end  "," next value"],"regtype":"v"}
+{"after":[""],"keys":"d2aw","row":0,"col":0,"register":"foo\n bar\n","lines":["foo"," bar"],"regtype":"V"}
+{"after":["foo"," bar"],"keys":"y2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar"],"regtype":"v"}
+{"after":[""],"keys":"d2aW","row":0,"col":0,"register":"foo\n bar\n","lines":["foo"," bar"],"regtype":"V"}
+{"after":["foo"," bar"],"keys":"y2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar"],"regtype":"v"}
+{"after":[""],"keys":"ld2aw","row":0,"col":0,"register":"foo\n bar\n","lines":["foo"," bar"],"regtype":"V"}
+{"after":["foo"," bar"],"keys":"ly2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar"],"regtype":"v"}
+{"after":[""],"keys":"ld2aW","row":0,"col":0,"register":"foo\n bar\n","lines":["foo"," bar"],"regtype":"V"}
+{"after":["foo"," bar"],"keys":"ly2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar"],"regtype":"v"}
+{"after":[""],"keys":"$d2aw","row":0,"col":0,"register":"foo\n bar\n","lines":["foo"," bar"],"regtype":"V"}
+{"after":["foo"," bar"],"keys":"$y2aw","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar"],"regtype":"v"}
+{"after":[""],"keys":"$d2aW","row":0,"col":0,"register":"foo\n bar\n","lines":["foo"," bar"],"regtype":"V"}
+{"after":["foo"," bar"],"keys":"$y2aW","row":0,"col":0,"register":"foo\n bar","lines":["foo"," bar"],"regtype":"v"}
+{"after":["start"],"keys":"$d2aw","row":0,"col":4,"register":" end\nnext","lines":["start end","next"],"regtype":"v"}
+{"after":["start end","next"],"keys":"$y2aw","row":0,"col":5,"register":" end\nnext","lines":["start end","next"],"regtype":"v"}
+{"after":["start"],"keys":"$d2aW","row":0,"col":4,"register":" end\nnext","lines":["start end","next"],"regtype":"v"}
+{"after":["start end","next"],"keys":"$y2aW","row":0,"col":5,"register":" end\nnext","lines":["start end","next"],"regtype":"v"}
+{"after":["a rest"],"keys":"$d2aw","row":0,"col":2,"register":"!\n? ","lines":["a !","? rest"],"regtype":"v"}
+{"after":["a !","? rest"],"keys":"$y2aw","row":0,"col":2,"register":"!\n? ","lines":["a !","? rest"],"regtype":"v"}
+{"after":["a rest"],"keys":"$d2aW","row":0,"col":2,"register":"!\n? ","lines":["a !","? rest"],"regtype":"v"}
+{"after":["a !","? rest"],"keys":"$y2aW","row":0,"col":2,"register":"!\n? ","lines":["a !","? rest"],"regtype":"v"}
+{"after":["x texto"],"keys":"$d2aw","row":0,"col":1,"register":" café\n más","lines":["x café"," más texto"],"regtype":"v"}
+{"after":["x café"," más texto"],"keys":"$y2aw","row":0,"col":1,"register":" café\n más","lines":["x café"," más texto"],"regtype":"v"}
+{"after":["x texto"],"keys":"$d2aW","row":0,"col":1,"register":" café\n más","lines":["x café"," más texto"],"regtype":"v"}
+{"after":["x café"," más texto"],"keys":"$y2aW","row":0,"col":1,"register":" café\n más","lines":["x café"," más texto"],"regtype":"v"}
+{"after":["x dog"],"keys":"$d2aw","row":0,"col":2,"register":"😀\n🐈 ","lines":["x 😀","🐈 dog"],"regtype":"v"}
+{"after":["x 😀","🐈 dog"],"keys":"$y2aw","row":0,"col":2,"register":"😀\n🐈 ","lines":["x 😀","🐈 dog"],"regtype":"v"}
+{"after":["x dog"],"keys":"$d2aW","row":0,"col":2,"register":"😀\n🐈 ","lines":["x 😀","🐈 dog"],"regtype":"v"}
+{"after":["x 😀","🐈 dog"],"keys":"$y2aW","row":0,"col":2,"register":"😀\n🐈 ","lines":["x 😀","🐈 dog"],"regtype":"v"}
+{"after":["foo.next"],"keys":"$d2aw","row":0,"col":4,"register":"bar\nthing ","lines":["foo.bar","thing next"],"regtype":"v"}
+{"after":["foo.bar","thing next"],"keys":"$y2aw","row":0,"col":4,"register":"bar\nthing ","lines":["foo.bar","thing next"],"regtype":"v"}
+{"after":["next"],"keys":"$d2aW","row":0,"col":0,"register":"foo.bar\nthing ","lines":["foo.bar","thing next"],"regtype":"v"}
+{"after":["foo.bar","thing next"],"keys":"$y2aW","row":0,"col":0,"register":"foo.bar\nthing ","lines":["foo.bar","thing next"],"regtype":"v"}
+{"register":"two\nthree ","row":1,"regtype":"v","after":["prefix","one four","suffix"],"keys":"j$d2aw","lines":["prefix","one two","three four","suffix"],"col":4}
+{"register":"two\nthree ","row":1,"regtype":"v","after":["prefix","one two","three four","suffix"],"keys":"j$y2aw","lines":["prefix","one two","three four","suffix"],"col":4}
+{"register":"two\nthree ","row":1,"regtype":"v","after":["prefix","one four","suffix"],"keys":"j$d2aW","lines":["prefix","one two","three four","suffix"],"col":4}
+{"register":"two\nthree ","row":1,"regtype":"v","after":["prefix","one two","three four","suffix"],"keys":"j$y2aW","lines":["prefix","one two","three four","suffix"],"col":4}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix"," baz","suffix"],"keys":"jd2aw","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar baz","suffix"],"keys":"jy2aw","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix"," baz","suffix"],"keys":"jd2aW","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar baz","suffix"],"keys":"jy2aW","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix"," baz","suffix"],"keys":"j$d2aw","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar baz","suffix"],"keys":"j$y2aw","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix"," baz","suffix"],"keys":"j$d2aW","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar baz","suffix"],"keys":"j$y2aW","lines":["prefix","foo"," bar baz","suffix"],"col":0}
+{"register":"foo\n bar\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jd2aw","lines":["prefix","foo"," bar","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar","suffix"],"keys":"jy2aw","lines":["prefix","foo"," bar","suffix"],"col":0}
+{"register":"foo\n bar\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"jd2aW","lines":["prefix","foo"," bar","suffix"],"col":0}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar","suffix"],"keys":"jy2aW","lines":["prefix","foo"," bar","suffix"],"col":0}
+{"register":"foo\n bar\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"j$d2aw","lines":["prefix","foo"," bar","suffix"],"col":5}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar","suffix"],"keys":"j$y2aw","lines":["prefix","foo"," bar","suffix"],"col":0}
+{"register":"foo\n bar\n","row":1,"regtype":"V","after":["prefix","suffix"],"keys":"j$d2aW","lines":["prefix","foo"," bar","suffix"],"col":5}
+{"register":"foo\n bar","row":1,"regtype":"v","after":["prefix","foo"," bar","suffix"],"keys":"j$y2aW","lines":["prefix","foo"," bar","suffix"],"col":0}
+{"register":" café\n más","row":1,"regtype":"v","after":["prefix","x texto"],"keys":"j$d2aw","lines":["prefix","x café"," más texto"],"col":1}
+{"register":" café\n más","row":1,"regtype":"v","after":["prefix","x café"," más texto"],"keys":"j$y2aw","lines":["prefix","x café"," más texto"],"col":1}
+{"register":" café\n más","row":1,"regtype":"v","after":["prefix","x texto"],"keys":"j$d2aW","lines":["prefix","x café"," más texto"],"col":1}
+{"register":" café\n más","row":1,"regtype":"v","after":["prefix","x café"," más texto"],"keys":"j$y2aW","lines":["prefix","x café"," más texto"],"col":1}
+{"register":"bar\nthing ","row":1,"regtype":"v","after":["prefix","foo.next","suffix"],"keys":"j$d2aw","lines":["prefix","foo.bar","thing next","suffix"],"col":4}
+{"register":"bar\nthing ","row":1,"regtype":"v","after":["prefix","foo.bar","thing next","suffix"],"keys":"j$y2aw","lines":["prefix","foo.bar","thing next","suffix"],"col":4}
+{"register":"foo.bar\nthing ","row":1,"regtype":"v","after":["prefix","next","suffix"],"keys":"j$d2aW","lines":["prefix","foo.bar","thing next","suffix"],"col":0}
+{"register":"foo.bar\nthing ","row":1,"regtype":"v","after":["prefix","foo.bar","thing next","suffix"],"keys":"j$y2aW","lines":["prefix","foo.bar","thing next","suffix"],"col":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["   baz"],"keys":"2ld2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["  foo"," bar baz"],"keys":"2ly2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["   baz"],"keys":"2ld2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["  foo"," bar baz"],"keys":"2ly2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["   baz"],"keys":"3ld2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["  foo"," bar baz"],"keys":"3ly2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["   baz"],"keys":"3ld2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["  foo"," bar baz"],"keys":"3ly2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["   baz"],"keys":"$d2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["  foo"," bar baz"],"keys":"$y2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["   baz"],"keys":"$d2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar baz"],"after":["  foo"," bar baz"],"keys":"$y2aW","row":0}
+{"col":0,"register":"  foo\n bar\n","regtype":"V","lines":["  foo"," bar"],"after":[""],"keys":"2ld2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar"],"after":["  foo"," bar"],"keys":"2ly2aw","row":0}
+{"col":0,"register":"  foo\n bar\n","regtype":"V","lines":["  foo"," bar"],"after":[""],"keys":"2ld2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar"],"after":["  foo"," bar"],"keys":"2ly2aW","row":0}
+{"col":0,"register":"  foo\n bar\n","regtype":"V","lines":["  foo"," bar"],"after":[""],"keys":"$d2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar"],"after":["  foo"," bar"],"keys":"$y2aw","row":0}
+{"col":0,"register":"  foo\n bar\n","regtype":"V","lines":["  foo"," bar"],"after":[""],"keys":"$d2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["  foo"," bar"],"after":["  foo"," bar"],"keys":"$y2aW","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  baz"],"keys":"2ld2aw","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  foo","bar baz"],"keys":"2ly2aw","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  baz"],"keys":"2ld2aW","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  foo","bar baz"],"keys":"2ly2aW","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  baz"],"keys":"$d2aw","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  foo","bar baz"],"keys":"$y2aw","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  baz"],"keys":"$d2aW","row":0}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["  foo","bar baz"],"after":["  foo","bar baz"],"keys":"$y2aW","row":0}
+{"col":0,"register":"  foo\nbar\n","regtype":"V","lines":["  foo","bar"],"after":[""],"keys":"2ld2aw","row":0}
+{"col":2,"register":"foo\nbar","regtype":"v","lines":["  foo","bar"],"after":["  foo","bar"],"keys":"2ly2aw","row":0}
+{"col":0,"register":"  foo\nbar\n","regtype":"V","lines":["  foo","bar"],"after":[""],"keys":"2ld2aW","row":0}
+{"col":2,"register":"foo\nbar","regtype":"v","lines":["  foo","bar"],"after":["  foo","bar"],"keys":"2ly2aW","row":0}
+{"col":0,"register":"  foo\nbar\n","regtype":"V","lines":["  foo","bar"],"after":[""],"keys":"$d2aw","row":0}
+{"col":2,"register":"foo\nbar","regtype":"v","lines":["  foo","bar"],"after":["  foo","bar"],"keys":"$y2aw","row":0}
+{"col":0,"register":"  foo\nbar\n","regtype":"V","lines":["  foo","bar"],"after":[""],"keys":"$d2aW","row":0}
+{"col":2,"register":"foo\nbar","regtype":"v","lines":["  foo","bar"],"after":["  foo","bar"],"keys":"$y2aW","row":0}
+{"col":3,"register":" foo\n b","regtype":"v","lines":["  a foo"," b next"],"after":["  a next"],"keys":"$d2aw","row":0}
+{"col":3,"register":" foo\n b","regtype":"v","lines":["  a foo"," b next"],"after":["  a foo"," b next"],"keys":"$y2aw","row":0}
+{"col":3,"register":" foo\n b","regtype":"v","lines":["  a foo"," b next"],"after":["  a next"],"keys":"$d2aW","row":0}
+{"col":3,"register":" foo\n b","regtype":"v","lines":["  a foo"," b next"],"after":["  a foo"," b next"],"keys":"$y2aW","row":0}
+{"col":2,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","suffix"],"keys":"j2ld2aw","row":1}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","  foo"," bar","suffix"],"keys":"j2ly2aw","row":1}
+{"col":2,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","suffix"],"keys":"j2ld2aW","row":1}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","  foo"," bar","suffix"],"keys":"j2ly2aW","row":1}
+{"col":5,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","suffix"],"keys":"j$d2aw","row":1}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","  foo"," bar","suffix"],"keys":"j$y2aw","row":1}
+{"col":5,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","suffix"],"keys":"j$d2aW","row":1}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar","suffix"],"after":["prefix","  foo"," bar","suffix"],"keys":"j$y2aW","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  baz","suffix"],"keys":"j2ld2aw","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  foo","bar baz","suffix"],"keys":"j2ly2aw","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  baz","suffix"],"keys":"j2ld2aW","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  foo","bar baz","suffix"],"keys":"j2ly2aW","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  baz","suffix"],"keys":"j$d2aw","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  foo","bar baz","suffix"],"keys":"j$y2aw","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  baz","suffix"],"keys":"j$d2aW","row":1}
+{"col":2,"register":"foo\nbar ","regtype":"v","lines":["prefix","  foo","bar baz","suffix"],"after":["prefix","  foo","bar baz","suffix"],"keys":"j$y2aW","row":1}
+{"col":2,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar"],"after":["prefix"],"keys":"j2ld2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar"],"after":["prefix","  foo"," bar"],"keys":"j2ly2aw","row":1}
+{"col":2,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar"],"after":["prefix"],"keys":"j2ld2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar"],"after":["prefix","  foo"," bar"],"keys":"j2ly2aW","row":1}
+{"col":5,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar"],"after":["prefix"],"keys":"j$d2aw","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar"],"after":["prefix","  foo"," bar"],"keys":"j$y2aw","row":1}
+{"col":5,"register":"  foo\n bar\n","regtype":"V","lines":["prefix","  foo"," bar"],"after":["prefix"],"keys":"j$d2aW","row":0}
+{"col":2,"register":"foo\n bar","regtype":"v","lines":["prefix","  foo"," bar"],"after":["prefix","  foo"," bar"],"keys":"j$y2aW","row":1}
+{"register":"漢字\n カナ","regtype":"v","after":["   text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"2ld2aw"}
+{"register":"漢字\n カナ","regtype":"v","after":["  漢字"," カナ text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"2ly2aw"}
+{"register":"漢字\n カナ","regtype":"v","after":["   text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"2ld2aW"}
+{"register":"漢字\n カナ","regtype":"v","after":["  漢字"," カナ text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"2ly2aW"}
+{"register":"漢字\n カナ","regtype":"v","after":["   text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"$d2aw"}
+{"register":"漢字\n カナ","regtype":"v","after":["  漢字"," カナ text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"$y2aw"}
+{"register":"漢字\n カナ","regtype":"v","after":["   text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"$d2aW"}
+{"register":"漢字\n カナ","regtype":"v","after":["  漢字"," カナ text"],"lines":["  漢字"," カナ text"],"row":0,"col":2,"keys":"$y2aW"}
+{"register":"  café\n piña\n","regtype":"V","after":[""],"lines":["  café"," piña"],"row":0,"col":0,"keys":"2ld2aw"}
+{"register":"café\n piña","regtype":"v","after":["  café"," piña"],"lines":["  café"," piña"],"row":0,"col":2,"keys":"2ly2aw"}
+{"register":"  café\n piña\n","regtype":"V","after":[""],"lines":["  café"," piña"],"row":0,"col":0,"keys":"2ld2aW"}
+{"register":"café\n piña","regtype":"v","after":["  café"," piña"],"lines":["  café"," piña"],"row":0,"col":2,"keys":"2ly2aW"}
+{"register":"  café\n piña\n","regtype":"V","after":[""],"lines":["  café"," piña"],"row":0,"col":0,"keys":"$d2aw"}
+{"register":"café\n piña","regtype":"v","after":["  café"," piña"],"lines":["  café"," piña"],"row":0,"col":2,"keys":"$y2aw"}
+{"register":"  café\n piña\n","regtype":"V","after":[""],"lines":["  café"," piña"],"row":0,"col":0,"keys":"$d2aW"}
+{"register":"café\n piña","regtype":"v","after":["  café"," piña"],"lines":["  café"," piña"],"row":0,"col":2,"keys":"$y2aW"}
+{"regtype":"v","after":["\t baz"],"keys":"ld2aw","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"v","after":["\tfoo","\tbar baz"],"keys":"ly2aw","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"v","after":["\t baz"],"keys":"ld2aW","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"v","after":["\tfoo","\tbar baz"],"keys":"ly2aW","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"v","after":["\t baz"],"keys":"$d2aw","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"v","after":["\tfoo","\tbar baz"],"keys":"$y2aw","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"v","after":["\t baz"],"keys":"$d2aW","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"v","after":["\tfoo","\tbar baz"],"keys":"$y2aW","row":0,"col":1,"lines":["\tfoo","\tbar baz"],"register":"foo\n\tbar"}
+{"regtype":"V","after":[""],"keys":"ld2aw","row":0,"col":0,"lines":["\tfoo","\tbar"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["\tfoo","\tbar"],"keys":"ly2aw","row":0,"col":1,"lines":["\tfoo","\tbar"],"register":"foo\n\tbar"}
+{"regtype":"V","after":[""],"keys":"ld2aW","row":0,"col":0,"lines":["\tfoo","\tbar"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["\tfoo","\tbar"],"keys":"ly2aW","row":0,"col":1,"lines":["\tfoo","\tbar"],"register":"foo\n\tbar"}
+{"regtype":"V","after":[""],"keys":"$d2aw","row":0,"col":0,"lines":["\tfoo","\tbar"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["\tfoo","\tbar"],"keys":"$y2aw","row":0,"col":1,"lines":["\tfoo","\tbar"],"register":"foo\n\tbar"}
+{"regtype":"V","after":[""],"keys":"$d2aW","row":0,"col":0,"lines":["\tfoo","\tbar"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["\tfoo","\tbar"],"keys":"$y2aW","row":0,"col":1,"lines":["\tfoo","\tbar"],"register":"foo\n\tbar"}
+{"regtype":"V","after":["prefix","suffix"],"keys":"jld2aw","row":1,"col":2,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["prefix","\tfoo","\tbar","suffix"],"keys":"jly2aw","row":1,"col":1,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"foo\n\tbar"}
+{"regtype":"V","after":["prefix","suffix"],"keys":"jld2aW","row":1,"col":2,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["prefix","\tfoo","\tbar","suffix"],"keys":"jly2aW","row":1,"col":1,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"foo\n\tbar"}
+{"regtype":"V","after":["prefix","suffix"],"keys":"j$d2aw","row":1,"col":5,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["prefix","\tfoo","\tbar","suffix"],"keys":"j$y2aw","row":1,"col":1,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"foo\n\tbar"}
+{"regtype":"V","after":["prefix","suffix"],"keys":"j$d2aW","row":1,"col":5,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"\tfoo\n\tbar\n"}
+{"regtype":"v","after":["prefix","\tfoo","\tbar","suffix"],"keys":"j$y2aW","row":1,"col":1,"lines":["prefix","\tfoo","\tbar","suffix"],"register":"foo\n\tbar"}
+{"lines":["alpha","","tail"],"after":["tail"],"keys":"d2iw","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["alpha","","tail"],"keys":"y2iw","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["tail"],"keys":"d2iW","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["alpha","","tail"],"keys":"y2iW","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["tail"],"keys":"ld2iw","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["alpha","","tail"],"keys":"ly2iw","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["tail"],"keys":"ld2iW","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["alpha","","tail"],"keys":"ly2iW","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["tail"],"keys":"$d2iw","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["alpha","","tail"],"keys":"$y2iw","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["tail"],"keys":"$d2iW","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["alpha","","tail"],"after":["alpha","","tail"],"keys":"$y2iW","row":0,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","suffix"],"keys":"jd2iw","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","alpha","","suffix"],"keys":"jy2iw","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","suffix"],"keys":"jd2iW","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","alpha","","suffix"],"keys":"jy2iW","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","suffix"],"keys":"jld2iw","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","alpha","","suffix"],"keys":"jly2iw","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","suffix"],"keys":"jld2iW","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","alpha","","suffix"],"keys":"jly2iW","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","suffix"],"keys":"j$d2iw","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","alpha","","suffix"],"keys":"j$y2iw","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","suffix"],"keys":"j$d2iW","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","alpha","","suffix"],"after":["prefix","alpha","","suffix"],"keys":"j$y2iW","row":1,"col":0,"regtype":"V","register":"alpha\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","suffix"],"keys":"jd2iw","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","漢字","","suffix"],"keys":"jy2iw","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","suffix"],"keys":"jd2iW","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","漢字","","suffix"],"keys":"jy2iW","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","suffix"],"keys":"jld2iw","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","漢字","","suffix"],"keys":"jly2iw","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","suffix"],"keys":"jld2iW","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","漢字","","suffix"],"keys":"jly2iW","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","suffix"],"keys":"j$d2iw","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","漢字","","suffix"],"keys":"j$y2iw","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","suffix"],"keys":"j$d2iW","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","漢字","","suffix"],"after":["prefix","漢字","","suffix"],"keys":"j$y2iW","row":1,"col":0,"regtype":"V","register":"漢字\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","suffix"],"keys":"jd2iw","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","café","","suffix"],"keys":"jy2iw","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","suffix"],"keys":"jd2iW","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","café","","suffix"],"keys":"jy2iW","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","suffix"],"keys":"jld2iw","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","café","","suffix"],"keys":"jly2iw","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","suffix"],"keys":"jld2iW","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","café","","suffix"],"keys":"jly2iW","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","suffix"],"keys":"j$d2iw","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","café","","suffix"],"keys":"j$y2iw","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","suffix"],"keys":"j$d2iW","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["prefix","café","","suffix"],"after":["prefix","café","","suffix"],"keys":"j$y2iW","row":1,"col":0,"regtype":"V","register":"café\n\n"}
+{"lines":["one","","next","last"],"after":["next","last"],"keys":"d2iw","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"lines":["one","","next","last"],"after":["one","","next","last"],"keys":"y2iw","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"lines":["one","","next","last"],"after":["next","last"],"keys":"d2iW","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"lines":["one","","next","last"],"after":["one","","next","last"],"keys":"y2iW","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"lines":["one","","next","last"],"after":["next","last"],"keys":"$d2iw","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"lines":["one","","next","last"],"after":["one","","next","last"],"keys":"$y2iw","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"lines":["one","","next","last"],"after":["next","last"],"keys":"$d2iW","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"lines":["one","","next","last"],"after":["one","","next","last"],"keys":"$y2iW","row":0,"col":0,"regtype":"V","register":"one\n\n"}
+{"after":[""],"keys":"d2aw","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail\n","col":0,"regtype":"V"}
+{"after":["alpha","","tail"],"keys":"y2aw","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail","col":0,"regtype":"v"}
+{"after":[""],"keys":"d2aW","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail\n","col":0,"regtype":"V"}
+{"after":["alpha","","tail"],"keys":"y2aW","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail","col":0,"regtype":"v"}
+{"after":[""],"keys":"ld2aw","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail\n","col":0,"regtype":"V"}
+{"after":["alpha","","tail"],"keys":"ly2aw","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail","col":0,"regtype":"v"}
+{"after":[""],"keys":"ld2aW","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail\n","col":0,"regtype":"V"}
+{"after":["alpha","","tail"],"keys":"ly2aW","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail","col":0,"regtype":"v"}
+{"after":[""],"keys":"$d2aw","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail\n","col":0,"regtype":"V"}
+{"after":["alpha","","tail"],"keys":"$y2aw","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail","col":0,"regtype":"v"}
+{"after":[""],"keys":"$d2aW","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail\n","col":0,"regtype":"V"}
+{"after":["alpha","","tail"],"keys":"$y2aW","row":0,"lines":["alpha","","tail"],"register":"alpha\n\ntail","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jd2aw","row":0,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix\n","col":0,"regtype":"V"}
+{"after":["prefix","alpha","","suffix"],"keys":"jy2aw","row":1,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jd2aW","row":0,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix\n","col":0,"regtype":"V"}
+{"after":["prefix","alpha","","suffix"],"keys":"jy2aW","row":1,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jld2aw","row":0,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix\n","col":1,"regtype":"V"}
+{"after":["prefix","alpha","","suffix"],"keys":"jly2aw","row":1,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jld2aW","row":0,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix\n","col":1,"regtype":"V"}
+{"after":["prefix","alpha","","suffix"],"keys":"jly2aW","row":1,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2aw","row":0,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix\n","col":5,"regtype":"V"}
+{"after":["prefix","alpha","","suffix"],"keys":"j$y2aw","row":1,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2aW","row":0,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix\n","col":5,"regtype":"V"}
+{"after":["prefix","alpha","","suffix"],"keys":"j$y2aW","row":1,"lines":["prefix","alpha","","suffix"],"register":"alpha\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jd2aw","row":0,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix\n","col":0,"regtype":"V"}
+{"after":["prefix","漢字","","suffix"],"keys":"jy2aw","row":1,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jd2aW","row":0,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix\n","col":0,"regtype":"V"}
+{"after":["prefix","漢字","","suffix"],"keys":"jy2aW","row":1,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jld2aw","row":0,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix\n","col":2,"regtype":"V"}
+{"after":["prefix","漢字","","suffix"],"keys":"jly2aw","row":1,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jld2aW","row":0,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix\n","col":2,"regtype":"V"}
+{"after":["prefix","漢字","","suffix"],"keys":"jly2aW","row":1,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2aw","row":0,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix\n","col":5,"regtype":"V"}
+{"after":["prefix","漢字","","suffix"],"keys":"j$y2aw","row":1,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2aW","row":0,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix\n","col":5,"regtype":"V"}
+{"after":["prefix","漢字","","suffix"],"keys":"j$y2aW","row":1,"lines":["prefix","漢字","","suffix"],"register":"漢字\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jd2aw","row":0,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix\n","col":0,"regtype":"V"}
+{"after":["prefix","café","","suffix"],"keys":"jy2aw","row":1,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jd2aW","row":0,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix\n","col":0,"regtype":"V"}
+{"after":["prefix","café","","suffix"],"keys":"jy2aW","row":1,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jld2aw","row":0,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix\n","col":1,"regtype":"V"}
+{"after":["prefix","café","","suffix"],"keys":"jly2aw","row":1,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"jld2aW","row":0,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix\n","col":1,"regtype":"V"}
+{"after":["prefix","café","","suffix"],"keys":"jly2aW","row":1,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2aw","row":0,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix\n","col":5,"regtype":"V"}
+{"after":["prefix","café","","suffix"],"keys":"j$y2aw","row":1,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix","col":0,"regtype":"v"}
+{"after":["prefix"],"keys":"j$d2aW","row":0,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix\n","col":5,"regtype":"V"}
+{"after":["prefix","café","","suffix"],"keys":"j$y2aW","row":1,"lines":["prefix","café","","suffix"],"register":"café\n\nsuffix","col":0,"regtype":"v"}
+{"after":["last"],"keys":"d2aw","row":0,"lines":["one","","next","last"],"register":"one\n\nnext\n","col":0,"regtype":"V"}
+{"after":["one","","next","last"],"keys":"y2aw","row":0,"lines":["one","","next","last"],"register":"one\n\nnext","col":0,"regtype":"v"}
+{"after":["last"],"keys":"d2aW","row":0,"lines":["one","","next","last"],"register":"one\n\nnext\n","col":0,"regtype":"V"}
+{"after":["one","","next","last"],"keys":"y2aW","row":0,"lines":["one","","next","last"],"register":"one\n\nnext","col":0,"regtype":"v"}
+{"after":["last"],"keys":"$d2aw","row":0,"lines":["one","","next","last"],"register":"one\n\nnext\n","col":3,"regtype":"V"}
+{"after":["one","","next","last"],"keys":"$y2aw","row":0,"lines":["one","","next","last"],"register":"one\n\nnext","col":0,"regtype":"v"}
+{"after":["last"],"keys":"$d2aW","row":0,"lines":["one","","next","last"],"register":"one\n\nnext\n","col":3,"regtype":"V"}
+{"after":["one","","next","last"],"keys":"$y2aW","row":0,"lines":["one","","next","last"],"register":"one\n\nnext","col":0,"regtype":"v"}
+{"regtype":"v","after":["alpha","beta"],"keys":"v2iwy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":[""],"keys":"v2iwd","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["alpha","beta"],"keys":"v2awy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":[""],"keys":"v2awd","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["alpha","beta"],"keys":"v2iWy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["alpha","beta"],"keys":"v2aWy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["alpha","beta"],"keys":"$v2iwy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":[""],"keys":"$v2iwd","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["alpha","beta"],"keys":"$v2awy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":[""],"keys":"$v2awd","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["alpha","beta"],"keys":"$v2iWy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["alpha","beta"],"keys":"$v2aWy","row":0,"col":0,"register":"alpha\nbeta","lines":["alpha","beta"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"jv2iwy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","","suffix"],"keys":"jv2iwd","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"jv2awy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","","suffix"],"keys":"jv2awd","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"jv2iWy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"jv2aWy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"j$v2iwy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","","suffix"],"keys":"j$v2iwd","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"j$v2awy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","","suffix"],"keys":"j$v2awd","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"j$v2iWy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["prefix","alpha","beta","suffix"],"keys":"j$v2aWy","row":1,"col":0,"register":"alpha\nbeta","lines":["prefix","alpha","beta","suffix"]}
+{"regtype":"v","after":["one two","three four"],"keys":"$v2iwy","row":0,"col":4,"register":"two\nthree","lines":["one two","three four"]}
+{"regtype":"v","after":["one  four"],"keys":"$v2iwd","row":0,"col":4,"register":"two\nthree","lines":["one two","three four"]}
+{"regtype":"v","after":["one two","three four"],"keys":"$v2awy","row":0,"col":4,"register":"two\nthree ","lines":["one two","three four"]}
+{"regtype":"v","after":["one four"],"keys":"$v2awd","row":0,"col":4,"register":"two\nthree ","lines":["one two","three four"]}
+{"regtype":"v","after":["one two","three four"],"keys":"$v2iWy","row":0,"col":4,"register":"two\nthree","lines":["one two","three four"]}
+{"regtype":"v","after":["one two","three four"],"keys":"$v2aWy","row":0,"col":4,"register":"two\nthree ","lines":["one two","three four"]}
+{"regtype":"v","after":["alpha  "," beta"],"keys":"$v2iwy","row":0,"col":5,"register":"  \n ","lines":["alpha  "," beta"]}
+{"regtype":"v","after":["alphabeta"],"keys":"$v2iwd","row":0,"col":5,"register":"  \n ","lines":["alpha  "," beta"]}
+{"regtype":"v","after":["alpha  "," beta"],"keys":"$v2iWy","row":0,"col":5,"register":"  \n ","lines":["alpha  "," beta"]}
+{"regtype":"v","after":["alpha  "," beta"],"keys":"v2iwy","row":0,"col":0,"register":"alpha  ","lines":["alpha  "," beta"]}
+{"regtype":"v","after":[""," beta"],"keys":"v2iwd","row":0,"col":0,"register":"alpha  ","lines":["alpha  "," beta"]}
+{"regtype":"v","after":["alpha  "," beta"],"keys":"v2awy","row":0,"col":0,"register":"alpha  \n beta","lines":["alpha  "," beta"]}
+{"regtype":"v","after":[""],"keys":"v2awd","row":0,"col":0,"register":"alpha  \n beta","lines":["alpha  "," beta"]}
+{"regtype":"v","after":["alpha  "," beta"],"keys":"v2iWy","row":0,"col":0,"register":"alpha  ","lines":["alpha  "," beta"]}
+{"regtype":"v","after":["alpha  "," beta"],"keys":"v2aWy","row":0,"col":0,"register":"alpha  \n beta","lines":["alpha  "," beta"]}
+{"regtype":"v","after":["漢字 あ","  カナ"],"keys":"$v2iwy","row":0,"col":3,"register":"あ\n  ","lines":["漢字 あ","  カナ"]}
+{"regtype":"v","after":["漢字 カナ"],"keys":"$v2iwd","row":0,"col":3,"register":"あ\n  ","lines":["漢字 あ","  カナ"]}
+{"regtype":"v","after":["漢字 あ","  カナ"],"keys":"$v2awy","row":0,"col":2,"register":" あ\n  カナ","lines":["漢字 あ","  カナ"]}
+{"regtype":"v","after":["漢字"],"keys":"$v2awd","row":0,"col":1,"register":" あ\n  カナ","lines":["漢字 あ","  カナ"]}
+{"regtype":"v","after":["漢字 あ","  カナ"],"keys":"$v2iWy","row":0,"col":3,"register":"あ\n  ","lines":["漢字 あ","  カナ"]}
+{"regtype":"v","after":["漢字 あ","  カナ"],"keys":"$v2aWy","row":0,"col":2,"register":" あ\n  カナ","lines":["漢字 あ","  カナ"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"v2iwy","row":0,"col":0,"register":"alpha\n\nt","lines":["alpha","","tail"]}
+{"regtype":"v","after":["ail"],"keys":"v2iwd","row":0,"col":0,"register":"alpha\n\nt","lines":["alpha","","tail"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"v2awy","row":0,"col":0,"register":"alpha\n\ntail","lines":["alpha","","tail"]}
+{"regtype":"v","after":[""],"keys":"v2awd","row":0,"col":0,"register":"alpha\n\ntail","lines":["alpha","","tail"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"v2iWy","row":0,"col":0,"register":"alpha\n\nt","lines":["alpha","","tail"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"v2aWy","row":0,"col":0,"register":"alpha\n\ntail","lines":["alpha","","tail"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"$v2iwy","row":0,"col":0,"register":"alpha\n\nt","lines":["alpha","","tail"]}
+{"regtype":"v","after":["ail"],"keys":"$v2iwd","row":0,"col":0,"register":"alpha\n\nt","lines":["alpha","","tail"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"$v2awy","row":0,"col":0,"register":"alpha\n\ntail","lines":["alpha","","tail"]}
+{"regtype":"v","after":[""],"keys":"$v2awd","row":0,"col":0,"register":"alpha\n\ntail","lines":["alpha","","tail"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"$v2iWy","row":0,"col":0,"register":"alpha\n\nt","lines":["alpha","","tail"]}
+{"regtype":"v","after":["alpha","","tail"],"keys":"$v2aWy","row":0,"col":0,"register":"alpha\n\ntail","lines":["alpha","","tail"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"jv2iwy","row":1,"col":0,"register":"alpha\n\ns","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","uffix"],"keys":"jv2iwd","row":1,"col":0,"register":"alpha\n\ns","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"jv2awy","row":1,"col":0,"register":"alpha\n\nsuffix","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix",""],"keys":"jv2awd","row":1,"col":0,"register":"alpha\n\nsuffix","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"jv2iWy","row":1,"col":0,"register":"alpha\n\ns","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"jv2aWy","row":1,"col":0,"register":"alpha\n\nsuffix","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"j$v2iwy","row":1,"col":0,"register":"alpha\n\ns","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","uffix"],"keys":"j$v2iwd","row":1,"col":0,"register":"alpha\n\ns","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"j$v2awy","row":1,"col":0,"register":"alpha\n\nsuffix","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix",""],"keys":"j$v2awd","row":1,"col":0,"register":"alpha\n\nsuffix","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"j$v2iWy","row":1,"col":0,"register":"alpha\n\ns","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["prefix","alpha","","suffix"],"keys":"j$v2aWy","row":1,"col":0,"register":"alpha\n\nsuffix","lines":["prefix","alpha","","suffix"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"2lv2iwy","row":0,"col":2,"register":"foo\n ","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  bar baz"],"keys":"2lv2iwd","row":0,"col":2,"register":"foo\n ","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"2lv2awy","row":0,"col":2,"register":"foo\n bar","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["   baz"],"keys":"2lv2awd","row":0,"col":2,"register":"foo\n bar","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"2lv2iWy","row":0,"col":2,"register":"foo\n ","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"2lv2aWy","row":0,"col":2,"register":"foo\n bar","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"$v2iwy","row":0,"col":2,"register":"foo\n ","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  bar baz"],"keys":"$v2iwd","row":0,"col":2,"register":"foo\n ","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"$v2awy","row":0,"col":2,"register":"foo\n bar","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["   baz"],"keys":"$v2awd","row":0,"col":2,"register":"foo\n bar","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"$v2iWy","row":0,"col":2,"register":"foo\n ","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["  foo"," bar baz"],"keys":"$v2aWy","row":0,"col":2,"register":"foo\n bar","lines":["  foo"," bar baz"]}
+{"regtype":"v","after":["x 😀","🐈 dog"],"keys":"$v2iwy","row":0,"col":2,"register":"😀\n🐈","lines":["x 😀","🐈 dog"]}
+{"regtype":"v","after":["x  dog"],"keys":"$v2iwd","row":0,"col":2,"register":"😀\n🐈","lines":["x 😀","🐈 dog"]}
+{"regtype":"v","after":["x 😀","🐈 dog"],"keys":"$v2awy","row":0,"col":2,"register":"😀\n🐈 ","lines":["x 😀","🐈 dog"]}
+{"regtype":"v","after":["x dog"],"keys":"$v2awd","row":0,"col":2,"register":"😀\n🐈 ","lines":["x 😀","🐈 dog"]}
+{"regtype":"v","after":["x 😀","🐈 dog"],"keys":"$v2iWy","row":0,"col":2,"register":"😀\n🐈","lines":["x 😀","🐈 dog"]}
+{"regtype":"v","after":["x 😀","🐈 dog"],"keys":"$v2aWy","row":0,"col":2,"register":"😀\n🐈 ","lines":["x 😀","🐈 dog"]}
+{"after":["alpha","","😀 x"],"keys":"v2iwy","row":0,"col":0,"register":"alpha\n\n😀","lines":["alpha","","😀 x"],"regtype":"v"}
+{"after":[" x"],"keys":"v2iwd","row":0,"col":0,"register":"alpha\n\n😀","lines":["alpha","","😀 x"],"regtype":"v"}
+{"after":["alpha","","😀 x"],"keys":"v2awy","row":0,"col":0,"register":"alpha\n\n😀","lines":["alpha","","😀 x"],"regtype":"v"}
+{"after":[" x"],"keys":"v2awd","row":0,"col":0,"register":"alpha\n\n😀","lines":["alpha","","😀 x"],"regtype":"v"}
+{"after":["alpha","","😀 x"],"keys":"v2aWy","row":0,"col":0,"register":"alpha\n\n😀","lines":["alpha","","😀 x"],"regtype":"v"}
+{"after":["alpha","","é x"],"keys":"v2iwy","row":0,"col":0,"register":"alpha\n\né","lines":["alpha","","é x"],"regtype":"v"}
+{"after":[" x"],"keys":"v2iwd","row":0,"col":0,"register":"alpha\n\né","lines":["alpha","","é x"],"regtype":"v"}
+{"after":["alpha","","é x"],"keys":"v2awy","row":0,"col":0,"register":"alpha\n\né","lines":["alpha","","é x"],"regtype":"v"}
+{"after":[" x"],"keys":"v2awd","row":0,"col":0,"register":"alpha\n\né","lines":["alpha","","é x"],"regtype":"v"}
+{"after":["alpha","","é x"],"keys":"v2aWy","row":0,"col":0,"register":"alpha\n\né","lines":["alpha","","é x"],"regtype":"v"}
+{"row":0,"col":0,"register":"alpha\n\nbeta","regtype":"v","lines":["alpha","","beta gamma"],"keys":"v2awy","after":["alpha","","beta gamma"]}
+{"row":0,"col":0,"register":"alpha\n\nbeta","regtype":"v","lines":["alpha","","beta gamma"],"keys":"d2aw","after":[" gamma"]}
+{"row":0,"col":0,"register":"alpha\n\nbeta","regtype":"v","lines":["alpha","","beta gamma"],"keys":"y2aw","after":["alpha","","beta gamma"]}
+{"row":0,"col":0,"register":"alpha\n\n beta","regtype":"v","lines":["alpha",""," beta gamma"],"keys":"v2awy","after":["alpha",""," beta gamma"]}
+{"row":0,"col":0,"register":"alpha\n\n beta","regtype":"v","lines":["alpha",""," beta gamma"],"keys":"d2aw","after":[" gamma"]}
+{"row":0,"col":0,"register":"alpha\n\n beta","regtype":"v","lines":["alpha",""," beta gamma"],"keys":"y2aw","after":["alpha",""," beta gamma"]}
+{"row":0,"col":0,"register":"alpha\n\nbeta","regtype":"v","lines":["alpha","","beta  "],"keys":"v2awy","after":["alpha","","beta  "]}
+{"row":0,"col":0,"register":"alpha\n\nbeta  \n","regtype":"V","lines":["alpha","","beta  "],"keys":"d2aw","after":[""]}
+{"row":0,"col":0,"register":"alpha\n\nbeta","regtype":"v","lines":["alpha","","beta  "],"keys":"y2aw","after":["alpha","","beta  "]}
+{"row":0,"col":0,"register":"alpha\n\n😀","regtype":"v","lines":["alpha","","😀 xyz"],"keys":"v2awy","after":["alpha","","😀 xyz"]}
+{"row":0,"col":0,"register":"alpha\n\n😀","regtype":"v","lines":["alpha","","😀 xyz"],"keys":"d2aw","after":[" xyz"]}
+{"row":0,"col":0,"register":"alpha\n\n😀","regtype":"v","lines":["alpha","","😀 xyz"],"keys":"y2aw","after":["alpha","","😀 xyz"]}
+{"row":0,"col":0,"register":"alpha\n\none","regtype":"v","lines":["alpha","","one.two"],"keys":"v2awy","after":["alpha","","one.two"]}
+{"row":0,"col":0,"register":"alpha\n\none","regtype":"v","lines":["alpha","","one.two"],"keys":"d2aw","after":[".two"]}
+{"row":0,"col":0,"register":"alpha\n\none","regtype":"v","lines":["alpha","","one.two"],"keys":"y2aw","after":["alpha","","one.two"]}
+{"row":0,"col":0,"register":"alpha\n\né","regtype":"v","lines":["alpha","","é—x"],"keys":"v2awy","after":["alpha","","é—x"]}
+{"row":0,"col":0,"register":"alpha\n\né","regtype":"v","lines":["alpha","","é—x"],"keys":"d2aw","after":["—x"]}
+{"row":0,"col":0,"register":"alpha\n\né","regtype":"v","lines":["alpha","","é—x"],"keys":"y2aw","after":["alpha","","é—x"]}
+{"lines":["alpha  ","beta gamma delta"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2awy","after":["alpha  ","beta gamma delta"],"row":0,"col":5}
+{"lines":["alpha  ","beta gamma delta"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2awd","after":["alpha delta"],"row":0,"col":5}
+{"lines":["alpha  ","beta gamma delta"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2aWy","after":["alpha  ","beta gamma delta"],"row":0,"col":5}
+{"lines":["alpha  ","beta gamma delta"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2aWd","after":["alpha delta"],"row":0,"col":5}
+{"lines":["alpha  "," beta  gamma  "],"register":"  \n beta  gamma","regtype":"v","keys":"$v2awy","after":["alpha  "," beta  gamma  "],"row":0,"col":5}
+{"lines":["alpha  "," beta  gamma  "],"register":"  \n beta  gamma","regtype":"v","keys":"$v2awd","after":["alpha  "],"row":0,"col":5}
+{"lines":["alpha  "," beta  gamma  "],"register":"  \n beta  gamma","regtype":"v","keys":"$v2aWy","after":["alpha  "," beta  gamma  "],"row":0,"col":5}
+{"lines":["alpha  "," beta  gamma  "],"register":"  \n beta  gamma","regtype":"v","keys":"$v2aWd","after":["alpha  "],"row":0,"col":5}
+{"lines":["alpha  ","beta gamma   ","next"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2awy","after":["alpha  ","beta gamma   ","next"],"row":0,"col":5}
+{"lines":["alpha  ","beta gamma   ","next"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2awd","after":["alpha   ","next"],"row":0,"col":5}
+{"lines":["alpha  ","beta gamma   ","next"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2aWy","after":["alpha  ","beta gamma   ","next"],"row":0,"col":5}
+{"lines":["alpha  ","beta gamma   ","next"],"register":"  \nbeta gamma","regtype":"v","keys":"$v2aWd","after":["alpha   ","next"],"row":0,"col":5}
+{"lines":["alpha  ","beta! three"],"register":"  \nbeta! three","regtype":"v","keys":"$v2aWy","after":["alpha  ","beta! three"],"row":0,"col":5}
+{"lines":["alpha  ","beta! three"],"register":"  \nbeta! three","regtype":"v","keys":"$v2aWd","after":["alpha"],"row":0,"col":4}
+{"lines":["alpha  ","😀 é end"],"register":"  \n😀 é","regtype":"v","keys":"$v2awy","after":["alpha  ","😀 é end"],"row":0,"col":5}
+{"lines":["alpha  ","😀 é end"],"register":"  \n😀 é","regtype":"v","keys":"$v2awd","after":["alpha end"],"row":0,"col":5}
+{"lines":["alpha  ","😀 é end"],"register":"  \n😀 é","regtype":"v","keys":"$v2aWy","after":["alpha  ","😀 é end"],"row":0,"col":5}
+{"lines":["alpha  ","😀 é end"],"register":"  \n😀 é","regtype":"v","keys":"$v2aWd","after":["alpha end"],"row":0,"col":5}

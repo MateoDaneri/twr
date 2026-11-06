@@ -1,0 +1,504 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "shada": "NONE",
+  "plugins": false,
+  "backspace": "indent,eol,start",
+  "scope": "Plain Neovim input editing, not Snacks list mappings",
+  "cases": [
+    {
+      "label": "insert-middle",
+      "query": "abcd",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "X"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 2,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 3,
+          "mode": "i",
+          "text": "abXcd"
+        }
+      ]
+    },
+    {
+      "label": "delete-middle",
+      "query": "abcd",
+      "keys": [
+        "<Home>",
+        "<Right>",
+        "<Del>"
+      ],
+      "observations": [
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 1,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 1,
+          "mode": "i",
+          "text": "acd"
+        }
+      ]
+    },
+    {
+      "label": "backspace-middle",
+      "query": "abcd",
+      "keys": [
+        "<Left>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 2,
+          "mode": "i",
+          "text": "abd"
+        }
+      ]
+    },
+    {
+      "label": "ctrl-h",
+      "query": "abcd",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "i",
+          "text": "abc"
+        }
+      ]
+    },
+    {
+      "label": "prefix-clear",
+      "query": "foo bar tail",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "cursor": 11,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 10,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 9,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 8,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 7,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": " tail"
+        }
+      ]
+    },
+    {
+      "label": "word-middle",
+      "query": "foo bar tail",
+      "keys": [
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<Left>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "cursor": 11,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 10,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 9,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 8,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 7,
+          "mode": "i",
+          "text": "foo bar tail"
+        },
+        {
+          "cursor": 4,
+          "mode": "i",
+          "text": "foo  tail"
+        }
+      ]
+    },
+    {
+      "label": "word-spaces",
+      "query": "foo bar   ",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "cursor": 4,
+          "mode": "i",
+          "text": "foo "
+        }
+      ]
+    },
+    {
+      "label": "word-punctuation",
+      "query": "foo.bar",
+      "keys": [
+        "<C-w>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "cursor": 4,
+          "mode": "i",
+          "text": "foo."
+        },
+        {
+          "cursor": 3,
+          "mode": "i",
+          "text": "foo"
+        }
+      ]
+    },
+    {
+      "label": "word-underscore",
+      "query": "foo_bar",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": ""
+        }
+      ]
+    },
+    {
+      "label": "unicode-backspace",
+      "query": "ñ😀",
+      "keys": [
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "cursor": 2,
+          "mode": "i",
+          "text": "ñ"
+        }
+      ]
+    },
+    {
+      "label": "combining-backspace",
+      "query": "xé",
+      "keys": [
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "cursor": 1,
+          "mode": "i",
+          "text": "x"
+        }
+      ]
+    },
+    {
+      "label": "normal-end",
+      "query": "abcd",
+      "keys": [
+        "<Esc>",
+        "$"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        }
+      ]
+    },
+    {
+      "label": "normal-home-right",
+      "query": "abcd",
+      "keys": [
+        "<Esc>",
+        "0",
+        "l"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 0,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 1,
+          "mode": "n",
+          "text": "abcd"
+        }
+      ]
+    },
+    {
+      "label": "normal-delete",
+      "query": "abcd",
+      "keys": [
+        "<Esc>",
+        "x"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 2,
+          "mode": "n",
+          "text": "abc"
+        }
+      ]
+    },
+    {
+      "label": "normal-insert",
+      "query": "abcd",
+      "keys": [
+        "<Esc>",
+        "h",
+        "i",
+        "X"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 2,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 2,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 3,
+          "mode": "i",
+          "text": "abXcd"
+        }
+      ]
+    },
+    {
+      "label": "normal-append",
+      "query": "abcd",
+      "keys": [
+        "<Esc>",
+        "h",
+        "a",
+        "X"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 2,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 3,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 4,
+          "mode": "i",
+          "text": "abcXd"
+        }
+      ]
+    },
+    {
+      "label": "normal-I",
+      "query": "abcd",
+      "keys": [
+        "<Esc>",
+        "I",
+        "X"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 1,
+          "mode": "i",
+          "text": "Xabcd"
+        }
+      ]
+    },
+    {
+      "label": "normal-A",
+      "query": "abcd",
+      "keys": [
+        "<Esc>",
+        "0",
+        "A",
+        "X"
+      ],
+      "observations": [
+        {
+          "cursor": 3,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 0,
+          "mode": "n",
+          "text": "abcd"
+        },
+        {
+          "cursor": 4,
+          "mode": "i",
+          "text": "abcd"
+        },
+        {
+          "cursor": 5,
+          "mode": "i",
+          "text": "abcdX"
+        }
+      ]
+    },
+    {
+      "label": "empty-boundaries",
+      "query": "",
+      "keys": [
+        "<BS>",
+        "<Del>",
+        "<Home>",
+        "<End>",
+        "<Esc>",
+        "h",
+        "l",
+        "x"
+      ],
+      "observations": [
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": ""
+        },
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": ""
+        },
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": ""
+        },
+        {
+          "cursor": 0,
+          "mode": "i",
+          "text": ""
+        },
+        {
+          "cursor": 0,
+          "mode": "n",
+          "text": ""
+        },
+        {
+          "cursor": 0,
+          "mode": "n",
+          "text": ""
+        },
+        {
+          "cursor": 0,
+          "mode": "n",
+          "text": ""
+        },
+        {
+          "cursor": 0,
+          "mode": "n",
+          "text": ""
+        }
+      ]
+    }
+  ]
+}

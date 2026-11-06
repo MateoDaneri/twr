@@ -1,0 +1,1300 @@
+[
+  { "context": "terminal_normal", "sequence": ["[", "b"], "action": "buffers.line.prev", "source": "LazyVim bufferline" },
+  { "context": "terminal_normal", "sequence": ["]", "b"], "action": "buffers.line.next", "source": "LazyVim bufferline" },
+  { "context": "terminal_normal", "sequence": ["[", "B"], "action": "buffers.move.prev", "source": "LazyVim bufferline" },
+  { "context": "terminal_normal", "sequence": ["]", "B"], "action": "buffers.move.next", "source": "LazyVim bufferline" },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-h>"
+    ],
+    "action": "focus.left",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<C-h>"
+    ],
+    "action": "focus.left",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_input",
+    "sequence": [
+      "<C-h>"
+    ],
+    "action": "focus.left",
+    "source": "config/autocmds.lua: native_term_keymaps"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-j>"
+    ],
+    "action": "focus.down",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<C-j>"
+    ],
+    "action": "focus.down",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_input",
+    "sequence": [
+      "<C-j>"
+    ],
+    "action": "focus.down",
+    "source": "config/autocmds.lua: native_term_keymaps"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-k>"
+    ],
+    "action": "focus.up",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<C-k>"
+    ],
+    "action": "focus.up",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_input",
+    "sequence": [
+      "<C-k>"
+    ],
+    "action": "focus.up",
+    "source": "config/autocmds.lua: native_term_keymaps"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-l>"
+    ],
+    "action": "focus.right",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<C-l>"
+    ],
+    "action": "focus.right",
+    "source": "LazyVim keymaps"
+  },
+  {
+    "context": "terminal_input",
+    "sequence": [
+      "<C-l>"
+    ],
+    "action": "focus.right",
+    "source": "config/autocmds.lua: native_term_keymaps"
+  },
+  {
+    "context": "terminal_input",
+    "sequence": [
+      "<Esc>",
+      "<Esc>"
+    ],
+    "action": "terminal.normal",
+    "source": "config/autocmds.lua: native_term_keymaps"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "q"
+    ],
+    "action": "window.close",
+    "source": "config/autocmds.lua: native_term_keymaps"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "a",
+      "a"
+    ],
+    "action": "agents.toggle",
+    "source": "plugins/agent-overview.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "e"
+    ],
+    "action": "tree_agents.toggle",
+    "source": "plugins/neo-tree.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "f",
+      "e"
+    ],
+    "action": "tree_agents.toggle",
+    "source": "plugins/neo-tree.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "f",
+      "p"
+    ],
+    "action": "picker.projects",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "f",
+      "f"
+    ],
+    "action": "picker.files",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "<Space>"
+    ],
+    "action": "picker.files",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      ","
+    ],
+    "action": "picker.buffers",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "/"
+    ],
+    "action": "picker.grep",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "f",
+      "t"
+    ],
+    "action": "terminal.toggle_root",
+    "source": "LazyVim keymaps.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "f",
+      "T"
+    ],
+    "action": "terminal.toggle_cwd",
+    "source": "LazyVim keymaps.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "u",
+      "B"
+    ],
+    "action": "buffers.toggle_bar",
+    "source": "config/keymaps.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "a",
+      "a"
+    ],
+    "action": "agents.toggle",
+    "source": "plugins/agent-overview.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "e"
+    ],
+    "action": "tree_agents.toggle",
+    "source": "plugins/neo-tree.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "f",
+      "e"
+    ],
+    "action": "tree_agents.toggle",
+    "source": "plugins/neo-tree.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "f",
+      "p"
+    ],
+    "action": "picker.projects",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "f",
+      "f"
+    ],
+    "action": "picker.files",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "<Space>"
+    ],
+    "action": "picker.files",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      ","
+    ],
+    "action": "picker.buffers",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "/"
+    ],
+    "action": "picker.grep",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "f",
+      "t"
+    ],
+    "action": "terminal.toggle_root",
+    "source": "LazyVim keymaps.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "f",
+      "T"
+    ],
+    "action": "terminal.toggle_cwd",
+    "source": "LazyVim keymaps.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
+      "u",
+      "B"
+    ],
+    "action": "buffers.toggle_bar",
+    "source": "config/keymaps.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "a",
+      "a"
+    ],
+    "action": "agents.toggle",
+    "source": "plugins/agent-overview.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "e"
+    ],
+    "action": "tree_agents.toggle",
+    "source": "plugins/neo-tree.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "f",
+      "e"
+    ],
+    "action": "tree_agents.toggle",
+    "source": "plugins/neo-tree.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "f",
+      "p"
+    ],
+    "action": "picker.projects",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "f",
+      "f"
+    ],
+    "action": "picker.files",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "<Space>"
+    ],
+    "action": "picker.files",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      ","
+    ],
+    "action": "picker.buffers",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "/"
+    ],
+    "action": "picker.grep",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "f",
+      "t"
+    ],
+    "action": "terminal.toggle_root",
+    "source": "LazyVim keymaps.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "f",
+      "T"
+    ],
+    "action": "terminal.toggle_cwd",
+    "source": "LazyVim keymaps.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "u",
+      "B"
+    ],
+    "action": "buffers.toggle_bar",
+    "source": "config/keymaps.lua"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "j"
+    ],
+    "action": "selection.next",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "<Down>"
+    ],
+    "action": "selection.next",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "k"
+    ],
+    "action": "selection.previous",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "<Up>"
+    ],
+    "action": "selection.previous",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "o"
+    ],
+    "action": "agent.focus",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "<Enter>"
+    ],
+    "action": "agent.open_or_fold",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "h"
+    ],
+    "action": "group.collapse",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "l"
+    ],
+    "action": "group.expand",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "m"
+    ],
+    "action": "agent.toggle_backlog",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "X"
+    ],
+    "action": "agent.restore_picker",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "r"
+    ],
+    "action": "agents.refresh",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "s"
+    ],
+    "action": "sidebar.toggle_side",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "i"
+    ],
+    "action": "agent.context",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "w"
+    ],
+    "action": "agent.toggle_context",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "p"
+    ],
+    "action": "agent.open_pr",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "q"
+    ],
+    "action": "agents.close",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "j"
+    ],
+    "action": "selection.next",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "<Down>"
+    ],
+    "action": "selection.next",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "k"
+    ],
+    "action": "selection.previous",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "<Up>"
+    ],
+    "action": "selection.previous",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "o"
+    ],
+    "action": "agent.focus",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "<Enter>"
+    ],
+    "action": "agent.open_or_fold",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "h"
+    ],
+    "action": "group.collapse",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "l"
+    ],
+    "action": "group.expand",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "m"
+    ],
+    "action": "agent.toggle_backlog",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "X"
+    ],
+    "action": "agent.restore_picker",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "r"
+    ],
+    "action": "agents.refresh",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "s"
+    ],
+    "action": "sidebar.toggle_side",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "i"
+    ],
+    "action": "agent.context",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "w"
+    ],
+    "action": "agent.toggle_context",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "p"
+    ],
+    "action": "agent.open_pr",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "q"
+    ],
+    "action": "agents.close",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "x"
+    ],
+    "action": "agent.hide_ready",
+    "source": "agent_overview.ui.configure_buffer"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "B"
+    ],
+    "action": "backlog.focus",
+    "source": "agent_overview.ui.configure_buffer"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "L"
+    ],
+    "action": "backlog.focus",
+    "source": "agent_overview.ui.configure_buffer"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "<C-j>"
+    ],
+    "action": "backlog.focus_preserve",
+    "source": "agent_overview.ui.configure_buffer"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "<Esc>"
+    ],
+    "action": "agents.close",
+    "source": "agent_overview.ui.configure_buffer"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "<C-k>"
+    ],
+    "action": "agents.focus",
+    "source": "agent_overview.ui.configure_later_buffer"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "<Esc>"
+    ],
+    "action": "agents.focus",
+    "source": "agent_overview.ui.configure_later_buffer"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "B"
+    ],
+    "action": "file.open_external",
+    "source": "plugins/neo-tree.lua; first release extends B to document applications"
+  },
+  {
+    "context": "terminal_input",
+    "sequence": [
+      "<C-/>"
+    ],
+    "action": "terminal.focus_root",
+    "source": "LazyVim pinned config/keymaps.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-/>"
+    ],
+    "action": "terminal.focus_root",
+    "source": "LazyVim pinned config/keymaps.lua"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<C-/>"
+    ],
+    "action": "terminal.focus_root",
+    "source": "LazyVim pinned config/keymaps.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "c",
+      "f"
+    ],
+    "action": "editor.format",
+    "source": "configured conform.nvim and LazyVim cf"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "c",
+      "v"
+    ],
+    "action": "csv.toggle",
+    "source": "plugins/csvview.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "u",
+      "h"
+    ],
+    "action": "preview.html",
+    "source": "config/keymaps.lua HtmlRender"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "l",
+      "p"
+    ],
+    "action": "preview.tex",
+    "source": "native TeX preview explicit action"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "g",
+      "h",
+      "d"
+    ],
+    "action": "git.diff",
+    "source": "LazyVim pinned plugins/editor.lua gitsigns on_attach"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "g",
+      "h",
+      "p"
+    ],
+    "action": "git.preview_hunk",
+    "source": "LazyVim pinned plugins/editor.lua gitsigns on_attach"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "g",
+      "h",
+      "b"
+    ],
+    "action": "git.blame",
+    "source": "LazyVim pinned plugins/editor.lua gitsigns on_attach"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "x",
+      "x"
+    ],
+    "action": "diagnostics.project",
+    "source": "LazyVim pinned plugins/editor.lua Trouble/todo-comments"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "x",
+      "X"
+    ],
+    "action": "diagnostics.buffer",
+    "source": "LazyVim pinned plugins/editor.lua Trouble/todo-comments"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "s",
+      "t"
+    ],
+    "action": "picker.todo",
+    "source": "LazyVim pinned plugins/editor.lua Trouble/todo-comments"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "s",
+      "T"
+    ],
+    "action": "picker.todo_fix",
+    "source": "LazyVim pinned plugins/editor.lua Trouble/todo-comments"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "x",
+      "t"
+    ],
+    "action": "picker.todo",
+    "source": "LazyVim pinned plugins/editor.lua Trouble/todo-comments"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "x",
+      "T"
+    ],
+    "action": "picker.todo_fix",
+    "source": "LazyVim pinned plugins/editor.lua Trouble/todo-comments"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "b",
+      "b"
+    ],
+    "action": "buffers.alternate",
+    "source": "LazyVim c10948c config/keymaps.lua:32-33; normal-mode map"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "`"
+    ],
+    "action": "buffers.alternate",
+    "source": "LazyVim c10948c config/keymaps.lua:32-33; normal-mode map"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "u",
+      "w"
+    ],
+    "action": "editor.wrap_toggle",
+    "source": "LazyVim config/keymaps.lua: window-local Wrap toggle"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "u",
+      "T"
+    ],
+    "action": "editor.syntax_toggle",
+    "source": "LazyVim config/keymaps.lua: treesitter toggle; native bounded highlighting"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "f",
+      "n"
+    ],
+    "action": "file.new",
+    "source": "LazyVim/lua/lazyvim/config/keymaps.lua:98 <cmd>enew<cr>"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "g",
+      "g"
+    ],
+    "action": "terminal.history_top",
+    "source": "Neovim normal terminal-buffer motion, read-only tmux history adapter"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "h"
+    ],
+    "action": "focus.left",
+    "source": "Neovim windows.txt CTRL-W_h"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-h>"
+    ],
+    "action": "focus.left",
+    "source": "Neovim windows.txt CTRL-W_h"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "j"
+    ],
+    "action": "focus.down",
+    "source": "Neovim windows.txt CTRL-W_j"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-j>"
+    ],
+    "action": "focus.down",
+    "source": "Neovim windows.txt CTRL-W_j"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "k"
+    ],
+    "action": "focus.up",
+    "source": "Neovim windows.txt CTRL-W_k"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-k>"
+    ],
+    "action": "focus.up",
+    "source": "Neovim windows.txt CTRL-W_k"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "l"
+    ],
+    "action": "focus.right",
+    "source": "Neovim windows.txt CTRL-W_l"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-l>"
+    ],
+    "action": "focus.right",
+    "source": "Neovim windows.txt CTRL-W_l"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "w"
+    ],
+    "action": "focus.next",
+    "source": "Neovim windows.txt CTRL-W_w/CTRL-W_W"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-w>"
+    ],
+    "action": "focus.next",
+    "source": "Neovim windows.txt CTRL-W_w/CTRL-W_W"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "W"
+    ],
+    "action": "focus.previous",
+    "source": "Neovim windows.txt CTRL-W_w/CTRL-W_W"
+  },
+  {
+    "context": "terminal_input",
+    "sequence": [
+      "<C-\\>",
+      "<C-n>"
+    ],
+    "action": "terminal.normal",
+    "source": "Neovim terminal.txt CTRL-\\_CTRL-N"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "R"
+    ],
+    "action": "agents.refresh",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "R"
+    ],
+    "action": "agents.refresh",
+    "source": "agent_overview.ui + configured context/PR companions"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "p"
+    ],
+    "action": "focus.last_accessed",
+    "source": "Neovim windows.txt CTRL-W_p"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-p>"
+    ],
+    "action": "focus.last_accessed",
+    "source": "Neovim windows.txt CTRL-W_p"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "t"
+    ],
+    "action": "focus.first",
+    "source": "Neovim windows.txt CTRL-W_t"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-t>"
+    ],
+    "action": "focus.first",
+    "source": "Neovim windows.txt CTRL-W_t"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "b"
+    ],
+    "action": "focus.last",
+    "source": "Neovim windows.txt CTRL-W_b"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<C-w>",
+      "<C-b>"
+    ],
+    "action": "focus.last",
+    "source": "Neovim windows.txt CTRL-W_b"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "g",
+      "g"
+    ],
+    "action": "list.first",
+    "source": "Neovim motion.txt gg/G on visible rows; native list contexts only"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "G"
+    ],
+    "action": "list.last",
+    "source": "Neovim motion.txt gg/G on visible rows; native list contexts only"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "g",
+      "g"
+    ],
+    "action": "list.first",
+    "source": "Neovim motion.txt gg/G on visible rows; native list contexts only"
+  },
+  {
+    "context": "agents",
+    "sequence": [
+      "G"
+    ],
+    "action": "list.last",
+    "source": "Neovim motion.txt gg/G on visible rows; native list contexts only"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "g",
+      "g"
+    ],
+    "action": "list.first",
+    "source": "Neovim motion.txt gg/G on visible rows; native list contexts only"
+  },
+  {
+    "context": "backlog",
+    "sequence": [
+      "G"
+    ],
+    "action": "list.last",
+    "source": "Neovim motion.txt gg/G on visible rows; native list contexts only"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "|"
+    ],
+    "action": "editor.split.right",
+    "source": "LazyVim config/keymaps.lua199-201"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "-"
+    ],
+    "action": "editor.split.below",
+    "source": "LazyVim config/keymaps.lua199-201"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "w",
+      "x"
+    ],
+    "action": "workspace.close",
+    "source": "Terminal Workspace: cerrar workspace sin terminar sesiones tmux"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "w",
+      "d"
+    ],
+    "action": "editor.window.close",
+    "source": "LazyVim config/keymaps.lua201"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "w",
+      "n"
+    ],
+    "action": "workspace.next",
+    "source": "Terminal Workspace: workspace siguiente"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "w",
+      "p"
+    ],
+    "action": "workspace.prev",
+    "source": "Terminal Workspace: workspace anterior"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "b",
+      "d"
+    ],
+    "action": "buffers.delete",
+    "source": "LazyVim Snacks.bufdelete"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "b",
+      "p"
+    ],
+    "action": "buffers.pin",
+    "source": "LazyVim BufferLineTogglePin"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "w",
+      "q"
+    ],
+    "action": "editor.window.close",
+    "source": "requested pane close"
+  },
+  {"context": "workspace", "sequence": ["<C-w>", "<Left>"], "action": "focus.left", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<BS>"], "action": "focus.left", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<Down>"], "action": "focus.down", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<Up>"], "action": "focus.up", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<Right>"], "action": "focus.right", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "S"], "action": "editor.split.below", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<C-s>"], "action": "editor.split.below", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<C-v>"], "action": "editor.split.right", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<C-q>"], "action": "editor.window.close", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "n"], "action": "editor.split.new", "source": "Neovim windows.txt CTRL-W_n"},
+  {"context": "workspace", "sequence": ["<C-w>", "<C-n>"], "action": "editor.split.new", "source": "Neovim windows.txt CTRL-W_n"}
+]

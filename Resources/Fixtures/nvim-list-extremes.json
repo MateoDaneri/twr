@@ -1,0 +1,106 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "shada": "NONE",
+  "plugins": false,
+  "layout": "8 synthetic lines, initial cursor line4",
+  "scope": "Plain Neovim first/last/numbered line motions; no Neo-tree root mapping or Agents provider claim",
+  "cases": [
+    {
+      "label": "first-last",
+      "commands": [
+        [
+          "g",
+          "g"
+        ],
+        [
+          "G"
+        ],
+        [
+          "g",
+          "g"
+        ]
+      ],
+      "observations": [
+        {
+          "line": 1,
+          "mode": "n",
+          "lines": 8
+        },
+        {
+          "line": 8,
+          "mode": "n",
+          "lines": 8
+        },
+        {
+          "line": 1,
+          "mode": "n",
+          "lines": 8
+        }
+      ]
+    },
+    {
+      "label": "numbered",
+      "commands": [
+        [
+          "3",
+          "G"
+        ],
+        [
+          "2",
+          "g",
+          "g"
+        ],
+        [
+          "1",
+          "G"
+        ]
+      ],
+      "observations": [
+        {
+          "line": 3,
+          "mode": "n",
+          "lines": 8
+        },
+        {
+          "line": 2,
+          "mode": "n",
+          "lines": 8
+        },
+        {
+          "line": 1,
+          "mode": "n",
+          "lines": 8
+        }
+      ]
+    },
+    {
+      "label": "clamp",
+      "commands": [
+        [
+          "9",
+          "9",
+          "G"
+        ],
+        [
+          "9",
+          "9",
+          "g",
+          "g"
+        ]
+      ],
+      "observations": [
+        {
+          "line": 8,
+          "mode": "n",
+          "lines": 8
+        },
+        {
+          "line": 8,
+          "mode": "n",
+          "lines": 8
+        }
+      ]
+    }
+  ]
+}

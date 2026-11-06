@@ -1,0 +1,29 @@
+{
+  "patterns": [
+    ".git",
+    ".claude",
+    ".codex",
+    "docker-compose.yml",
+    "compose.yml",
+    "compose.yaml",
+    "docker-compose.yaml"
+  ],
+  "dev": [
+    "~/example-projects/project-01",
+    "~/example-projects/project-02",
+    "~/example-projects/project-03",
+    "~/example-projects/project-04",
+    "~/example-projects/project-05",
+    "~/example-projects/project-06",
+    "~/example-projects/project-07",
+    "~/example-projects/project-08"
+  ],
+  "projects": [
+    "~/.config/nvim",
+    "~/.config/tmux"
+  ],
+  "max_depth": 3,
+  "recent": false,
+  "files_hidden": true,
+  "smart_hidden": true
+}

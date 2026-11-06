@@ -1,0 +1,32 @@
+{
+  "after": {
+    "first": {
+      "count": 1,
+      "index": 1
+    },
+    "second": {
+      "count": 0,
+      "index": 0
+    }
+  },
+  "aliases": {
+    "clearj": "clearjumps",
+    "clearju": "clearjumps",
+    "clearjum": "clearjumps",
+    "clearjump": "clearjumps",
+    "clearjumps": "clearjumps",
+    "clearjumps!": false
+  },
+  "before": {
+    "first": {
+      "count": 1,
+      "index": 1
+    },
+    "second": {
+      "count": 1,
+      "index": 1
+    }
+  },
+  "jumpoptions": "view",
+  "nvim": "0.12.1"
+}

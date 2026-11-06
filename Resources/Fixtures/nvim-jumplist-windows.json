@@ -1,0 +1,5867 @@
+{
+  "typed_lines": [
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 5
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          9,
+          0
+        ]
+      },
+      "row": 3,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "o<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 5
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          9,
+          0
+        ]
+      },
+      "row": 4,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "O<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          9,
+          0
+        ]
+      },
+      "row": 4,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "0i<CR><Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "row": 4,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "dd"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      "row": 3,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "2dd"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "row": 2,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "dd"
+    }
+  ],
+  "version": "0.12.1",
+  "typed_changes": [
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "row": 1,
+      "mark": 4,
+      "edit": "c}X<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 2
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 2
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "row": 1,
+      "mark": 2,
+      "edit": "c}X<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "row": 1,
+      "mark": 1,
+      "edit": "c}X<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 3,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "row": 3,
+      "mark": 4,
+      "edit": "c}X<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 7
+          }
+        ],
+        "index": 3,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "row": 7,
+      "mark": 4,
+      "edit": "c{X<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "row": 1,
+      "mark": 4,
+      "edit": "c}X<CR>Y<Esc>"
+    }
+  ],
+  "jumpoptions": "view",
+  "typed_operators": [
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 2
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      "row": 1,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "d}"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 2
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          5,
+          0
+        ]
+      },
+      "row": 2,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "3dd"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 3,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "row": 7,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "d{"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          5,
+          0
+        ]
+      },
+      "row": 3,
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "d}"
+    }
+  ],
+  "columns": [
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "insert before"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "insert at mark"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "delete before"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "delete mark"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 5
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          1
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "newline before"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 5
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          1
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "newline at mark"
+    }
+  ],
+  "scenarios": [
+    [
+      {
+        "jumps": [],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "start",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "jumps": [],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "start",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "G",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "gg",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "G",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          1
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          1
+        ]
+      }
+    ],
+    [
+      {
+        "jumps": [],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "start",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "beta.txt",
+        "action": "edit B",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 1
+          }
+        ],
+        "index": 3,
+        "buffer": "beta.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 3
+          }
+        ],
+        "index": 4,
+        "buffer": "beta.txt",
+        "action": "G",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 6
+          }
+        ],
+        "index": 3,
+        "buffer": "beta.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "beta.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 6
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "beta.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 6
+          }
+        ],
+        "index": 3,
+        "buffer": "beta.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "jumps": [],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "start",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "2<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "2<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "3<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "jumps": [],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "start",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "9<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "<C-o>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "9<C-i>",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      }
+    ],
+    [
+      {
+        "jumps": [],
+        "index": 0,
+        "buffer": "alpha.txt",
+        "action": "start",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          1,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "}",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 3,
+        "buffer": "alpha.txt",
+        "action": "G",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 3,
+        "buffer": "alpha.txt",
+        "action": "split",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "split Ctrl-o",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 3,
+        "buffer": "alpha.txt",
+        "action": "original focus",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "original Ctrl-o",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "split focus",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          6,
+          0
+        ]
+      },
+      {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 8
+          }
+        ],
+        "index": 3,
+        "buffer": "alpha.txt",
+        "action": "split Ctrl-i",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      }
+    ]
+  ],
+  "unobserved": [
+    {
+      "trace": [
+        {
+          "action": "start",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "}",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "}",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            6,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "<C-i>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        }
+      ],
+      "final": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "final",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      }
+    },
+    {
+      "trace": [
+        {
+          "action": "start",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "G",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            8,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "gg",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "G",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            8,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "<C-i>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            8,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "}",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            8,
+            1
+          ],
+          "buffer": "alpha.txt"
+        }
+      ],
+      "final": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "final",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          1
+        ]
+      }
+    },
+    {
+      "trace": [
+        {
+          "action": "start",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "}",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "edit B",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "beta.txt"
+        },
+        {
+          "action": "}",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            5,
+            0
+          ],
+          "buffer": "beta.txt"
+        },
+        {
+          "action": "G",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            6,
+            0
+          ],
+          "buffer": "beta.txt"
+        },
+        {
+          "action": "<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            5,
+            0
+          ],
+          "buffer": "beta.txt"
+        },
+        {
+          "action": "<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "beta.txt"
+        },
+        {
+          "action": "<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        }
+      ],
+      "final": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 5
+          },
+          {
+            "col": 0,
+            "buffer": "beta.txt",
+            "row": 6
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "final",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      }
+    },
+    {
+      "trace": [
+        {
+          "action": "start",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "}",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "9<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "<C-o>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            1,
+            0
+          ],
+          "buffer": "alpha.txt"
+        },
+        {
+          "action": "<C-i>",
+          "view": [
+            1,
+            0,
+            0
+          ],
+          "cursor": [
+            3,
+            0
+          ],
+          "buffer": "alpha.txt"
+        }
+      ],
+      "final": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 1,
+        "buffer": "alpha.txt",
+        "action": "final",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          3,
+          0
+        ]
+      }
+    }
+  ],
+  "edits": [
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 6
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          9,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "edit": "insert before"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 2
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          5,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "edit": "delete before"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          4,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "edit": "delete marked"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          4,
+          1
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "delete marked column"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          2,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "edit": "delete to EOF"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          5,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "edit": "replace marked"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "edit": "replace same count"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 3
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          0
+        ]
+      },
+      "edit": "replace more"
+    }
+  ],
+  "capacity": [
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 12
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 13
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 14
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 15
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 16
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 17
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 18
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 19
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 20
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 21
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 22
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 23
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 24
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 25
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 26
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 27
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 28
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 29
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 31
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 32
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 33
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 34
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 35
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 36
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 37
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 38
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 39
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 40
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 41
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 42
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 43
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 44
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 45
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 46
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 47
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 48
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 49
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 50
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 51
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 52
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 53
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 54
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 55
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 56
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 57
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 58
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 59
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 60
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 61
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 62
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 63
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 64
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 65
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 66
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 67
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 68
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 69
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 70
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 71
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 72
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 73
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 74
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 75
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 76
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 77
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 78
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 79
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 80
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 81
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 82
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 83
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 84
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 85
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 86
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 87
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 88
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 89
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 90
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 91
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 92
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 93
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 94
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 95
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 96
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 97
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 98
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 99
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 100
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 101
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 102
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 103
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 104
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 105
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 106
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 107
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 108
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 109
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 110
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 111
+        }
+      ],
+      "index": 100,
+      "buffer": "long.txt",
+      "action": "full",
+      "view": [
+        90,
+        0,
+        0
+      ],
+      "cursor": [
+        112,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 13
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 14
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 15
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 16
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 17
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 18
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 19
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 20
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 21
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 22
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 23
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 24
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 25
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 26
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 27
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 28
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 29
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 31
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 32
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 33
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 34
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 35
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 36
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 37
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 38
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 39
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 40
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 41
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 42
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 43
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 44
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 45
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 46
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 47
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 48
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 49
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 50
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 51
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 52
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 53
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 54
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 55
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 56
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 57
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 58
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 59
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 60
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 61
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 62
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 63
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 64
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 65
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 66
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 67
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 68
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 69
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 70
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 71
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 72
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 73
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 74
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 75
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 76
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 77
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 78
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 79
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 80
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 81
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 82
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 83
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 84
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 85
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 86
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 87
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 88
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 89
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 90
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 91
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 92
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 93
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 94
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 95
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 96
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 97
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 98
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 99
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 100
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 101
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 102
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 103
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 104
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 105
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 106
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 107
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 108
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 109
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 110
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 111
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 112
+        }
+      ],
+      "index": 99,
+      "buffer": "long.txt",
+      "action": "100<C-o>",
+      "view": [
+        91,
+        0,
+        0
+      ],
+      "cursor": [
+        112,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 13
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 14
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 15
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 16
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 17
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 18
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 19
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 20
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 21
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 22
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 23
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 24
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 25
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 26
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 27
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 28
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 29
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 31
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 32
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 33
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 34
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 35
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 36
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 37
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 38
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 39
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 40
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 41
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 42
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 43
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 44
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 45
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 46
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 47
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 48
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 49
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 50
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 51
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 52
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 53
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 54
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 55
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 56
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 57
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 58
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 59
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 60
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 61
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 62
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 63
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 64
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 65
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 66
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 67
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 68
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 69
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 70
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 71
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 72
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 73
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 74
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 75
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 76
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 77
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 78
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 79
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 80
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 81
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 82
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 83
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 84
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 85
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 86
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 87
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 88
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 89
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 90
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 91
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 92
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 93
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 94
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 95
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 96
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 97
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 98
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 99
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 100
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 101
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 102
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 103
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 104
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 105
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 106
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 107
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 108
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 109
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 110
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 111
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 112
+        }
+      ],
+      "index": 0,
+      "buffer": "long.txt",
+      "action": "99<C-o>",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        13,
+        0
+      ]
+    }
+  ],
+  "views": [
+    {
+      "jumps": [],
+      "index": 0,
+      "buffer": "long.txt",
+      "action": "start",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        1,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 1
+        }
+      ],
+      "index": 1,
+      "buffer": "long.txt",
+      "action": "30G",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        30,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 1
+        }
+      ],
+      "index": 1,
+      "buffer": "long.txt",
+      "action": "zt",
+      "view": [
+        30,
+        0,
+        0
+      ],
+      "cursor": [
+        30,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        }
+      ],
+      "index": 2,
+      "buffer": "long.txt",
+      "action": "70G",
+      "view": [
+        30,
+        0,
+        0
+      ],
+      "cursor": [
+        70,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        }
+      ],
+      "index": 2,
+      "buffer": "long.txt",
+      "action": "zt",
+      "view": [
+        70,
+        0,
+        0
+      ],
+      "cursor": [
+        70,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 70
+        }
+      ],
+      "index": 1,
+      "buffer": "long.txt",
+      "action": "<C-o>",
+      "view": [
+        30,
+        0,
+        0
+      ],
+      "cursor": [
+        30,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 70
+        }
+      ],
+      "index": 2,
+      "buffer": "long.txt",
+      "action": "<C-i>",
+      "view": [
+        70,
+        0,
+        0
+      ],
+      "cursor": [
+        70,
+        0
+      ]
+    }
+  ],
+  "removed": [
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 3
+        },
+        {
+          "col": 0,
+          "buffer": "beta.txt",
+          "row": 3
+        },
+        {
+          "col": 0,
+          "buffer": "beta.txt",
+          "row": 5
+        }
+      ],
+      "index": 4,
+      "buffer": "alpha.txt",
+      "action": "before wipe",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        3,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 1
+        }
+      ],
+      "index": 1,
+      "buffer": "alpha.txt",
+      "action": "after wipe",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        3,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 3
+        }
+      ],
+      "index": 0,
+      "buffer": "alpha.txt",
+      "action": "<C-o>",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        1,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 3
+        }
+      ],
+      "index": 0,
+      "buffer": "alpha.txt",
+      "action": "<C-o>",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        1,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "alpha.txt",
+          "row": 3
+        }
+      ],
+      "index": 1,
+      "buffer": "alpha.txt",
+      "action": "<C-i>",
+      "view": [
+        1,
+        0,
+        0
+      ],
+      "cursor": [
+        3,
+        0
+      ]
+    }
+  ],
+  "view_edits": [
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 1
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 30
+        }
+      ],
+      "index": 2,
+      "buffer": "long.txt",
+      "action": "before insertion",
+      "view": [
+        70,
+        0,
+        0
+      ],
+      "cursor": [
+        70,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 3
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 32
+        }
+      ],
+      "index": 2,
+      "buffer": "long.txt",
+      "action": "after insertion",
+      "view": [
+        72,
+        0,
+        0
+      ],
+      "cursor": [
+        72,
+        0
+      ]
+    },
+    {
+      "jumps": [
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 3
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 32
+        },
+        {
+          "col": 0,
+          "buffer": "long.txt",
+          "row": 72
+        }
+      ],
+      "index": 1,
+      "buffer": "long.txt",
+      "action": "return",
+      "view": [
+        32,
+        0,
+        0
+      ],
+      "cursor": [
+        32,
+        0
+      ]
+    }
+  ],
+  "typed_columns": [
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "0iXYZ<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "liXYZ<Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "0x"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          8,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "lx"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          9,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "0i<CR><Esc>"
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "after",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          9,
+          0
+        ]
+      },
+      "before": {
+        "jumps": [
+          {
+            "col": 0,
+            "buffer": "alpha.txt",
+            "row": 1
+          },
+          {
+            "col": 1,
+            "buffer": "alpha.txt",
+            "row": 4
+          }
+        ],
+        "index": 2,
+        "buffer": "alpha.txt",
+        "action": "before",
+        "view": [
+          1,
+          0,
+          0
+        ],
+        "cursor": [
+          7,
+          1
+        ]
+      },
+      "edit": "li<CR><Esc>"
+    }
+  ]
+}

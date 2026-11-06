@@ -1,0 +1,33 @@
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "dj", "after": ["one one", "two two", "five"], "register": "three\nfour\n", "type": "V", "cursor": [0, 3, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "dk", "after": ["one one", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "yj", "after": ["one one", "two two", "three", "four", "five"], "register": "three\nfour\n", "type": "V", "cursor": [0, 3, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "yk", "after": ["one one", "two two", "three", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "2dj", "after": ["one one", "two two"], "register": "three\nfour\nfive\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "d2j", "after": ["one one", "two two"], "register": "three\nfour\nfive\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "dG", "after": ["one one", "two two"], "register": "three\nfour\nfive\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "dgg", "after": ["four", "five"], "register": "one one\ntwo two\nthree\n", "type": "V", "cursor": [0, 1, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "yG", "after": ["one one", "two two", "three", "four", "five"], "register": "three\nfour\nfive\n", "type": "V", "cursor": [0, 3, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "ygg", "after": ["one one", "two two", "three", "four", "five"], "register": "one one\ntwo two\nthree\n", "type": "V", "cursor": [0, 1, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "cjXY", "after": ["one one", "two two", "XY", "five"], "register": "three\nfour\n", "type": "V", "cursor": [0, 3, 2, 0, 2]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "ckXY", "after": ["one one", "XY", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 2, 0, 2]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [1, 1], "keys": "dk", "after": ["one one", "two two", "three", "four", "five"], "register": "", "type": "v", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [5, 1], "keys": "dj", "after": ["one one", "two two", "three", "four", "five"], "register": "", "type": "v", "cursor": [0, 5, 1, 0, 1]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [5, 1], "keys": "dG", "after": ["one one", "two two", "three", "four"], "register": "five\n", "type": "V", "cursor": [0, 4, 1, 0, 1]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [1, 1], "keys": "dgg", "after": ["two two", "three", "four", "five"], "register": "one one\n", "type": "V", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "1dG", "after": ["four", "five"], "register": "one one\ntwo two\nthree\n", "type": "V", "cursor": [0, 1, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "d1G", "after": ["four", "five"], "register": "one one\ntwo two\nthree\n", "type": "V", "cursor": [0, 1, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "2dG", "after": ["one one", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "d2G", "after": ["one one", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "2dgg", "after": ["one one", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "d2gg", "after": ["one one", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "dgj", "after": ["one one", "two two", "five"], "register": "three\nfour\n", "type": "V", "cursor": [0, 3, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "dgk", "after": ["one one", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "ygj", "after": ["one one", "two two", "three", "four", "five"], "register": "three\nfour\n", "type": "V", "cursor": [0, 3, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [3, 3], "keys": "ygk", "after": ["one one", "two two", "three", "four", "five"], "register": "two two\nthree\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [2, 3], "keys": "d2gj", "after": ["one one", "five"], "register": "two two\nthree\nfour\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [4, 3], "keys": "d2gk", "after": ["one one", "five"], "register": "two two\nthree\nfour\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [2, 3], "keys": "y2gj", "after": ["one one", "two two", "three", "four", "five"], "register": "two two\nthree\nfour\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [4, 3], "keys": "y2gk", "after": ["one one", "two two", "three", "four", "five"], "register": "two two\nthree\nfour\n", "type": "V", "cursor": [0, 2, 3, 0, 3]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [1, 1], "keys": "dj.", "after": ["five"], "register": "three\nfour\n", "type": "V", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [1, 1], "keys": "dgj.", "after": ["five"], "register": "three\nfour\n", "type": "V", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["one one", "two two", "three", "four", "five"], "start": [1, 1], "keys": "d2gj.", "after": [""], "register": "four\nfive\n", "type": "V", "cursor": [0, 1, 1, 0, 1]}

@@ -1,0 +1,123 @@
+{
+  "cases": [
+    {
+      "name": "unchanged",
+      "before": {
+        "index": 1,
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "listed": 0,
+            "loaded": 0
+          }
+        ]
+      },
+      "after": {
+        "index": 0,
+        "cursor": [
+          2,
+          1
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "listed": 1,
+            "loaded": 1
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "listed": 1,
+            "loaded": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "prepend",
+      "before": {
+        "index": 1,
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "listed": 0,
+            "loaded": 0
+          }
+        ]
+      },
+      "after": {
+        "index": 0,
+        "cursor": [
+          2,
+          1
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "listed": 1,
+            "loaded": 1
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "listed": 1,
+            "loaded": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "truncate",
+      "before": {
+        "index": 1,
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "listed": 0,
+            "loaded": 0
+          }
+        ]
+      },
+      "after": {
+        "index": 0,
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "listed": 1,
+            "loaded": 1
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "listed": 1,
+            "loaded": 1
+          }
+        ]
+      }
+    }
+  ],
+  "jumpoptions": "view",
+  "version": "0.12.1"
+}

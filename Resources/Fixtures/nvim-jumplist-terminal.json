@@ -1,0 +1,72 @@
+{
+  "after_back": {
+    "cursor": [
+      2,
+      1
+    ],
+    "index": 0,
+    "jumps": [
+      {
+        "col": 1,
+        "row": 2,
+        "term": true
+      },
+      {
+        "col": 0,
+        "row": 1,
+        "term": false
+      }
+    ],
+    "mode": "nt",
+    "terminal": true
+  },
+  "after_forward": {
+    "cursor": [
+      1,
+      0
+    ],
+    "index": 1,
+    "jumps": [
+      {
+        "col": 1,
+        "row": 2,
+        "term": true
+      },
+      {
+        "col": 0,
+        "row": 1,
+        "term": false
+      }
+    ],
+    "mode": "n",
+    "terminal": false
+  },
+  "after_open": {
+    "cursor": [
+      1,
+      0
+    ],
+    "index": 1,
+    "jumps": [
+      {
+        "col": 1,
+        "row": 2,
+        "term": true
+      }
+    ],
+    "mode": "n",
+    "terminal": false
+  },
+  "before": {
+    "cursor": [
+      2,
+      1
+    ],
+    "index": 0,
+    "jumps": [],
+    "mode": "nt",
+    "terminal": true
+  },
+  "jumpoptions": "view",
+  "nvim": "0.12.1"
+}

@@ -1,0 +1,4 @@
+{
+  "last": {"e444": true, "job_alive": true, "same_buffer": true, "windows": 1},
+  "split": {"after": 1, "before": 2, "job_alive": true, "returned_to_file": true, "terminal_listed": true, "terminal_loaded": true}
+}

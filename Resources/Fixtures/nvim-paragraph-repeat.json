@@ -1,0 +1,1762 @@
+{
+  "lines": [
+    "alpha one",
+    "alpha two",
+    "",
+    "beta one",
+    "beta two",
+    "",
+    "gamma",
+    "",
+    "delta"
+  ],
+  "version": "0.12.1",
+  "scenarios": [
+    [
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "d}",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "beta one\nbeta two\n",
+        "key": ".",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "d}",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "d}",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "beta one\nbeta two\n",
+        "key": ".",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "beta one\nbeta two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "y}",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha one",
+          "alpha two",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "p",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "y}",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "p",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n\nbeta one\nbeta two\n",
+        "key": "2d}",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n\nbeta one\nbeta two\n",
+        "key": "u",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          1,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "XYZ",
+          "XYZ",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\nbeta one\nbeta two\n",
+        "key": ".",
+        "pos": [
+          2,
+          2
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          1,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha two\n",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          2,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "l",
+        "pos": [
+          1,
+          1
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "aXYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "lpha one\nalpha two",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          1,
+          3
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "lpha one\nalpha two",
+        "key": "u",
+        "pos": [
+          1,
+          1
+        ],
+        "regtype": "v"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          4,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "XYZ",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "c{XYZ<Esc>",
+        "pos": [
+          3,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "u",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "XYZ",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n\nbeta one\nbeta two\n",
+        "key": "2c}XYZ<Esc>",
+        "pos": [
+          1,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n\nbeta one\nbeta two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "c}<Esc>",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          4,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "c{<Esc>",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "u",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "X",
+          "Y",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "c}X<CR>Y<Esc>",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "G",
+        "pos": [
+          9,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "XYZ",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "c{XYZ<Esc>",
+        "pos": [
+          8,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "u",
+        "pos": [
+          8,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "G",
+        "pos": [
+          9,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "XYZ"
+        ],
+        "reg": "delta",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          9,
+          2
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "delta",
+        "key": "u",
+        "pos": [
+          9,
+          0
+        ],
+        "regtype": "v"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "XYZ",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\nbeta one\nbeta two\n",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          3,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\nbeta one\nbeta two\n",
+        "key": "u",
+        "pos": [
+          4,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          1,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "<C-r>",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "d}",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "<C-r>",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha two\n",
+        "key": "c}XYZ<Esc>",
+        "pos": [
+          2,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "XYZ",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha two\n",
+        "key": "<C-r>",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          4,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "XYZ",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "c{XYZ<Esc>",
+        "pos": [
+          3,
+          2
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "u",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "XYZ",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "<C-r>",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "c}<Esc>",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "<C-r>",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "X",
+          "Y",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "c}X<CR>Y<Esc>",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "u",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "X",
+          "Y",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": "<C-r>",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          4,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "d{",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "alpha one\nalpha two\n",
+        "key": ".",
+        "pos": [
+          1,
+          0
+        ],
+        "regtype": "V"
+      }
+    ],
+    [
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          2,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "__SENTINEL__",
+        "key": "j",
+        "pos": [
+          4,
+          0
+        ],
+        "regtype": "v"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "y{",
+        "pos": [
+          3,
+          0
+        ],
+        "regtype": "V"
+      },
+      {
+        "lines": [
+          "alpha one",
+          "alpha two",
+          "",
+          "",
+          "beta one",
+          "beta two",
+          "",
+          "gamma",
+          "",
+          "delta"
+        ],
+        "reg": "\n",
+        "key": "p",
+        "pos": [
+          4,
+          0
+        ],
+        "regtype": "V"
+      }
+    ]
+  ]
+}

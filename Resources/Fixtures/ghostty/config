@@ -1,0 +1,15 @@
+# Synthetic parser fixture. No personal configuration is copied here.
+config-file = theme.conf
+keybind = super+shift+h=text:\x1b[1;10D
+keybind = super+d=text:\x01%
+keybind = super+shift+d=text:\x01"
+keybind = super+shift+l=text:\x1b[1;10C
+keybind = super+shift+j=text:\x1b[1;10B
+keybind = super+shift+k=text:\x1b[1;10A
+keybind = super+t=text:\x01c
+keybind = super+w=text:\x01x
+keybind = super+shift+w=text:\x01&
+keybind = super+shift+z=text:\x01z
+keybind = super+physical:one=text:\x1b1
+keybind = super+physical:two=text:\x1b2
+keybind = super+physical:three=text:\x1b3

@@ -1,0 +1,367 @@
+{
+  "timeoutlen": 300,
+  "neovim": "NVIM v0.12.1",
+  "snacks_commit": "882c996cf28183f4d63640de0b4c02ec886d01f2",
+  "scope": "Plugin runtime, synthetic items, no preview window, isolated HOME/XDG and RPC UI80x24",
+  "source_sha256": {
+    "lua/snacks/picker/actions.lua": "c648231ca169b32527d4736556311987d6247ad7c330a24dbfef9b89a90c123b",
+    "lua/snacks/picker/config/defaults.lua": "62ae47a4e9f3a649dbd206faa36218e9faae0f5b369b254057e41836b1ea8598",
+    "lua/snacks/picker/core/input.lua": "ea4864afa885b6541c4015c28be9b83a1b058539a70d3d4050ae6175cda16cb6"
+  },
+  "cases": [
+    {
+      "label": "input-half-pages",
+      "keys": [
+        "<C-d>",
+        "<C-d>",
+        "<C-u>",
+        "<C-u>",
+        "<C-u>"
+      ],
+      "initial": {
+        "focus": "input",
+        "height": 5,
+        "query": "row",
+        "cursor": 3,
+        "marks": 0,
+        "mode": "i",
+        "scrolloff": 4,
+        "scroll": 2,
+        "open": true,
+        "selected": 0,
+        "count": 60,
+        "top": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 3,
+          "marks": 0,
+          "mode": "i",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 2,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 3,
+          "marks": 0,
+          "mode": "i",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 4,
+          "count": 60,
+          "top": 2
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 3,
+          "marks": 0,
+          "mode": "i",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 2,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 3,
+          "marks": 0,
+          "mode": "i",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 0,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 3,
+          "marks": 0,
+          "mode": "i",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 0,
+          "count": 60,
+          "top": 0
+        }
+      ]
+    },
+    {
+      "label": "normal-half-pages",
+      "keys": [
+        "<Esc>",
+        "<C-d>",
+        "<C-u>"
+      ],
+      "initial": {
+        "focus": "input",
+        "height": 5,
+        "query": "row",
+        "cursor": 3,
+        "marks": 0,
+        "mode": "i",
+        "scrolloff": 4,
+        "scroll": 2,
+        "open": true,
+        "selected": 0,
+        "count": 60,
+        "top": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 0,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 2,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 0,
+          "count": 60,
+          "top": 0
+        }
+      ]
+    },
+    {
+      "label": "list-half-pages",
+      "keys": [
+        "<Esc>",
+        "/",
+        "<C-d>",
+        "<C-d>",
+        "<C-u>"
+      ],
+      "initial": {
+        "focus": "input",
+        "height": 5,
+        "query": "row",
+        "cursor": 3,
+        "marks": 0,
+        "mode": "i",
+        "scrolloff": 4,
+        "scroll": 2,
+        "open": true,
+        "selected": 0,
+        "count": 60,
+        "top": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 0,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "list",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 0,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "list",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 2,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "list",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 4,
+          "count": 60,
+          "top": 2
+        },
+        {
+          "focus": "list",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 2,
+          "count": 60,
+          "top": 0
+        }
+      ]
+    },
+    {
+      "label": "bottom-half-pages",
+      "keys": [
+        "<Esc>",
+        "G",
+        "<C-d>",
+        "<C-u>",
+        "<C-u>"
+      ],
+      "initial": {
+        "focus": "input",
+        "height": 5,
+        "query": "row",
+        "cursor": 3,
+        "marks": 0,
+        "mode": "i",
+        "scrolloff": 4,
+        "scroll": 2,
+        "open": true,
+        "selected": 0,
+        "count": 60,
+        "top": 0
+      },
+      "observations": [
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 0,
+          "count": 60,
+          "top": 0
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 59,
+          "count": 60,
+          "top": 55
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 59,
+          "count": 60,
+          "top": 55
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 57,
+          "count": 60,
+          "top": 53
+        },
+        {
+          "focus": "input",
+          "height": 5,
+          "query": "row",
+          "cursor": 2,
+          "marks": 0,
+          "mode": "n",
+          "scrolloff": 4,
+          "scroll": 2,
+          "open": true,
+          "selected": 55,
+          "count": 60,
+          "top": 53
+        }
+      ]
+    }
+  ]
+}

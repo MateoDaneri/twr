@@ -1,0 +1,90 @@
+{
+  "jumpoptions": "view",
+  "cases": [
+    {
+      "name": "edit",
+      "after": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "name": "a.txt",
+            "col": 1
+          }
+        ],
+        "buffer": "b.txt",
+        "index": 1
+      }
+    },
+    {
+      "name": "buffer",
+      "after": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "name": "a.txt",
+            "col": 1
+          }
+        ],
+        "buffer": "b.txt",
+        "index": 1
+      }
+    },
+    {
+      "name": "alternate",
+      "after": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "name": "a.txt",
+            "col": 1
+          }
+        ],
+        "buffer": "b.txt",
+        "index": 1
+      }
+    },
+    {
+      "name": "split",
+      "after": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "name": "a.txt",
+            "col": 1
+          }
+        ],
+        "buffer": "b.txt",
+        "index": 1
+      }
+    },
+    {
+      "name": "same",
+      "after": {
+        "cursor": [
+          2,
+          1
+        ],
+        "jumps": [],
+        "buffer": "a.txt",
+        "index": 0
+      }
+    }
+  ],
+  "version": "0.12.1"
+}

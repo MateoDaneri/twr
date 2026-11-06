@@ -1,0 +1,27 @@
+{
+  "backend": "synthetic tmux 3.6a 60x15",
+  "cursor": [
+    6,
+    0
+  ],
+  "fold_start": 3,
+  "jumpoptions": "view",
+  "screen": {
+    "col": 1,
+    "curscol": 1,
+    "endcol": 1,
+    "row": 3
+  },
+  "version": "0.12.1",
+  "view": {
+    "col": 0,
+    "coladd": 0,
+    "curswant": 0,
+    "leftcol": 0,
+    "lnum": 6,
+    "skipcol": 0,
+    "topfill": 0,
+    "topline": 1
+  },
+  "winline": 3
+}

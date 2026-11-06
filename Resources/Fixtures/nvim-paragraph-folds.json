@@ -1,0 +1,265 @@
+{
+  "lines": [
+    "top",
+    "  alpha",
+    "    deepA",
+    "    deepB",
+    "  omega",
+    "",
+    "tail",
+    "  secondA",
+    "  secondB",
+    "end"
+  ],
+  "cases": [
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "__SENTINEL__",
+      "keys": "zMj}",
+      "regtype": "v",
+      "finish": [
+        6,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "__SENTINEL__",
+      "keys": "zMj2}",
+      "regtype": "v",
+      "finish": [
+        10,
+        2
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "__SENTINEL__",
+      "keys": "zMj}{",
+      "regtype": "v",
+      "finish": [
+        1,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "  alpha\n    deepA\n    deepB\n  omega\n",
+      "keys": "zMjd}",
+      "regtype": "V",
+      "finish": [
+        2,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "  alpha\n    deepA\n    deepB\n  omega\n",
+      "keys": "zMjy}",
+      "regtype": "V",
+      "finish": [
+        2,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "top\n",
+      "keys": "zMjd{",
+      "regtype": "V",
+      "finish": [
+        1,
+        2
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "top\n",
+      "keys": "zMjy{",
+      "regtype": "V",
+      "finish": [
+        1,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "top\n  alpha\n    deepA\n    deepB\n  omega\n",
+      "keys": "zM}d{",
+      "regtype": "V",
+      "finish": [
+        1,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "top\n  alpha\n    deepA\n    deepB\n  omega\n",
+      "keys": "zM}y{",
+      "regtype": "V",
+      "finish": [
+        1,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top"
+      ],
+      "reg": "  alpha\n    deepA\n    deepB\n  omega\n\ntail\n  secondA\n  secondB\nend\n",
+      "keys": "zMjd2}",
+      "regtype": "V",
+      "finish": [
+        1,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "  alpha\n    deepA\n    deepB\n  omega\n\ntail\n  secondA\n  secondB\nend",
+      "keys": "zMjy2}",
+      "regtype": "v",
+      "finish": [
+        2,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega"
+      ],
+      "reg": "\ntail\n  secondA\n  secondB\nend\n",
+      "keys": "zM}d}",
+      "regtype": "V",
+      "finish": [
+        2,
+        0
+      ]
+    },
+    {
+      "lines": [
+        "top",
+        "  alpha",
+        "    deepA",
+        "    deepB",
+        "  omega",
+        "",
+        "tail",
+        "  secondA",
+        "  secondB",
+        "end"
+      ],
+      "reg": "\ntail\n  secondA\n  secondB\nend",
+      "keys": "zM}y}",
+      "regtype": "v",
+      "finish": [
+        6,
+        0
+      ]
+    }
+  ]
+}

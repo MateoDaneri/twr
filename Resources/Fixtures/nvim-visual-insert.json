@@ -1,0 +1,296 @@
+{
+  "scope": "clean Neovim defaults; no personal config/plugins/shada",
+  "insert": [
+    {
+      "label": "word",
+      "text": "foo bar",
+      "cursor": 7,
+      "mode": "i",
+      "lines": [
+        "foo "
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "spaces",
+      "text": "foo bar   ",
+      "cursor": 10,
+      "mode": "i",
+      "lines": [
+        "foo "
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "punctuation",
+      "text": "foo.bar",
+      "cursor": 7,
+      "mode": "i",
+      "lines": [
+        "foo."
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "punctuation-tail",
+      "text": "foo...",
+      "cursor": 6,
+      "mode": "i",
+      "lines": [
+        "foo"
+      ],
+      "position": [
+        1,
+        4
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "underscore",
+      "text": "foo_bar",
+      "cursor": 7,
+      "mode": "i",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "unicode",
+      "text": "foo ñÁfono",
+      "cursor": 10,
+      "mode": "i",
+      "lines": [
+        "foo "
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "combining",
+      "text": "foo é",
+      "cursor": 6,
+      "mode": "i",
+      "lines": [
+        "foo "
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "emoji",
+      "text": "foo 😀😀",
+      "cursor": 6,
+      "mode": "i",
+      "lines": [
+        "foo "
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "cjk",
+      "text": "foo 中文",
+      "cursor": 6,
+      "mode": "i",
+      "lines": [
+        "foo "
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "indent",
+      "text": "    foo",
+      "cursor": 7,
+      "mode": "i",
+      "lines": [
+        "    "
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "line-start",
+      "text": "first\nnext",
+      "cursor": 6,
+      "mode": "i",
+      "lines": [
+        "firstnext"
+      ],
+      "position": [
+        1,
+        6
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "empty-line",
+      "text": "first\n",
+      "cursor": 6,
+      "mode": "i",
+      "lines": [
+        "first"
+      ],
+      "position": [
+        1,
+        6
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "buffer-start",
+      "text": "foo",
+      "cursor": 0,
+      "mode": "i",
+      "lines": [
+        "foo"
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "middle",
+      "text": "foo bar tail",
+      "cursor": 7,
+      "mode": "i",
+      "lines": [
+        "foo  tail"
+      ],
+      "position": [
+        1,
+        5
+      ],
+      "buffer": ""
+    },
+    {
+      "label": "tabs",
+      "text": "foo\t\t",
+      "cursor": 5,
+      "mode": "i",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": ""
+    }
+  ],
+  "visual": [
+    {
+      "prefix": "v",
+      "direction": "h",
+      "mode": "v",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": "content"
+    },
+    {
+      "prefix": "v",
+      "direction": "l",
+      "mode": "n",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": "tree"
+    },
+    {
+      "prefix": "V",
+      "direction": "h",
+      "mode": "V",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": "content"
+    },
+    {
+      "prefix": "V",
+      "direction": "l",
+      "mode": "n",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": "tree"
+    },
+    {
+      "prefix": "<C-v>",
+      "direction": "h",
+      "mode": "\u0016",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": "content"
+    },
+    {
+      "prefix": "<C-v>",
+      "direction": "l",
+      "mode": "n",
+      "lines": [
+        ""
+      ],
+      "position": [
+        1,
+        1
+      ],
+      "buffer": "tree"
+    }
+  ],
+  "version": "NVIM v0.12.1"
+}

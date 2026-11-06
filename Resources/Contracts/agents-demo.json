@@ -1,0 +1,6 @@
+[
+  {"id":"codex-thread:demo-parent","source":"codex_app_server","label":"Preparar el módulo","status":"running","task_id":"demo-parent","updated_at":1000,"coordination_waiting":true,"codex_project_id":"demo-project","codex_project_name":"Workspace de prueba"},
+  {"id":"codex-thread:demo-child","source":"codex_app_server","label":"Comprobar los cambios","status":"running","task_id":"demo-child","parent_id":"codex-thread:demo-parent","updated_at":1000,"status_detail":"waitingOnUserInput","codex_project_id":"demo-project","codex_project_name":"Workspace de prueba"},
+  {"id":"codex-thread:demo-ready","source":"codex_app_server","label":"Guía preparada","status":"idle","rollout_status":"completed","task_id":"demo-ready","updated_at":100,"codex_project_id":"demo-project","codex_project_name":"Workspace de prueba"},
+  {"id":"process:demo-cli","source":"process","label":"Agente CLI de ejemplo","status":"running","cli_state":"working","terminal_id":"terminal-demo"}
+]

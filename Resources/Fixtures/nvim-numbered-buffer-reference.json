@@ -1,0 +1,57 @@
+{
+  "after_wipe": {
+    "id": 5,
+    "state": {
+      "exists": 1,
+      "id": 5,
+      "listed": 0,
+      "loaded": 0
+    }
+  },
+  "created": {
+    "alternate": 2,
+    "current": 3,
+    "one": 1,
+    "three": 3,
+    "two": 2
+  },
+  "deleted": {
+    "exists": 1,
+    "id": 2,
+    "listed": 0,
+    "loaded": 0
+  },
+  "numbered_switch": {
+    "alternate": 3,
+    "current": 2
+  },
+  "readd": {
+    "id": 2,
+    "state": {
+      "exists": 1,
+      "id": 2,
+      "listed": 0,
+      "loaded": 0
+    }
+  },
+  "renamed": {
+    "current": 2,
+    "new": 2,
+    "old": 4
+  },
+  "reopened": {
+    "current": 2,
+    "state": {
+      "exists": 1,
+      "id": 2,
+      "listed": 0,
+      "loaded": 1
+    }
+  },
+  "wiped": {
+    "exists": 0,
+    "id": 2,
+    "listed": 0,
+    "loaded": 0
+  }
+}

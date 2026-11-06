@@ -1,0 +1,35 @@
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "$", "after": ["abcde", "fghij", "klmno", "end"], "register": "", "type": "v", "cursor": [0, 1, 5, 0, 2147483647]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "2$", "after": ["abcde", "fghij", "klmno", "end"], "register": "", "type": "v", "cursor": [0, 2, 5, 0, 2147483647]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "3$", "after": ["abcde", "fghij", "klmno", "end"], "register": "", "type": "v", "cursor": [0, 3, 5, 0, 2147483647]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "d$", "after": ["ab", "fghij", "klmno", "end"], "register": "cde", "type": "v", "cursor": [0, 1, 2, 0, 2]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "d2$", "after": ["ab", "klmno", "end"], "register": "cde\nfghij", "type": "v", "cursor": [0, 1, 2, 0, 2]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "2d$", "after": ["ab", "klmno", "end"], "register": "cde\nfghij", "type": "v", "cursor": [0, 1, 2, 0, 2]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "y2$", "after": ["abcde", "fghij", "klmno", "end"], "register": "cde\nfghij", "type": "v", "cursor": [0, 1, 3, 0, 3]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "c2$XY", "after": ["abXY", "klmno", "end"], "register": "cde\nfghij", "type": "v", "cursor": [0, 1, 4, 0, 4]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [4, 2], "keys": "3$", "after": ["abcde", "fghij", "klmno", "end"], "register": "", "type": "v", "cursor": [0, 4, 2, 0, 2147483647]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [4, 2], "keys": "d2$", "after": ["abcde", "fghij", "klmno", "end"], "register": "", "type": "v", "cursor": [0, 4, 2, 0, 2147483647]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 3], "keys": "d2$.", "after": ["a", "end"], "register": "b\nklmno", "type": "v", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["abc", "", "def", ""], "start": [1, 2], "keys": "2$", "after": ["abc", "", "def", ""], "register": "", "type": "v", "cursor": [0, 2, 1, 0, 2147483647], "eol": true}
+{"lines": ["abc", "", "def", ""], "start": [1, 2], "keys": "d2$", "after": ["a", "def", ""], "register": "bc\n", "type": "v", "cursor": [0, 1, 1, 0, 1], "eol": true}
+{"lines": ["abc", "", "def", ""], "start": [1, 2], "keys": "y2$", "after": ["abc", "", "def", ""], "register": "bc\n", "type": "v", "cursor": [0, 1, 2, 0, 2], "eol": true}
+{"lines": ["abc", "", "def", ""], "start": [1, 2], "keys": "d3$", "after": ["a", ""], "register": "bc\n\ndef", "type": "v", "cursor": [0, 1, 1, 0, 1], "eol": true}
+{"lines": ["abc", "", "def", ""], "start": [2, 1], "keys": "d2$", "after": ["abc", ""], "register": "\ndef\n", "type": "V", "cursor": [0, 2, 1, 0, 1], "eol": true}
+{"lines": ["abc", "", "def", ""], "start": [3, 1], "keys": "d2$", "after": ["abc", ""], "register": "def\n\n", "type": "V", "cursor": [0, 2, 1, 0, 1], "eol": true}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 1], "keys": "d$", "after": ["", "fghij", "klmno", "end"], "register": "abcde", "type": "v", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 1], "keys": "y$", "after": ["abcde", "fghij", "klmno", "end"], "register": "abcde", "type": "v", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 1], "keys": "d2$", "after": ["klmno", "end"], "register": "abcde\nfghij\n", "type": "V", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 1], "keys": "y2$", "after": ["abcde", "fghij", "klmno", "end"], "register": "abcde\nfghij", "type": "v", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 1], "keys": "c2$XY", "after": ["XY", "klmno", "end"], "register": "abcde\nfghij", "type": "v", "cursor": [0, 1, 2, 0, 2]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [1, 2], "keys": "d2$", "after": ["a", "klmno", "end"], "register": "bcde\nfghij", "type": "v", "cursor": [0, 1, 1, 0, 1]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [2, 1], "keys": "d2$", "after": ["abcde", "end"], "register": "fghij\nklmno\n", "type": "V", "cursor": [0, 2, 1, 0, 1]}
+{"lines": ["abcde", "fghij", "klmno", "end"], "start": [3, 1], "keys": "d2$", "after": ["abcde", "fghij"], "register": "klmno\nend\n", "type": "V", "cursor": [0, 2, 1, 0, 1]}
+{"lines": ["abcde", "fghij"], "start": [2, 2], "keys": "2$", "after": ["abcde", "fghij"], "register": "", "type": "v", "cursor": [0, 2, 2, 0, 2147483647], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [2, 2], "keys": "d2$", "after": ["abcde", "fghij"], "register": "", "type": "v", "cursor": [0, 2, 2, 0, 2147483647], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [2, 2], "keys": "dG", "after": ["abcde"], "register": "fghij\n", "type": "V", "cursor": [0, 1, 2, 0, 2], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [2, 2], "keys": "d99G", "after": ["abcde"], "register": "fghij\n", "type": "V", "cursor": [0, 1, 2, 0, 2], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [2, 2], "keys": "dk", "after": [""], "register": "abcde\nfghij\n", "type": "V", "cursor": [0, 1, 1, 0, 1], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [2, 2], "keys": "dj", "after": ["abcde", "fghij"], "register": "", "type": "v", "cursor": [0, 2, 2, 0, 2], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [1, 2], "keys": "2j", "after": ["abcde", "fghij"], "register": "", "type": "v", "cursor": [0, 2, 2, 0, 2], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [1, 2], "keys": "d2j", "after": [""], "register": "abcde\nfghij\n", "type": "V", "cursor": [0, 1, 1, 0, 1], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [1, 2], "keys": "99j", "after": ["abcde", "fghij"], "register": "", "type": "v", "cursor": [0, 2, 2, 0, 2], "eol": true}
+{"lines": ["abcde", "fghij"], "start": [1, 2], "keys": "d99j", "after": [""], "register": "abcde\nfghij\n", "type": "V", "cursor": [0, 1, 1, 0, 1], "eol": true}

@@ -1,0 +1,19 @@
+{
+  "serverID": "synthetic-demo",
+  "sessions": [
+    {"id": "$0", "name": "código", "windows": [{"windowID": "@0", "index": 1}, {"windowID": "@1", "index": 2}]},
+    {"id": "$1", "name": "lab", "windows": [{"windowID": "@1", "index": 1}, {"windowID": "@2", "index": 2}]}
+  ],
+  "windows": [
+    {"id": "@0", "name": "editor", "paneIDs": ["%0", "%1"]},
+    {"id": "@1", "name": "logs & <tools>", "paneIDs": ["%2"]},
+    {"id": "@2", "name": "checks", "paneIDs": ["%3"]}
+  ],
+  "panes": [
+    {"id": "%0", "columns": 90, "rows": 40},
+    {"id": "%1", "columns": 45, "rows": 40},
+    {"id": "%2", "columns": 135, "rows": 40},
+    {"id": "%3", "columns": 135, "rows": 40}
+  ],
+  "selection": {"sessionID": "$0", "windowID": "@0", "paneID": "%0"}
+}

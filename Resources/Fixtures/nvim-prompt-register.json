@@ -1,0 +1,256 @@
+{
+  "version": "NVIM v0.12.1",
+  "cases": [
+    {
+      "label": "command-named",
+      "prefix": ":ab",
+      "operations": [
+        [
+          "<Left>"
+        ],
+        [
+          "<C-r>",
+          "a"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "ab",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "ab",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "aalpha betab",
+          "mode": "c",
+          "pos": 12
+        }
+      ]
+    },
+    {
+      "label": "command-unnamed",
+      "prefix": ":",
+      "operations": [
+        [
+          "<C-r>",
+          "\""
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "unnamed",
+          "mode": "c",
+          "pos": 8
+        }
+      ]
+    },
+    {
+      "label": "command-linewise",
+      "prefix": ":",
+      "operations": [
+        [
+          "<C-r>",
+          "c"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "only",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "clipboard-plus",
+      "prefix": ":",
+      "operations": [
+        [
+          "<C-r>",
+          "+"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "synthetic-clipboard",
+          "mode": "c",
+          "pos": 20
+        }
+      ]
+    },
+    {
+      "label": "clipboard-star",
+      "prefix": ":",
+      "operations": [
+        [
+          "<C-r>",
+          "*"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "synthetic-clipboard",
+          "mode": "c",
+          "pos": 20
+        }
+      ]
+    },
+    {
+      "label": "search-forward",
+      "prefix": "/",
+      "operations": [
+        [
+          "<C-r>",
+          "a"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "alpha beta",
+          "mode": "c",
+          "pos": 11
+        }
+      ]
+    },
+    {
+      "label": "search-backward",
+      "prefix": "?",
+      "operations": [
+        [
+          "<C-r>",
+          "a"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "alpha beta",
+          "mode": "c",
+          "pos": 11
+        }
+      ]
+    },
+    {
+      "label": "literal-single-line",
+      "prefix": ":",
+      "operations": [
+        [
+          "<C-r>",
+          "<C-r>",
+          "a"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "alpha beta",
+          "mode": "c",
+          "pos": 11
+        }
+      ]
+    },
+    {
+      "label": "empty-register",
+      "prefix": ":",
+      "operations": [
+        [
+          "<C-r>",
+          "z"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "escape-pending",
+      "prefix": ":ab",
+      "operations": [
+        [
+          "<C-r>",
+          "<Esc>"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "ab",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "ab",
+          "mode": "c",
+          "pos": 3
+        }
+      ]
+    },
+    {
+      "label": "control-c-pending",
+      "prefix": ":ab",
+      "operations": [
+        [
+          "<C-r>",
+          "<C-c>"
+        ]
+      ],
+      "observations": [
+        {
+          "line": "ab",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "",
+          "mode": "n",
+          "pos": 0
+        }
+      ]
+    }
+  ]
+}

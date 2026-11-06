@@ -1,0 +1,212 @@
+{
+  "jumpoptions": "view",
+  "version": "0.12.1",
+  "cases": [
+    {
+      "after": {
+        "cursor": [
+          2,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 1,
+            "col": 0
+          }
+        ],
+        "index": 1
+      },
+      "name": "forward",
+      "before": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          2,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 4,
+            "col": 0
+          }
+        ],
+        "index": 1
+      },
+      "name": "backward",
+      "before": {
+        "cursor": [
+          4,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      },
+      "name": "missing",
+      "before": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      },
+      "name": "cancel",
+      "before": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          2,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 1,
+            "col": 0
+          }
+        ],
+        "index": 1
+      },
+      "name": "next",
+      "before": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          2,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 4,
+            "col": 0
+          }
+        ],
+        "index": 1
+      },
+      "name": "previous",
+      "before": {
+        "cursor": [
+          4,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          4,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 0
+          }
+        ],
+        "index": 1
+      },
+      "name": "word",
+      "before": {
+        "cursor": [
+          2,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          4,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 2,
+            "col": 0
+          }
+        ],
+        "index": 1
+      },
+      "name": "wrap",
+      "before": {
+        "cursor": [
+          2,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    },
+    {
+      "after": {
+        "cursor": [
+          4,
+          0
+        ],
+        "jumps": [
+          {
+            "row": 1,
+            "col": 0
+          }
+        ],
+        "index": 1
+      },
+      "name": "count",
+      "before": {
+        "cursor": [
+          1,
+          0
+        ],
+        "jumps": [],
+        "index": 0
+      }
+    }
+  ]
+}

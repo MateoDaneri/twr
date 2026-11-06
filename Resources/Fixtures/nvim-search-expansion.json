@@ -1,0 +1,813 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "shada": "NONE",
+  "plugins": false,
+  "ignorecase": true,
+  "smartcase": true,
+  "incsearch": true,
+  "cases": [
+    {
+      "label": "char-'.'-mode-default",
+      "text": "start foo.bar foo.baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\."
+        }
+      ],
+      "expected_command": "foo\\."
+    },
+    {
+      "label": "char-'*'-mode-default",
+      "text": "start foo*bar foo*baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\*"
+        }
+      ],
+      "expected_command": "foo\\*"
+    },
+    {
+      "label": "char-'['-mode-default",
+      "text": "start foo[bar foo[baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\["
+        }
+      ],
+      "expected_command": "foo\\["
+    },
+    {
+      "label": "char-']'-mode-default",
+      "text": "start foo]bar foo]baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo]"
+        }
+      ],
+      "expected_command": "foo]"
+    },
+    {
+      "label": "char-'^'-mode-default",
+      "text": "start foo^bar foo^baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\^"
+        }
+      ],
+      "expected_command": "foo\\^"
+    },
+    {
+      "label": "char-'$'-mode-default",
+      "text": "start foo$bar foo$baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\$"
+        }
+      ],
+      "expected_command": "foo\\$"
+    },
+    {
+      "label": "char-'\\\\'-mode-default",
+      "text": "start foo\\bar foo\\baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\\\"
+        }
+      ],
+      "expected_command": "foo\\\\"
+    },
+    {
+      "label": "char-'/'-mode-default",
+      "text": "start foo/bar foo/baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\/"
+        }
+      ],
+      "expected_command": "foo\\/"
+    },
+    {
+      "label": "char-'?'-mode-default",
+      "text": "start foo?bar foo?baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo?"
+        }
+      ],
+      "expected_command": "foo?"
+    },
+    {
+      "label": "char-'+'-mode-default",
+      "text": "start foo+bar foo+baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo+"
+        }
+      ],
+      "expected_command": "foo+"
+    },
+    {
+      "label": "char-'.'-mode-\\v",
+      "text": "start foo.bar foo.baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo\\."
+        }
+      ],
+      "expected_command": "\\vfoo\\."
+    },
+    {
+      "label": "char-'*'-mode-\\v",
+      "text": "start foo*bar foo*baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo\\*"
+        }
+      ],
+      "expected_command": "\\vfoo\\*"
+    },
+    {
+      "label": "char-'['-mode-\\v",
+      "text": "start foo[bar foo[baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo\\["
+        }
+      ],
+      "expected_command": "\\vfoo\\["
+    },
+    {
+      "label": "char-']'-mode-\\v",
+      "text": "start foo]bar foo]baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo]"
+        }
+      ],
+      "expected_command": "\\vfoo]"
+    },
+    {
+      "label": "char-'^'-mode-\\v",
+      "text": "start foo^bar foo^baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo\\^"
+        }
+      ],
+      "expected_command": "\\vfoo\\^"
+    },
+    {
+      "label": "char-'$'-mode-\\v",
+      "text": "start foo$bar foo$baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo\\$"
+        }
+      ],
+      "expected_command": "\\vfoo\\$"
+    },
+    {
+      "label": "char-'\\\\'-mode-\\v",
+      "text": "start foo\\bar foo\\baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo\\\\"
+        }
+      ],
+      "expected_command": "\\vfoo\\\\"
+    },
+    {
+      "label": "char-'/'-mode-\\v",
+      "text": "start foo/bar foo/baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo\\/"
+        }
+      ],
+      "expected_command": "\\vfoo\\/"
+    },
+    {
+      "label": "char-'?'-mode-\\v",
+      "text": "start foo?bar foo?baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo?"
+        }
+      ],
+      "expected_command": "\\vfoo?"
+    },
+    {
+      "label": "char-'+'-mode-\\v",
+      "text": "start foo+bar foo+baz",
+      "query": "\\vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\vfoo+"
+        }
+      ],
+      "expected_command": "\\vfoo+"
+    },
+    {
+      "label": "char-'.'-mode-\\M",
+      "text": "start foo.bar foo.baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo\\."
+        }
+      ],
+      "expected_command": "\\Mfoo\\."
+    },
+    {
+      "label": "char-'*'-mode-\\M",
+      "text": "start foo*bar foo*baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo\\*"
+        }
+      ],
+      "expected_command": "\\Mfoo\\*"
+    },
+    {
+      "label": "char-'['-mode-\\M",
+      "text": "start foo[bar foo[baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo\\["
+        }
+      ],
+      "expected_command": "\\Mfoo\\["
+    },
+    {
+      "label": "char-']'-mode-\\M",
+      "text": "start foo]bar foo]baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo]"
+        }
+      ],
+      "expected_command": "\\Mfoo]"
+    },
+    {
+      "label": "char-'^'-mode-\\M",
+      "text": "start foo^bar foo^baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo\\^"
+        }
+      ],
+      "expected_command": "\\Mfoo\\^"
+    },
+    {
+      "label": "char-'$'-mode-\\M",
+      "text": "start foo$bar foo$baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo\\$"
+        }
+      ],
+      "expected_command": "\\Mfoo\\$"
+    },
+    {
+      "label": "char-'\\\\'-mode-\\M",
+      "text": "start foo\\bar foo\\baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo\\\\"
+        }
+      ],
+      "expected_command": "\\Mfoo\\\\"
+    },
+    {
+      "label": "char-'/'-mode-\\M",
+      "text": "start foo/bar foo/baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo\\/"
+        }
+      ],
+      "expected_command": "\\Mfoo\\/"
+    },
+    {
+      "label": "char-'?'-mode-\\M",
+      "text": "start foo?bar foo?baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo?"
+        }
+      ],
+      "expected_command": "\\Mfoo?"
+    },
+    {
+      "label": "char-'+'-mode-\\M",
+      "text": "start foo+bar foo+baz",
+      "query": "\\Mfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Mfoo+"
+        }
+      ],
+      "expected_command": "\\Mfoo+"
+    },
+    {
+      "label": "char-'.'-mode-\\V",
+      "text": "start foo.bar foo.baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo\\."
+        }
+      ],
+      "expected_command": "\\Vfoo\\."
+    },
+    {
+      "label": "char-'*'-mode-\\V",
+      "text": "start foo*bar foo*baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo\\*"
+        }
+      ],
+      "expected_command": "\\Vfoo\\*"
+    },
+    {
+      "label": "char-'['-mode-\\V",
+      "text": "start foo[bar foo[baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo\\["
+        }
+      ],
+      "expected_command": "\\Vfoo\\["
+    },
+    {
+      "label": "char-']'-mode-\\V",
+      "text": "start foo]bar foo]baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo]"
+        }
+      ],
+      "expected_command": "\\Vfoo]"
+    },
+    {
+      "label": "char-'^'-mode-\\V",
+      "text": "start foo^bar foo^baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo\\^"
+        }
+      ],
+      "expected_command": "\\Vfoo\\^"
+    },
+    {
+      "label": "char-'$'-mode-\\V",
+      "text": "start foo$bar foo$baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo\\$"
+        }
+      ],
+      "expected_command": "\\Vfoo\\$"
+    },
+    {
+      "label": "char-'\\\\'-mode-\\V",
+      "text": "start foo\\bar foo\\baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo\\\\"
+        }
+      ],
+      "expected_command": "\\Vfoo\\\\"
+    },
+    {
+      "label": "char-'/'-mode-\\V",
+      "text": "start foo/bar foo/baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo\\/"
+        }
+      ],
+      "expected_command": "\\Vfoo\\/"
+    },
+    {
+      "label": "char-'?'-mode-\\V",
+      "text": "start foo?bar foo?baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo?"
+        }
+      ],
+      "expected_command": "\\Vfoo?"
+    },
+    {
+      "label": "char-'+'-mode-\\V",
+      "text": "start foo+bar foo+baz",
+      "query": "\\Vfoo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "\\Vfoo+"
+        }
+      ],
+      "expected_command": "\\Vfoo+"
+    },
+    {
+      "label": "word-tail",
+      "text": "start foobar foobaz",
+      "query": "fo",
+      "keys": [
+        "<C-r>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foobar"
+        }
+      ],
+      "expected_command": "foobar"
+    },
+    {
+      "label": "complete-word",
+      "text": "start foo.bar baz",
+      "query": "foo",
+      "keys": [
+        "<C-r>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foobar"
+        }
+      ],
+      "expected_command": "foobar"
+    },
+    {
+      "label": "punctuation-word",
+      "text": "start foo.bar baz",
+      "query": "foo",
+      "keys": [
+        "<C-l>",
+        "<C-r>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo\\."
+        },
+        {
+          "mode": "c",
+          "command": "foo\\.bar"
+        }
+      ],
+      "expected_command": "foo\\.bar"
+    },
+    {
+      "label": "lowercase-extension",
+      "text": "start foOBAR",
+      "query": "fo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo"
+        }
+      ],
+      "expected_command": "foo"
+    },
+    {
+      "label": "uppercase-extension",
+      "text": "start FOOBAR",
+      "query": "FO",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "FOO"
+        }
+      ],
+      "expected_command": "FOO"
+    },
+    {
+      "label": "word-uppercase-tail",
+      "text": "start FOOBAR",
+      "query": "fo",
+      "keys": [
+        "<C-r>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foOBAR"
+        }
+      ],
+      "expected_command": "foOBAR"
+    },
+    {
+      "label": "unicode",
+      "text": "start ñÁfono",
+      "query": "ñ",
+      "keys": [
+        "<C-l>",
+        "<C-r>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "ñá"
+        },
+        {
+          "mode": "c",
+          "command": "ñáñÁfono"
+        }
+      ],
+      "expected_command": "ñáñÁfono"
+    },
+    {
+      "label": "no-match",
+      "text": "start foobar",
+      "query": "absent",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "absents"
+        }
+      ],
+      "expected_command": "absents"
+    },
+    {
+      "label": "line-end",
+      "text": "start foo\nbar",
+      "query": "foo",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo"
+        }
+      ],
+      "expected_command": "foo"
+    },
+    {
+      "label": "empty-word",
+      "text": "foobar",
+      "query": "",
+      "keys": [
+        "<C-r>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foobar"
+        }
+      ],
+      "expected_command": "foobar"
+    },
+    {
+      "label": "next-match",
+      "text": "start fooOne fooTwo",
+      "query": "foo",
+      "keys": [
+        "<C-g>",
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo"
+        },
+        {
+          "mode": "c",
+          "command": "foot"
+        }
+      ],
+      "expected_command": "foot"
+    },
+    {
+      "label": "reverse",
+      "text": "start fooOne fooTwo",
+      "query": "foo",
+      "prefix": "?",
+      "keys": [
+        "<C-l>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foot"
+        }
+      ],
+      "expected_command": "foot"
+    }
+  ]
+}

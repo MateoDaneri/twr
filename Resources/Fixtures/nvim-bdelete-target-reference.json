@@ -1,0 +1,25 @@
+{
+  "rejected": {
+    "ok": false,
+    "current": 1,
+    "dirty": true,
+    "listed": 1,
+    "e89": true
+  },
+  "b": 2,
+  "visible": {
+    "before_count": 2,
+    "after_count": 1,
+    "same_window": true,
+    "listed": 0,
+    "current": 1
+  },
+  "a": 1,
+  "hidden": {
+    "alternate": 2,
+    "exists": 1,
+    "current": 1,
+    "loaded": 0,
+    "listed": 0
+  }
+}

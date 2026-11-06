@@ -1,0 +1,240 @@
+{"cursor":0,"regtype":"v","register":"a","keys":"ciw","line":"a漢字あb カタカナ 한글","after":"Z漢字あb カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a","keys":"caw","line":"a漢字あb カタカナ 한글","after":"Z漢字あb カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb","keys":"ciW","line":"a漢字あb カタカナ 한글","after":"Z カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb ","keys":"caW","line":"a漢字あb カタカナ 한글","after":"Zカタカナ 한글"}
+{"cursor":1,"regtype":"v","register":"漢字","keys":"lciw","line":"a漢字あb カタカナ 한글","after":"aZあb カタカナ 한글"}
+{"cursor":1,"regtype":"v","register":"漢字","keys":"lcaw","line":"a漢字あb カタカナ 한글","after":"aZあb カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb","keys":"lciW","line":"a漢字あb カタカナ 한글","after":"Z カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb ","keys":"lcaW","line":"a漢字あb カタカナ 한글","after":"Zカタカナ 한글"}
+{"cursor":1,"regtype":"v","register":"漢字","keys":"2lciw","line":"a漢字あb カタカナ 한글","after":"aZあb カタカナ 한글"}
+{"cursor":1,"regtype":"v","register":"漢字","keys":"2lcaw","line":"a漢字あb カタカナ 한글","after":"aZあb カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb","keys":"2lciW","line":"a漢字あb カタカナ 한글","after":"Z カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb ","keys":"2lcaW","line":"a漢字あb カタカナ 한글","after":"Zカタカナ 한글"}
+{"cursor":3,"regtype":"v","register":"あ","keys":"3lciw","line":"a漢字あb カタカナ 한글","after":"a漢字Zb カタカナ 한글"}
+{"cursor":3,"regtype":"v","register":"あ","keys":"3lcaw","line":"a漢字あb カタカナ 한글","after":"a漢字Zb カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb","keys":"3lciW","line":"a漢字あb カタカナ 한글","after":"Z カタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"a漢字あb ","keys":"3lcaW","line":"a漢字あb カタカナ 한글","after":"Zカタカナ 한글"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"ciw","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"caw","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"ciW","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"caW","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"lciw","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"lcaw","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"lciW","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"lcaW","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"2lciw","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"2lcaw","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"2lciW","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"2lcaW","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"3lciw","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"3lcaw","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta","keys":"3lciW","line":"alpha×beta ÷gamma","after":"Z ÷gamma"}
+{"cursor":0,"regtype":"v","register":"alpha×beta ","keys":"3lcaW","line":"alpha×beta ÷gamma","after":"Z÷gamma"}
+{"cursor":0,"regtype":"v","register":"x","keys":"ciw","line":"x★😀♠🧡y","after":"Z★😀♠🧡y"}
+{"cursor":0,"regtype":"v","register":"x","keys":"caw","line":"x★😀♠🧡y","after":"Z★😀♠🧡y"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"ciW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"caW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":1,"regtype":"v","register":"★","keys":"lciw","line":"x★😀♠🧡y","after":"xZ😀♠🧡y"}
+{"cursor":1,"regtype":"v","register":"★","keys":"lcaw","line":"x★😀♠🧡y","after":"xZ😀♠🧡y"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"lciW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"lcaW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":2,"regtype":"v","register":"😀♠🧡","keys":"2lciw","line":"x★😀♠🧡y","after":"x★Zy"}
+{"cursor":2,"regtype":"v","register":"😀♠🧡","keys":"2lcaw","line":"x★😀♠🧡y","after":"x★Zy"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"2lciW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"2lcaW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":2,"regtype":"v","register":"😀♠🧡","keys":"3lciw","line":"x★😀♠🧡y","after":"x★Zy"}
+{"cursor":2,"regtype":"v","register":"😀♠🧡","keys":"3lcaw","line":"x★😀♠🧡y","after":"x★Zy"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"3lciW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":0,"regtype":"v","register":"x★😀♠🧡y","keys":"3lcaW","line":"x★😀♠🧡y","after":"Z"}
+{"cursor":0,"regtype":"v","register":"uno","keys":"ciw","line":"uno⁰¹²₂₃ abc","after":"Z⁰¹²₂₃ abc"}
+{"cursor":0,"regtype":"v","register":"uno","keys":"caw","line":"uno⁰¹²₂₃ abc","after":"Z⁰¹²₂₃ abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃","keys":"ciW","line":"uno⁰¹²₂₃ abc","after":"Z abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃ ","keys":"caW","line":"uno⁰¹²₂₃ abc","after":"Zabc"}
+{"cursor":0,"regtype":"v","register":"uno","keys":"lciw","line":"uno⁰¹²₂₃ abc","after":"Z⁰¹²₂₃ abc"}
+{"cursor":0,"regtype":"v","register":"uno","keys":"lcaw","line":"uno⁰¹²₂₃ abc","after":"Z⁰¹²₂₃ abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃","keys":"lciW","line":"uno⁰¹²₂₃ abc","after":"Z abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃ ","keys":"lcaW","line":"uno⁰¹²₂₃ abc","after":"Zabc"}
+{"cursor":0,"regtype":"v","register":"uno","keys":"2lciw","line":"uno⁰¹²₂₃ abc","after":"Z⁰¹²₂₃ abc"}
+{"cursor":0,"regtype":"v","register":"uno","keys":"2lcaw","line":"uno⁰¹²₂₃ abc","after":"Z⁰¹²₂₃ abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃","keys":"2lciW","line":"uno⁰¹²₂₃ abc","after":"Z abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃ ","keys":"2lcaW","line":"uno⁰¹²₂₃ abc","after":"Zabc"}
+{"cursor":3,"regtype":"v","register":"⁰","keys":"3lciw","line":"uno⁰¹²₂₃ abc","after":"unoZ¹²₂₃ abc"}
+{"cursor":3,"regtype":"v","register":"⁰","keys":"3lcaw","line":"uno⁰¹²₂₃ abc","after":"unoZ¹²₂₃ abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃","keys":"3lciW","line":"uno⁰¹²₂₃ abc","after":"Z abc"}
+{"cursor":0,"regtype":"v","register":"uno⁰¹²₂₃ ","keys":"3lcaW","line":"uno⁰¹²₂₃ abc","after":"Zabc"}
+{"cursor":0,"regtype":"v","register":"z","keys":"ciw","line":"z⣿⠿x ℀℁z","after":"Z⣿⠿x ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z","keys":"caw","line":"z⣿⠿x ℀℁z","after":"Z⣿⠿x ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x","keys":"ciW","line":"z⣿⠿x ℀℁z","after":"Z ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x ","keys":"caW","line":"z⣿⠿x ℀℁z","after":"Z℀℁z"}
+{"cursor":1,"regtype":"v","register":"⣿⠿","keys":"lciw","line":"z⣿⠿x ℀℁z","after":"zZx ℀℁z"}
+{"cursor":1,"regtype":"v","register":"⣿⠿","keys":"lcaw","line":"z⣿⠿x ℀℁z","after":"zZx ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x","keys":"lciW","line":"z⣿⠿x ℀℁z","after":"Z ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x ","keys":"lcaW","line":"z⣿⠿x ℀℁z","after":"Z℀℁z"}
+{"cursor":1,"regtype":"v","register":"⣿⠿","keys":"2lciw","line":"z⣿⠿x ℀℁z","after":"zZx ℀℁z"}
+{"cursor":1,"regtype":"v","register":"⣿⠿","keys":"2lcaw","line":"z⣿⠿x ℀℁z","after":"zZx ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x","keys":"2lciW","line":"z⣿⠿x ℀℁z","after":"Z ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x ","keys":"2lcaW","line":"z⣿⠿x ℀℁z","after":"Z℀℁z"}
+{"cursor":3,"regtype":"v","register":"x","keys":"3lciw","line":"z⣿⠿x ℀℁z","after":"z⣿⠿Z ℀℁z"}
+{"cursor":3,"regtype":"v","register":"x ","keys":"3lcaw","line":"z⣿⠿x ℀℁z","after":"z⣿⠿Z℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x","keys":"3lciW","line":"z⣿⠿x ℀℁z","after":"Z ℀℁z"}
+{"cursor":0,"regtype":"v","register":"z⣿⠿x ","keys":"3lcaW","line":"z⣿⠿x ℀℁z","after":"Z℀℁z"}
+{"cursor":0,"regtype":"v","register":"foo","keys":"ciw","line":"foo،bar。baz","after":"Z،bar。baz"}
+{"cursor":0,"regtype":"v","register":"foo","keys":"caw","line":"foo،bar。baz","after":"Z،bar。baz"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"ciW","line":"foo،bar。baz","after":"Z"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"caW","line":"foo،bar。baz","after":"Z"}
+{"cursor":0,"regtype":"v","register":"foo","keys":"lciw","line":"foo،bar。baz","after":"Z،bar。baz"}
+{"cursor":0,"regtype":"v","register":"foo","keys":"lcaw","line":"foo،bar。baz","after":"Z،bar。baz"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"lciW","line":"foo،bar。baz","after":"Z"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"lcaW","line":"foo،bar。baz","after":"Z"}
+{"cursor":0,"regtype":"v","register":"foo","keys":"2lciw","line":"foo،bar。baz","after":"Z،bar。baz"}
+{"cursor":0,"regtype":"v","register":"foo","keys":"2lcaw","line":"foo،bar。baz","after":"Z،bar。baz"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"2lciW","line":"foo،bar。baz","after":"Z"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"2lcaW","line":"foo،bar。baz","after":"Z"}
+{"cursor":3,"regtype":"v","register":"،","keys":"3lciw","line":"foo،bar。baz","after":"fooZbar。baz"}
+{"cursor":3,"regtype":"v","register":"،","keys":"3lcaw","line":"foo،bar。baz","after":"fooZbar。baz"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"3lciW","line":"foo،bar。baz","after":"Z"}
+{"cursor":0,"regtype":"v","register":"foo،bar。baz","keys":"3lcaW","line":"foo،bar。baz","after":"Z"}
+{"cursor":0,"regtype":"v","register":"x","keys":"ciw","line":"x¿¡«»y —。∑abc","after":"Z¿¡«»y —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x","keys":"caw","line":"x¿¡«»y —。∑abc","after":"Z¿¡«»y —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y","keys":"ciW","line":"x¿¡«»y —。∑abc","after":"Z —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y ","keys":"caW","line":"x¿¡«»y —。∑abc","after":"Z—。∑abc"}
+{"cursor":1,"regtype":"v","register":"¿¡«»","keys":"lciw","line":"x¿¡«»y —。∑abc","after":"xZy —。∑abc"}
+{"cursor":1,"regtype":"v","register":"¿¡«»","keys":"lcaw","line":"x¿¡«»y —。∑abc","after":"xZy —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y","keys":"lciW","line":"x¿¡«»y —。∑abc","after":"Z —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y ","keys":"lcaW","line":"x¿¡«»y —。∑abc","after":"Z—。∑abc"}
+{"cursor":1,"regtype":"v","register":"¿¡«»","keys":"2lciw","line":"x¿¡«»y —。∑abc","after":"xZy —。∑abc"}
+{"cursor":1,"regtype":"v","register":"¿¡«»","keys":"2lcaw","line":"x¿¡«»y —。∑abc","after":"xZy —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y","keys":"2lciW","line":"x¿¡«»y —。∑abc","after":"Z —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y ","keys":"2lcaW","line":"x¿¡«»y —。∑abc","after":"Z—。∑abc"}
+{"cursor":1,"regtype":"v","register":"¿¡«»","keys":"3lciw","line":"x¿¡«»y —。∑abc","after":"xZy —。∑abc"}
+{"cursor":1,"regtype":"v","register":"¿¡«»","keys":"3lcaw","line":"x¿¡«»y —。∑abc","after":"xZy —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y","keys":"3lciW","line":"x¿¡«»y —。∑abc","after":"Z —。∑abc"}
+{"cursor":0,"regtype":"v","register":"x¿¡«»y ","keys":"3lcaW","line":"x¿¡«»y —。∑abc","after":"Z—。∑abc"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"ciw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"caw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"ciW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"caW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"lciw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"lcaw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"lciW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"lcaW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"2lciw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"2lcaw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"2lciW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"2lcaW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"3lciw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"3lcaw","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"3lciW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a𐐀𐐁b","keys":"3lcaW","line":"a𐐀𐐁b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"ciw","line":"abc def　ghi","after":"Z def　ghi"}
+{"cursor":0,"regtype":"v","register":"abc ","keys":"caw","line":"abc def　ghi","after":"Zdef　ghi"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"ciW","line":"abc def　ghi","after":"Z def　ghi"}
+{"cursor":0,"regtype":"v","register":"abc ","keys":"caW","line":"abc def　ghi","after":"Zdef　ghi"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"lciw","line":"abc def　ghi","after":"Z def　ghi"}
+{"cursor":0,"regtype":"v","register":"abc ","keys":"lcaw","line":"abc def　ghi","after":"Zdef　ghi"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"lciW","line":"abc def　ghi","after":"Z def　ghi"}
+{"cursor":0,"regtype":"v","register":"abc ","keys":"lcaW","line":"abc def　ghi","after":"Zdef　ghi"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"2lciw","line":"abc def　ghi","after":"Z def　ghi"}
+{"cursor":0,"regtype":"v","register":"abc ","keys":"2lcaw","line":"abc def　ghi","after":"Zdef　ghi"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"2lciW","line":"abc def　ghi","after":"Z def　ghi"}
+{"cursor":0,"regtype":"v","register":"abc ","keys":"2lcaW","line":"abc def　ghi","after":"Zdef　ghi"}
+{"cursor":3,"regtype":"v","register":" ","keys":"3lciw","line":"abc def　ghi","after":"abcZdef　ghi"}
+{"cursor":3,"regtype":"v","register":" def","keys":"3lcaw","line":"abc def　ghi","after":"abcZ　ghi"}
+{"cursor":3,"regtype":"v","register":" ","keys":"3lciW","line":"abc def　ghi","after":"abcZdef　ghi"}
+{"cursor":3,"regtype":"v","register":" def","keys":"3lcaW","line":"abc def　ghi","after":"abcZ　ghi"}
+{"cursor":0,"regtype":"v","register":"ab","keys":"ciw","line":"ab👍🏽cd 🇺🇾e","after":"Z👍🏽cd 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab","keys":"caw","line":"ab👍🏽cd 🇺🇾e","after":"Z👍🏽cd 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd","keys":"ciW","line":"ab👍🏽cd 🇺🇾e","after":"Z 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd ","keys":"caW","line":"ab👍🏽cd 🇺🇾e","after":"Z🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab","keys":"lciw","line":"ab👍🏽cd 🇺🇾e","after":"Z👍🏽cd 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab","keys":"lcaw","line":"ab👍🏽cd 🇺🇾e","after":"Z👍🏽cd 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd","keys":"lciW","line":"ab👍🏽cd 🇺🇾e","after":"Z 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd ","keys":"lcaW","line":"ab👍🏽cd 🇺🇾e","after":"Z🇺🇾e"}
+{"cursor":2,"regtype":"v","register":"👍🏽","keys":"2lciw","line":"ab👍🏽cd 🇺🇾e","after":"abZcd 🇺🇾e"}
+{"cursor":2,"regtype":"v","register":"👍🏽","keys":"2lcaw","line":"ab👍🏽cd 🇺🇾e","after":"abZcd 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd","keys":"2lciW","line":"ab👍🏽cd 🇺🇾e","after":"Z 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd ","keys":"2lcaW","line":"ab👍🏽cd 🇺🇾e","after":"Z🇺🇾e"}
+{"cursor":4,"regtype":"v","register":"cd","keys":"3lciw","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽Z 🇺🇾e"}
+{"cursor":4,"regtype":"v","register":"cd ","keys":"3lcaw","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽Z🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd","keys":"3lciW","line":"ab👍🏽cd 🇺🇾e","after":"Z 🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"ab👍🏽cd ","keys":"3lcaW","line":"ab👍🏽cd 🇺🇾e","after":"Z🇺🇾e"}
+{"cursor":0,"regtype":"v","register":"é","keys":"ciw","line":"é漢áx","after":"Z漢áx"}
+{"cursor":0,"regtype":"v","register":"é","keys":"caw","line":"é漢áx","after":"Z漢áx"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"ciW","line":"é漢áx","after":"Z"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"caW","line":"é漢áx","after":"Z"}
+{"cursor":2,"regtype":"v","register":"漢","keys":"lciw","line":"é漢áx","after":"éZáx"}
+{"cursor":2,"regtype":"v","register":"漢","keys":"lcaw","line":"é漢áx","after":"éZáx"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"lciW","line":"é漢áx","after":"Z"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"lcaW","line":"é漢áx","after":"Z"}
+{"cursor":3,"regtype":"v","register":"áx","keys":"2lciw","line":"é漢áx","after":"é漢Z"}
+{"cursor":3,"regtype":"v","register":"áx","keys":"2lcaw","line":"é漢áx","after":"é漢Z"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"2lciW","line":"é漢áx","after":"Z"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"2lcaW","line":"é漢áx","after":"Z"}
+{"cursor":3,"regtype":"v","register":"áx","keys":"3lciw","line":"é漢áx","after":"é漢Z"}
+{"cursor":3,"regtype":"v","register":"áx","keys":"3lcaw","line":"é漢áx","after":"é漢Z"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"3lciW","line":"é漢áx","after":"Z"}
+{"cursor":0,"regtype":"v","register":"é漢áx","keys":"3lcaW","line":"é漢áx","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a","keys":"ciw","line":"a‧•∙●b","after":"Z‧•∙●b"}
+{"cursor":0,"regtype":"v","register":"a","keys":"caw","line":"a‧•∙●b","after":"Z‧•∙●b"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"ciW","line":"a‧•∙●b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"caW","line":"a‧•∙●b","after":"Z"}
+{"cursor":1,"regtype":"v","register":"‧•∙●","keys":"lciw","line":"a‧•∙●b","after":"aZb"}
+{"cursor":1,"regtype":"v","register":"‧•∙●","keys":"lcaw","line":"a‧•∙●b","after":"aZb"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"lciW","line":"a‧•∙●b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"lcaW","line":"a‧•∙●b","after":"Z"}
+{"cursor":1,"regtype":"v","register":"‧•∙●","keys":"2lciw","line":"a‧•∙●b","after":"aZb"}
+{"cursor":1,"regtype":"v","register":"‧•∙●","keys":"2lcaw","line":"a‧•∙●b","after":"aZb"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"2lciW","line":"a‧•∙●b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"2lcaW","line":"a‧•∙●b","after":"Z"}
+{"cursor":1,"regtype":"v","register":"‧•∙●","keys":"3lciw","line":"a‧•∙●b","after":"aZb"}
+{"cursor":1,"regtype":"v","register":"‧•∙●","keys":"3lcaw","line":"a‧•∙●b","after":"aZb"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"3lciW","line":"a‧•∙●b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"a‧•∙●b","keys":"3lcaW","line":"a‧•∙●b","after":"Z"}
+{"cursor":0,"regtype":"v","register":"x","keys":"ciw","line":"x🙂😀x_😎 ☀️","after":"Z🙂😀x_😎 ☀️"}
+{"cursor":0,"regtype":"v","register":"x","keys":"caw","line":"x🙂😀x_😎 ☀️","after":"Z🙂😀x_😎 ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎","keys":"ciW","line":"x🙂😀x_😎 ☀️","after":"Z ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎 ","keys":"caW","line":"x🙂😀x_😎 ☀️","after":"Z☀️"}
+{"cursor":1,"regtype":"v","register":"🙂😀","keys":"lciw","line":"x🙂😀x_😎 ☀️","after":"xZx_😎 ☀️"}
+{"cursor":1,"regtype":"v","register":"🙂😀","keys":"lcaw","line":"x🙂😀x_😎 ☀️","after":"xZx_😎 ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎","keys":"lciW","line":"x🙂😀x_😎 ☀️","after":"Z ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎 ","keys":"lcaW","line":"x🙂😀x_😎 ☀️","after":"Z☀️"}
+{"cursor":1,"regtype":"v","register":"🙂😀","keys":"2lciw","line":"x🙂😀x_😎 ☀️","after":"xZx_😎 ☀️"}
+{"cursor":1,"regtype":"v","register":"🙂😀","keys":"2lcaw","line":"x🙂😀x_😎 ☀️","after":"xZx_😎 ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎","keys":"2lciW","line":"x🙂😀x_😎 ☀️","after":"Z ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎 ","keys":"2lcaW","line":"x🙂😀x_😎 ☀️","after":"Z☀️"}
+{"cursor":3,"regtype":"v","register":"x_","keys":"3lciw","line":"x🙂😀x_😎 ☀️","after":"x🙂😀Z😎 ☀️"}
+{"cursor":3,"regtype":"v","register":"x_","keys":"3lcaw","line":"x🙂😀x_😎 ☀️","after":"x🙂😀Z😎 ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎","keys":"3lciW","line":"x🙂😀x_😎 ☀️","after":"Z ☀️"}
+{"cursor":0,"regtype":"v","register":"x🙂😀x_😎 ","keys":"3lcaW","line":"x🙂😀x_😎 ☀️","after":"Z☀️"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"ciw","line":"abc₁₂³⁴def","after":"Z₁₂³⁴def"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"caw","line":"abc₁₂³⁴def","after":"Z₁₂³⁴def"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"ciW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"caW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"lciw","line":"abc₁₂³⁴def","after":"Z₁₂³⁴def"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"lcaw","line":"abc₁₂³⁴def","after":"Z₁₂³⁴def"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"lciW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"lcaW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"2lciw","line":"abc₁₂³⁴def","after":"Z₁₂³⁴def"}
+{"cursor":0,"regtype":"v","register":"abc","keys":"2lcaw","line":"abc₁₂³⁴def","after":"Z₁₂³⁴def"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"2lciW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"2lcaW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":3,"regtype":"v","register":"₁₂","keys":"3lciw","line":"abc₁₂³⁴def","after":"abcZ³⁴def"}
+{"cursor":3,"regtype":"v","register":"₁₂","keys":"3lcaw","line":"abc₁₂³⁴def","after":"abcZ³⁴def"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"3lciW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":0,"regtype":"v","register":"abc₁₂³⁴def","keys":"3lcaW","line":"abc₁₂³⁴def","after":"Z"}
+{"cursor":0,"regtype":"v","register":"aｱｲ","keys":"ciw","line":"aｱｲウエo","after":"Zウエo"}
+{"cursor":0,"regtype":"v","register":"aｱｲ","keys":"caw","line":"aｱｲウエo","after":"Zウエo"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"ciW","line":"aｱｲウエo","after":"Z"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"caW","line":"aｱｲウエo","after":"Z"}
+{"cursor":0,"regtype":"v","register":"aｱｲ","keys":"lciw","line":"aｱｲウエo","after":"Zウエo"}
+{"cursor":0,"regtype":"v","register":"aｱｲ","keys":"lcaw","line":"aｱｲウエo","after":"Zウエo"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"lciW","line":"aｱｲウエo","after":"Z"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"lcaW","line":"aｱｲウエo","after":"Z"}
+{"cursor":0,"regtype":"v","register":"aｱｲ","keys":"2lciw","line":"aｱｲウエo","after":"Zウエo"}
+{"cursor":0,"regtype":"v","register":"aｱｲ","keys":"2lcaw","line":"aｱｲウエo","after":"Zウエo"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"2lciW","line":"aｱｲウエo","after":"Z"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"2lcaW","line":"aｱｲウエo","after":"Z"}
+{"cursor":3,"regtype":"v","register":"ウエ","keys":"3lciw","line":"aｱｲウエo","after":"aｱｲZo"}
+{"cursor":3,"regtype":"v","register":"ウエ","keys":"3lcaw","line":"aｱｲウエo","after":"aｱｲZo"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"3lciW","line":"aｱｲウエo","after":"Z"}
+{"cursor":0,"regtype":"v","register":"aｱｲウエo","keys":"3lcaW","line":"aｱｲウエo","after":"Z"}

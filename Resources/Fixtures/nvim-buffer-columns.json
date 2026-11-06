@@ -1,0 +1,173 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "plugins": false,
+  "scope": "One headless Neovim with an external RPC UI grid80x24 and settled viewport queries; no Ghostty GUI",
+  "options": {
+    "hidden": true,
+    "wrap": false,
+    "scrolloff": 4,
+    "sidescrolloff": 8,
+    "sidescroll": 1,
+    "splitkeep": "screen",
+    "tabstop": 2
+  },
+  "cases": [
+    {
+      "label": "wide-prefix",
+      "visits": [
+        [
+          "a",
+          50,
+          161,
+          "zz"
+        ],
+        [
+          "b",
+          60,
+          0,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 161,
+          "entry_row": 0,
+          "virtual_column": 202,
+          "entry_top": 0,
+          "entry_left": 0,
+          "left": 162,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 0,
+          "entry_row": 0,
+          "virtual_column": 1,
+          "entry_top": 0,
+          "entry_left": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 161,
+          "row": 49,
+          "column": 161,
+          "entry_row": 49,
+          "virtual_column": 202,
+          "entry_top": 39,
+          "entry_left": 162,
+          "left": 162,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        }
+      ]
+    },
+    {
+      "label": "mixed-prefix",
+      "visits": [
+        [
+          "a",
+          50,
+          195,
+          "zz"
+        ],
+        [
+          "b",
+          60,
+          161,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ],
+        [
+          "b",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 195,
+          "entry_row": 0,
+          "virtual_column": 236,
+          "entry_top": 0,
+          "entry_left": 0,
+          "left": 196,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 161,
+          "entry_row": 0,
+          "virtual_column": 202,
+          "entry_top": 0,
+          "entry_left": 0,
+          "left": 162,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 195,
+          "row": 49,
+          "column": 195,
+          "entry_row": 49,
+          "virtual_column": 236,
+          "entry_top": 39,
+          "entry_left": 165,
+          "left": 165,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 161,
+          "row": 59,
+          "column": 161,
+          "entry_row": 59,
+          "virtual_column": 202,
+          "entry_top": 49,
+          "entry_left": 165,
+          "left": 165,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        }
+      ]
+    }
+  ],
+  "line": "界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界界\tééééééééééééééééééééééééééééééééééééééééXYZ\taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "column_units": "Unicode scalar index except virtual_column/left in display cells"
+}

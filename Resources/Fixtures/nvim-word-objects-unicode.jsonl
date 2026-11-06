@@ -1,0 +1,912 @@
+{"keys":"diw","register":"a","regtype":"v","line":"a漢字あb カタカナ 한글","after":"漢字あb カタカナ 한글","cursor":0}
+{"keys":"daw","register":"a","regtype":"v","line":"a漢字あb カタカナ 한글","after":"漢字あb カタカナ 한글","cursor":0}
+{"keys":"yiw","register":"a","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"yaw","register":"a","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"diW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":" カタカナ 한글","cursor":0}
+{"keys":"daW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"カタカナ 한글","cursor":0}
+{"keys":"yiW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"yaW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"ldiw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"aあb カタカナ 한글","cursor":1}
+{"keys":"ldaw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"aあb カタカナ 한글","cursor":1}
+{"keys":"lyiw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":1}
+{"keys":"lyaw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":1}
+{"keys":"ldiW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":" カタカナ 한글","cursor":0}
+{"keys":"ldaW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"カタカナ 한글","cursor":0}
+{"keys":"lyiW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"lyaW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"2ldiw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"aあb カタカナ 한글","cursor":1}
+{"keys":"2ldaw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"aあb カタカナ 한글","cursor":1}
+{"keys":"2lyiw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":1}
+{"keys":"2lyaw","register":"漢字","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":1}
+{"keys":"2ldiW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":" カタカナ 한글","cursor":0}
+{"keys":"2ldaW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"カタカナ 한글","cursor":0}
+{"keys":"2lyiW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"2lyaW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"3ldiw","register":"あ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字b カタカナ 한글","cursor":3}
+{"keys":"3ldaw","register":"あ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字b カタカナ 한글","cursor":3}
+{"keys":"3lyiw","register":"あ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":3}
+{"keys":"3lyaw","register":"あ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":3}
+{"keys":"3ldiW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":" カタカナ 한글","cursor":0}
+{"keys":"3ldaW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"カタカナ 한글","cursor":0}
+{"keys":"3lyiW","register":"a漢字あb","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"3lyaW","register":"a漢字あb ","regtype":"v","line":"a漢字あb カタカナ 한글","after":"a漢字あb カタカナ 한글","cursor":0}
+{"keys":"diw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"daw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"yiw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"yaw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"diW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"daW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"yiW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"yaW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"ldiw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"ldaw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"lyiw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"lyaw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"ldiW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"ldaW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"lyiW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"lyaW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"2ldiw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"2ldaw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"2lyiw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"2lyaw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"2ldiW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"2ldaW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"2lyiW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"2lyaW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"3ldiw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"3ldaw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"3lyiw","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"3lyaw","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"3ldiW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":" ÷gamma","cursor":0}
+{"keys":"3ldaW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"÷gamma","cursor":0}
+{"keys":"3lyiW","register":"alpha×beta","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"3lyaW","register":"alpha×beta ","regtype":"v","line":"alpha×beta ÷gamma","after":"alpha×beta ÷gamma","cursor":0}
+{"keys":"diw","register":"x","regtype":"v","line":"x★😀♠🧡y","after":"★😀♠🧡y","cursor":0}
+{"keys":"daw","register":"x","regtype":"v","line":"x★😀♠🧡y","after":"★😀♠🧡y","cursor":0}
+{"keys":"yiw","register":"x","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"yaw","register":"x","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"diW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"daW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"yiW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"yaW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"ldiw","register":"★","regtype":"v","line":"x★😀♠🧡y","after":"x😀♠🧡y","cursor":1}
+{"keys":"ldaw","register":"★","regtype":"v","line":"x★😀♠🧡y","after":"x😀♠🧡y","cursor":1}
+{"keys":"lyiw","register":"★","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":1}
+{"keys":"lyaw","register":"★","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":1}
+{"keys":"ldiW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"ldaW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"lyiW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"lyaW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"2ldiw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★y","cursor":2}
+{"keys":"2ldaw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★y","cursor":2}
+{"keys":"2lyiw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":2}
+{"keys":"2lyaw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":2}
+{"keys":"2ldiW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"2ldaW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"2lyiW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"2lyaW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"3ldiw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★y","cursor":2}
+{"keys":"3ldaw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★y","cursor":2}
+{"keys":"3lyiw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":2}
+{"keys":"3lyaw","register":"😀♠🧡","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":2}
+{"keys":"3ldiW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"3ldaW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"","cursor":0}
+{"keys":"3lyiW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"3lyaW","register":"x★😀♠🧡y","regtype":"v","line":"x★😀♠🧡y","after":"x★😀♠🧡y","cursor":0}
+{"keys":"diw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"⁰¹²₂₃ abc","cursor":0}
+{"keys":"daw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"⁰¹²₂₃ abc","cursor":0}
+{"keys":"yiw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"yaw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"diW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":" abc","cursor":0}
+{"keys":"daW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"abc","cursor":0}
+{"keys":"yiW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"yaW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"ldiw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"⁰¹²₂₃ abc","cursor":0}
+{"keys":"ldaw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"⁰¹²₂₃ abc","cursor":0}
+{"keys":"lyiw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"lyaw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"ldiW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":" abc","cursor":0}
+{"keys":"ldaW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"abc","cursor":0}
+{"keys":"lyiW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"lyaW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"2ldiw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"⁰¹²₂₃ abc","cursor":0}
+{"keys":"2ldaw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"⁰¹²₂₃ abc","cursor":0}
+{"keys":"2lyiw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"2lyaw","register":"uno","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"2ldiW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":" abc","cursor":0}
+{"keys":"2ldaW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"abc","cursor":0}
+{"keys":"2lyiW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"2lyaW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"3ldiw","register":"⁰","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno¹²₂₃ abc","cursor":3}
+{"keys":"3ldaw","register":"⁰","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno¹²₂₃ abc","cursor":3}
+{"keys":"3lyiw","register":"⁰","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":3}
+{"keys":"3lyaw","register":"⁰","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":3}
+{"keys":"3ldiW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":" abc","cursor":0}
+{"keys":"3ldaW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"abc","cursor":0}
+{"keys":"3lyiW","register":"uno⁰¹²₂₃","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"3lyaW","register":"uno⁰¹²₂₃ ","regtype":"v","line":"uno⁰¹²₂₃ abc","after":"uno⁰¹²₂₃ abc","cursor":0}
+{"keys":"diw","register":"z","regtype":"v","line":"z⣿⠿x ℀℁z","after":"⣿⠿x ℀℁z","cursor":0}
+{"keys":"daw","register":"z","regtype":"v","line":"z⣿⠿x ℀℁z","after":"⣿⠿x ℀℁z","cursor":0}
+{"keys":"yiw","register":"z","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"yaw","register":"z","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"diW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":" ℀℁z","cursor":0}
+{"keys":"daW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"℀℁z","cursor":0}
+{"keys":"yiW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"yaW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"ldiw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"zx ℀℁z","cursor":1}
+{"keys":"ldaw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"zx ℀℁z","cursor":1}
+{"keys":"lyiw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":1}
+{"keys":"lyaw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":1}
+{"keys":"ldiW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":" ℀℁z","cursor":0}
+{"keys":"ldaW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"℀℁z","cursor":0}
+{"keys":"lyiW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"lyaW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"2ldiw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"zx ℀℁z","cursor":1}
+{"keys":"2ldaw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"zx ℀℁z","cursor":1}
+{"keys":"2lyiw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":1}
+{"keys":"2lyaw","register":"⣿⠿","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":1}
+{"keys":"2ldiW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":" ℀℁z","cursor":0}
+{"keys":"2ldaW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"℀℁z","cursor":0}
+{"keys":"2lyiW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"2lyaW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"3ldiw","register":"x","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿ ℀℁z","cursor":3}
+{"keys":"3ldaw","register":"x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿℀℁z","cursor":3}
+{"keys":"3lyiw","register":"x","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":3}
+{"keys":"3lyaw","register":"x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":3}
+{"keys":"3ldiW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":" ℀℁z","cursor":0}
+{"keys":"3ldaW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"℀℁z","cursor":0}
+{"keys":"3lyiW","register":"z⣿⠿x","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"3lyaW","register":"z⣿⠿x ","regtype":"v","line":"z⣿⠿x ℀℁z","after":"z⣿⠿x ℀℁z","cursor":0}
+{"keys":"diw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"،bar。baz","cursor":0}
+{"keys":"daw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"،bar。baz","cursor":0}
+{"keys":"yiw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"yaw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"diW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"daW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"yiW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"yaW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"ldiw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"،bar。baz","cursor":0}
+{"keys":"ldaw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"،bar。baz","cursor":0}
+{"keys":"lyiw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"lyaw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"ldiW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"ldaW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"lyiW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"lyaW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"2ldiw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"،bar。baz","cursor":0}
+{"keys":"2ldaw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"،bar。baz","cursor":0}
+{"keys":"2lyiw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"2lyaw","register":"foo","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"2ldiW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"2ldaW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"2lyiW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"2lyaW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"3ldiw","register":"،","regtype":"v","line":"foo،bar。baz","after":"foobar。baz","cursor":3}
+{"keys":"3ldaw","register":"،","regtype":"v","line":"foo،bar。baz","after":"foobar。baz","cursor":3}
+{"keys":"3lyiw","register":"،","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":3}
+{"keys":"3lyaw","register":"،","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":3}
+{"keys":"3ldiW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"3ldaW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"","cursor":0}
+{"keys":"3lyiW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"3lyaW","register":"foo،bar。baz","regtype":"v","line":"foo،bar。baz","after":"foo،bar。baz","cursor":0}
+{"keys":"diw","register":"x","regtype":"v","line":"x¿¡«»y —。∑abc","after":"¿¡«»y —。∑abc","cursor":0}
+{"keys":"daw","register":"x","regtype":"v","line":"x¿¡«»y —。∑abc","after":"¿¡«»y —。∑abc","cursor":0}
+{"keys":"yiw","register":"x","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"yaw","register":"x","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"diW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":" —。∑abc","cursor":0}
+{"keys":"daW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"—。∑abc","cursor":0}
+{"keys":"yiW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"yaW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"ldiw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"xy —。∑abc","cursor":1}
+{"keys":"ldaw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"xy —。∑abc","cursor":1}
+{"keys":"lyiw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":1}
+{"keys":"lyaw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":1}
+{"keys":"ldiW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":" —。∑abc","cursor":0}
+{"keys":"ldaW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"—。∑abc","cursor":0}
+{"keys":"lyiW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"lyaW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"2ldiw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"xy —。∑abc","cursor":1}
+{"keys":"2ldaw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"xy —。∑abc","cursor":1}
+{"keys":"2lyiw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":1}
+{"keys":"2lyaw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":1}
+{"keys":"2ldiW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":" —。∑abc","cursor":0}
+{"keys":"2ldaW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"—。∑abc","cursor":0}
+{"keys":"2lyiW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"2lyaW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"3ldiw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"xy —。∑abc","cursor":1}
+{"keys":"3ldaw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"xy —。∑abc","cursor":1}
+{"keys":"3lyiw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":1}
+{"keys":"3lyaw","register":"¿¡«»","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":1}
+{"keys":"3ldiW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":" —。∑abc","cursor":0}
+{"keys":"3ldaW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"—。∑abc","cursor":0}
+{"keys":"3lyiW","register":"x¿¡«»y","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"3lyaW","register":"x¿¡«»y ","regtype":"v","line":"x¿¡«»y —。∑abc","after":"x¿¡«»y —。∑abc","cursor":0}
+{"keys":"diw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"daw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"yiw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"yaw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"diW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"daW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"yiW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"yaW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"ldiw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"ldaw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"lyiw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"lyaw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"ldiW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"ldaW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"lyiW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"lyaW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"2ldiw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"2ldaw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"2lyiw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"2lyaw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"2ldiW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"2ldaW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"2lyiW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"2lyaW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"3ldiw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"3ldaw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"3lyiw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"3lyaw","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"3ldiW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"3ldaW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"","cursor":0}
+{"keys":"3lyiW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"3lyaW","register":"a𐐀𐐁b","regtype":"v","line":"a𐐀𐐁b","after":"a𐐀𐐁b","cursor":0}
+{"keys":"diw","register":"abc","regtype":"v","line":"abc def　ghi","after":" def　ghi","cursor":0}
+{"keys":"daw","register":"abc ","regtype":"v","line":"abc def　ghi","after":"def　ghi","cursor":0}
+{"keys":"yiw","register":"abc","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"yaw","register":"abc ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"diW","register":"abc","regtype":"v","line":"abc def　ghi","after":" def　ghi","cursor":0}
+{"keys":"daW","register":"abc ","regtype":"v","line":"abc def　ghi","after":"def　ghi","cursor":0}
+{"keys":"yiW","register":"abc","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"yaW","register":"abc ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"ldiw","register":"abc","regtype":"v","line":"abc def　ghi","after":" def　ghi","cursor":0}
+{"keys":"ldaw","register":"abc ","regtype":"v","line":"abc def　ghi","after":"def　ghi","cursor":0}
+{"keys":"lyiw","register":"abc","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"lyaw","register":"abc ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"ldiW","register":"abc","regtype":"v","line":"abc def　ghi","after":" def　ghi","cursor":0}
+{"keys":"ldaW","register":"abc ","regtype":"v","line":"abc def　ghi","after":"def　ghi","cursor":0}
+{"keys":"lyiW","register":"abc","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"lyaW","register":"abc ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"2ldiw","register":"abc","regtype":"v","line":"abc def　ghi","after":" def　ghi","cursor":0}
+{"keys":"2ldaw","register":"abc ","regtype":"v","line":"abc def　ghi","after":"def　ghi","cursor":0}
+{"keys":"2lyiw","register":"abc","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"2lyaw","register":"abc ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"2ldiW","register":"abc","regtype":"v","line":"abc def　ghi","after":" def　ghi","cursor":0}
+{"keys":"2ldaW","register":"abc ","regtype":"v","line":"abc def　ghi","after":"def　ghi","cursor":0}
+{"keys":"2lyiW","register":"abc","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"2lyaW","register":"abc ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":0}
+{"keys":"3ldiw","register":" ","regtype":"v","line":"abc def　ghi","after":"abcdef　ghi","cursor":3}
+{"keys":"3ldaw","register":" def","regtype":"v","line":"abc def　ghi","after":"abc　ghi","cursor":3}
+{"keys":"3lyiw","register":" ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":3}
+{"keys":"3lyaw","register":" def","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":3}
+{"keys":"3ldiW","register":" ","regtype":"v","line":"abc def　ghi","after":"abcdef　ghi","cursor":3}
+{"keys":"3ldaW","register":" def","regtype":"v","line":"abc def　ghi","after":"abc　ghi","cursor":3}
+{"keys":"3lyiW","register":" ","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":3}
+{"keys":"3lyaW","register":" def","regtype":"v","line":"abc def　ghi","after":"abc def　ghi","cursor":3}
+{"keys":"diw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"daw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"yiw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"yaw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"diW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":" 🇺🇾e","cursor":0}
+{"keys":"daW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"🇺🇾e","cursor":0}
+{"keys":"yiW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"yaW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"ldiw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"ldaw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"lyiw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"lyaw","register":"ab","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"ldiW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":" 🇺🇾e","cursor":0}
+{"keys":"ldaW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"🇺🇾e","cursor":0}
+{"keys":"lyiW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"lyaW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"2ldiw","register":"👍🏽","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"abcd 🇺🇾e","cursor":2}
+{"keys":"2ldaw","register":"👍🏽","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"abcd 🇺🇾e","cursor":2}
+{"keys":"2lyiw","register":"👍🏽","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":2}
+{"keys":"2lyaw","register":"👍🏽","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":2}
+{"keys":"2ldiW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":" 🇺🇾e","cursor":0}
+{"keys":"2ldaW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"🇺🇾e","cursor":0}
+{"keys":"2lyiW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"2lyaW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"3ldiw","register":"cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽 🇺🇾e","cursor":4}
+{"keys":"3ldaw","register":"cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽🇺🇾e","cursor":4}
+{"keys":"3lyiw","register":"cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":4}
+{"keys":"3lyaw","register":"cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":4}
+{"keys":"3ldiW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":" 🇺🇾e","cursor":0}
+{"keys":"3ldaW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"🇺🇾e","cursor":0}
+{"keys":"3lyiW","register":"ab👍🏽cd","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"3lyaW","register":"ab👍🏽cd ","regtype":"v","line":"ab👍🏽cd 🇺🇾e","after":"ab👍🏽cd 🇺🇾e","cursor":0}
+{"keys":"diw","register":"é","regtype":"v","line":"é漢áx","after":"漢áx","cursor":0}
+{"keys":"daw","register":"é","regtype":"v","line":"é漢áx","after":"漢áx","cursor":0}
+{"keys":"yiw","register":"é","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"yaw","register":"é","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"diW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"daW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"yiW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"yaW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"ldiw","register":"漢","regtype":"v","line":"é漢áx","after":"éáx","cursor":2}
+{"keys":"ldaw","register":"漢","regtype":"v","line":"é漢áx","after":"éáx","cursor":2}
+{"keys":"lyiw","register":"漢","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":2}
+{"keys":"lyaw","register":"漢","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":2}
+{"keys":"ldiW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"ldaW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"lyiW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"lyaW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"2ldiw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢","cursor":2}
+{"keys":"2ldaw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢","cursor":2}
+{"keys":"2lyiw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":3}
+{"keys":"2lyaw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":3}
+{"keys":"2ldiW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"2ldaW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"2lyiW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"2lyaW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"3ldiw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢","cursor":2}
+{"keys":"3ldaw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢","cursor":2}
+{"keys":"3lyiw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":3}
+{"keys":"3lyaw","register":"áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":3}
+{"keys":"3ldiW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"3ldaW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"","cursor":0}
+{"keys":"3lyiW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"3lyaW","register":"é漢áx","regtype":"v","line":"é漢áx","after":"é漢áx","cursor":0}
+{"keys":"diw","register":"a","regtype":"v","line":"a‧•∙●b","after":"‧•∙●b","cursor":0}
+{"keys":"daw","register":"a","regtype":"v","line":"a‧•∙●b","after":"‧•∙●b","cursor":0}
+{"keys":"yiw","register":"a","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"yaw","register":"a","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"diW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"daW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"yiW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"yaW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"ldiw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"ab","cursor":1}
+{"keys":"ldaw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"ab","cursor":1}
+{"keys":"lyiw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":1}
+{"keys":"lyaw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":1}
+{"keys":"ldiW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"ldaW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"lyiW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"lyaW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"2ldiw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"ab","cursor":1}
+{"keys":"2ldaw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"ab","cursor":1}
+{"keys":"2lyiw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":1}
+{"keys":"2lyaw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":1}
+{"keys":"2ldiW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"2ldaW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"2lyiW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"2lyaW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"3ldiw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"ab","cursor":1}
+{"keys":"3ldaw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"ab","cursor":1}
+{"keys":"3lyiw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":1}
+{"keys":"3lyaw","register":"‧•∙●","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":1}
+{"keys":"3ldiW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"3ldaW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"","cursor":0}
+{"keys":"3lyiW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"3lyaW","register":"a‧•∙●b","regtype":"v","line":"a‧•∙●b","after":"a‧•∙●b","cursor":0}
+{"keys":"diw","register":"x","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"🙂😀x_😎 ☀️","cursor":0}
+{"keys":"daw","register":"x","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"🙂😀x_😎 ☀️","cursor":0}
+{"keys":"yiw","register":"x","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"yaw","register":"x","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"diW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":" ☀️","cursor":0}
+{"keys":"daW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"☀️","cursor":0}
+{"keys":"yiW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"yaW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"ldiw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"xx_😎 ☀️","cursor":1}
+{"keys":"ldaw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"xx_😎 ☀️","cursor":1}
+{"keys":"lyiw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":1}
+{"keys":"lyaw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":1}
+{"keys":"ldiW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":" ☀️","cursor":0}
+{"keys":"ldaW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"☀️","cursor":0}
+{"keys":"lyiW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"lyaW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"2ldiw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"xx_😎 ☀️","cursor":1}
+{"keys":"2ldaw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"xx_😎 ☀️","cursor":1}
+{"keys":"2lyiw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":1}
+{"keys":"2lyaw","register":"🙂😀","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":1}
+{"keys":"2ldiW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":" ☀️","cursor":0}
+{"keys":"2ldaW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"☀️","cursor":0}
+{"keys":"2lyiW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"2lyaW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"3ldiw","register":"x_","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀😎 ☀️","cursor":3}
+{"keys":"3ldaw","register":"x_","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀😎 ☀️","cursor":3}
+{"keys":"3lyiw","register":"x_","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":3}
+{"keys":"3lyaw","register":"x_","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":3}
+{"keys":"3ldiW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":" ☀️","cursor":0}
+{"keys":"3ldaW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"☀️","cursor":0}
+{"keys":"3lyiW","register":"x🙂😀x_😎","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"3lyaW","register":"x🙂😀x_😎 ","regtype":"v","line":"x🙂😀x_😎 ☀️","after":"x🙂😀x_😎 ☀️","cursor":0}
+{"keys":"diw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"₁₂³⁴def","cursor":0}
+{"keys":"daw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"₁₂³⁴def","cursor":0}
+{"keys":"yiw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"yaw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"diW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"daW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"yiW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"yaW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"ldiw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"₁₂³⁴def","cursor":0}
+{"keys":"ldaw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"₁₂³⁴def","cursor":0}
+{"keys":"lyiw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"lyaw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"ldiW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"ldaW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"lyiW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"lyaW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"2ldiw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"₁₂³⁴def","cursor":0}
+{"keys":"2ldaw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"₁₂³⁴def","cursor":0}
+{"keys":"2lyiw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"2lyaw","register":"abc","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"2ldiW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"2ldaW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"2lyiW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"2lyaW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"3ldiw","register":"₁₂","regtype":"v","line":"abc₁₂³⁴def","after":"abc³⁴def","cursor":3}
+{"keys":"3ldaw","register":"₁₂","regtype":"v","line":"abc₁₂³⁴def","after":"abc³⁴def","cursor":3}
+{"keys":"3lyiw","register":"₁₂","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":3}
+{"keys":"3lyaw","register":"₁₂","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":3}
+{"keys":"3ldiW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"3ldaW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"","cursor":0}
+{"keys":"3lyiW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"3lyaW","register":"abc₁₂³⁴def","regtype":"v","line":"abc₁₂³⁴def","after":"abc₁₂³⁴def","cursor":0}
+{"keys":"diw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"ウエo","cursor":0}
+{"keys":"daw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"ウエo","cursor":0}
+{"keys":"yiw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"yaw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"diW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"daW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"yiW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"yaW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"ldiw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"ウエo","cursor":0}
+{"keys":"ldaw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"ウエo","cursor":0}
+{"keys":"lyiw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"lyaw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"ldiW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"ldaW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"lyiW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"lyaW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"2ldiw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"ウエo","cursor":0}
+{"keys":"2ldaw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"ウエo","cursor":0}
+{"keys":"2lyiw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"2lyaw","register":"aｱｲ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"2ldiW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"2ldaW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"2lyiW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"2lyaW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"3ldiw","register":"ウエ","regtype":"v","line":"aｱｲウエo","after":"aｱｲo","cursor":3}
+{"keys":"3ldaw","register":"ウエ","regtype":"v","line":"aｱｲウエo","after":"aｱｲo","cursor":3}
+{"keys":"3lyiw","register":"ウエ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":3}
+{"keys":"3lyaw","register":"ウエ","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":3}
+{"keys":"3ldiW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"3ldaW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"","cursor":0}
+{"keys":"3lyiW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"keys":"3lyaW","register":"aｱｲウエo","regtype":"v","line":"aｱｲウエo","after":"aｱｲウエo","cursor":0}
+{"cursor":0,"after":"  bb c ","register":"a","regtype":"v","keys":"diw","line":"a  bb c "}
+{"cursor":0,"after":"bb c ","register":"a  ","regtype":"v","keys":"daw","line":"a  bb c "}
+{"cursor":0,"after":"a  bb c ","register":"a","regtype":"v","keys":"yiw","line":"a  bb c "}
+{"cursor":0,"after":"a  bb c ","register":"a  ","regtype":"v","keys":"yaw","line":"a  bb c "}
+{"cursor":0,"after":"  bb c ","register":"a","regtype":"v","keys":"diW","line":"a  bb c "}
+{"cursor":0,"after":"bb c ","register":"a  ","regtype":"v","keys":"daW","line":"a  bb c "}
+{"cursor":0,"after":"a  bb c ","register":"a","regtype":"v","keys":"yiW","line":"a  bb c "}
+{"cursor":0,"after":"a  bb c ","register":"a  ","regtype":"v","keys":"yaW","line":"a  bb c "}
+{"cursor":0,"after":"bb c ","register":"a  ","regtype":"v","keys":"d2iw","line":"a  bb c "}
+{"cursor":0,"after":"c ","register":"a  bb ","regtype":"v","keys":"d2aw","line":"a  bb c "}
+{"cursor":0,"after":"a  bb c ","register":"a  ","regtype":"v","keys":"y2iw","line":"a  bb c "}
+{"cursor":0,"after":"a  bb c ","register":"a  bb ","regtype":"v","keys":"y2aw","line":"a  bb c "}
+{"cursor":1,"after":"abb c ","register":"  ","regtype":"v","keys":"ldiw","line":"a  bb c "}
+{"cursor":1,"after":"a c ","register":"  bb","regtype":"v","keys":"ldaw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  ","regtype":"v","keys":"lyiw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb","regtype":"v","keys":"lyaw","line":"a  bb c "}
+{"cursor":1,"after":"abb c ","register":"  ","regtype":"v","keys":"ldiW","line":"a  bb c "}
+{"cursor":1,"after":"a c ","register":"  bb","regtype":"v","keys":"ldaW","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  ","regtype":"v","keys":"lyiW","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb","regtype":"v","keys":"lyaW","line":"a  bb c "}
+{"cursor":1,"after":"a c ","register":"  bb","regtype":"v","keys":"ld2iw","line":"a  bb c "}
+{"cursor":1,"after":"a ","register":"  bb c","regtype":"v","keys":"ld2aw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb","regtype":"v","keys":"ly2iw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb c","regtype":"v","keys":"ly2aw","line":"a  bb c "}
+{"cursor":1,"after":"abb c ","register":"  ","regtype":"v","keys":"2ldiw","line":"a  bb c "}
+{"cursor":1,"after":"a c ","register":"  bb","regtype":"v","keys":"2ldaw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  ","regtype":"v","keys":"2lyiw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb","regtype":"v","keys":"2lyaw","line":"a  bb c "}
+{"cursor":1,"after":"abb c ","register":"  ","regtype":"v","keys":"2ldiW","line":"a  bb c "}
+{"cursor":1,"after":"a c ","register":"  bb","regtype":"v","keys":"2ldaW","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  ","regtype":"v","keys":"2lyiW","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb","regtype":"v","keys":"2lyaW","line":"a  bb c "}
+{"cursor":1,"after":"a c ","register":"  bb","regtype":"v","keys":"2ld2iw","line":"a  bb c "}
+{"cursor":1,"after":"a ","register":"  bb c","regtype":"v","keys":"2ld2aw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb","regtype":"v","keys":"2ly2iw","line":"a  bb c "}
+{"cursor":1,"after":"a  bb c ","register":"  bb c","regtype":"v","keys":"2ly2aw","line":"a  bb c "}
+{"cursor":3,"after":"a   c ","register":"bb","regtype":"v","keys":"3ldiw","line":"a  bb c "}
+{"cursor":3,"after":"a  c ","register":"bb ","regtype":"v","keys":"3ldaw","line":"a  bb c "}
+{"cursor":3,"after":"a  bb c ","register":"bb","regtype":"v","keys":"3lyiw","line":"a  bb c "}
+{"cursor":3,"after":"a  bb c ","register":"bb ","regtype":"v","keys":"3lyaw","line":"a  bb c "}
+{"cursor":3,"after":"a   c ","register":"bb","regtype":"v","keys":"3ldiW","line":"a  bb c "}
+{"cursor":3,"after":"a  c ","register":"bb ","regtype":"v","keys":"3ldaW","line":"a  bb c "}
+{"cursor":3,"after":"a  bb c ","register":"bb","regtype":"v","keys":"3lyiW","line":"a  bb c "}
+{"cursor":3,"after":"a  bb c ","register":"bb ","regtype":"v","keys":"3lyaW","line":"a  bb c "}
+{"cursor":3,"after":"a  c ","register":"bb ","regtype":"v","keys":"3ld2iw","line":"a  bb c "}
+{"cursor":2,"after":"a  ","register":"bb c ","regtype":"v","keys":"3ld2aw","line":"a  bb c "}
+{"cursor":3,"after":"a  bb c ","register":"bb ","regtype":"v","keys":"3ly2iw","line":"a  bb c "}
+{"cursor":3,"after":"a  bb c ","register":"bb c ","regtype":"v","keys":"3ly2aw","line":"a  bb c "}
+{"cursor":0,"after":"alpha beta","register":"  ","regtype":"v","keys":"diw","line":"  alpha beta"}
+{"cursor":0,"after":" beta","register":"  alpha","regtype":"v","keys":"daw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  ","regtype":"v","keys":"yiw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha","regtype":"v","keys":"yaw","line":"  alpha beta"}
+{"cursor":0,"after":"alpha beta","register":"  ","regtype":"v","keys":"diW","line":"  alpha beta"}
+{"cursor":0,"after":" beta","register":"  alpha","regtype":"v","keys":"daW","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  ","regtype":"v","keys":"yiW","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha","regtype":"v","keys":"yaW","line":"  alpha beta"}
+{"cursor":0,"after":" beta","register":"  alpha","regtype":"v","keys":"d2iw","line":"  alpha beta"}
+{"cursor":0,"after":"","register":"  alpha beta","regtype":"v","keys":"d2aw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha","regtype":"v","keys":"y2iw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha beta","regtype":"v","keys":"y2aw","line":"  alpha beta"}
+{"cursor":0,"after":"alpha beta","register":"  ","regtype":"v","keys":"ldiw","line":"  alpha beta"}
+{"cursor":0,"after":" beta","register":"  alpha","regtype":"v","keys":"ldaw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  ","regtype":"v","keys":"lyiw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha","regtype":"v","keys":"lyaw","line":"  alpha beta"}
+{"cursor":0,"after":"alpha beta","register":"  ","regtype":"v","keys":"ldiW","line":"  alpha beta"}
+{"cursor":0,"after":" beta","register":"  alpha","regtype":"v","keys":"ldaW","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  ","regtype":"v","keys":"lyiW","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha","regtype":"v","keys":"lyaW","line":"  alpha beta"}
+{"cursor":0,"after":" beta","register":"  alpha","regtype":"v","keys":"ld2iw","line":"  alpha beta"}
+{"cursor":0,"after":"","register":"  alpha beta","regtype":"v","keys":"ld2aw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha","regtype":"v","keys":"ly2iw","line":"  alpha beta"}
+{"cursor":0,"after":"  alpha beta","register":"  alpha beta","regtype":"v","keys":"ly2aw","line":"  alpha beta"}
+{"cursor":2,"after":"   beta","register":"alpha","regtype":"v","keys":"2ldiw","line":"  alpha beta"}
+{"cursor":2,"after":"  beta","register":"alpha ","regtype":"v","keys":"2ldaw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha","regtype":"v","keys":"2lyiw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha ","regtype":"v","keys":"2lyaw","line":"  alpha beta"}
+{"cursor":2,"after":"   beta","register":"alpha","regtype":"v","keys":"2ldiW","line":"  alpha beta"}
+{"cursor":2,"after":"  beta","register":"alpha ","regtype":"v","keys":"2ldaW","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha","regtype":"v","keys":"2lyiW","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha ","regtype":"v","keys":"2lyaW","line":"  alpha beta"}
+{"cursor":2,"after":"  beta","register":"alpha ","regtype":"v","keys":"2ld2iw","line":"  alpha beta"}
+{"cursor":1,"after":"  ","register":"alpha beta","regtype":"v","keys":"2ld2aw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha ","regtype":"v","keys":"2ly2iw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha beta","regtype":"v","keys":"2ly2aw","line":"  alpha beta"}
+{"cursor":2,"after":"   beta","register":"alpha","regtype":"v","keys":"3ldiw","line":"  alpha beta"}
+{"cursor":2,"after":"  beta","register":"alpha ","regtype":"v","keys":"3ldaw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha","regtype":"v","keys":"3lyiw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha ","regtype":"v","keys":"3lyaw","line":"  alpha beta"}
+{"cursor":2,"after":"   beta","register":"alpha","regtype":"v","keys":"3ldiW","line":"  alpha beta"}
+{"cursor":2,"after":"  beta","register":"alpha ","regtype":"v","keys":"3ldaW","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha","regtype":"v","keys":"3lyiW","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha ","regtype":"v","keys":"3lyaW","line":"  alpha beta"}
+{"cursor":2,"after":"  beta","register":"alpha ","regtype":"v","keys":"3ld2iw","line":"  alpha beta"}
+{"cursor":1,"after":"  ","register":"alpha beta","regtype":"v","keys":"3ld2aw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha ","regtype":"v","keys":"3ly2iw","line":"  alpha beta"}
+{"cursor":2,"after":"  alpha beta","register":"alpha beta","regtype":"v","keys":"3ly2aw","line":"  alpha beta"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"diw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"daw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"yiw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"yaw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"diW","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"daW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"yiW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"yaW","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"d2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"d2aw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"y2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"y2aw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"ldiw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"ldaw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"lyiw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"lyaw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"ldiW","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"ldaW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"lyiW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"lyaW","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"ld2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"ld2aw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"ly2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"ly2aw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"2ldiw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"2ldaw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"2lyiw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"2lyaw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"2ldiW","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"2ldaW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"2lyiW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"2lyaW","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"2ld2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"2ld2aw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"2ly2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"2ly2aw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"3ldiw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"3ldaw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"3lyiw","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"3lyaw","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"3ldiW","line":"abc"}
+{"cursor":0,"after":"","register":"abc","regtype":"v","keys":"3ldaW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"3lyiW","line":"abc"}
+{"cursor":0,"after":"abc","register":"abc","regtype":"v","keys":"3lyaW","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"3ld2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"3ld2aw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"3ly2iw","line":"abc"}
+{"cursor":2,"after":"abc","register":"","regtype":"v","keys":"3ly2aw","line":"abc"}
+{"cursor":0,"after":" あ  カナ","register":"漢字","regtype":"v","keys":"diw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"あ  カナ","register":"漢字 ","regtype":"v","keys":"daw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字","regtype":"v","keys":"yiw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 ","regtype":"v","keys":"yaw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":" あ  カナ","register":"漢字","regtype":"v","keys":"diW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"あ  カナ","register":"漢字 ","regtype":"v","keys":"daW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字","regtype":"v","keys":"yiW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 ","regtype":"v","keys":"yaW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"あ  カナ","register":"漢字 ","regtype":"v","keys":"d2iw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"カナ","register":"漢字 あ  ","regtype":"v","keys":"d2aw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 ","regtype":"v","keys":"y2iw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 あ  ","regtype":"v","keys":"y2aw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":" あ  カナ","register":"漢字","regtype":"v","keys":"ldiw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"あ  カナ","register":"漢字 ","regtype":"v","keys":"ldaw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字","regtype":"v","keys":"lyiw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 ","regtype":"v","keys":"lyaw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":" あ  カナ","register":"漢字","regtype":"v","keys":"ldiW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"あ  カナ","register":"漢字 ","regtype":"v","keys":"ldaW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字","regtype":"v","keys":"lyiW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 ","regtype":"v","keys":"lyaW","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"あ  カナ","register":"漢字 ","regtype":"v","keys":"ld2iw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"カナ","register":"漢字 あ  ","regtype":"v","keys":"ld2aw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 ","regtype":"v","keys":"ly2iw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":"漢字 あ  カナ","register":"漢字 あ  ","regtype":"v","keys":"ly2aw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字あ  カナ","register":" ","regtype":"v","keys":"2ldiw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字  カナ","register":" あ","regtype":"v","keys":"2ldaw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字 あ  カナ","register":" ","regtype":"v","keys":"2lyiw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字 あ  カナ","register":" あ","regtype":"v","keys":"2lyaw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字あ  カナ","register":" ","regtype":"v","keys":"2ldiW","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字  カナ","register":" あ","regtype":"v","keys":"2ldaW","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字 あ  カナ","register":" ","regtype":"v","keys":"2lyiW","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字 あ  カナ","register":" あ","regtype":"v","keys":"2lyaW","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字  カナ","register":" あ","regtype":"v","keys":"2ld2iw","line":"漢字 あ  カナ"}
+{"cursor":1,"after":"漢字","register":" あ  カナ","regtype":"v","keys":"2ld2aw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字 あ  カナ","register":" あ","regtype":"v","keys":"2ly2iw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字 あ  カナ","register":" あ  カナ","regtype":"v","keys":"2ly2aw","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字   カナ","register":"あ","regtype":"v","keys":"3ldiw","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 カナ","register":"あ  ","regtype":"v","keys":"3ldaw","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 あ  カナ","register":"あ","regtype":"v","keys":"3lyiw","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 あ  カナ","register":"あ  ","regtype":"v","keys":"3lyaw","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字   カナ","register":"あ","regtype":"v","keys":"3ldiW","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 カナ","register":"あ  ","regtype":"v","keys":"3ldaW","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 あ  カナ","register":"あ","regtype":"v","keys":"3lyiW","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 あ  カナ","register":"あ  ","regtype":"v","keys":"3lyaW","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 カナ","register":"あ  ","regtype":"v","keys":"3ld2iw","line":"漢字 あ  カナ"}
+{"cursor":1,"after":"漢字","register":" あ  カナ","regtype":"v","keys":"3ld2aw","line":"漢字 あ  カナ"}
+{"cursor":3,"after":"漢字 あ  カナ","register":"あ  ","regtype":"v","keys":"3ly2iw","line":"漢字 あ  カナ"}
+{"cursor":2,"after":"漢字 あ  カナ","register":" あ  カナ","regtype":"v","keys":"3ly2aw","line":"漢字 あ  カナ"}
+{"cursor":0,"after":".a_b..c","register":"x","regtype":"v","keys":"diw","line":"x.a_b..c"}
+{"cursor":0,"after":".a_b..c","register":"x","regtype":"v","keys":"daw","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x","regtype":"v","keys":"yiw","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x","regtype":"v","keys":"yaw","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"diW","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"daW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"yiW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"yaW","line":"x.a_b..c"}
+{"cursor":0,"after":"a_b..c","register":"x.","regtype":"v","keys":"d2iw","line":"x.a_b..c"}
+{"cursor":0,"after":"a_b..c","register":"x.","regtype":"v","keys":"d2aw","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.","regtype":"v","keys":"y2iw","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.","regtype":"v","keys":"y2aw","line":"x.a_b..c"}
+{"cursor":1,"after":"xa_b..c","register":".","regtype":"v","keys":"ldiw","line":"x.a_b..c"}
+{"cursor":1,"after":"xa_b..c","register":".","regtype":"v","keys":"ldaw","line":"x.a_b..c"}
+{"cursor":1,"after":"x.a_b..c","register":".","regtype":"v","keys":"lyiw","line":"x.a_b..c"}
+{"cursor":1,"after":"x.a_b..c","register":".","regtype":"v","keys":"lyaw","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"ldiW","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"ldaW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"lyiW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"lyaW","line":"x.a_b..c"}
+{"cursor":1,"after":"x..c","register":".a_b","regtype":"v","keys":"ld2iw","line":"x.a_b..c"}
+{"cursor":1,"after":"x..c","register":".a_b","regtype":"v","keys":"ld2aw","line":"x.a_b..c"}
+{"cursor":1,"after":"x.a_b..c","register":".a_b","regtype":"v","keys":"ly2iw","line":"x.a_b..c"}
+{"cursor":1,"after":"x.a_b..c","register":".a_b","regtype":"v","keys":"ly2aw","line":"x.a_b..c"}
+{"cursor":2,"after":"x...c","register":"a_b","regtype":"v","keys":"2ldiw","line":"x.a_b..c"}
+{"cursor":2,"after":"x...c","register":"a_b","regtype":"v","keys":"2ldaw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b","regtype":"v","keys":"2lyiw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b","regtype":"v","keys":"2lyaw","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"2ldiW","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"2ldaW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"2lyiW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"2lyaW","line":"x.a_b..c"}
+{"cursor":2,"after":"x.c","register":"a_b..","regtype":"v","keys":"2ld2iw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.c","register":"a_b..","regtype":"v","keys":"2ld2aw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b..","regtype":"v","keys":"2ly2iw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b..","regtype":"v","keys":"2ly2aw","line":"x.a_b..c"}
+{"cursor":2,"after":"x...c","register":"a_b","regtype":"v","keys":"3ldiw","line":"x.a_b..c"}
+{"cursor":2,"after":"x...c","register":"a_b","regtype":"v","keys":"3ldaw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b","regtype":"v","keys":"3lyiw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b","regtype":"v","keys":"3lyaw","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"3ldiW","line":"x.a_b..c"}
+{"cursor":0,"after":"","register":"x.a_b..c","regtype":"v","keys":"3ldaW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"3lyiW","line":"x.a_b..c"}
+{"cursor":0,"after":"x.a_b..c","register":"x.a_b..c","regtype":"v","keys":"3lyaW","line":"x.a_b..c"}
+{"cursor":2,"after":"x.c","register":"a_b..","regtype":"v","keys":"3ld2iw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.c","register":"a_b..","regtype":"v","keys":"3ld2aw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b..","regtype":"v","keys":"3ly2iw","line":"x.a_b..c"}
+{"cursor":2,"after":"x.a_b..c","register":"a_b..","regtype":"v","keys":"3ly2aw","line":"x.a_b..c"}
+{"cursor":0,"after":"\ttwo three","register":"one","regtype":"v","keys":"diw","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"daw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one","regtype":"v","keys":"yiw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"yaw","line":"one\ttwo three"}
+{"cursor":0,"after":"\ttwo three","register":"one","regtype":"v","keys":"diW","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"daW","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one","regtype":"v","keys":"yiW","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"yaW","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"d2iw","line":"one\ttwo three"}
+{"cursor":0,"after":"three","register":"one\ttwo ","regtype":"v","keys":"d2aw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"y2iw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\ttwo ","regtype":"v","keys":"y2aw","line":"one\ttwo three"}
+{"cursor":0,"after":"\ttwo three","register":"one","regtype":"v","keys":"ldiw","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"ldaw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one","regtype":"v","keys":"lyiw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"lyaw","line":"one\ttwo three"}
+{"cursor":0,"after":"\ttwo three","register":"one","regtype":"v","keys":"ldiW","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"ldaW","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one","regtype":"v","keys":"lyiW","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"lyaW","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"ld2iw","line":"one\ttwo three"}
+{"cursor":0,"after":"three","register":"one\ttwo ","regtype":"v","keys":"ld2aw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"ly2iw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\ttwo ","regtype":"v","keys":"ly2aw","line":"one\ttwo three"}
+{"cursor":0,"after":"\ttwo three","register":"one","regtype":"v","keys":"2ldiw","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"2ldaw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one","regtype":"v","keys":"2lyiw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"2lyaw","line":"one\ttwo three"}
+{"cursor":0,"after":"\ttwo three","register":"one","regtype":"v","keys":"2ldiW","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"2ldaW","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one","regtype":"v","keys":"2lyiW","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"2lyaW","line":"one\ttwo three"}
+{"cursor":0,"after":"two three","register":"one\t","regtype":"v","keys":"2ld2iw","line":"one\ttwo three"}
+{"cursor":0,"after":"three","register":"one\ttwo ","regtype":"v","keys":"2ld2aw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\t","regtype":"v","keys":"2ly2iw","line":"one\ttwo three"}
+{"cursor":0,"after":"one\ttwo three","register":"one\ttwo ","regtype":"v","keys":"2ly2aw","line":"one\ttwo three"}
+{"cursor":3,"after":"onetwo three","register":"\t","regtype":"v","keys":"3ldiw","line":"one\ttwo three"}
+{"cursor":3,"after":"one three","register":"\ttwo","regtype":"v","keys":"3ldaw","line":"one\ttwo three"}
+{"cursor":3,"after":"one\ttwo three","register":"\t","regtype":"v","keys":"3lyiw","line":"one\ttwo three"}
+{"cursor":3,"after":"one\ttwo three","register":"\ttwo","regtype":"v","keys":"3lyaw","line":"one\ttwo three"}
+{"cursor":3,"after":"onetwo three","register":"\t","regtype":"v","keys":"3ldiW","line":"one\ttwo three"}
+{"cursor":3,"after":"one three","register":"\ttwo","regtype":"v","keys":"3ldaW","line":"one\ttwo three"}
+{"cursor":3,"after":"one\ttwo three","register":"\t","regtype":"v","keys":"3lyiW","line":"one\ttwo three"}
+{"cursor":3,"after":"one\ttwo three","register":"\ttwo","regtype":"v","keys":"3lyaW","line":"one\ttwo three"}
+{"cursor":3,"after":"one three","register":"\ttwo","regtype":"v","keys":"3ld2iw","line":"one\ttwo three"}
+{"cursor":2,"after":"one","register":"\ttwo three","regtype":"v","keys":"3ld2aw","line":"one\ttwo three"}
+{"cursor":3,"after":"one\ttwo three","register":"\ttwo","regtype":"v","keys":"3ly2iw","line":"one\ttwo three"}
+{"cursor":3,"after":"one\ttwo three","register":"\ttwo three","regtype":"v","keys":"3ly2aw","line":"one\ttwo three"}
+{"cursor":0,"after":"   ","register":"foo","regtype":"v","keys":"diw","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"daw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo","regtype":"v","keys":"yiw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"yaw","line":"foo   "}
+{"cursor":0,"after":"   ","register":"foo","regtype":"v","keys":"diW","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"daW","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo","regtype":"v","keys":"yiW","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"yaW","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"d2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"d2aw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"y2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"y2aw","line":"foo   "}
+{"cursor":0,"after":"   ","register":"foo","regtype":"v","keys":"ldiw","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"ldaw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo","regtype":"v","keys":"lyiw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"lyaw","line":"foo   "}
+{"cursor":0,"after":"   ","register":"foo","regtype":"v","keys":"ldiW","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"ldaW","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo","regtype":"v","keys":"lyiW","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"lyaW","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"ld2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"ld2aw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"ly2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"ly2aw","line":"foo   "}
+{"cursor":0,"after":"   ","register":"foo","regtype":"v","keys":"2ldiw","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"2ldaw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo","regtype":"v","keys":"2lyiw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"2lyaw","line":"foo   "}
+{"cursor":0,"after":"   ","register":"foo","regtype":"v","keys":"2ldiW","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"2ldaW","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo","regtype":"v","keys":"2lyiW","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"2lyaW","line":"foo   "}
+{"cursor":0,"after":"","register":"foo   ","regtype":"v","keys":"2ld2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"2ld2aw","line":"foo   "}
+{"cursor":0,"after":"foo   ","register":"foo   ","regtype":"v","keys":"2ly2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"2ly2aw","line":"foo   "}
+{"cursor":2,"after":"foo","register":"   ","regtype":"v","keys":"3ldiw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3ldaw","line":"foo   "}
+{"cursor":3,"after":"foo   ","register":"   ","regtype":"v","keys":"3lyiw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3lyaw","line":"foo   "}
+{"cursor":2,"after":"foo","register":"   ","regtype":"v","keys":"3ldiW","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3ldaW","line":"foo   "}
+{"cursor":3,"after":"foo   ","register":"   ","regtype":"v","keys":"3lyiW","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3lyaW","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3ld2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3ld2aw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3ly2iw","line":"foo   "}
+{"cursor":5,"after":"foo   ","register":"","regtype":"v","keys":"3ly2aw","line":"foo   "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"diw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"daw","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"yiw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"yaw","line":"  "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"diW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"daW","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"yiW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"yaW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"d2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"d2aw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"y2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"y2aw","line":"  "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"ldiw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"ldaw","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"lyiw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"lyaw","line":"  "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"ldiW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"ldaW","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"lyiW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"lyaW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"ld2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"ld2aw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"ly2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"ly2aw","line":"  "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"2ldiw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2ldaw","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"2lyiw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2lyaw","line":"  "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"2ldiW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2ldaW","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"2lyiW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2lyaW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2ld2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2ld2aw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2ly2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"2ly2aw","line":"  "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"3ldiw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3ldaw","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"3lyiw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3lyaw","line":"  "}
+{"cursor":0,"after":"","register":"  ","regtype":"v","keys":"3ldiW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3ldaW","line":"  "}
+{"cursor":0,"after":"  ","register":"  ","regtype":"v","keys":"3lyiW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3lyaW","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3ld2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3ld2aw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3ly2iw","line":"  "}
+{"cursor":1,"after":"  ","register":"","regtype":"v","keys":"3ly2aw","line":"  "}
+{"cursor":0,"after":"😀😁🙂y z","register":"x","regtype":"v","keys":"diw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"😀😁🙂y z","register":"x","regtype":"v","keys":"daw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x","regtype":"v","keys":"yiw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x","regtype":"v","keys":"yaw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":" z","register":"x😀😁🙂y","regtype":"v","keys":"diW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"z","register":"x😀😁🙂y ","regtype":"v","keys":"daW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y","regtype":"v","keys":"yiW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y ","regtype":"v","keys":"yaW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"y z","register":"x😀😁🙂","regtype":"v","keys":"d2iw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"y z","register":"x😀😁🙂","regtype":"v","keys":"d2aw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂","regtype":"v","keys":"y2iw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂","regtype":"v","keys":"y2aw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xy z","register":"😀😁🙂","regtype":"v","keys":"ldiw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xy z","register":"😀😁🙂","regtype":"v","keys":"ldaw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂","regtype":"v","keys":"lyiw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂","regtype":"v","keys":"lyaw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":" z","register":"x😀😁🙂y","regtype":"v","keys":"ldiW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"z","register":"x😀😁🙂y ","regtype":"v","keys":"ldaW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y","regtype":"v","keys":"lyiW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y ","regtype":"v","keys":"lyaW","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x z","register":"😀😁🙂y","regtype":"v","keys":"ld2iw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xz","register":"😀😁🙂y ","regtype":"v","keys":"ld2aw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂y","regtype":"v","keys":"ly2iw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂y ","regtype":"v","keys":"ly2aw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xy z","register":"😀😁🙂","regtype":"v","keys":"2ldiw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xy z","register":"😀😁🙂","regtype":"v","keys":"2ldaw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂","regtype":"v","keys":"2lyiw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂","regtype":"v","keys":"2lyaw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":" z","register":"x😀😁🙂y","regtype":"v","keys":"2ldiW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"z","register":"x😀😁🙂y ","regtype":"v","keys":"2ldaW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y","regtype":"v","keys":"2lyiW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y ","regtype":"v","keys":"2lyaW","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x z","register":"😀😁🙂y","regtype":"v","keys":"2ld2iw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xz","register":"😀😁🙂y ","regtype":"v","keys":"2ld2aw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂y","regtype":"v","keys":"2ly2iw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂y ","regtype":"v","keys":"2ly2aw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xy z","register":"😀😁🙂","regtype":"v","keys":"3ldiw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xy z","register":"😀😁🙂","regtype":"v","keys":"3ldaw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂","regtype":"v","keys":"3lyiw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂","regtype":"v","keys":"3lyaw","line":"x😀😁🙂y z"}
+{"cursor":0,"after":" z","register":"x😀😁🙂y","regtype":"v","keys":"3ldiW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"z","register":"x😀😁🙂y ","regtype":"v","keys":"3ldaW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y","regtype":"v","keys":"3lyiW","line":"x😀😁🙂y z"}
+{"cursor":0,"after":"x😀😁🙂y z","register":"x😀😁🙂y ","regtype":"v","keys":"3lyaW","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x z","register":"😀😁🙂y","regtype":"v","keys":"3ld2iw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"xz","register":"😀😁🙂y ","regtype":"v","keys":"3ld2aw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂y","regtype":"v","keys":"3ly2iw","line":"x😀😁🙂y z"}
+{"cursor":1,"after":"x😀😁🙂y z","register":"😀😁🙂y ","regtype":"v","keys":"3ly2aw","line":"x😀😁🙂y z"}

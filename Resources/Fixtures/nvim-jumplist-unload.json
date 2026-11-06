@@ -1,0 +1,168 @@
+{
+  "cases": [
+    {
+      "after": {
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "exists": 1,
+            "loaded": 1,
+            "name": "a.txt",
+            "listed": 1
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "exists": 1,
+            "loaded": 1,
+            "name": "b.txt",
+            "listed": 1
+          }
+        ],
+        "buffer": "a.txt",
+        "cursor": [
+          2,
+          1
+        ],
+        "index": 0
+      },
+      "name": "none",
+      "before": {
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "exists": 1,
+            "loaded": 1,
+            "name": "a.txt",
+            "listed": 1
+          }
+        ],
+        "buffer": "b.txt",
+        "cursor": [
+          1,
+          0
+        ],
+        "index": 1
+      }
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "exists": 1,
+            "loaded": 1,
+            "name": "a.txt",
+            "listed": 1
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "exists": 1,
+            "loaded": 1,
+            "name": "b.txt",
+            "listed": 1
+          }
+        ],
+        "buffer": "a.txt",
+        "cursor": [
+          2,
+          1
+        ],
+        "index": 0
+      },
+      "name": "bunload",
+      "before": {
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "exists": 1,
+            "loaded": 0,
+            "name": "a.txt",
+            "listed": 1
+          }
+        ],
+        "buffer": "b.txt",
+        "cursor": [
+          1,
+          0
+        ],
+        "index": 1
+      }
+    },
+    {
+      "after": {
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "exists": 1,
+            "loaded": 1,
+            "name": "a.txt",
+            "listed": 1
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "exists": 1,
+            "loaded": 1,
+            "name": "b.txt",
+            "listed": 1
+          }
+        ],
+        "buffer": "a.txt",
+        "cursor": [
+          2,
+          1
+        ],
+        "index": 0
+      },
+      "name": "bdelete",
+      "before": {
+        "jumps": [
+          {
+            "row": 2,
+            "col": 1,
+            "exists": 1,
+            "loaded": 0,
+            "name": "a.txt",
+            "listed": 0
+          }
+        ],
+        "buffer": "b.txt",
+        "cursor": [
+          1,
+          0
+        ],
+        "index": 1
+      }
+    },
+    {
+      "after": {
+        "jumps": [],
+        "buffer": "b.txt",
+        "cursor": [
+          1,
+          0
+        ],
+        "index": 0
+      },
+      "name": "bwipeout",
+      "before": {
+        "jumps": [],
+        "buffer": "b.txt",
+        "cursor": [
+          1,
+          0
+        ],
+        "index": 0
+      }
+    }
+  ],
+  "version": "0.12.1",
+  "jumpoptions": "view"
+}

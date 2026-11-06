@@ -1,0 +1,18 @@
+local function keys(text) vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(text, true, false, true), "xt", false) end
+local a = vim.api.nvim_create_buf(false, true)
+local b = vim.api.nvim_create_buf(false, true)
+vim.api.nvim_buf_set_lines(a, 0, -1, false, {"uno ñ uno ñ uno"})
+vim.api.nvim_buf_set_lines(b, 0, -1, false, {"ñ uno ñ uno ñ"})
+local function pos(label) print(label .. "=" .. vim.str_utfindex(vim.api.nvim_get_current_line(), "utf-32", vim.api.nvim_win_get_cursor(0)[2])) end
+vim.api.nvim_set_current_buf(a)
+keys("?uno<CR>"); pos("a_reverse")
+keys("n"); pos("a_n")
+vim.api.nvim_set_current_buf(b)
+keys("n"); pos("b_n")
+keys("N"); pos("b_N")
+keys("2n"); pos("b_2n")
+keys("/<CR>"); pos("b_empty_forward")
+vim.api.nvim_set_current_buf(a)
+keys("n"); pos("a_shared_forward")
+keys("?inexistente<Esc>n"); pos("a_cancel_then_n")
+vim.cmd("qa!")

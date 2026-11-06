@@ -1,0 +1,1112 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "shada": "NONE",
+  "plugins": false,
+  "ignorecase": true,
+  "smartcase": true,
+  "incsearch": true,
+  "cases": [
+    {
+      "label": "/-one-character",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "fo"
+        }
+      ],
+      "expected_command": "fo",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-unicode",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "ñ😀",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "ñ"
+        }
+      ],
+      "expected_command": "ñ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-combining",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "é",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-zwj",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "x👩‍💻",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-skin",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "x👍🏽",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-variation",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "x✈️",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-leading-mark",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "́",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-double-mark",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "xé̈",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-cjk",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo 中文",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-combining-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo é",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo bar",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-word-spaces",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo bar   ",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-punctuation",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo.bar",
+      "keys": [
+        "<C-w>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo."
+        },
+        {
+          "mode": "c",
+          "command": "foo"
+        }
+      ],
+      "expected_command": "foo",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-emoji-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo 😀😀",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-unicode-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo ñÁfono",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-underscore",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo_bar",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-remove-all",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "foo bar",
+      "keys": [
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-empty-ctrl-u",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "",
+      "keys": [
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-empty-ctrl-w",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "/-empty-backspace",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "n",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "n"
+    },
+    {
+      "label": "/-backspace-through-empty",
+      "text": "synthetic buffer unchanged",
+      "prefix": "/",
+      "query": "a",
+      "keys": [
+        "<BS>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        },
+        {
+          "mode": "n",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "n"
+    },
+    {
+      "label": ":-one-character",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "fo"
+        }
+      ],
+      "expected_command": "fo",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-unicode",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "ñ😀",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "ñ"
+        }
+      ],
+      "expected_command": "ñ",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-combining",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "é",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-zwj",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "x👩‍💻",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-skin",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "x👍🏽",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-variation",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "x✈️",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-leading-mark",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "́",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-double-mark",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "xé̈",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-cjk",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo 中文",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-combining-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo é",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo bar",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-word-spaces",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo bar   ",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-punctuation",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo.bar",
+      "keys": [
+        "<C-w>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo."
+        },
+        {
+          "mode": "c",
+          "command": "foo"
+        }
+      ],
+      "expected_command": "foo",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-emoji-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo 😀😀",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-unicode-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo ñÁfono",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-underscore",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo_bar",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-remove-all",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "foo bar",
+      "keys": [
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-empty-ctrl-u",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "",
+      "keys": [
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-empty-ctrl-w",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": ":-empty-backspace",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "n",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "n"
+    },
+    {
+      "label": ":-backspace-through-empty",
+      "text": "synthetic buffer unchanged",
+      "prefix": ":",
+      "query": "a",
+      "keys": [
+        "<BS>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        },
+        {
+          "mode": "n",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "n"
+    },
+    {
+      "label": "?-one-character",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "fo"
+        }
+      ],
+      "expected_command": "fo",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-unicode",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "ñ😀",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "ñ"
+        }
+      ],
+      "expected_command": "ñ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-combining",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "é",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-zwj",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "x👩‍💻",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-skin",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "x👍🏽",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-variation",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "x✈️",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-leading-mark",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "́",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-double-mark",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "xé̈",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "x"
+        }
+      ],
+      "expected_command": "x",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-cjk",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo 中文",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-combining-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo é",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo bar",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-word-spaces",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo bar   ",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-punctuation",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo.bar",
+      "keys": [
+        "<C-w>",
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo."
+        },
+        {
+          "mode": "c",
+          "command": "foo"
+        }
+      ],
+      "expected_command": "foo",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-emoji-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo 😀😀",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-unicode-word",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo ñÁfono",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": "foo "
+        }
+      ],
+      "expected_command": "foo ",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-underscore",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo_bar",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-remove-all",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "foo bar",
+      "keys": [
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-empty-ctrl-u",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "",
+      "keys": [
+        "<C-u>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-empty-ctrl-w",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "",
+      "keys": [
+        "<C-w>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "c"
+    },
+    {
+      "label": "?-empty-backspace",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "",
+      "keys": [
+        "<C-h>"
+      ],
+      "observations": [
+        {
+          "mode": "n",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "n"
+    },
+    {
+      "label": "?-backspace-through-empty",
+      "text": "synthetic buffer unchanged",
+      "prefix": "?",
+      "query": "a",
+      "keys": [
+        "<BS>",
+        "<BS>"
+      ],
+      "observations": [
+        {
+          "mode": "c",
+          "command": ""
+        },
+        {
+          "mode": "n",
+          "command": ""
+        }
+      ],
+      "expected_command": "",
+      "expected_mode": "n"
+    }
+  ]
+}

@@ -1,0 +1,1032 @@
+{
+  "cases": [
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 0,
+      "command": "zt",
+      "cursor": [
+        1,
+        1
+      ],
+      "line": 1,
+      "row": 1
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 0,
+      "command": "zz",
+      "cursor": [
+        1,
+        1
+      ],
+      "line": 1,
+      "row": 1
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        1,
+        1
+      ],
+      "line": 1,
+      "row": 1
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 20,
+      "command": "zt",
+      "cursor": [
+        1,
+        21
+      ],
+      "line": 1,
+      "row": 2
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 20,
+      "command": "zz",
+      "cursor": [
+        1,
+        21
+      ],
+      "line": 1,
+      "row": 2
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 20,
+      "command": "zb",
+      "cursor": [
+        1,
+        21
+      ],
+      "line": 1,
+      "row": 2
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 36,
+      "command": "zt",
+      "cursor": [
+        1,
+        37
+      ],
+      "line": 1,
+      "row": 2
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 36,
+      "command": "zz",
+      "cursor": [
+        1,
+        37
+      ],
+      "line": 1,
+      "row": 2
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 36,
+      "command": "zb",
+      "cursor": [
+        1,
+        37
+      ],
+      "line": 1,
+      "row": 2
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 0,
+      "command": "zt",
+      "cursor": [
+        3,
+        1
+      ],
+      "line": 3,
+      "row": 6
+    },
+    {
+      "after": [
+        1,
+        30
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 0,
+      "command": "zz",
+      "cursor": [
+        3,
+        1
+      ],
+      "line": 3,
+      "row": 5
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        1
+      ],
+      "line": 3,
+      "row": 6
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 6,
+      "command": "zt",
+      "cursor": [
+        3,
+        7
+      ],
+      "line": 3,
+      "row": 6
+    },
+    {
+      "after": [
+        1,
+        30
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 6,
+      "command": "zz",
+      "cursor": [
+        3,
+        7
+      ],
+      "line": 3,
+      "row": 5
+    },
+    {
+      "after": [
+        1,
+        0
+      ],
+      "before": [
+        1,
+        0
+      ],
+      "col": 6,
+      "command": "zb",
+      "cursor": [
+        3,
+        7
+      ],
+      "line": 3,
+      "row": 6
+    },
+    {
+      "after": [
+        4,
+        30
+      ],
+      "before": [
+        4,
+        30
+      ],
+      "col": 0,
+      "command": "zt",
+      "cursor": [
+        6,
+        1
+      ],
+      "line": 6,
+      "row": 5
+    },
+    {
+      "after": [
+        4,
+        30
+      ],
+      "before": [
+        4,
+        30
+      ],
+      "col": 0,
+      "command": "zz",
+      "cursor": [
+        6,
+        1
+      ],
+      "line": 6,
+      "row": 5
+    },
+    {
+      "after": [
+        4,
+        30
+      ],
+      "before": [
+        4,
+        30
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        6,
+        1
+      ],
+      "line": 6,
+      "row": 5
+    },
+    {
+      "after": [
+        4,
+        30
+      ],
+      "before": [
+        4,
+        30
+      ],
+      "col": 6,
+      "command": "zt",
+      "cursor": [
+        6,
+        7
+      ],
+      "line": 6,
+      "row": 5
+    },
+    {
+      "after": [
+        4,
+        30
+      ],
+      "before": [
+        4,
+        30
+      ],
+      "col": 6,
+      "command": "zz",
+      "cursor": [
+        6,
+        7
+      ],
+      "line": 6,
+      "row": 5
+    },
+    {
+      "after": [
+        4,
+        30
+      ],
+      "before": [
+        4,
+        30
+      ],
+      "col": 6,
+      "command": "zb",
+      "cursor": [
+        6,
+        7
+      ],
+      "line": 6,
+      "row": 5
+    },
+    {
+      "after": [
+        10,
+        0
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 0,
+      "command": "zt",
+      "cursor": [
+        10,
+        1
+      ],
+      "line": 10,
+      "row": 1
+    },
+    {
+      "after": [
+        10,
+        0
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 0,
+      "command": "zz",
+      "cursor": [
+        10,
+        1
+      ],
+      "line": 10,
+      "row": 1
+    },
+    {
+      "after": [
+        10,
+        300
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        10,
+        421
+      ],
+      "line": 10,
+      "row": 5
+    },
+    {
+      "after": [
+        10,
+        0
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 20,
+      "command": "zt",
+      "cursor": [
+        10,
+        21
+      ],
+      "line": 10,
+      "row": 1
+    },
+    {
+      "after": [
+        10,
+        0
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 20,
+      "command": "zz",
+      "cursor": [
+        10,
+        21
+      ],
+      "line": 10,
+      "row": 1
+    },
+    {
+      "after": [
+        10,
+        300
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 20,
+      "command": "zb",
+      "cursor": [
+        10,
+        441
+      ],
+      "line": 10,
+      "row": 5
+    },
+    {
+      "after": [
+        10,
+        0
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 80,
+      "command": "zt",
+      "cursor": [
+        10,
+        81
+      ],
+      "line": 10,
+      "row": 3
+    },
+    {
+      "after": [
+        10,
+        0
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 80,
+      "command": "zz",
+      "cursor": [
+        10,
+        81
+      ],
+      "line": 10,
+      "row": 3
+    },
+    {
+      "after": [
+        10,
+        300
+      ],
+      "before": [
+        10,
+        0
+      ],
+      "col": 80,
+      "command": "zb",
+      "cursor": [
+        10,
+        441
+      ],
+      "line": 10,
+      "row": 5
+    },
+    {
+      "after": [
+        10,
+        90
+      ],
+      "before": [
+        10,
+        90
+      ],
+      "col": 250,
+      "command": "zt",
+      "cursor": [
+        10,
+        251
+      ],
+      "line": 10,
+      "row": 6
+    },
+    {
+      "after": [
+        10,
+        90
+      ],
+      "before": [
+        10,
+        90
+      ],
+      "col": 250,
+      "command": "zz",
+      "cursor": [
+        10,
+        251
+      ],
+      "line": 10,
+      "row": 6
+    },
+    {
+      "after": [
+        10,
+        300
+      ],
+      "before": [
+        10,
+        90
+      ],
+      "col": 250,
+      "command": "zb",
+      "cursor": [
+        10,
+        431
+      ],
+      "line": 10,
+      "row": 5
+    },
+    {
+      "after": [
+        10,
+        300
+      ],
+      "before": [
+        10,
+        300
+      ],
+      "col": 550,
+      "command": "zt",
+      "cursor": [
+        10,
+        551
+      ],
+      "line": 10,
+      "row": 9
+    },
+    {
+      "after": [
+        10,
+        300
+      ],
+      "before": [
+        10,
+        300
+      ],
+      "col": 550,
+      "command": "zz",
+      "cursor": [
+        10,
+        551
+      ],
+      "line": 10,
+      "row": 9
+    },
+    {
+      "after": [
+        10,
+        0
+      ],
+      "before": [
+        10,
+        300
+      ],
+      "col": 550,
+      "command": "zb",
+      "cursor": [
+        10,
+        161
+      ],
+      "line": 10,
+      "row": 6
+    },
+    {
+      "after": [
+        13,
+        30
+      ],
+      "before": [
+        13,
+        30
+      ],
+      "col": 0,
+      "command": "zt",
+      "cursor": [
+        15,
+        1
+      ],
+      "line": 15,
+      "row": 5
+    },
+    {
+      "after": [
+        13,
+        30
+      ],
+      "before": [
+        13,
+        30
+      ],
+      "col": 0,
+      "command": "zz",
+      "cursor": [
+        15,
+        1
+      ],
+      "line": 15,
+      "row": 5
+    },
+    {
+      "after": [
+        13,
+        30
+      ],
+      "before": [
+        13,
+        30
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        15,
+        1
+      ],
+      "line": 15,
+      "row": 5
+    },
+    {
+      "after": [
+        13,
+        30
+      ],
+      "before": [
+        13,
+        30
+      ],
+      "col": 6,
+      "command": "zt",
+      "cursor": [
+        15,
+        7
+      ],
+      "line": 15,
+      "row": 5
+    },
+    {
+      "after": [
+        13,
+        30
+      ],
+      "before": [
+        13,
+        30
+      ],
+      "col": 6,
+      "command": "zz",
+      "cursor": [
+        15,
+        7
+      ],
+      "line": 15,
+      "row": 5
+    },
+    {
+      "after": [
+        13,
+        30
+      ],
+      "before": [
+        13,
+        30
+      ],
+      "col": 6,
+      "command": "zb",
+      "cursor": [
+        15,
+        7
+      ],
+      "line": 15,
+      "row": 5
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 0,
+      "command": "zt",
+      "cursor": [
+        29,
+        1
+      ],
+      "line": 29,
+      "row": 7
+    },
+    {
+      "after": [
+        27,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 0,
+      "command": "zz",
+      "cursor": [
+        29,
+        1
+      ],
+      "line": 29,
+      "row": 4
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        29,
+        1
+      ],
+      "line": 29,
+      "row": 7
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 20,
+      "command": "zt",
+      "cursor": [
+        29,
+        21
+      ],
+      "line": 29,
+      "row": 8
+    },
+    {
+      "after": [
+        27,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 20,
+      "command": "zz",
+      "cursor": [
+        29,
+        21
+      ],
+      "line": 29,
+      "row": 5
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 20,
+      "command": "zb",
+      "cursor": [
+        29,
+        21
+      ],
+      "line": 29,
+      "row": 8
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 66,
+      "command": "zt",
+      "cursor": [
+        29,
+        67
+      ],
+      "line": 29,
+      "row": 9
+    },
+    {
+      "after": [
+        27,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 66,
+      "command": "zz",
+      "cursor": [
+        29,
+        67
+      ],
+      "line": 29,
+      "row": 6
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 66,
+      "command": "zb",
+      "cursor": [
+        29,
+        67
+      ],
+      "line": 29,
+      "row": 9
+    },
+    {
+      "after": [
+        28,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 0,
+      "command": "zt",
+      "cursor": [
+        30,
+        1
+      ],
+      "line": 30,
+      "row": 6
+    },
+    {
+      "after": [
+        28,
+        30
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 0,
+      "command": "zz",
+      "cursor": [
+        30,
+        1
+      ],
+      "line": 30,
+      "row": 5
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        30,
+        1
+      ],
+      "line": 30,
+      "row": 10
+    },
+    {
+      "after": [
+        28,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 6,
+      "command": "zt",
+      "cursor": [
+        30,
+        7
+      ],
+      "line": 30,
+      "row": 6
+    },
+    {
+      "after": [
+        28,
+        30
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 6,
+      "command": "zz",
+      "cursor": [
+        30,
+        7
+      ],
+      "line": 30,
+      "row": 5
+    },
+    {
+      "after": [
+        26,
+        0
+      ],
+      "before": [
+        26,
+        0
+      ],
+      "col": 6,
+      "command": "zb",
+      "cursor": [
+        30,
+        7
+      ],
+      "line": 30,
+      "row": 10
+    }
+  ],
+  "columns": 30,
+  "rows": 10
+}

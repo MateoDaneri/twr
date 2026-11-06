@@ -1,0 +1,78 @@
+{"register": "alpha\nbeta", "lines": ["alpha", "beta"], "keys": "c2iwZ<Esc>", "after": ["Z"], "row": 0, "col": 0, "regtype": "v"}
+{"after": ["Z"], "row": 0, "col": 0, "regtype": "v", "lines": ["alpha", "beta"], "register": "alpha\nbeta", "keys": "c2awZ<Esc>"}
+{"col": 0, "register": "alpha\nbeta", "regtype": "v", "keys": "c2iWZ<Esc>", "lines": ["alpha", "beta"], "after": ["Z"], "row": 0}
+{"col": 0, "lines": ["alpha", "beta"], "regtype": "v", "keys": "c2aWZ<Esc>", "register": "alpha\nbeta", "after": ["Z"], "row": 0}
+{"after": ["Z"], "row": 0, "col": 0, "regtype": "v", "register": "alpha\nbeta", "keys": "$c2iwZ<Esc>", "lines": ["alpha", "beta"]}
+{"col": 0, "lines": ["alpha", "beta"], "register": "alpha\nbeta", "keys": "$c2awZ<Esc>", "regtype": "v", "after": ["Z"], "row": 0}
+{"after": ["Z"], "row": 0, "col": 0, "regtype": "v", "register": "alpha\nbeta", "lines": ["alpha", "beta"], "keys": "$c2iWZ<Esc>"}
+{"keys": "$c2aWZ<Esc>", "after": ["Z"], "row": 0, "col": 0, "regtype": "v", "register": "alpha\nbeta", "lines": ["alpha", "beta"]}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "register": "alpha\nbeta", "lines": ["prefix", "alpha", "beta", "suffix"], "keys": "jc2iwZ<Esc>", "regtype": "v"}
+{"col": 0, "register": "alpha\nbeta", "lines": ["prefix", "alpha", "beta", "suffix"], "regtype": "v", "keys": "jc2awZ<Esc>", "after": ["prefix", "Z", "suffix"], "row": 1}
+{"register": "alpha\nbeta", "keys": "jc2iWZ<Esc>", "regtype": "v", "after": ["prefix", "Z", "suffix"], "lines": ["prefix", "alpha", "beta", "suffix"], "col": 0, "row": 1}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "regtype": "v", "register": "alpha\nbeta", "keys": "jc2aWZ<Esc>", "lines": ["prefix", "alpha", "beta", "suffix"]}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "regtype": "v", "register": "alpha\nbeta", "lines": ["prefix", "alpha", "beta", "suffix"], "keys": "j$c2iwZ<Esc>"}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "lines": ["prefix", "alpha", "beta", "suffix"], "register": "alpha\nbeta", "regtype": "v", "keys": "j$c2awZ<Esc>"}
+{"keys": "j$c2iWZ<Esc>", "after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "regtype": "v", "register": "alpha\nbeta", "lines": ["prefix", "alpha", "beta", "suffix"]}
+{"lines": ["prefix", "alpha", "beta", "suffix"], "regtype": "v", "keys": "j$c2aWZ<Esc>", "register": "alpha\nbeta", "after": ["prefix", "Z", "suffix"], "row": 1, "col": 0}
+{"after": ["one Z four"], "row": 0, "col": 4, "regtype": "v", "register": "two\nthree", "keys": "$c2iwZ<Esc>", "lines": ["one two", "three four"]}
+{"keys": "$c2awZ<Esc>", "after": ["one Zfour"], "row": 0, "lines": ["one two", "three four"], "regtype": "v", "register": "two\nthree ", "col": 4}
+{"register": "two\nthree", "keys": "$c2iWZ<Esc>", "regtype": "v", "after": ["one Z four"], "lines": ["one two", "three four"], "col": 4, "row": 0}
+{"after": ["one Zfour"], "row": 0, "col": 4, "regtype": "v", "register": "two\nthree ", "lines": ["one two", "three four"], "keys": "$c2aWZ<Esc>"}
+{"col": 0, "register": "alpha\n\n", "regtype": "V", "keys": "c2iwZ<Esc>", "lines": ["alpha", "", "tail"], "after": ["Z", "tail"], "row": 0}
+{"register": "alpha\n\ntail", "lines": ["alpha", "", "tail"], "regtype": "v", "after": ["Z"], "row": 0, "col": 0, "keys": "c2awZ<Esc>"}
+{"lines": ["alpha", "", "tail"], "after": ["Z", "tail"], "row": 0, "col": 0, "register": "alpha\n\n", "regtype": "V", "keys": "c2iWZ<Esc>"}
+{"after": ["Z"], "row": 0, "lines": ["alpha", "", "tail"], "register": "alpha\n\ntail", "regtype": "v", "keys": "c2aWZ<Esc>", "col": 0}
+{"row": 0, "lines": ["alpha", "", "tail"], "register": "alpha\n\n", "regtype": "V", "keys": "$c2iwZ<Esc>", "col": 0, "after": ["Z", "tail"]}
+{"register": "alpha\n\ntail", "lines": ["alpha", "", "tail"], "keys": "$c2awZ<Esc>", "after": ["Z"], "row": 0, "col": 0, "regtype": "v"}
+{"row": 0, "col": 0, "register": "alpha\n\n", "regtype": "V", "keys": "$c2iWZ<Esc>", "lines": ["alpha", "", "tail"], "after": ["Z", "tail"]}
+{"col": 0, "register": "alpha\n\ntail", "regtype": "v", "keys": "$c2aWZ<Esc>", "lines": ["alpha", "", "tail"], "after": ["Z"], "row": 0}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "lines": ["prefix", "alpha", "", "suffix"], "register": "alpha\n\n", "regtype": "V", "keys": "jc2iwZ<Esc>", "col": 0}
+{"lines": ["prefix", "alpha", "", "suffix"], "register": "alpha\n\nsuffix", "regtype": "v", "keys": "jc2awZ<Esc>", "col": 0, "after": ["prefix", "Z"], "row": 1}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "regtype": "V", "register": "alpha\n\n", "lines": ["prefix", "alpha", "", "suffix"], "keys": "jc2iWZ<Esc>"}
+{"col": 0, "lines": ["prefix", "alpha", "", "suffix"], "register": "alpha\n\nsuffix", "keys": "jc2aWZ<Esc>", "regtype": "v", "after": ["prefix", "Z"], "row": 1}
+{"lines": ["prefix", "alpha", "", "suffix"], "regtype": "V", "keys": "j$c2iwZ<Esc>", "register": "alpha\n\n", "after": ["prefix", "Z", "suffix"], "row": 1, "col": 0}
+{"register": "alpha\n\nsuffix", "keys": "j$c2awZ<Esc>", "regtype": "v", "after": ["prefix", "Z"], "row": 1, "lines": ["prefix", "alpha", "", "suffix"], "col": 0}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "register": "alpha\n\n", "lines": ["prefix", "alpha", "", "suffix"], "keys": "j$c2iWZ<Esc>", "regtype": "V"}
+{"after": ["prefix", "Z"], "row": 1, "col": 0, "regtype": "v", "register": "alpha\n\nsuffix", "lines": ["prefix", "alpha", "", "suffix"], "keys": "j$c2aWZ<Esc>"}
+{"after": ["  Zbeta"], "row": 0, "col": 2, "regtype": "v", "register": "alpha\n ", "lines": ["  alpha", " beta"], "keys": "2lc2iwZ<Esc>"}
+{"keys": "2lc2awZ<Esc>", "after": ["  Z"], "row": 0, "col": 2, "regtype": "v", "register": "alpha\n beta", "lines": ["  alpha", " beta"]}
+{"col": 2, "lines": ["  alpha", " beta"], "regtype": "v", "keys": "2lc2iWZ<Esc>", "register": "alpha\n ", "after": ["  Zbeta"], "row": 0}
+{"after": ["  Z"], "row": 0, "col": 2, "regtype": "v", "register": "alpha\n beta", "lines": ["  alpha", " beta"], "keys": "2lc2aWZ<Esc>"}
+{"keys": "$c2iwZ<Esc>", "after": ["one Zthree four"], "row": 0, "col": 4, "regtype": "v", "register": "two\n  ", "lines": ["one two", "  three four"]}
+{"lines": ["one two", "  three four"], "row": 0, "col": 3, "register": " two\n  three", "regtype": "v", "keys": "$c2awZ<Esc>", "after": ["oneZ four"]}
+{"keys": "$c2iWZ<Esc>", "after": ["one Zthree four"], "row": 0, "col": 4, "lines": ["one two", "  three four"], "register": "two\n  ", "regtype": "v"}
+{"after": ["oneZ four"], "row": 0, "col": 3, "regtype": "v", "register": " two\n  three", "lines": ["one two", "  three four"], "keys": "$c2aWZ<Esc>"}
+{"register": "あ\n  ", "regtype": "v", "keys": "$c2iwZ<Esc>", "lines": ["漢字 あ", "  カナ"], "after": ["漢字 Zカナ"], "row": 0, "col": 3}
+{"lines": ["漢字 あ", "  カナ"], "keys": "$c2awZ<Esc>", "after": ["漢字Z"], "row": 0, "col": 2, "regtype": "v", "register": " あ\n  カナ"}
+{"col": 3, "register": "あ\n  ", "regtype": "v", "keys": "$c2iWZ<Esc>", "lines": ["漢字 あ", "  カナ"], "after": ["漢字 Zカナ"], "row": 0}
+{"keys": "$c2aWZ<Esc>", "regtype": "v", "after": ["漢字Z"], "row": 0, "col": 2, "lines": ["漢字 あ", "  カナ"], "register": " あ\n  カナ"}
+{"register": "café\n ", "regtype": "v", "keys": "$c2iwZ<Esc>", "lines": ["x café", " más texto"], "after": ["x Zmás texto"], "row": 0, "col": 2}
+{"row": 0, "lines": ["x café", " más texto"], "keys": "$c2awZ<Esc>", "register": " café\n más", "regtype": "v", "col": 1, "after": ["xZ texto"]}
+{"register": "café\n ", "lines": ["x café", " más texto"], "regtype": "v", "after": ["x Zmás texto"], "row": 0, "col": 2, "keys": "$c2iWZ<Esc>"}
+{"lines": ["x café", " más texto"], "after": ["xZ texto"], "row": 0, "col": 1, "register": " café\n más", "regtype": "v", "keys": "$c2aWZ<Esc>"}
+{"register": "😀\n🐈", "keys": "$c2iwZ<Esc>", "regtype": "v", "after": ["x Z dog"], "row": 0, "lines": ["x 😀", "🐈 dog"], "col": 2}
+{"register": "😀\n🐈 ", "lines": ["x 😀", "🐈 dog"], "keys": "$c2awZ<Esc>", "after": ["x Zdog"], "row": 0, "col": 2, "regtype": "v"}
+{"keys": "$c2iWZ<Esc>", "regtype": "v", "after": ["x Z dog"], "row": 0, "lines": ["x 😀", "🐈 dog"], "col": 2, "register": "😀\n🐈"}
+{"col": 2, "lines": ["x 😀", "🐈 dog"], "regtype": "v", "keys": "$c2aWZ<Esc>", "register": "😀\n🐈 ", "after": ["x Zdog"], "row": 0}
+{"col": 0, "register": "漢字\n\n", "regtype": "V", "lines": ["prefix", "漢字", "", "suffix"], "keys": "jc2iwZ<Esc>", "after": ["prefix", "Z", "suffix"], "row": 1}
+{"col": 0, "lines": ["prefix", "漢字", "", "suffix"], "regtype": "v", "keys": "jc2awZ<Esc>", "register": "漢字\n\nsuffix", "after": ["prefix", "Z"], "row": 1}
+{"after": ["prefix", "Z", "suffix"], "row": 1, "col": 0, "regtype": "V", "register": "漢字\n\n", "keys": "jc2iWZ<Esc>", "lines": ["prefix", "漢字", "", "suffix"]}
+{"row": 1, "col": 0, "keys": "jc2aWZ<Esc>", "lines": ["prefix", "漢字", "", "suffix"], "regtype": "v", "register": "漢字\n\nsuffix", "after": ["prefix", "Z"]}
+{"register": "漢字\n\n", "lines": ["prefix", "漢字", "", "suffix"], "keys": "j$c2iwZ<Esc>", "regtype": "V", "after": ["prefix", "Z", "suffix"], "row": 1, "col": 0}
+{"col": 0, "register": "漢字\n\nsuffix", "regtype": "v", "keys": "j$c2awZ<Esc>", "lines": ["prefix", "漢字", "", "suffix"], "after": ["prefix", "Z"], "row": 1}
+{"col": 0, "lines": ["prefix", "漢字", "", "suffix"], "regtype": "V", "keys": "j$c2iWZ<Esc>", "register": "漢字\n\n", "after": ["prefix", "Z", "suffix"], "row": 1}
+{"col": 0, "register": "漢字\n\nsuffix", "regtype": "v", "lines": ["prefix", "漢字", "", "suffix"], "keys": "j$c2aWZ<Esc>", "after": ["prefix", "Z"], "row": 1}
+{"register": "alpha\n\t", "keys": "lc2iwZ<Esc>", "regtype": "v", "lines": ["\talpha", "\tbeta"], "row": 0, "col": 1, "after": ["\tZbeta"]}
+{"col": 1, "register": "alpha\n\tbeta", "regtype": "v", "keys": "lc2awZ<Esc>", "lines": ["\talpha", "\tbeta"], "after": ["\tZ"], "row": 0}
+{"lines": ["\talpha", "\tbeta"], "register": "alpha\n\t", "regtype": "v", "keys": "lc2iWZ<Esc>", "col": 1, "after": ["\tZbeta"], "row": 0}
+{"lines": ["\talpha", "\tbeta"], "row": 0, "col": 1, "register": "alpha\n\tbeta", "regtype": "v", "keys": "lc2aWZ<Esc>", "after": ["\tZ"]}
+{"keys": "c2iwZ<Esc>j.", "lines": ["alpha", "beta", "foo", "bar"], "after": ["Z", "Z"], "row": 1, "col": 0, "regtype": "v", "register": "foo\nbar"}
+{"keys": "c2awZ<Esc>j.", "lines": ["alpha", "beta", "foo", "bar"], "after": ["Z", "Z"], "row": 1, "col": 0, "register": "foo\nbar", "regtype": "v"}
+{"after": ["Z", "foo", "bar"], "row": 1, "col": 0, "lines": ["alpha", "beta", "foo", "bar"], "register": "foo\nbar", "keys": "c2iwZ<Esc>j.u", "regtype": "v"}
+{"register": "foo\nbar", "regtype": "v", "keys": "c2iwZ<Esc>j.2u", "lines": ["alpha", "beta", "foo", "bar"], "after": ["alpha", "beta", "foo", "bar"], "row": 0, "col": 0}
+{"register": "alpha\nbeta", "keys": "c2iwZ<Esc>u", "regtype": "v", "after": ["alpha", "beta", "foo", "bar"], "row": 0, "lines": ["alpha", "beta", "foo", "bar"], "col": 0}
+{"keys": "jc2iwZ<Esc>j.", "regtype": "v", "after": ["prefix", "Z", "Z"], "row": 2, "col": 0, "lines": ["prefix", "alpha", "beta", "foo", "bar"], "register": "foo\nbar"}
+{"keys": "jc2awZ<Esc>j.", "regtype": "v", "after": ["prefix", "Z", "Z"], "row": 2, "col": 0, "register": "foo\nbar", "lines": ["prefix", "alpha", "beta", "foo", "bar"]}
+{"row": 2, "col": 0, "register": "foo\nbar", "regtype": "v", "keys": "jc2iwZ<Esc>j.u", "lines": ["prefix", "alpha", "beta", "foo", "bar"], "after": ["prefix", "Z", "foo", "bar"]}
+{"col": 0, "register": "foo\nbar", "lines": ["prefix", "alpha", "beta", "foo", "bar"], "keys": "jc2iwZ<Esc>j.2u", "regtype": "v", "after": ["prefix", "alpha", "beta", "foo", "bar"], "row": 1}
+{"keys": "jc2iwZ<Esc>u", "regtype": "v", "after": ["prefix", "alpha", "beta", "foo", "bar"], "row": 1, "col": 0, "lines": ["prefix", "alpha", "beta", "foo", "bar"], "register": "alpha\nbeta"}

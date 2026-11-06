@@ -1,0 +1,46 @@
+[
+  {
+    "before": [
+      "b",
+      "b",
+      "b"
+    ],
+    "case": "all",
+    "active": 2,
+    "loaded": 0,
+    "remaining": [
+      2
+    ],
+    "current": "a",
+    "listed": 0
+  },
+  {
+    "before": [
+      "b",
+      "b",
+      "a"
+    ],
+    "case": "mixed",
+    "loaded": 0,
+    "active": 2,
+    "current": "a",
+    "listed": 0,
+    "remaining": [
+      2
+    ]
+  },
+  {
+    "listed": 0,
+    "active": 1,
+    "before": [
+      "b",
+      "a"
+    ],
+    "case": "one",
+    "loaded": 0,
+    "remaining": [
+      1
+    ],
+    "current": "a"
+  }
+]

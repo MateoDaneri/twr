@@ -1,0 +1,796 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "plugins": false,
+  "scope": "One headless Neovim with an external RPC UI grid80x24 and settled viewport queries; no Ghostty GUI",
+  "options": {
+    "hidden": true,
+    "wrap": false,
+    "scrolloff": 4,
+    "sidescrolloff": 8,
+    "sidescroll": 1,
+    "splitkeep": "screen"
+  },
+  "cases": [
+    {
+      "label": "horizontal-and-vertical",
+      "visits": [
+        [
+          "a",
+          50,
+          120,
+          "zz"
+        ],
+        [
+          "b",
+          100,
+          2,
+          "zt"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ],
+        [
+          "b",
+          null,
+          null,
+          null
+        ],
+        [
+          "b",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 120,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 99,
+          "column": 2,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 95
+        },
+        {
+          "entry_column": 120,
+          "row": 49,
+          "column": 120,
+          "entry_row": 49,
+          "entry_left": 80,
+          "entry_top": 39,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 2,
+          "row": 99,
+          "column": 2,
+          "entry_row": 99,
+          "entry_left": 0,
+          "entry_top": 89,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 89
+        },
+        {
+          "entry_column": 2,
+          "row": 99,
+          "column": 2,
+          "entry_row": 99,
+          "entry_left": 0,
+          "entry_top": 89,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 89
+        }
+      ]
+    },
+    {
+      "label": "same-buffer",
+      "visits": [
+        [
+          "a",
+          50,
+          50,
+          "zt"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 50,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 45
+        },
+        {
+          "entry_column": 50,
+          "row": 49,
+          "column": 50,
+          "entry_row": 49,
+          "entry_left": 0,
+          "entry_top": 45,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 45
+        }
+      ]
+    },
+    {
+      "label": "nearby-buffers",
+      "visits": [
+        [
+          "a",
+          50,
+          50,
+          "zt"
+        ],
+        [
+          "b",
+          55,
+          120,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ],
+        [
+          "b",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 50,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 45
+        },
+        {
+          "entry_column": 0,
+          "row": 54,
+          "column": 120,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 44
+        },
+        {
+          "entry_column": 50,
+          "row": 49,
+          "column": 50,
+          "entry_row": 49,
+          "entry_left": 42,
+          "entry_top": 39,
+          "left": 42,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 120,
+          "row": 54,
+          "column": 120,
+          "entry_row": 54,
+          "entry_left": 49,
+          "entry_top": 44,
+          "left": 49,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 44
+        }
+      ]
+    },
+    {
+      "label": "both-scrolled",
+      "visits": [
+        [
+          "a",
+          100,
+          90,
+          "zz"
+        ],
+        [
+          "b",
+          50,
+          120,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ],
+        [
+          "b",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 99,
+          "column": 90,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 19,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 89
+        },
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 120,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 39
+        },
+        {
+          "entry_column": 90,
+          "row": 99,
+          "column": 90,
+          "entry_row": 99,
+          "entry_left": 80,
+          "entry_top": 89,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 89
+        },
+        {
+          "entry_column": 120,
+          "row": 49,
+          "column": 120,
+          "entry_row": 49,
+          "entry_left": 80,
+          "entry_top": 39,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 39
+        }
+      ]
+    },
+    {
+      "label": "right-below-half",
+      "visits": [
+        [
+          "a",
+          50,
+          110,
+          "zz"
+        ],
+        [
+          "b",
+          60,
+          0,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 110,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 39,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 0,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 110,
+          "row": 49,
+          "column": 110,
+          "entry_row": 49,
+          "entry_left": 39,
+          "entry_top": 39,
+          "left": 39,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        }
+      ]
+    },
+    {
+      "label": "right-at-half",
+      "visits": [
+        [
+          "a",
+          50,
+          111,
+          "zz"
+        ],
+        [
+          "b",
+          60,
+          0,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 111,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 71,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 0,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 111,
+          "row": 49,
+          "column": 111,
+          "entry_row": 49,
+          "entry_left": 71,
+          "entry_top": 39,
+          "left": 71,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        }
+      ]
+    },
+    {
+      "label": "right-above-half",
+      "visits": [
+        [
+          "a",
+          50,
+          112,
+          "zz"
+        ],
+        [
+          "b",
+          60,
+          0,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 112,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 72,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 0,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 112,
+          "row": 49,
+          "column": 112,
+          "entry_row": 49,
+          "entry_left": 72,
+          "entry_top": 39,
+          "left": 72,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        }
+      ]
+    },
+    {
+      "label": "left-at-half",
+      "visits": [
+        [
+          "a",
+          50,
+          48,
+          "zz"
+        ],
+        [
+          "b",
+          60,
+          120,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 48,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 120,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 48,
+          "row": 49,
+          "column": 48,
+          "entry_row": 49,
+          "entry_left": 8,
+          "entry_top": 39,
+          "left": 8,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        }
+      ]
+    },
+    {
+      "label": "left-above-half",
+      "visits": [
+        [
+          "a",
+          50,
+          47,
+          "zz"
+        ],
+        [
+          "b",
+          60,
+          120,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 49,
+          "column": 47,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 120,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 47,
+          "row": 49,
+          "column": 47,
+          "entry_row": 49,
+          "entry_left": 7,
+          "entry_top": 39,
+          "left": 7,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 39
+        }
+      ]
+    },
+    {
+      "label": "near-start",
+      "visits": [
+        [
+          "a",
+          3,
+          2,
+          "zt"
+        ],
+        [
+          "b",
+          60,
+          120,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 2,
+          "column": 2,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 0
+        },
+        {
+          "entry_column": 0,
+          "row": 59,
+          "column": 120,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 80,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 49
+        },
+        {
+          "entry_column": 2,
+          "row": 2,
+          "column": 2,
+          "entry_row": 2,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 0
+        }
+      ]
+    },
+    {
+      "label": "near-end",
+      "visits": [
+        [
+          "a",
+          190,
+          90,
+          "zb"
+        ],
+        [
+          "b",
+          20,
+          5,
+          "zz"
+        ],
+        [
+          "a",
+          null,
+          null,
+          null
+        ],
+        [
+          "b",
+          null,
+          null,
+          null
+        ]
+      ],
+      "observations": [
+        {
+          "entry_column": 0,
+          "row": 189,
+          "column": 90,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 19,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 172
+        },
+        {
+          "entry_column": 0,
+          "row": 19,
+          "column": 5,
+          "entry_row": 0,
+          "entry_left": 0,
+          "entry_top": 0,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 9
+        },
+        {
+          "entry_column": 90,
+          "row": 189,
+          "column": 90,
+          "entry_row": 189,
+          "entry_left": 19,
+          "entry_top": 178,
+          "left": 19,
+          "width": 80,
+          "height": 22,
+          "buffer": "a",
+          "top": 178
+        },
+        {
+          "entry_column": 5,
+          "row": 19,
+          "column": 5,
+          "entry_row": 19,
+          "entry_left": 0,
+          "entry_top": 9,
+          "left": 0,
+          "width": 80,
+          "height": 22,
+          "buffer": "b",
+          "top": 9
+        }
+      ]
+    }
+  ]
+}

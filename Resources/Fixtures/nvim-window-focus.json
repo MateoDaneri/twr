@@ -1,0 +1,225 @@
+{
+  "version": "NVIM v0.12.1",
+  "config": "NONE",
+  "shada": "NONE",
+  "plugins": false,
+  "layout": "content left, tree above agents on right; three distinct buffers",
+  "scope": "Neovim window focus, no tmux or GUI",
+  "cases": [
+    {
+      "label": "cycle",
+      "commands": [
+        [
+          "<C-w>",
+          "w"
+        ],
+        [
+          "<C-w>",
+          "w"
+        ],
+        [
+          "<C-w>",
+          "w"
+        ],
+        [
+          "<C-w>",
+          "W"
+        ],
+        [
+          "<C-w>",
+          "<C-w>"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 2,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "first-last",
+      "commands": [
+        [
+          "<C-w>",
+          "b"
+        ],
+        [
+          "<C-w>",
+          "t"
+        ],
+        [
+          "<C-w>",
+          "<C-b>"
+        ],
+        [
+          "<C-w>",
+          "<C-t>"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "previous-toggle",
+      "commands": [
+        [
+          "<C-w>",
+          "b"
+        ],
+        [
+          "<C-w>",
+          "p"
+        ],
+        [
+          "<C-w>",
+          "p"
+        ],
+        [
+          "<C-w>",
+          "<C-p>"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "failed-left-preserves-history",
+      "commands": [
+        [
+          "<C-w>",
+          "b"
+        ],
+        [
+          "<C-w>",
+          "t"
+        ],
+        [
+          "<C-w>",
+          "h"
+        ],
+        [
+          "<C-w>",
+          "p"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    },
+    {
+      "label": "repeat-same-target-preserves-history",
+      "commands": [
+        [
+          "<C-w>",
+          "b"
+        ],
+        [
+          "<C-w>",
+          "b"
+        ],
+        [
+          "<C-w>",
+          "p"
+        ]
+      ],
+      "observations": [
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 3,
+          "mode": "n",
+          "windows": 3
+        },
+        {
+          "window": 1,
+          "mode": "n",
+          "windows": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,347 @@
+{
+  "version": "NVIM v0.12.1",
+  "setup": [
+    [
+      "cmd",
+      "echo one"
+    ],
+    [
+      "cmd",
+      "edit alpha"
+    ],
+    [
+      "cmd",
+      "echo two"
+    ],
+    [
+      "search",
+      "alpha"
+    ],
+    [
+      "search",
+      "beta"
+    ]
+  ],
+  "cases": [
+    {
+      "label": "all",
+      "prefix": ":",
+      "keys": [
+        "<Up>",
+        "<Up>",
+        "<Up>",
+        "<Up>",
+        "<Down>",
+        "<Down>",
+        "<Down>"
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "edit alpha",
+          "mode": "c",
+          "pos": 11
+        },
+        {
+          "line": "echo one",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "echo one",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "edit alpha",
+          "mode": "c",
+          "pos": 11
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        }
+      ]
+    },
+    {
+      "label": "prefix",
+      "prefix": ":echo",
+      "keys": [
+        "<Up>",
+        "<Up>",
+        "<Up>",
+        "<Down>",
+        "<Down>"
+      ],
+      "observations": [
+        {
+          "line": "echo",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "echo one",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "echo one",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "echo",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "shift",
+      "prefix": ":echo",
+      "keys": [
+        "<S-Up>",
+        "<S-Up>",
+        "<S-Up>",
+        "<S-Down>"
+      ],
+      "observations": [
+        {
+          "line": "echo",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "edit alpha",
+          "mode": "c",
+          "pos": 11
+        },
+        {
+          "line": "echo one",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "edit alpha",
+          "mode": "c",
+          "pos": 11
+        }
+      ]
+    },
+    {
+      "label": "page",
+      "prefix": ":echo",
+      "keys": [
+        "<PageUp>",
+        "<PageUp>",
+        "<PageDown>"
+      ],
+      "observations": [
+        {
+          "line": "echo",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "edit alpha",
+          "mode": "c",
+          "pos": 11
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        }
+      ]
+    },
+    {
+      "label": "cursor-middle",
+      "prefix": ":echo z",
+      "keys": [
+        "<Home>",
+        "<Right>",
+        "<Right>",
+        "<Right>",
+        "<Right>",
+        "<Up>",
+        "<Down>"
+      ],
+      "observations": [
+        {
+          "line": "echo z",
+          "mode": "c",
+          "pos": 7
+        },
+        {
+          "line": "echo z",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "echo z",
+          "mode": "c",
+          "pos": 2
+        },
+        {
+          "line": "echo z",
+          "mode": "c",
+          "pos": 3
+        },
+        {
+          "line": "echo z",
+          "mode": "c",
+          "pos": 4
+        },
+        {
+          "line": "echo z",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "echo",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "edit-recalled",
+      "prefix": ":echo",
+      "keys": [
+        "<Up>",
+        "x",
+        "<Up>",
+        "<Down>"
+      ],
+      "observations": [
+        {
+          "line": "echo",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "echo two",
+          "mode": "c",
+          "pos": 9
+        },
+        {
+          "line": "echo twox",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "echo twox",
+          "mode": "c",
+          "pos": 10
+        },
+        {
+          "line": "echo twox",
+          "mode": "c",
+          "pos": 10
+        }
+      ]
+    },
+    {
+      "label": "forward-search",
+      "prefix": "/",
+      "keys": [
+        "<Up>",
+        "<Up>",
+        "<Down>"
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "beta",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "alpha",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "beta",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    },
+    {
+      "label": "reverse-search",
+      "prefix": "?",
+      "keys": [
+        "<Up>",
+        "<Up>",
+        "<Down>"
+      ],
+      "observations": [
+        {
+          "line": "",
+          "mode": "c",
+          "pos": 1
+        },
+        {
+          "line": "beta",
+          "mode": "c",
+          "pos": 5
+        },
+        {
+          "line": "alpha",
+          "mode": "c",
+          "pos": 6
+        },
+        {
+          "line": "beta",
+          "mode": "c",
+          "pos": 5
+        }
+      ]
+    }
+  ]
+}

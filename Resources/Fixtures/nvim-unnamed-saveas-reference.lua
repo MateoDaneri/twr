@@ -1,0 +1,8 @@
+local root=assert(vim.env.TWR_RESEARCH_ROOT)
+assert(root:match('^/private/tmp/twr%-unnamed%-saveas%-[%w]+$'))
+assert(vim.uv.fs_realpath(root)==root and not vim.uv.fs_lstat(root..'/new.txt'))
+local old=vim.api.nvim_get_current_buf()
+vim.api.nvim_buf_set_lines(0,0,-1,false,{'SYNTHETIC'})
+vim.cmd.saveas(root..'/new.txt')
+print(vim.json.encode({before=old,after=vim.api.nvim_get_current_buf(),alternate=vim.fn.bufnr('#'),name=vim.fn.bufnr(root..'/new.txt'),alternate_name=vim.api.nvim_buf_get_name(vim.fn.bufnr('#')),alternate_listed=vim.fn.buflisted(vim.fn.bufnr('#')),alternate_loaded=vim.fn.bufloaded(vim.fn.bufnr('#'))}))
+vim.cmd('qa!')

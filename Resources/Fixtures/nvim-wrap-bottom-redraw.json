@@ -1,0 +1,550 @@
+{
+  "ascii_cases": [
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        1,
+        17
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        1,
+        0
+      ],
+      "instant": [
+        1,
+        0
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        1,
+        17
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        1,
+        1
+      ],
+      "instant": [
+        1,
+        0
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        1,
+        34
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        1,
+        2
+      ],
+      "instant": [
+        1,
+        17
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        2,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        0
+      ],
+      "instant": [
+        1,
+        17
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        2,
+        17
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        1
+      ],
+      "instant": [
+        1,
+        0
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        2,
+        34
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        2
+      ],
+      "instant": [
+        1,
+        17
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        2,
+        51
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        3
+      ],
+      "instant": [
+        1,
+        17
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        2,
+        68
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        4
+      ],
+      "instant": [
+        1,
+        17
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        2,
+        85
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        5
+      ],
+      "instant": [
+        1,
+        17
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        17
+      ],
+      "before": [
+        3,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        3,
+        0
+      ],
+      "instant": [
+        1,
+        17
+      ],
+      "line": 3,
+      "row": 8
+    }
+  ],
+  "cases": [
+    {
+      "after": [
+        2,
+        34
+      ],
+      "before": [
+        2,
+        34
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        1,
+        0
+      ],
+      "instant": [
+        1,
+        0
+      ],
+      "line": 3,
+      "row": 5
+    },
+    {
+      "after": [
+        2,
+        34
+      ],
+      "before": [
+        1,
+        34
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        1,
+        1
+      ],
+      "instant": [
+        1,
+        0
+      ],
+      "line": 3,
+      "row": 5
+    },
+    {
+      "after": [
+        2,
+        34
+      ],
+      "before": [
+        1,
+        34
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        1,
+        2
+      ],
+      "instant": [
+        1,
+        0
+      ],
+      "line": 3,
+      "row": 5
+    },
+    {
+      "after": [
+        1,
+        34
+      ],
+      "before": [
+        2,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        0
+      ],
+      "instant": [
+        1,
+        34
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        34
+      ],
+      "before": [
+        2,
+        17
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        1
+      ],
+      "instant": [
+        1,
+        34
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        2,
+        34
+      ],
+      "before": [
+        2,
+        34
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        2
+      ],
+      "instant": [
+        1,
+        0
+      ],
+      "line": 3,
+      "row": 5
+    },
+    {
+      "after": [
+        1,
+        34
+      ],
+      "before": [
+        2,
+        51
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        3
+      ],
+      "instant": [
+        1,
+        34
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        34
+      ],
+      "before": [
+        2,
+        68
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        4
+      ],
+      "instant": [
+        1,
+        34
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        34
+      ],
+      "before": [
+        2,
+        85
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        2,
+        5
+      ],
+      "instant": [
+        1,
+        34
+      ],
+      "line": 3,
+      "row": 8
+    },
+    {
+      "after": [
+        1,
+        34
+      ],
+      "before": [
+        3,
+        0
+      ],
+      "col": 0,
+      "command": "zb",
+      "cursor": [
+        3,
+        0
+      ],
+      "cursor_coladd": 0,
+      "forced": [
+        3,
+        0
+      ],
+      "instant": [
+        1,
+        34
+      ],
+      "line": 3,
+      "row": 8
+    }
+  ],
+  "columns": 17,
+  "rows": 8,
+  "scrolloff": 0,
+  "tabstop": 2
+}

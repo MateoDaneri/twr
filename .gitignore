@@ -1,0 +1,10 @@
+.worktrees/
+.build/
+.swiftpm/
+dist/
+runtime/
+.DS_Store
+/target/
+/.toolchain/
+__pycache__/
+*.pyc
