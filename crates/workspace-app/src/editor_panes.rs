@@ -1939,6 +1939,13 @@ impl Panes {
         else {
             return true;
         };
+        // Resizing uses sibling rectangles to derive relative weights. Refuse
+        // an incomplete or contradictory frame before deriving any sizes, as
+        // directional focus and measured splits already do. An axis with no
+        // matching split remains a no-op even before the first measurement.
+        if !self.layout.geometry_valid(bounds) {
+            return false;
+        }
         let mut sizes = Vec::new();
         for child in children {
             let mut ids = Vec::new();

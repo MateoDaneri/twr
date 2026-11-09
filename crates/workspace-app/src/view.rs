@@ -360,6 +360,36 @@ struct PaneListState {
     backlog_selection: AgentRow,
     backlog_focused: bool,
 }
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum ListPageRows {
+    Tree {
+        root: PathBuf,
+        selected: Option<PathBuf>,
+        top: Option<PathBuf>,
+    },
+    Agents {
+        selected: AgentRow,
+        top: Option<AgentRow>,
+    },
+    Picker {
+        generation: u64,
+        focus: PickerFocus,
+        insert: bool,
+        selected: Option<(usize, String)>,
+        top: Option<(usize, String)>,
+    },
+}
+
+struct PendingListPage {
+    workspace: usize,
+    surface: Surface,
+    focus_revision: u64,
+    navigation_generation: u64,
+    pane: Option<(PaneId, workspace_core::editor_panes::FocusGuard, Arc<()>)>,
+    rows: ListPageRows,
+    top: usize,
+}
 impl PaneListState {
     fn new(model: &Workspace) -> Self {
         Self {
@@ -795,7 +825,7 @@ pub struct WorkspaceView {
     picker_scroll: ScrollHandle,
     picker_follow: workspace_app::picker_scroll::Follow,
     picker_reveal: bool,
-    pending_list_page: Option<(Surface, usize)>,
+    pending_list_page: Option<PendingListPage>,
     agents_scroll: ScrollHandle,
     backlog_scroll: ScrollHandle,
     agents_follow: workspace_app::agent_scroll::Follow,
@@ -5393,8 +5423,10 @@ impl WorkspaceView {
                         continue;
                     }
                     let capture = self.terminal_file_read_capture(generation, &path);
-                    if !self.editors.contains_key(&path) {
-                        self.pending_new_files.insert(path.clone());
+                    let created_editor = !self.editors.contains_key(&path);
+                    let mut created_pending_file = false;
+                    if created_editor {
+                        created_pending_file = self.pending_new_files.insert(path.clone());
                         self.editors.insert(
                             path.clone(),
                             Editor::with_registers(String::new(), self.registers.clone())
@@ -5402,17 +5434,25 @@ impl WorkspaceView {
                                 .with_clipboard(),
                         );
                     }
+                    if !self.activate_editor_file(path.clone(), String::new()) {
+                        if created_editor {
+                            self.editors.remove(&path);
+                            if created_pending_file {
+                                self.pending_new_files.remove(&path);
+                            }
+                        }
+                        self.cancel_terminal_read_capture(generation, &path);
+                        self.retain_failed_file_open_input(&path);
+                        changed = true;
+                        continue;
+                    }
+                    // A failed pane activation must not make an unlisted
+                    // buffer visible merely because its disk read finished.
                     if relist {
                         self.listed_buffers
                             .entry(project)
                             .or_default()
                             .relist(&ListedBuffer::File(path.clone()));
-                    }
-                    if !self.activate_editor_file(path.clone(), String::new()) {
-                        self.cancel_terminal_read_capture(generation, &path);
-                        self.retain_failed_file_open_input(&path);
-                        changed = true;
-                        continue;
                     }
                     self.set_focus(Surface::File);
                     if !self.complete_sidebar_file_input(generation, &path) {
@@ -5516,19 +5556,17 @@ impl WorkspaceView {
                     match result {
                         Ok(text) => {
                             let capture = self.terminal_file_read_capture(generation, &path);
-                            if relist {
-                                self.listed_buffers
-                                    .entry(self.model.project)
-                                    .or_default()
-                                    .relist(&ListedBuffer::File(path.clone()));
-                            }
                             let registers = self.registers.clone();
+                            let created_editor = !self.editors.contains_key(&path);
                             self.editors.entry(path.clone()).or_insert_with(|| {
                                 Editor::with_registers(text.clone(), registers)
                                     .for_path(&path)
                                     .with_clipboard()
                             });
                             if !self.activate_editor_file(path.clone(), text) {
+                                if created_editor {
+                                    self.editors.remove(&path);
+                                }
                                 if let Some(pane) = current_pane {
                                     self.pending_file_splits.retain(
                                         queued_project,
@@ -5543,6 +5581,12 @@ impl WorkspaceView {
                                 self.lsp_destination.take_if(|(g, _)| *g == generation);
                                 changed = true;
                                 continue;
+                            }
+                            if relist {
+                                self.listed_buffers
+                                    .entry(self.model.project)
+                                    .or_default()
+                                    .relist(&ListedBuffer::File(path.clone()));
                             }
                             if let Some((g, line, column)) = self.file_position.take()
                                 && g == generation
@@ -6638,10 +6682,6 @@ impl WorkspaceView {
                         self.model.message = "Entrada conservada: cambió el panel".into();
                         return;
                     }
-                    self.listed_buffers
-                        .entry(self.model.project)
-                        .or_default()
-                        .relist(&ListedBuffer::File(path.clone()));
                     if !self.activate_editor_file(path.clone(), String::new()) {
                         if matches!(&capture, Some(Ok(()))) {
                             self.pending_terminal_capture = None;
@@ -6649,6 +6689,10 @@ impl WorkspaceView {
                         self.retain_failed_file_open_input(&path);
                         return;
                     }
+                    self.listed_buffers
+                        .entry(self.model.project)
+                        .or_default()
+                        .relist(&ListedBuffer::File(path.clone()));
                     self.set_focus(Surface::File);
                     match capture {
                         Some(Ok(()))
@@ -8720,6 +8764,97 @@ impl WorkspaceView {
                 .forget(number, self.editors.get_mut(path), &mut layouts);
         }
     }
+    fn list_page_rows(&self, surface: Surface, top: usize) -> Option<ListPageRows> {
+        match surface {
+            Surface::Tree => {
+                let rows = self.model.tree_rows();
+                Some(ListPageRows::Tree {
+                    root: self.model.explorer_root().to_owned(),
+                    selected: rows
+                        .get(self.model.tree_selected)
+                        .map(|row| row.path.clone()),
+                    top: rows.get(top).map(|row| row.path.clone()),
+                })
+            }
+            Surface::Agents | Surface::Backlog => {
+                let location = if surface == Surface::Backlog {
+                    Location::Later
+                } else {
+                    Location::Main
+                };
+                let top = self
+                    .model
+                    .rows(location)
+                    .into_iter()
+                    .filter(|(row, _)| !matches!(row, AgentRow::Backlog))
+                    .nth(top)
+                    .map(|(row, _)| row);
+                Some(ListPageRows::Agents {
+                    selected: self.model.selected.clone(),
+                    top,
+                })
+            }
+            Surface::Picker => {
+                let picker = self.model.picker.as_ref()?;
+                let identity = |row: usize| {
+                    let index = *picker.results.get(row)?;
+                    Some((index, picker.choices.get(index)?.value.clone()))
+                };
+                Some(ListPageRows::Picker {
+                    generation: picker.generation,
+                    focus: picker.focus,
+                    insert: picker.insert,
+                    selected: identity(picker.selected),
+                    top: identity(top),
+                })
+            }
+            _ => None,
+        }
+    }
+
+    fn list_page_current(&self, page: &PendingListPage) -> bool {
+        page.workspace == self.model.project
+            && page.surface == self.model.surface
+            && page.focus_revision == self.model.focus_revision
+            && page.navigation_generation == self.navigation_generation
+            && self.file_prompt.is_none()
+            && self.remote_prompt.is_none()
+            && self.terminal_command.is_none()
+            && !self.media_active()
+            && (self.model.picker.is_some() || (!self.help && !self.model.notifications))
+            && match (&page.pane, &self.editor_panes) {
+                (Some((id, focus, identity)), Some(panes)) => {
+                    panes.layout.active() == *id
+                        && panes.layout.focus_guard_is_current(focus)
+                        && panes.content_identity_is_current(*id, identity)
+                }
+                (None, None) => true,
+                _ => false,
+            }
+            && self.list_page_rows(page.surface, page.top).as_ref() == Some(&page.rows)
+    }
+
+    fn capture_list_page(&mut self, surface: Surface, top: usize) -> Option<PendingListPage> {
+        let rows = self.list_page_rows(surface, top)?;
+        let pane = match &mut self.editor_panes {
+            Some(panes) => {
+                let id = panes.layout.active();
+                let focus = panes.layout.focus_guard();
+                Some((id, focus, panes.track_content_identity(id)?))
+            }
+            None => None,
+        };
+        Some(PendingListPage {
+            workspace: self.model.project,
+            surface,
+            focus_revision: self.model.focus_revision,
+            navigation_generation: self.navigation_generation,
+            pane,
+            rows,
+            top,
+        })
+    }
+
     fn sync_sidebar_pane(&mut self) {
         let Some(panes) = &self.editor_panes else {
             return;
@@ -9194,6 +9329,7 @@ impl WorkspaceView {
     fn editor_window_counted(&mut self, key: &str, count: usize) {
         use workspace_core::editor_panes::{Bounds as PaneBounds, Direction, Point as PanePoint};
         if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
+            self.retain_replayed_jump();
             return;
         }
         if matches!(
@@ -9216,6 +9352,9 @@ impl WorkspaceView {
                 "Demasiados splits pendientes; esperá a que abra el archivo"
             }
             .into();
+            if !queued {
+                self.retain_replayed_jump();
+            }
             return;
         }
         if matches!(key, "n" | "N") {
@@ -9225,10 +9364,12 @@ impl WorkspaceView {
         if self.editor_panes.is_none() && self.model.file.is_none() {
             if !matches!(self.model.surface, Surface::Terminal | Surface::Normal) {
                 self.model.message = "Abrí un archivo o enfocá la terminal para dividir".into();
+                self.retain_replayed_jump();
                 return;
             }
             let Some(terminal) = self.windows.get(self.active) else {
                 self.model.message = "La terminal todavía se está conectando".into();
+                self.retain_replayed_jump();
                 return;
             };
             self.editor_panes = Some(EditorPanes::terminal(terminal.attachment));
@@ -9241,6 +9382,7 @@ impl WorkspaceView {
                 != Some(&PaneContent::Terminal(terminal.attachment))
         {
             self.model.message = "El foco de terminal no coincide con el panel activo".into();
+            self.retain_replayed_jump();
             return;
         }
         self.sync_editor_pane();
@@ -9373,6 +9515,7 @@ impl WorkspaceView {
             })
             .collect();
         let Some(panes) = &mut self.editor_panes else {
+            self.retain_replayed_jump();
             return;
         };
         let source = panes.layout.active();
@@ -9508,6 +9651,16 @@ impl WorkspaceView {
             }
             "c" | "q" => {
                 self.model.message = "E444: no se puede cerrar la última ventana".into();
+                if let Some(pending) = &mut self.pending_open_input
+                    && pending.replaying
+                {
+                    pending.replay_error = true;
+                }
+                if let Some(pending) = &mut self.pending_terminal_key
+                    && pending.replaying
+                {
+                    pending.replay_error = true;
+                }
                 return;
             }
             "o" => {
@@ -9553,6 +9706,11 @@ impl WorkspaceView {
                     };
                     let Some(current) = bounds.iter().find(|bound| bound.pane == source) else {
                         if let Some(pending) = &mut self.pending_open_input
+                            && pending.replaying
+                        {
+                            pending.replay_error = true;
+                        }
+                        if let Some(pending) = &mut self.pending_terminal_key
                             && pending.replaying
                         {
                             pending.replay_error = true;
@@ -10436,14 +10594,20 @@ impl WorkspaceView {
         false
     }
     fn tmux_action(&mut self, action: TmuxAction) {
+        let _ = self.submit_tmux_action(action);
+    }
+    /// Report whether the backend accepted the action, not whether tmux has
+    /// completed it. Callers must not switch panes after a rejected submission.
+    fn submit_tmux_action(&mut self, action: TmuxAction) -> bool {
         if matches!(action, TmuxAction::Copy | TmuxAction::CopyNormal) {
-            if !self.request_tmux_copy(matches!(action, TmuxAction::CopyNormal))
+            let accepted = self.request_tmux_copy(matches!(action, TmuxAction::CopyNormal));
+            if !accepted
                 && let Some(pending) = &mut self.pending_terminal_key
                 && pending.replaying
             {
                 pending.replay_error = true;
             }
-            return;
+            return accepted;
         }
         let Some(context) = self.terminal_input_context() else {
             self.model.message = "Terminal no disponible".into();
@@ -10452,7 +10616,7 @@ impl WorkspaceView {
             {
                 pending.replay_error = true;
             }
-            return;
+            return false;
         };
         if let Err(error) = terminal_backend_for(&self.backends, &self.additional_backends, context)
         {
@@ -10462,20 +10626,13 @@ impl WorkspaceView {
             {
                 pending.replay_error = true;
             }
-            return;
+            return false;
         }
         self.invalidate_terminal_jumps();
         let changed = action.changes_input_target();
         let resume =
             action.resumes_input_after_target_change(self.model.surface == Surface::Terminal);
         if changed {
-            if workspace_app::editor_panes::cancel_terminal_open_for_target_change(
-                &mut self.pending_terminal_open,
-                &mut self.file_generation,
-                true,
-            ) {
-                self.model.message = "Apertura cancelada: cambió el destino de tmux".into();
-            }
             // Queue the original pane's pending input before switching tmux
             // targets; otherwise a fast window change silently discards it.
             if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
@@ -10484,7 +10641,7 @@ impl WorkspaceView {
                 {
                     pending.replay_error = true;
                 }
-                return;
+                return false;
             }
         }
         let tracked = changed
@@ -10520,7 +10677,7 @@ impl WorkspaceView {
                 pending.replay_error = true;
             }
             self.model.message = "No se pudo confirmar el cambio de terminal".into();
-            return;
+            return false;
         }
         let outgoing = if let (Some(token), Some((window, pane))) = (token, target) {
             TmuxAction::TrackedTarget(token, window, pane, Box::new(action))
@@ -10536,7 +10693,19 @@ impl WorkspaceView {
                 pending.replay_error = true;
             }
             self.model.message = e;
-            return;
+            return false;
+        }
+        // File-read replies are applied by this UI thread after this handler
+        // returns. Invalidate them after queue acceptance but before they can
+        // be applied; a rejected tmux action must not cancel a valid open.
+        if changed
+            && workspace_app::editor_panes::cancel_terminal_open_for_target_change(
+                &mut self.pending_terminal_open,
+                &mut self.file_generation,
+                true,
+            )
+        {
+            self.model.message = "Apertura cancelada: cambió el destino de tmux".into();
         }
         if let (Some(token), Some(event)) = (token, tracked_event) {
             self.tmux_copy_token = token;
@@ -10553,6 +10722,7 @@ impl WorkspaceView {
         if resume {
             self.begin_terminal_resume();
         }
+        true
     }
     /// Hold subsequent keys while a terminal-origin jump captures its mark.
     /// The destination is rebound only after that exact capture is applied.
@@ -12636,6 +12806,7 @@ impl WorkspaceView {
     fn split_new_window(&mut self, vertical: bool, count: usize) {
         if self.editors.len() >= 128 {
             self.model.message = "Límite de 128 buffers; cerrá uno antes de :new".into();
+            self.retain_replayed_jump();
             return;
         }
         if matches!(
@@ -12643,13 +12814,16 @@ impl WorkspaceView {
             Surface::Tree | Surface::Agents | Surface::Backlog
         ) {
             let Some(panes) = self.editor_panes.as_ref() else {
+                self.retain_replayed_jump();
                 return;
             };
             let Some(content) = panes.content(panes.layout.active()).cloned() else {
+                self.retain_replayed_jump();
                 return;
             };
             if !matches!(content, PaneContent::Explorer(_) | PaneContent::Agents(_)) {
                 self.model.message = "El foco lateral ya no coincide con el panel".into();
+                self.retain_replayed_jump();
                 return;
             }
             let guard = PaneCommandGuard::Sidebar {
@@ -12660,11 +12834,14 @@ impl WorkspaceView {
                 content,
                 focus: panes.layout.focus_guard(),
             };
-            if self.sidebar_split_target(guard, vertical, count).is_some() {
-                self.new_file_now_at_target(true);
+            if self.sidebar_split_target(guard, vertical, count).is_none()
+                || self.new_file_now_at_target(true).is_none()
+            {
+                self.retain_replayed_jump();
             }
             return;
         }
+        let previous_file = self.model.file.as_ref().map(|(path, _)| path.clone());
         let before = self
             .editor_panes
             .as_ref()
@@ -12676,6 +12853,14 @@ impl WorkspaceView {
             .map_or(0, |p| p.layout.panes().len());
         if after == before + 1 {
             self.new_file();
+            let created_file = self.model.file.as_ref().is_some_and(|(path, _)| {
+                Some(path) != previous_file.as_ref() && self.model.unnamed.contains(path)
+            });
+            if !created_file {
+                self.retain_replayed_jump();
+            }
+        } else {
+            self.retain_replayed_jump();
         }
     }
 
@@ -15568,7 +15753,44 @@ impl WorkspaceView {
                     },
                 )
             } else {
-                registry.cycle_available(&current, action == "buffers.next", available)
+                // :bnext/:bprevious follow the buffer list's numeric order.
+                // A shared buffer can have an older number than the order in
+                // which this workspace learned about it.
+                let Ok(current_number) = self.numbered_buffers.number_for(project, &current)
+                else {
+                    self.model.message =
+                        "Números de buffer no disponibles; navegación conservada".into();
+                    return false;
+                };
+                let numbered = registry
+                    .listed()
+                    .iter()
+                    .filter(|buffer| *buffer != &current && available(buffer))
+                    .map(|buffer| {
+                        self.numbered_buffers
+                            .number_for(project, buffer)
+                            .map(|number| (number, buffer))
+                    })
+                    .collect::<Result<Vec<_>, _>>();
+                let Ok(mut numbered) = numbered else {
+                    self.model.message =
+                        "Números de buffer no disponibles; navegación conservada".into();
+                    return false;
+                };
+                numbered.sort_unstable_by_key(|(number, _)| *number);
+                let selected = if action == "buffers.next" {
+                    numbered
+                        .iter()
+                        .find(|(number, _)| *number > current_number)
+                        .or_else(|| numbered.first())
+                } else {
+                    numbered
+                        .iter()
+                        .rev()
+                        .find(|(number, _)| *number < current_number)
+                        .or_else(|| numbered.last())
+                };
+                selected.map(|(_, buffer)| (*buffer).clone())
             }
         };
         let Some(target) = target else {
@@ -15889,6 +16111,10 @@ impl WorkspaceView {
                 self.model.message = "El buffer sin nombre ya no está disponible".into();
                 return;
             }
+            if self.editors.contains_key(&path) {
+                self.model.message = "El buffer sin nombre ya está cargado; se conserva".into();
+                return;
+            }
             if self.editors.len() >= 128 {
                 self.model.message = "Límite de 128 buffers; se conserva el actual".into();
                 return;
@@ -15908,18 +16134,19 @@ impl WorkspaceView {
                 path.clone(),
                 Editor::with_registers(String::new(), self.registers.clone()).with_clipboard(),
             );
-            if relist {
-                self.listed_buffers
-                    .entry(self.model.project)
-                    .or_default()
-                    .relist(&ListedBuffer::File(path.clone()));
-            }
             if !self.activate_editor_file(path.clone(), String::new()) {
+                self.editors.remove(&path);
                 if matches!(&capture, Some(Ok(()))) {
                     self.pending_terminal_capture = None;
                 }
                 self.retain_failed_file_open_input(&path);
                 return;
+            }
+            if relist {
+                self.listed_buffers
+                    .entry(self.model.project)
+                    .or_default()
+                    .relist(&ListedBuffer::File(path.clone()));
             }
             self.editor_top = 0;
             self.editor_left = 0;
@@ -20407,11 +20634,12 @@ impl WorkspaceView {
                         list_page_geometry(&scroll, self.typography.line_height());
                     let top = self
                         .pending_list_page
-                        .filter(|(surface, _)| *surface == self.model.surface)
-                        .map(|(_, top)| top)
+                        .as_ref()
+                        .filter(|page| self.list_page_current(page))
+                        .map(|page| page.top)
                         .unwrap_or(measured_top);
                     if let Some(top) = self.model.half_page(down, top, rows, 4) {
-                        self.pending_list_page = Some((self.model.surface, top));
+                        self.pending_list_page = self.capture_list_page(self.model.surface, top);
                     }
                 }
             }
@@ -20421,7 +20649,8 @@ impl WorkspaceView {
             cx.stop_propagation();
             return;
         }
-        if (self.model.surface == Surface::Details || self.help)
+        if self.model.picker.is_none()
+            && (self.model.surface == Surface::Details || self.help)
             && !k.modifiers.platform
             && matches!(key, "j" | "k" | "up" | "down" | "pageup" | "pagedown")
         {
@@ -20439,6 +20668,22 @@ impl WorkspaceView {
             offset.y += px(direction * amount);
             self.details_scroll.set_offset(offset);
             cx.notify();
+            window.prevent_default();
+            cx.stop_propagation();
+            return;
+        }
+        // These overlays own the remaining input. Handle them before global
+        // terminal and editor shortcuts so those cannot mutate a hidden pane.
+        // Cmd+Q remains available to the native application quit handler.
+        if self.model.picker.is_none()
+            && (self.help || self.model.notifications)
+            && !(k.modifiers.platform && key == "q")
+        {
+            if key == "escape" {
+                self.help = false;
+                self.model.notifications = false;
+                cx.notify();
+            }
             window.prevent_default();
             cx.stop_propagation();
             return;
@@ -20596,15 +20841,20 @@ impl WorkspaceView {
                     _ => None,
                 };
                 if let Some(action) = action {
-                    self.tmux_action(action);
-                    self.set_focus(Surface::Terminal);
+                    if self.submit_tmux_action(action) {
+                        self.set_focus(Surface::Terminal);
+                    }
                     window.prevent_default();
                     cx.stop_propagation();
                     cx.notify();
                     return;
                 }
             }
-            if key == "v" && self.model.surface == Surface::Picker {
+            if key == "v"
+                && !k.modifiers.control
+                && !k.modifiers.alt
+                && self.model.surface == Surface::Picker
+            {
                 if self.model.picker.as_ref().is_some_and(|p| p.input_active())
                     && let Some(text) = cx.read_from_clipboard().and_then(|i| i.text())
                 {
@@ -20616,7 +20866,11 @@ impl WorkspaceView {
                 cx.notify();
                 return;
             }
-            if key == "v" && self.model.surface == Surface::File {
+            if key == "v"
+                && !k.modifiers.control
+                && !k.modifiers.alt
+                && self.model.surface == Surface::File
+            {
                 if let Some(text) = cx.read_from_clipboard().and_then(|i| i.text())
                     && let Some((path, _)) = &self.model.file
                     && let Some(editor) = self.editors.get_mut(path)
@@ -20631,32 +20885,46 @@ impl WorkspaceView {
                 cx.notify();
                 return;
             }
-            if key == "s" && self.model.file.is_some() {
+            if key == "s"
+                && !k.modifiers.control
+                && !k.modifiers.alt
+                && self.model.file.is_some()
+            {
                 self.editor_effect(EditEffect::Save);
                 cx.notify();
                 window.prevent_default();
                 cx.stop_propagation();
                 return;
             }
-            if key == "d" {
-                self.tmux_action(if k.modifiers.shift {
+            if key == "d" && !k.modifiers.control && !k.modifiers.alt {
+                let action = if k.modifiers.shift {
                     TmuxAction::SplitVertical
                 } else {
                     TmuxAction::Split
-                });
-                self.set_focus(Surface::Terminal);
+                };
+                if self.submit_tmux_action(action) {
+                    self.set_focus(Surface::Terminal);
+                }
                 cx.notify();
                 window.prevent_default();
                 cx.stop_propagation();
                 return;
             }
-            if key == "z" && k.modifiers.shift {
+            if key == "z"
+                && k.modifiers.shift
+                && !k.modifiers.control
+                && !k.modifiers.alt
+            {
                 self.tmux_action(TmuxAction::Zoom);
                 window.prevent_default();
                 cx.stop_propagation();
                 return;
             }
-            if key == "w" && self.model.file.is_none() {
+            if key == "w"
+                && !k.modifiers.control
+                && !k.modifiers.alt
+                && self.model.file.is_none()
+            {
                 self.set_focus(Surface::Terminal);
                 self.effect(Effect::Pty(if k.modifiers.shift {
                     b"\x01&".to_vec()
@@ -20668,6 +20936,8 @@ impl WorkspaceView {
                 return;
             }
             if k.modifiers.shift
+                && !k.modifiers.control
+                && !k.modifiers.alt
                 && matches!(
                     key,
                     "h" | "j" | "k" | "l" | "left" | "right" | "up" | "down"
@@ -20683,7 +20953,11 @@ impl WorkspaceView {
                 cx.stop_propagation();
                 return;
             }
-            if key == "v" && self.model.surface == Surface::Terminal {
+            if key == "v"
+                && !k.modifiers.control
+                && !k.modifiers.alt
+                && self.model.surface == Surface::Terminal
+            {
                 if let Some(text) = cx.read_from_clipboard().and_then(|item| item.text()) {
                     let bracket = self
                         .windows
@@ -20700,7 +20974,7 @@ impl WorkspaceView {
                 cx.stop_propagation();
                 return;
             }
-            if key == "c" && k.modifiers.shift {
+            if key == "c" && k.modifiers.shift && !k.modifiers.control && !k.modifiers.alt {
                 self.copy_selection(cx);
                 window.prevent_default();
                 cx.stop_propagation();
@@ -20708,7 +20982,7 @@ impl WorkspaceView {
             }
             return;
         }
-        if k.modifiers.control && k.modifiers.shift && key == "c" {
+        if k.modifiers.control && k.modifiers.shift && !k.modifiers.alt && key == "c" {
             self.copy_selection(cx);
             window.prevent_default();
             cx.stop_propagation();
@@ -20729,7 +21003,11 @@ impl WorkspaceView {
             cx.notify();
             return;
         }
-        if k.modifiers.alt && k.modifiers.shift && matches!(key, "h" | "j" | "k" | "l") {
+        if k.modifiers.alt
+            && k.modifiers.shift
+            && !k.modifiers.control
+            && matches!(key, "h" | "j" | "k" | "l")
+        {
             self.tmux_action(TmuxAction::Direction(match key {
                 "h" => 'L',
                 "j" => 'D',
@@ -20741,6 +21019,8 @@ impl WorkspaceView {
             return;
         }
         if k.modifiers.alt
+            && !k.modifiers.control
+            && !k.modifiers.shift
             && matches!(
                 key,
                 "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
@@ -20752,18 +21032,9 @@ impl WorkspaceView {
                 .and_then(|ws| ws.iter().find(|w| w.index.to_string() == target))
                 .cloned()
             {
-                self.tmux_action(TmuxAction::Select(info.id));
-                self.set_focus(Surface::Terminal);
-            }
-            window.prevent_default();
-            cx.stop_propagation();
-            return;
-        }
-        if self.help || self.model.notifications {
-            if key == "escape" {
-                self.help = false;
-                self.model.notifications = false;
-                cx.notify();
+                if self.submit_tmux_action(TmuxAction::Select(info.id)) {
+                    self.set_focus(Surface::Terminal);
+                }
             }
             window.prevent_default();
             cx.stop_propagation();
@@ -20799,6 +21070,10 @@ impl WorkspaceView {
             .flatten();
         let chord = if let Some(chord) = prompt_word_arrow {
             chord.to_owned()
+        } else if k.modifiers.control && k.modifiers.alt {
+            // Keep Option+Control distinct from the plain Control mappings:
+            // in a terminal its ESC-prefixed bytes belong to the process.
+            format!("<C-M-{key}>")
         } else if k.modifiers.control {
             format!("<C-{key}>")
         } else {
@@ -24457,16 +24732,16 @@ impl Render for WorkspaceView {
             }
         }
         // Apply after ordinary selection-follow so it cannot replace this page.
-        if let Some((surface, top)) = self.pending_list_page.take()
-            && surface == self.model.surface
+        if let Some(page) = self.pending_list_page.take()
+            && self.list_page_current(&page)
         {
-            let scroll = match surface {
+            let scroll = match page.surface {
                 Surface::Tree => &self.tree_scroll,
                 Surface::Agents => &self.agents_scroll,
                 Surface::Backlog => &self.backlog_scroll,
                 _ => &self.picker_scroll,
             };
-            scroll.scroll_to_top_of_item(top);
+            scroll.scroll_to_top_of_item(page.top);
         }
         let p = self.theme.palette(matches!(
             window.appearance(),

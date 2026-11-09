@@ -27,7 +27,9 @@ pub fn resolve(key: &str, cmd: bool, ctrl: bool, alt: bool, shift: bool) -> Opti
         _ => None,
     };
     let arrow = matches!(key, "left" | "down" | "up" | "right");
-    if cmd && ctrl && arrow {
+    // Ghostty maps Cmd+Ctrl+arrow to 10 px, and the four-modifier variant
+    // to 100 px. Do not consume other modifier combinations as resizes.
+    if cmd && ctrl && arrow && ((!alt && !shift) || (alt && shift)) {
         return direction.map(|d| Resize(d, if alt && shift { 100 } else { 10 }));
     }
     if cmd
@@ -57,7 +59,7 @@ pub fn resolve(key: &str, cmd: bool, ctrl: bool, alt: bool, shift: bool) -> Opti
     }
     if cmd && !ctrl && !alt {
         return match key {
-            "c" => Some(Copy),
+            "c" if !shift => Some(Copy),
             "v" if !shift => Some(Paste),
             "=" | "+" => Some(Font("+")),
             "-" if !shift => Some(Font("-")),
@@ -65,10 +67,10 @@ pub fn resolve(key: &str, cmd: bool, ctrl: bool, alt: bool, shift: bool) -> Opti
             "left" if !shift => Some(PaneKey("C-a")),
             "right" if !shift => Some(PaneKey("C-e")),
             "backspace" if !shift => Some(PaneKey("C-u")),
-            "home" => Some(Scroll("history-top")),
-            "end" => Some(Scroll("history-bottom")),
-            "pageup" => Some(Scroll("page-up")),
-            "pagedown" => Some(Scroll("page-down")),
+            "home" if !shift => Some(Scroll("history-top")),
+            "end" if !shift => Some(Scroll("history-bottom")),
+            "pageup" if !shift => Some(Scroll("page-up")),
+            "pagedown" if !shift => Some(Scroll("page-down")),
             "a" if !shift => Some(SelectAll),
             "f" if !shift => Some(Find),
             "f" if shift => Some(EndSearch),
