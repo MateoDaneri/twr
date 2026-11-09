@@ -1,0 +1,37 @@
+{
+  "kind": "original-project-specific-synthesis",
+  "retrieved_on": "2026-11-08",
+  "upstream_sources": [
+    {
+      "repository": "longbridge/gpui-kit",
+      "commit": "dbb0b9a4895c4b45753ed8647cb0dbb58178bd96",
+      "path": "skills/gpui-kit-design-guides/SKILL.md",
+      "url": "https://raw.githubusercontent.com/longbridge/gpui-kit/dbb0b9a4895c4b45753ed8647cb0dbb58178bd96/skills/gpui-kit-design-guides/SKILL.md",
+      "sha256": "de874a5a8db458fc82c3300d5484afe1e0f5352bdae54db923e1f6dde64ea06a"
+    },
+    {
+      "repository": "longbridge/gpui-kit",
+      "commit": "dbb0b9a4895c4b45753ed8647cb0dbb58178bd96",
+      "path": "skills/gpui-kit-design-guides/references/design-guides.md",
+      "url": "https://raw.githubusercontent.com/longbridge/gpui-kit/dbb0b9a4895c4b45753ed8647cb0dbb58178bd96/skills/gpui-kit-design-guides/references/design-guides.md",
+      "sha256": "44fbafdacc89bd5c250db23afd18f1b427b5a1babd3454122b5600e6fd146635"
+    },
+    {
+      "repository": "longbridge/gpui-kit",
+      "commit": "dbb0b9a4895c4b45753ed8647cb0dbb58178bd96",
+      "path": "LICENSE-DOCS.md",
+      "url": "https://raw.githubusercontent.com/longbridge/gpui-kit/dbb0b9a4895c4b45753ed8647cb0dbb58178bd96/LICENSE-DOCS.md",
+      "sha256": "8a9ccf144b2d5bf5aae56abdc6e723e17e1ba4de1f5d515b3b644288fd4fc16f"
+    },
+    {
+      "repository": "pbakaus/impeccable",
+      "commit": "b7d1a80481e4b126231dc71121bdfa8674fe8282",
+      "path": ".agents/skills/impeccable/SKILL.md",
+      "url": "https://raw.githubusercontent.com/pbakaus/impeccable/b7d1a80481e4b126231dc71121bdfa8674fe8282/.agents/skills/impeccable/SKILL.md",
+      "sha256": "ec5c81f17af6476cafd351875d9109b7d03329e05b3f845cb2d0bbbd4bc31b2c"
+    }
+  ],
+  "adaptation": "Original TWR instructions informed by GPUI Kit desktop design, Apple HIG and Impeccable critique. No upstream text, runtime, installers or hooks vendored. Local Palette and GPUI APIs prevail.",
+  "local_skill_sha256": "09c2d8766e275391837210fbf4f1f667d783b7c2c22795fc2e51f645d927de3f",
+  "baseline_note": "Local implementation inspected before adaptation; private history is not published."
+}
