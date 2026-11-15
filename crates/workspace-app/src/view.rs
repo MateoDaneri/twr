@@ -31263,6 +31263,10 @@ impl WorkspaceView {
         waiting: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
         text: &str,
     ) -> bool {
+        if !waiting.is_empty() && text.len() > TERMINAL_PASTE_LIMIT {
+            self.model.message = "Pegado limitado a 2 MiB; no se envió nada".into();
+            return true;
+        }
         let mut canceled = false;
         for (context, destination) in waiting {
             if self.terminal_input_context() != Some(context)
