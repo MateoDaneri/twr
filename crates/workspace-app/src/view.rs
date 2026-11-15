@@ -306,6 +306,12 @@ struct TerminalBackend {
     backend: Backend,
     attachment: Option<u64>,
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum PendingCopyOwner {
+    Tmux(u64),
+    #[cfg(feature = "ghostty")]
+    Native(u64, u64),
+}
 #[derive(Clone)]
 struct PendingTmuxCopy {
     token: u64,
@@ -1472,7 +1478,7 @@ pub struct WorkspaceView {
     primary_tmux_last_error: HashMap<usize, String>,
     pending_terminal_search: std::collections::HashSet<workspace_app::terminal_resume::Context>,
     pending_tmux_copy: Option<PendingTmuxCopy>,
-    paste_after_copy: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
+    paste_after_copy: Vec<(PendingCopyOwner, workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
     tmux_copy_token: u64,
     editors: HashMap<PathBuf, Editor>,
     pending_new_files: std::collections::HashSet<PathBuf>,
@@ -6268,7 +6274,10 @@ impl WorkspaceView {
                                 && Arc::ptr_eq(&terminal.terminal.instance_identity(), &pending.instance)
                         });
                     let mut completed = false;
-                    let waiting_pastes = std::mem::take(&mut self.paste_after_copy);
+                    let waiting_pastes = self.take_waiting_pastes(PendingCopyOwner::Tmux(token));
+                    if !current && !waiting_pastes.is_empty() {
+                        self.model.message = "Cambió la terminal; pegado pendiente cancelado".into();
+                    }
                     if current {
                         match result {
                             Ok(Some(copy)) => {
@@ -31236,6 +31245,19 @@ impl WorkspaceView {
             Err(error) => self.model.message = error,
         }
     }
+    fn take_waiting_pastes(
+        &mut self,
+        owner: PendingCopyOwner,
+    ) -> Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)> {
+        let mut matching = Vec::new();
+        let mut remaining = Vec::new();
+        for (candidate, context, destination) in std::mem::take(&mut self.paste_after_copy) {
+            if candidate == owner { matching.push((context, destination)); }
+            else { remaining.push((candidate, context, destination)); }
+        }
+        self.paste_after_copy = remaining;
+        matching
+    }
     fn deliver_waiting_pastes(
         &mut self,
         waiting: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
@@ -31255,18 +31277,19 @@ impl WorkspaceView {
         canceled
     }
     fn request_terminal_paste(&mut self, cx: &App) {
+        let owner = self.pending_tmux_copy.as_ref().map(|copy| PendingCopyOwner::Tmux(copy.token));
         #[cfg(feature = "ghostty")]
-        let native_copy_pending = self.native_selection.as_ref().is_some_and(|selection| {
-            selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
-        });
-        #[cfg(not(feature = "ghostty"))]
-        let native_copy_pending = false;
-        if self.pending_tmux_copy.is_some() || native_copy_pending {
+        let owner = owner.or_else(|| self.native_selection.as_ref().and_then(|selection| {
+            if selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..))) {
+                Some(PendingCopyOwner::Native(selection.token, selection.serial))
+            } else { None }
+        }));
+        if let Some(owner) = owner {
             if let (Some(context), Some(destination)) =
                 (self.terminal_input_context(), self.terminal_key_destination())
             {
                 if self.paste_after_copy.len() < 128 {
-                    self.paste_after_copy.push((context, destination));
+                    self.paste_after_copy.push((owner, context, destination));
                 } else {
                     self.model.message = "Demasiados pegados pendientes; reintentá".into();
                 }
@@ -33846,7 +33869,7 @@ impl WorkspaceView {
                 },
                 NativeSelectionReply::Copy(serial, reply) => match reply.try_recv() {
                     Ok(Ok(text)) if selection.serial == serial => {
-                        let waiting = std::mem::take(&mut self.paste_after_copy);
+                        let waiting = self.take_waiting_pastes(PendingCopyOwner::Native(selection.token, serial));
                         let paste_canceled = self.deliver_waiting_pastes(waiting, &text);
                         if self.validation { self.fixture_clipboard = Some((text, false, None)); }
                         else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
