@@ -32051,6 +32051,32 @@ impl WorkspaceView {
             cx.notify();
             return;
         }
+        // A target-changing shortcut must enter the ordered ledger before
+        // tmux receives it, so following keys cannot capture the old pane.
+        let key = &event.keystroke;
+        let direct_target = key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
+            && ((key.key == "d") || (!key.modifiers.shift && (key.key == "t"
+                || matches!(key.key.as_str(), "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"))))
+            || matches!(workspace_app::terminal_shortcuts::resolve(
+                &key.key, key.modifiers.platform, key.modifiers.control, key.modifiers.alt, key.modifiers.shift),
+                Some(workspace_app::terminal_shortcuts::Shortcut::Cycle(_) | workspace_app::terminal_shortcuts::Shortcut::Direction(_)));
+        if direct_target && matches!(self.model.surface, Surface::Terminal | Surface::Normal)
+            && self.pending_terminal_key.is_none() && self.pending_open_input.is_none()
+            && !self.terminal_resume.recovery_blocked()
+        {
+            // These shortcuts end in terminal input mode. Enter it before
+            // capturing the source so the split cannot outrun its ledger.
+            if self.model.surface == Surface::Normal { self.set_focus(Surface::Terminal); }
+            self.note_activity();
+            if self.begin_terminal_event_replay_on(
+                workspace_app::open_input::Event::Key(event.keystroke.clone()), Surface::Terminal)
+            {
+                window.prevent_default();
+                cx.stop_propagation();
+                cx.notify();
+                return;
+            }
+        }
         self.finish_pending_new_file_before_input();
         self.note_activity();
         self.metrics.input();
