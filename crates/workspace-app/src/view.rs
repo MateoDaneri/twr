@@ -6028,6 +6028,7 @@ impl WorkspaceView {
                         }
                     }
                     let destination = self.terminal_key_destination();
+                    let mut release_failed_copy = false;
                     if let Some(key) = &mut self.pending_terminal_key
                         && key.selection_action.as_ref().is_some_and(|copy| {
                             copy.token == token && copy.context == pending.context
@@ -6041,11 +6042,42 @@ impl WorkspaceView {
                         {
                             key.destination = destination;
                             key.revision = key.revision.wrapping_add(1);
+                        } else if current
+                            && !copy.timed_out
+                            && destination.is_some()
+                            && key.gate.acknowledge(copy.event)
+                        {
+                            // A failed copy is never replayed. When its exact
+                            // destination is still current, later queued input
+                            // can continue through the normal guarded replay.
+                            key.destination = destination;
+                            key.revision = key.revision.wrapping_add(1);
+                            self.model.message = "Copia no confirmada; intentá copiar de nuevo".into();
+                        } else if key.gate.events().count() == 1
+                            && key.gate.in_flight_id() == Some(copy.event)
+                            && key.overflow.is_empty()
+                            && key.marked_selection.is_none()
+                            && key.open_identity.is_none()
+                            && key.open_switch_event.is_none()
+                            && key.write.is_none()
+                            && key.target_action.is_none()
+                            && key.split.is_none()
+                            && key.capture_wait.is_none()
+                            && key.gate.acknowledge(copy.event)
+                        {
+                            // The only retained event was this copy request.
+                            // It must never be replayed, but it contains no
+                            // subsequent input that needs a recovery prompt.
+                            release_failed_copy = true;
+                            self.model.message = "Copia no confirmada; intentá copiar de nuevo".into();
                         } else {
                             key.gate.uncertain(copy.event);
                             self.model.message = "Copia sin confirmar; entrada conservada".into();
                         }
                         let _ = self.terminal_wake.try_send(());
+                    }
+                    if release_failed_copy {
+                        self.pending_terminal_key = None;
                     }
                 }
                 TmuxEvent::Windows(ws) => {
