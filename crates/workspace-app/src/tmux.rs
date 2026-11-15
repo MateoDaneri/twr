@@ -2674,8 +2674,38 @@ impl Session {
                 command
             }
             Action::Clear => {
-                self.run(&["clear-history", "-t", &target])?;
-                return self.run(&["send-keys", "-t", &target, "C-l"]).map(|_| ());
+                // The tmux client itself uses an alternate screen, so query
+                // the active pane, not the outer terminal's screen state.
+                // Ghostty leaves alternate-screen applications untouched;
+                // copy mode also owns its selection and must not receive C-l.
+                let active = self.resume_target()?;
+                let equals = |field: &str, value: &str| format!("#{{==:#{{{field}}},{value}}}");
+                let condition = format!(
+                    "#{{&&:{},{}}}",
+                    equals("window_id", &active.window),
+                    equals("pane_id", &active.pane)
+                );
+                // ResumeTarget::parse accepts only bounded @digits/%digits;
+                // no session or pane content is interpolated as commands.
+                let guarded = format!(
+                    "if-shell -F -t {pane} '#{{||:#{{alternate_on}},#{{pane_in_mode}}}}' \
+                     'display-message -p TWR_CLEAR_SKIP' \
+                     'clear-history -t {pane} ; send-keys -t {pane} C-l ; display-message -p TWR_CLEAR_OK'",
+                    pane = active.pane
+                );
+                let result = self.run(&[
+                    "if-shell",
+                    "-F",
+                    "-t",
+                    &target,
+                    &condition,
+                    &guarded,
+                    "display-message -p TWR_CLEAR_REJECT",
+                ])?;
+                return match result.trim() {
+                    "TWR_CLEAR_OK" | "TWR_CLEAR_SKIP" => Ok(()),
+                    _ => Err("Cambió el panel de terminal; limpieza cancelada".into()),
+                };
             }
             Action::Cycle(next) => vec![
                 if next {
