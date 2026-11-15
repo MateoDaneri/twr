@@ -40,6 +40,14 @@ impl RegisterBank {
         self.capture(if clipboard_register { '+' } else { '"' }, 'y', text, true)
     }
 
+    /// Record a characterwise terminal yank after its source was validated.
+    pub fn record_terminal_chars(&self, text: String) -> Result<(), String> {
+        if text.chars().any(|ch| ch.is_control() && ch != '\n') {
+            return Err("Yank de terminal no representable de forma segura".into());
+        }
+        self.capture('+', 'y', text, false)
+    }
+
     fn with_limit(limit: usize) -> Self {
         Self(
             Arc::new(Mutex::new(Data {

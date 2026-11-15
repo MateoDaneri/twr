@@ -1,3 +1,4 @@
+mod quit_gate;
 mod repeat_input;
 mod view;
 use gpui::*;
@@ -54,9 +55,18 @@ fn main() {
             ))])
             .is_ok();
         cx.bind_keys([KeyBinding::new("cmd-q", Quit, None)]);
+        // Dock, logout, restart and AppleScript quits reach AppKit's
+        // terminate: directly; route them through the view's quit flow.
+        quit_gate::install();
+        // Fallback for Cmd+Q when the root view's Quit handler is not on the
+        // dispatch path (GPUI runs global handlers only if no element handled
+        // the action), so the action is never handled twice.
+        cx.on_action(|_: &Quit, _cx| quit_gate::request());
         cx.on_window_closed(|cx| {
+            // The window closed only after on_window_should_close ran
+            // can_quit() and allowed it.
             if cx.windows().is_empty() {
-                cx.quit();
+                quit_gate::quit(cx);
             }
         })
         .detach();

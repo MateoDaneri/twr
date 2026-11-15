@@ -243,6 +243,25 @@ pub struct Palette {
     pub orange: u32,
 }
 
+impl Palette {
+    /// Background for selected/cursor/range rows. Some themes (e.g. Solarized)
+    /// use the same value for `active` and `panel`, which made a Visual range
+    /// invisible; those fall back to an even mix of the line color and the
+    /// panel, which stays visible while keeping text contrast.
+    pub fn selection(&self) -> u32 {
+        if self.active == self.panel || self.active == self.chrome {
+            let mix = |shift: u32| {
+                let a = (self.line >> shift) & 0xff;
+                let b = (self.panel >> shift) & 0xff;
+                ((a + b) / 2) << shift
+            };
+            mix(16) | mix(8) | mix(0)
+        } else {
+            self.active
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

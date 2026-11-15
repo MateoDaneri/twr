@@ -118,8 +118,45 @@ pub fn edit_target(path: &Path) -> Result<(PathBuf, bool), String> {
     Ok((target, missing))
 }
 
+/// `edit_target` for opening an existing file: a symbolic-link leaf is
+/// resolved to its canonical target, so the buffer is keyed, read and saved
+/// by the real file (save_file keeps refusing link paths). Only a link whose
+/// target is a regular file is accepted. Returns (path, missing, via_link).
+pub fn open_target(path: &Path) -> Result<(PathBuf, bool, bool), String> {
+    let (target, missing) = edit_target(path)?;
+    if missing {
+        return Ok((target, true, false));
+    }
+    let kind = std::fs::symlink_metadata(&target)
+        .map_err(|e| e.to_string())?
+        .file_type();
+    if !kind.is_symlink() {
+        return Ok((target, false, false));
+    }
+    let real = target
+        .canonicalize()
+        .map_err(|_| "Es un enlace simbólico roto o inaccesible; no se abre".to_owned())?;
+    let meta = std::fs::symlink_metadata(&real).map_err(|e| e.to_string())?;
+    if !meta.is_file() {
+        return Err("Es un enlace simbólico que no apunta a un archivo regular; no se abre".into());
+    }
+    Ok((real, false, true))
+}
+
 /// Publish complete bytes at a new destination without replacing any entry.
 pub fn write(root: &Path, name: &str, text: &str) -> Result<PathBuf, String> {
+    write_mode(root, name, text, None)
+}
+
+/// `write`, creating the file with the given permission bits instead of
+/// 0600. Only the 0o777 bits are applied (never setuid, setgid or sticky),
+/// and only on the temporary before it is published.
+pub fn write_mode(
+    root: &Path,
+    name: &str,
+    text: &str,
+    mode: Option<u32>,
+) -> Result<PathBuf, String> {
     let target = destination(root, name)?;
     let relative = target
         .strip_prefix(root)
@@ -157,9 +194,13 @@ pub fn write(root: &Path, name: &str, text: &str) -> Result<PathBuf, String> {
     }
     let result = (|| {
         let mut file = unsafe { std::fs::File::from_raw_fd(fd) };
-        file.write_all(text.as_bytes())
-            .and_then(|_| file.sync_all())
-            .map_err(|e| e.to_string())?;
+        file.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
+        if let Some(mode) = mode
+            && unsafe { libc::fchmod(file.as_raw_fd(), (mode & 0o777) as libc::mode_t) } < 0
+        {
+            return Err(std::io::Error::last_os_error().to_string());
+        }
+        file.sync_all().map_err(|e| e.to_string())?;
         if unsafe {
             libc::linkat(
                 parent.as_raw_fd(),
@@ -205,8 +246,23 @@ pub fn write_copy_bounded(
     text: &str,
     allowed_root: Option<&Path>,
 ) -> Result<PathBuf, String> {
+    write_copy_bounded_expected(cwd, home, name, text, allowed_root, None)
+}
+
+/// Refuse to publish if resolving the destination changed after preflight.
+pub fn write_copy_bounded_expected(
+    cwd: &Path,
+    home: Option<&Path>,
+    name: &str,
+    text: &str,
+    allowed_root: Option<&Path>,
+    expected: Option<&Path>,
+) -> Result<PathBuf, String> {
     let requested = edit_path(cwd, home, name)?;
     let (target, missing) = edit_target(&requested)?;
+    if expected.is_some_and(|expected| expected != target) {
+        return Err("Cambió la ruta de destino; buffer conservado".into());
+    }
     if !missing {
         return Err("E13: El archivo ya existe".into());
     }

@@ -18,6 +18,7 @@ pub enum Error {
     Shared,
 }
 
+#[derive(Clone)]
 pub struct BufferNumbers {
     next: u64,
     by_number: BTreeMap<u64, Buffer>,
@@ -184,6 +185,7 @@ impl BufferNumbers {
 /// Shadow index for the live UI while lifecycle integration is incomplete.
 /// An unrepresentable transition disables it; it is never reconstructed from
 /// current list order because that would assign misleading historical numbers.
+#[derive(Clone)]
 pub struct BufferTracking(Option<BufferNumbers>);
 
 #[derive(Debug, PartialEq, Eq)]
@@ -241,6 +243,10 @@ impl Default for BufferTracking {
 }
 
 impl BufferTracking {
+    /// Unknown tracking must not be treated as proof of a fresh identity.
+    pub fn knows_identity(&self, buffer: &Buffer) -> Option<bool> {
+        self.0.as_ref().map(|numbers| numbers.number(buffer).is_some())
+    }
     /// Remove a wiped identity only when this workspace owns it exclusively.
     /// Disabled tracking has no numeric identity to remove.
     pub fn wipe_owned(&mut self, workspace: usize, buffer: &Buffer) -> bool {

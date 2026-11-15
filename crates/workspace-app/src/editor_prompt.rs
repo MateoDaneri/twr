@@ -203,6 +203,11 @@ impl Editor {
         self.cursor = start;
         self.changed();
     }
+    /// A count with no operator or pending command can prefix a Normal mapping.
+    pub fn has_standalone_normal_count(&self) -> bool {
+        self.mode == Mode::Normal && self.count > 0 && self.pending.is_empty()
+            && self.awaiting.is_none() && self.jump.is_none()
+    }
     /// Transfer only a standalone Normal/Visual count to a workspace window command.
     pub fn take_window_count(&mut self) -> usize {
         if self.mode.window_navigation()

@@ -19,9 +19,16 @@ pub fn application(path: &Path) -> Application {
         .as_str()
     {
         "html" | "htm" => Application::Browser,
-        "xlsx" | "xls" | "xlsm" | "xlsb" | "xltx" | "xltm" => Application::Excel,
+        // Macro-enabled workbooks (xlsm, xlsb, xltm) are deliberately not
+        // routed to Excel; they fall to Default and are refused by `open`.
+        "xlsx" | "xls" | "xltx" => Application::Excel,
         _ => Application::Default,
     }
+}
+fn macro_workbook(path: &Path) -> bool {
+    path.extension()
+        .and_then(|x| x.to_str())
+        .is_some_and(|x| matches!(x.to_ascii_lowercase().as_str(), "xlsm" | "xlsb" | "xltm"))
 }
 pub fn checked_path(root: &Path, path: &Path) -> Result<PathBuf, String> {
     if !root.is_absolute()
@@ -69,7 +76,16 @@ pub fn open(root: &Path, path: &Path) -> Result<(), String> {
         Application::Browser => {
             command.arg("-a").arg(browser()?);
         }
-        Application::Default => {}
+        // `/usr/bin/open` on an arbitrary file can run it (.command, .tool,
+        // .terminal, .workflow, .pkg, apps). Only the explicit routes leave.
+        Application::Default => {
+            return Err(if macro_workbook(&path) {
+                "Los libros de Excel con macros no se abren desde aquí".into()
+            } else {
+                "Tipo no admitido para apertura externa; solo HTML y libros de Excel sin macros"
+                    .into()
+            });
+        }
     }
     command
         .arg(&path)

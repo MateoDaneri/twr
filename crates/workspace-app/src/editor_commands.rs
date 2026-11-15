@@ -154,6 +154,20 @@ impl Editor {
         self.commit_text(text, false);
     }
     pub fn paste(&mut self, text: &str) {
+        // A `:` or `/` line is one line: refuse pasted newlines and other
+        // control characters, as inserting a register there already does.
+        if matches!(self.mode, Mode::Command | Mode::Search) && text.chars().any(char::is_control) {
+            self.message = crate::editor::PROMPT_PASTE_REJECTED.into();
+            self.prompt_notice =
+                Some((crate::editor::PROMPT_PASTE_REJECTED, self.command.clone()));
+            return;
+        }
+        if !matches!(self.mode, Mode::Insert | Mode::Command | Mode::Search) {
+            // Cmd+V outside Insert inserted nothing and said nothing.
+            self.cancel_input();
+            self.message = "Pegar con Cmd+V requiere modo Insert; en Normal usá \"+p".into();
+            return;
+        }
         self.commit_text(text, true);
     }
     fn commit_text(&mut self, text: &str, literal: bool) {
@@ -524,7 +538,13 @@ impl Editor {
                     ),
             );
         }
-        if !matches!(key, "j" | "k" | "<Down>" | "<Up>" | "g" | "G")
+        let command_prompt = self.mode == Mode::Command
+            || (self.mode == Mode::Normal
+                && self.pending.is_empty()
+                && self.awaiting.is_none()
+                && key == ":");
+        if !command_prompt
+            && !matches!(key, "j" | "k" | "<Down>" | "<Up>" | "g" | "G")
             && !(key.len() == 1 && key.as_bytes()[0].is_ascii_digit())
         {
             self.desired_column = None;

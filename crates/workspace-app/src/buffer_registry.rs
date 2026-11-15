@@ -149,7 +149,7 @@ impl DeleteAfterSave {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct BufferRegistry {
     listed: Vec<Buffer>,
     known: Vec<Buffer>,
@@ -461,8 +461,14 @@ impl BufferRegistry {
     /// Snacks first chooses a listed alternate local to each window, then
     /// falls back to the most recently used other listed buffer.
     pub fn replacement_for(&self, pane: PaneId, deleted: &Buffer) -> Option<Buffer> {
-        self.alternate(pane, deleted)
-            .filter(|entry| self.listed.contains(entry))
+        self.replacement_for_alternate(self.alternate(pane, deleted).as_ref(), deleted)
+    }
+
+    /// A detached float owns its alternate independently of layout panes.
+    pub fn replacement_for_alternate(&self, alternate: Option<&Buffer>, deleted: &Buffer) -> Option<Buffer> {
+        alternate
+            .filter(|entry| *entry != deleted && self.listed.contains(entry))
+            .cloned()
             .or_else(|| {
                 self.recent
                     .iter()
@@ -602,6 +608,25 @@ impl BufferRegistry {
         } else {
             self.alternate.remove(&target);
         }
+    }
+
+    /// Restore a float's own alternate into a newly materialized window.
+    /// Refuse stale identities rather than substituting the anchor's buffer.
+    pub fn restore_pane_alternate(
+        &mut self,
+        pane: PaneId,
+        current: &Buffer,
+        alternate: Option<&Buffer>,
+    ) -> bool {
+        if alternate.is_some_and(|buffer| buffer == current || !self.knows(buffer)) {
+            return false;
+        }
+        if let Some(buffer) = alternate {
+            self.alternate.insert(pane, buffer.clone());
+        } else {
+            self.alternate.remove(&pane);
+        }
+        true
     }
 }
 

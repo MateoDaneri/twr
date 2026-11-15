@@ -7,6 +7,7 @@ use std::{
     collections::BTreeMap,
     fs,
     io::{Read, Write},
+    os::fd::AsRawFd,
     os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -100,7 +101,10 @@ pub enum Action {
         window: String,
         pane: String,
         keep_mode: bool,
+        first_yank: bool,
     },
+    CopyNormalLines { token: u64, anchor_token: u64, window: String, pane: String, count: usize },
+    CopyNormalMotion { token: u64, anchor_token: u64, window: String, pane: String, motion: String, count: usize },
     SelectAll,
     Find,
     EndSearch,
@@ -141,9 +145,11 @@ pub enum Event {
     ),
     ReusedAdditional(Session, AdditionalTerminalIdentity, u32),
     Clipboard(String),
-    CopyTracked(u64, Result<Option<String>, String>),
+    CopyTracked(u64, Result<Option<TrackedCopy>, String>),
     SearchPrompt,
     Windows(Vec<WindowInfo>),
+    WindowsPollError(String),
+    WindowsPollRecovered,
     Error(String),
 }
 pub struct Backend {
@@ -262,6 +268,14 @@ struct CopySelectionSnapshot {
     endpoints: Option<[u64; 4]>,
 }
 
+/// Metadata only: bind an operator to the copy cursor observed after its y.
+struct YankAnchor {
+    token: u64,
+    state: CopySelectionSnapshot,
+    socket_device: u64,
+    socket_inode: u64,
+}
+
 impl CopySelectionSnapshot {
     fn condition(&self) -> String {
         let equals = |field: &str, value: String| format!("#{{==:#{{{field}}},{value}}}");
@@ -304,6 +318,19 @@ struct LineSelection {
     socket_device: u64,
     socket_inode: u64,
     anchor_row: u64,
+    anchor_physical: u64,
+    history: u64,
+    grid_history: u64,
+    width: u64,
+    height: u64,
+}
+
+/// Text copied from the exact guarded tmux selection. Linewise is set only
+/// when this worker can still identify a Visual Line selection it started.
+pub struct TrackedCopy {
+    pub text: String,
+    pub linewise: bool,
+    pub editor_register: bool,
 }
 
 type LineSelections = BTreeMap<(String, String), LineSelection>;
@@ -383,6 +410,52 @@ impl CopyMark {
 }
 
 // FNV-1a is stable across builds; IDs contain no path, session names or shell text.
+/// Fallback login shell when `$SHELL` cannot be trusted.
+const DEFAULT_PERSONAL_SHELL: &str = "/bin/zsh -l";
+const SYNTHETIC_SHELL: &str = "/bin/sh -i";
+
+/// Command string for a new personal terminal: the user's `$SHELL` as a
+/// login shell. tmux passes the string to `default-shell -c` (/bin/sh in the
+/// bundled config), so the path is accepted only when it is absolute, made of
+/// characters that need no shell quoting, an executable regular file, and
+/// listed verbatim in /etc/shells. Anything else uses `/bin/zsh -l`.
+fn personal_shell_command() -> String {
+    let Some(shell) = std::env::var_os("SHELL") else {
+        return DEFAULT_PERSONAL_SHELL.into();
+    };
+    let Some(shell) = shell.to_str() else {
+        return DEFAULT_PERSONAL_SHELL.into();
+    };
+    let safe = shell.len() <= 256
+        && shell.starts_with('/')
+        && shell
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'/' | b'.' | b'_' | b'-' | b'+'));
+    if !safe {
+        return DEFAULT_PERSONAL_SHELL.into();
+    }
+    let executable = fs::metadata(shell)
+        .is_ok_and(|m| m.is_file() && m.permissions().mode() & 0o111 != 0);
+    let listed = fs::read_to_string("/etc/shells").is_ok_and(|list| {
+        list.lines()
+            .map(str::trim)
+            .any(|line| !line.starts_with('#') && line == shell)
+    });
+    if executable && listed {
+        format!("{shell} -l")
+    } else {
+        DEFAULT_PERSONAL_SHELL.into()
+    }
+}
+
+fn session_shell_command(personal_shell: bool) -> String {
+    if personal_shell {
+        personal_shell_command()
+    } else {
+        SYNTHETIC_SHELL.into()
+    }
+}
+
 pub fn project_id(path: &Path) -> String {
     use std::os::unix::ffi::OsStrExt;
     let hash = path
@@ -425,51 +498,203 @@ fn output_bytes(cmd: Command) -> Result<Vec<u8>, String> {
     output_bytes_with_timeout(cmd, Duration::from_secs(3))
 }
 fn output_bytes_with_timeout(mut cmd: Command, timeout: Duration) -> Result<Vec<u8>, String> {
+    const LIMIT: usize = 262144;
+    fn nonblocking(fd: &impl AsRawFd) -> Result<(), String> {
+        // Only the owned read end of each pipe is modified; the tmux server
+        // and the child command's write ends are not reconfigured.
+        let flags = unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_GETFL) };
+        if flags < 0 || unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_SETFL, flags | libc::O_NONBLOCK) } < 0 {
+            return Err(format!("No se pudo configurar la lectura de tmux: {}", std::io::Error::last_os_error()));
+        }
+        Ok(())
+    }
+    fn drain(reader: &mut impl Read, output: &mut Vec<u8>, start: Instant, timeout: Duration) -> Result<bool, String> {
+        let mut chunk = [0_u8; 8192];
+        loop {
+            if start.elapsed() >= timeout { return Err("tmux command timed out".into()); }
+            match reader.read(&mut chunk) {
+                Ok(0) => return Ok(true),
+                Ok(n) => {
+                    if output.len().saturating_add(n) > LIMIT {
+                        return Err("tmux response exceeds limit".into());
+                    }
+                    output.extend_from_slice(&chunk[..n]);
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => return Ok(false),
+                Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
+                Err(error) => return Err(format!("No se pudo leer la respuesta de tmux: {error}")),
+            }
+        }
+    }
+    fn stop_child(child: &mut std::process::Child) {
+        // This is the command spawned here, not the persistent tmux server.
+        if child.try_wait().ok().flatten().is_none() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+    }
     cmd.stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .stdin(Stdio::null());
     let mut child = cmd.spawn().map_err(|e| e.to_string())?;
-    let out = child.stdout.take().unwrap();
-    let err = child.stderr.take().unwrap();
-    fn read(r: impl Read + Send + 'static) -> std::thread::JoinHandle<std::io::Result<Vec<u8>>> {
-        std::thread::spawn(move || {
-            let mut b = Vec::new();
-            r.take(262145).read_to_end(&mut b)?;
-            Ok(b)
-        })
+    let mut stdout = child.stdout.take().expect("piped stdout");
+    let mut stderr = child.stderr.take().expect("piped stderr");
+    if let Err(error) = nonblocking(&stdout).and_then(|_| nonblocking(&stderr)) {
+        stop_child(&mut child);
+        return Err(error);
     }
-    let out = read(out);
-    let err = read(err);
+    let mut out = Vec::new();
+    let mut err = Vec::new();
+    let (mut out_closed, mut err_closed) = (false, false);
+    let mut status = None;
     let start = Instant::now();
-    let status = loop {
-        if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
-            break status;
+    loop {
+        if !out_closed {
+            match drain(&mut stdout, &mut out, start, timeout) {
+                Ok(closed) => out_closed = closed,
+                Err(error) => { stop_child(&mut child); return Err(error); }
+            }
+        }
+        if !err_closed {
+            match drain(&mut stderr, &mut err, start, timeout) {
+                Ok(closed) => err_closed = closed,
+                Err(error) => { stop_child(&mut child); return Err(error); }
+            }
+        }
+        if status.is_none() {
+            status = match child.try_wait() {
+                Ok(status) => status,
+                Err(error) => { stop_child(&mut child); return Err(error.to_string()); }
+            };
+        }
+        if let Some(status) = status && out_closed && err_closed {
+            if !status.success() {
+                return Err(String::from_utf8_lossy(&err).trim().to_owned());
+            }
+            return Ok(out);
         }
         if start.elapsed() >= timeout {
-            let _ = child.kill();
-            let _ = child.wait();
+            stop_child(&mut child);
             return Err("tmux command timed out".into());
         }
-        std::thread::sleep(Duration::from_millis(10));
-    };
-    let out = out
-        .join()
-        .map_err(|_| "No se pudo leer la respuesta de tmux".to_owned())?
-        .map_err(|e| format!("No se pudo leer la respuesta de tmux: {e}"))?;
-    let err = err
-        .join()
-        .map_err(|_| "No se pudieron leer errores de tmux".to_owned())?
-        .map_err(|e| format!("No se pudieron leer errores de tmux: {e}"))?;
-    if out.len() > 262144 || err.len() > 262144 {
-        return Err("tmux response exceeds limit".into());
+        // Wake as soon as a pipe becomes readable instead of adding a fixed
+        // delay to every tmux command. Still poll child status periodically:
+        // both pipes may close before the command itself exits.
+        let wait = Duration::from_millis(10).min(timeout.saturating_sub(start.elapsed()));
+        let mut pipes = [
+            libc::pollfd {
+                fd: if out_closed { -1 } else { stdout.as_raw_fd() },
+                events: libc::POLLIN,
+                revents: 0,
+            },
+            libc::pollfd {
+                fd: if err_closed { -1 } else { stderr.as_raw_fd() },
+                events: libc::POLLIN,
+                revents: 0,
+            },
+        ];
+        let ready = unsafe {
+            libc::poll(
+                pipes.as_mut_ptr(),
+                pipes.len() as libc::nfds_t,
+                wait.as_millis() as libc::c_int,
+            )
+        };
+        if ready < 0 {
+            let error = std::io::Error::last_os_error();
+            if error.kind() != std::io::ErrorKind::Interrupted {
+                stop_child(&mut child);
+                return Err(format!("No se pudo esperar la respuesta de tmux: {error}"));
+            }
+        } else if pipes.iter().any(|pipe| pipe.revents & libc::POLLNVAL != 0) {
+            stop_child(&mut child);
+            return Err("No se pudo esperar la respuesta de tmux: descriptor inválido".into());
+        }
     }
-    if !status.success() {
-        return Err(String::from_utf8_lossy(&err).trim().to_owned());
-    }
-    Ok(out)
 }
 fn output(cmd: Command) -> Result<String, String> {
     output_bytes(cmd).map(|out| String::from_utf8_lossy(&out).into_owned())
+}
+/// Label prefix when the executable is not inside a generated app bundle.
+const DEFAULT_APP_ID: &str = "dev.local.TerminalWorkspaceRust";
+const LAUNCHCTL: &str = "/bin/launchctl";
+const SERVER_PLIST: &str = "tmux-server.plist";
+/// Serializes launchd registration among this process's prepare workers.
+static SERVER_START: Mutex<()> = Mutex::new(());
+enum ServerNotice {
+    None,
+    Pending(String),
+    Shown,
+}
+static SERVER_NOTICE: Mutex<ServerNotice> = Mutex::new(ServerNotice::None);
+/// Session names that `prepare` had to create because none existed, so a
+/// reconnect can say whether the previous session survived.
+static CREATED_SESSIONS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+/// True (once) when `prepare` created this session instead of reusing it.
+pub fn take_session_created(name: &str) -> bool {
+    let mut created = CREATED_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    let before = created.len();
+    created.retain(|n| n != name);
+    created.len() != before
+}
+fn note_server_fallback(reason: String) {
+    let mut notice = SERVER_NOTICE.lock().unwrap_or_else(|e| e.into_inner());
+    if matches!(*notice, ServerNotice::None) {
+        *notice = ServerNotice::Pending(reason);
+    }
+}
+/// One-time status notice after the private server had to start directly,
+/// inside the app's coalition, because launchd registration failed.
+pub fn take_server_notice() -> Option<String> {
+    let mut notice = SERVER_NOTICE.lock().unwrap_or_else(|e| e.into_inner());
+    if !matches!(*notice, ServerNotice::Pending(_)) {
+        return None;
+    }
+    match std::mem::replace(&mut *notice, ServerNotice::Shown) {
+        ServerNotice::Pending(reason) => Some(format!(
+            "tmux se inició sin launchd: las terminales no sobreviven a Forzar salida ({reason})"
+        )),
+        _ => None,
+    }
+}
+/// CFBundleIdentifier of the running bundle (Contents/MacOS/<exe> ->
+/// Contents/Info.plist, XML as written by scripts/rust_app.py). Only a
+/// conservative character set is accepted because it becomes a launchd label.
+fn bundle_identifier() -> Option<String> {
+    static ID: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+    ID.get_or_init(|| {
+        const KEY: &str = "<key>CFBundleIdentifier</key>";
+        let exe = std::env::current_exe().ok()?;
+        let text = fs::read_to_string(exe.parent()?.parent()?.join("Info.plist")).ok()?;
+        let rest = &text[text.find(KEY)? + KEY.len()..];
+        let value = rest.trim_start().strip_prefix("<string>")?;
+        let value = &value[..value.find("</string>")?];
+        (!value.is_empty()
+            && value.len() <= 200
+            && value
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-'))
+        .then(|| value.to_owned())
+    })
+    .clone()
+}
+/// Escape a plist <string>. Control characters are not representable.
+fn plist_string(value: &str) -> Result<String, String> {
+    if value.chars().any(char::is_control) {
+        return Err("valor no representable en el plist de launchd".into());
+    }
+    Ok(value
+        .replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;"))
+}
+/// argv only, absolute path, never a shell. Output is discarded.
+fn launchctl(args: &[&str]) -> Result<(), String> {
+    let mut cmd = Command::new(LAUNCHCTL);
+    cmd.args(args);
+    output_bytes_with_timeout(cmd, Duration::from_secs(5))
+        .map(|_| ())
+        .map_err(|e| format!("launchctl {}: {e}", args.first().copied().unwrap_or("")))
 }
 impl Session {
     /// A separate terminal has an opaque name scoped to the workspace root.
@@ -516,19 +741,31 @@ impl Session {
         name: &str,
         personal_shell: bool,
     ) -> Result<(Self, AdditionalTerminalIdentity), String> {
+        self.create_additional_terminal_at(name, personal_shell, &self.root)
+    }
+
+    /// Start in a selected directory while retaining the workspace root as
+    /// the scope of the tmux name, socket, identity and recovery record.
+    /// A failed or uncertain tmux command is never retried automatically.
+    pub fn create_additional_terminal_at(
+        &self,
+        name: &str,
+        personal_shell: bool,
+        cwd: &Path,
+    ) -> Result<(Self, AdditionalTerminalIdentity), String> {
         if !self.is_additional_terminal_name(name) {
             return Err("Identidad de terminal inválida".into());
         }
+        if !cwd.is_absolute() {
+            return Err("El directorio de la terminal debe ser absoluto".into());
+        }
         let original_server = self.additional_terminal_server_stamp()?;
+        let shell = session_shell_command(personal_shell);
         let mut cmd = self.command();
         cmd.arg("-N")
             .args(["new-session", "-d", "-s", name, "-n", "terminal", "-c"])
-            .arg(&self.root)
-            .arg(if personal_shell {
-                "/bin/zsh -l"
-            } else {
-                "/bin/sh -i"
-            });
+            .arg(cwd)
+            .arg(&shell);
         output(cmd)
             .map_err(|e| format!("Creación de {name}: {e}; verificar antes de reintentar"))?;
         let session = Self {
@@ -537,14 +774,7 @@ impl Session {
         };
         let target = format!("={name}:");
         for (option, value) in [
-            (
-                "default-command",
-                if personal_shell {
-                    "/bin/zsh -l"
-                } else {
-                    "/bin/sh -i"
-                },
-            ),
+            ("default-command", shell.as_str()),
             ("destroy-unattached", "off"),
         ] {
             let mut cmd = session.command();
@@ -635,6 +865,12 @@ impl Session {
             ]);
             let response = output(cmd)?;
             let fields: Vec<_> = response.trim_end_matches('\n').split('\t').collect();
+            // tmux 3.6a `display-message -t =name:` succeeds with empty fields
+            // when the session no longer exists; that is a vanished terminal,
+            // not a tampered one.
+            if fields.len() == 3 && fields[0].is_empty() && fields[2].is_empty() {
+                return Err("La sesión tmux de esta terminal ya no existe".into());
+            }
             if fields.len() != 3 || fields[2] != self.name {
                 return Err("Identidad de sesión tmux cambió".into());
             }
@@ -1327,6 +1563,14 @@ impl Session {
             return Err("Conteo de captura fuera de límites".into());
         }
         let target = self.resume_target()?;
+        // Window/pane numbers can be reused after a server or socket restart.
+        // Bind this read to the session, server, copy-mode metadata and socket
+        // instance as well as the visible cursor frame.
+        let socket = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
+        let selection = self.copy_selection_snapshot()?;
+        if selection.target != target || selection.active || selection.present {
+            return Err("Cambió el destino o la selección; captura cancelada".into());
+        }
         let before = self.copy_frame(&target)?;
         if count > before.height - before.row + before.scroll {
             return Err("La captura excede el historial visible".into());
@@ -1355,7 +1599,13 @@ impl Session {
             }
             result.push_str(&line);
         }
-        if self.resume_target()? != target || self.copy_frame(&target)? != before {
+        let after_target = self.resume_target()?;
+        let after_frame = self.copy_frame(&target)?;
+        let after_selection = self.copy_selection_snapshot()?;
+        let after_socket = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
+        if after_target != target || after_frame != before || after_selection != selection
+            || socket.dev() != after_socket.dev() || socket.ino() != after_socket.ino()
+        {
             return Err("El destino o el cursor de copia cambió; captura cancelada".into());
         }
         Ok(result)
@@ -1537,35 +1787,48 @@ impl Session {
             session.configure_terminal_protocols()?;
             return Ok(session);
         }
+        // Prefer a per-socket launchd job: launchd spawns the server in its
+        // own coalition, so Force Quit of the app does not take it down.
+        // Tests keep the direct start and never register launchd jobs.
+        let via_launchd = !cfg!(test)
+            && match session.ensure_server(&conf, uid) {
+                Ok(()) => true,
+                Err(error) => {
+                    note_server_fallback(error);
+                    false
+                }
+            };
         let mut c = session.command();
-        c.arg("-f")
-            .arg(conf)
-            .args([
-                "new-session",
-                "-d",
-                "-s",
-                &session.name,
-                "-n",
-                "terminal",
-                "-c",
-            ])
-            .arg(root);
-        c.arg(if personal_shell {
-            "/bin/zsh -l"
-        } else {
-            "/bin/sh -i"
-        });
+        if !via_launchd {
+            // Direct start (today's behaviour): the server is daemonized by
+            // tmux itself and stays in the app's coalition.
+            c.arg("-f").arg(&conf);
+        }
+        c.args([
+            "new-session",
+            "-d",
+            "-s",
+            &session.name,
+            "-n",
+            "terminal",
+            "-c",
+        ])
+        .arg(root);
+        let shell = session_shell_command(personal_shell);
+        c.arg(&shell);
         output(c)?;
+        {
+            let mut created = CREATED_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+            if !created.contains(&session.name) && created.len() < 64 {
+                created.push(session.name.clone());
+            }
+        }
         session.run(&[
             "set-option",
             "-t",
             &session.name,
             "default-command",
-            if personal_shell {
-                "/bin/zsh -l"
-            } else {
-                "/bin/sh -i"
-            },
+            &shell,
         ])?;
         session.run(&[
             "set-option",
@@ -1583,6 +1846,189 @@ impl Session {
         #[cfg(feature = "ghostty")]
         self.run(&["set-option", "-g", "-p", "allow-passthrough", "on"])?;
         Ok(())
+    }
+    /// The server PID if a server already answers this socket. `-N` keeps
+    /// the probe from ever starting a server itself.
+    fn answering_server_pid(&self, timeout: Duration) -> Option<u32> {
+        let mut cmd = self.command();
+        cmd.arg("-N").args(["display-message", "-p", "#{pid}"]);
+        let out = output_bytes_with_timeout(cmd, timeout).ok()?;
+        String::from_utf8_lossy(&out)
+            .trim()
+            .parse::<u32>()
+            .ok()
+            .filter(|pid| *pid > 1)
+    }
+    /// launchd label: bundle id (distinct for Development and each
+    /// validation instance) plus a hash of this exact socket.
+    pub fn server_job_label(&self) -> String {
+        use std::os::unix::ffi::OsStrExt;
+        let digest = Sha256::digest(self.socket.as_os_str().as_bytes());
+        format!(
+            "{}.tmux.{}",
+            bundle_identifier().unwrap_or_else(|| DEFAULT_APP_ID.into()),
+            hex_bytes(&digest[..8])
+        )
+    }
+    fn server_plist(&self, label: &str, conf: &Path) -> Result<String, String> {
+        let text = |path: &Path| {
+            path.to_str()
+                .ok_or_else(|| "ruta no UTF-8 para launchd".to_string())
+                .and_then(plist_string)
+        };
+        // Same policy as command(): LANG/COLORTERM, no TMUX/ENV/BASH_ENV.
+        // Only the identity/location variables the panes need; no secrets.
+        let mut env = vec![
+            (
+                "LANG",
+                std::env::var("LANG").unwrap_or_else(|_| "en_US.UTF-8".into()),
+            ),
+            ("COLORTERM", "truecolor".to_owned()),
+        ];
+        for key in ["PATH", "HOME", "USER", "SHELL", "TMPDIR"] {
+            if let Ok(value) = std::env::var(key)
+                && !value.is_empty()
+            {
+                env.push((key, value));
+            }
+        }
+        let mut xml = String::from(concat!(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+            "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" ",
+            "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n",
+            "<plist version=\"1.0\">\n<dict>\n",
+        ));
+        xml.push_str(&format!(
+            "\t<key>Label</key>\n\t<string>{}</string>\n",
+            plist_string(label)?
+        ));
+        xml.push_str("\t<key>ProgramArguments</key>\n\t<array>\n");
+        // -D: launchd supervises the real server pid; it also turns
+        // exit-empty off. The user's own tmux config is never loaded.
+        let args: [String; 7] = [
+            text(self.binary.as_path())?,
+            "-D".into(),
+            "-u".into(),
+            "-S".into(),
+            text(self.socket.as_path())?,
+            "-f".into(),
+            text(conf)?,
+        ];
+        for arg in &args {
+            xml.push_str(&format!("\t\t<string>{arg}</string>\n"));
+        }
+        xml.push_str("\t</array>\n\t<key>EnvironmentVariables</key>\n\t<dict>\n");
+        for (key, value) in &env {
+            xml.push_str(&format!(
+                "\t\t<key>{key}</key>\n\t\t<string>{}</string>\n",
+                plist_string(value)?
+            ));
+        }
+        xml.push_str(concat!(
+            "\t</dict>\n",
+            "\t<key>ProcessType</key>\n\t<string>Interactive</string>\n",
+            "\t<key>KeepAlive</key>\n\t<false/>\n",
+            "\t<key>RunAtLoad</key>\n\t<false/>\n",
+            "\t<key>LimitLoadToSessionType</key>\n\t<string>Aqua</string>\n",
+        ));
+        if let Some(id) = bundle_identifier() {
+            xml.push_str(&format!(
+                "\t<key>AssociatedBundleIdentifiers</key>\n\t<string>{id}</string>\n"
+            ));
+        }
+        xml.push_str("</dict>\n</plist>\n");
+        Ok(xml)
+    }
+    /// Start the private server as a transient per-socket launchd agent in
+    /// gui/<uid>. The plist lives in the private 0700 runtime directory;
+    /// nothing is written to ~/Library/LaunchAgents and no Login Item is
+    /// registered. The job definition lasts until bootout or logout.
+    /// Any error leaves the caller on the direct start.
+    fn ensure_server(&self, conf: &Path, uid: u32) -> Result<(), String> {
+        let _guard = SERVER_START.lock().unwrap_or_else(|e| e.into_inner());
+        // A server already on this socket is reused as is: a launchd job
+        // with no sessions (-D keeps it alive), or a server started directly
+        // by an earlier build.
+        if self.answering_server_pid(Duration::from_secs(1)).is_some() {
+            return Ok(());
+        }
+        let label = self.server_job_label();
+        let domain = format!("gui/{uid}");
+        let service = format!("{domain}/{label}");
+        let directory = self
+            .socket
+            .parent()
+            .ok_or_else(|| "socket tmux sin directorio".to_string())?;
+        let path = directory.join(SERVER_PLIST);
+        let path_text = path
+            .to_str()
+            .ok_or_else(|| "ruta del plist no UTF-8".to_string())?
+            .to_owned();
+        let contents = self.server_plist(&label, conf)?;
+        let loaded = launchctl(&["print", &service]).is_ok();
+        let current = match fs::symlink_metadata(&path) {
+            Ok(m)
+                if !m.is_file()
+                    || m.uid() != uid
+                    || m.nlink() != 1
+                    || m.mode() & 0o077 != 0 =>
+            {
+                return Err("plist de launchd inseguro".into());
+            }
+            Ok(_) => Some(fs::read_to_string(&path).map_err(|e| e.to_string())?),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => None,
+            Err(e) => return Err(e.to_string()),
+        };
+        // A loaded definition is never replaced here: bootout of a running
+        // job would kill its server and every session. A loaded job with an
+        // older definition is still this socket's job and is kickstarted.
+        if !loaded && current.as_deref() != Some(contents.as_str()) {
+            let temporary = directory.join(format!(".{SERVER_PLIST}.{}.tmp", std::process::id()));
+            // Private 0700 directory: only this user can have created it.
+            let _ = fs::remove_file(&temporary);
+            let written = fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o600)
+                .open(&temporary)
+                .and_then(|mut out| {
+                    out.write_all(contents.as_bytes())?;
+                    out.sync_all()
+                })
+                .and_then(|_| fs::rename(&temporary, &path));
+            if let Err(error) = written {
+                let _ = fs::remove_file(&temporary);
+                return Err(format!("plist de launchd: {error}"));
+            }
+        }
+        if !loaded
+            && let Err(error) = launchctl(&["bootstrap", &domain, &path_text])
+            && launchctl(&["print", &service]).is_err()
+        {
+            // Not loaded by another process in the meantime either.
+            return Err(error);
+        }
+        // No -k: never restart a server that is already running.
+        launchctl(&["kickstart", &service])?;
+        let deadline = Instant::now() + Duration::from_secs(3);
+        loop {
+            if self
+                .answering_server_pid(Duration::from_millis(500))
+                .is_some()
+            {
+                return Ok(());
+            }
+            if Instant::now() >= deadline {
+                return Err("el servidor tmux de launchd no respondió".into());
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+    /// Best-effort removal of this socket's launchd job, for explicit
+    /// server shutdown. bootout stops the server if it is still running.
+    pub fn retire_server_job(&self, uid: u32) {
+        let service = format!("gui/{uid}/{}", self.server_job_label());
+        let _ = launchctl(&["bootout", &service]);
     }
     pub fn attach(&self) -> CommandBuilder {
         let mut c = CommandBuilder::new(&self.binary);
@@ -1639,7 +2085,13 @@ impl Session {
                     active_pane: v[3].into(),
                     index: v[1].parse().map_err(|_| "invalid window index")?,
                     active: v[2] == "1",
-                    name: v[4].chars().filter(|c| !c.is_control()).take(160).collect(),
+                    // Display-only: drop control and bidi characters, which
+                    // could reorder how the name reads in the window list.
+                    name: v[4]
+                        .chars()
+                        .filter(|c| !c.is_control() && !crate::text_safety::is_bidi_control(*c))
+                        .take(160)
+                        .collect(),
                 })
             })
             .collect()
@@ -1981,6 +2433,15 @@ impl Session {
                 post = restored;
             }
             let ends = post.endpoints.ok_or("Selección sin extremos")?;
+            let grid_history = self.copy_grid_history(&post)?;
+            let anchor_physical = grid_history.checked_add(start.cursor_y)
+                .and_then(|row| row.checked_sub(start.scroll))
+                .ok_or("No se pudo conservar la línea inicial")?;
+            if start.cursor_y >= start.height || post.history != start.history
+                || post.width != start.width || post.height != start.height
+            {
+                return Err("Cambió la geometría de la selección; selección conservada".into());
+            }
             // Closed tmux panes need not send a notification to this worker.
             // Bound retained markers; an evicted selection is treated as unknown.
             if lines.len() >= 1024 {
@@ -1994,6 +2455,11 @@ impl Session {
                     socket_device: socket.dev(),
                     socket_inode: socket.ino(),
                     anchor_row: ends[1],
+                    anchor_physical,
+                    history: start.history,
+                    grid_history,
+                    width: start.width,
+                    height: start.height,
                 },
             );
         } else {
@@ -2144,6 +2610,198 @@ impl Session {
             }
         }
         result
+    }
+
+    /// Read physical rows for a tracked Visual Line selection. tmux's own
+    /// copy-selection joins wrapped logical lines; Neovim yanks screen rows.
+    /// Terminal text is held only for this request and is never logged.
+    fn physical_visual_lines(&self, state: &CopySelectionSnapshot, line: &LineSelection) -> Result<String, String> {
+        let unavailable = || "No se pudo confirmar la selección de filas; selección conservada".to_owned();
+        if state.history != line.history || state.width != line.width || state.height != line.height
+            || state.cursor_y >= state.height
+        { return Err(unavailable()); }
+        if self.copy_grid_history(state)? != line.grid_history { return Err(unavailable()); }
+        let current = line.grid_history.checked_add(state.cursor_y)
+            .and_then(|row| row.checked_sub(state.scroll)).ok_or_else(unavailable)?;
+        let low = line.anchor_physical.min(current);
+        let high = line.anchor_physical.max(current);
+        let ends = state.endpoints.ok_or_else(unavailable)?;
+        if low < ends[1].min(ends[3]) || high > ends[1].max(ends[3]) {
+            return Err(unavailable());
+        }
+        self.physical_copy_rows(state, line.grid_history, low, high)
+    }
+
+    fn physical_copy_rows(&self, state: &CopySelectionSnapshot, grid_history: u64, low: u64, high: u64) -> Result<String, String> {
+        const MAX_ROWS: usize = 1024;
+        let unavailable = || "No se pudo confirmar la selección de filas; selección conservada".to_owned();
+        let count = high.checked_sub(low).and_then(|n| n.checked_add(1)).ok_or_else(unavailable)?;
+        let total = grid_history.checked_add(state.height).ok_or_else(unavailable)?;
+        if count > MAX_ROWS as u64 || high >= total {
+            return Err(unavailable());
+        }
+        // tmux addresses copy-mode rows relative to the start of its visible
+        // grid, not relative to the currently scrolled viewport.
+        let history = i64::try_from(grid_history).map_err(|_| unavailable())?;
+        let start = i64::try_from(low).map_err(|_| unavailable())?
+            .checked_sub(history).ok_or_else(unavailable)?.to_string();
+        let end = i64::try_from(high).map_err(|_| unavailable())?
+            .checked_sub(history).ok_or_else(unavailable)?.to_string();
+        let deadline = Instant::now() + Duration::from_millis(750);
+        let capture = || {
+            let mut command = self.command();
+            command.args(["capture-pane", "-p", "-M", "-T", "-N", "-S", &start, "-E", &end, "-t", &state.target.pane]);
+            let remaining = deadline.checked_duration_since(Instant::now()).ok_or_else(unavailable)?;
+            output_bytes_with_timeout(command, remaining).map_err(|_| unavailable())
+        };
+        let first = capture()?;
+        let second = capture()?;
+        if first != second || self.copy_selection_snapshot()? != *state { return Err(unavailable()); }
+        let screen = first.strip_suffix(b"\n").ok_or_else(unavailable)?;
+        let rows: Vec<_> = screen.split(|byte| *byte == b'\n').collect();
+        if u64::try_from(rows.len()).ok() != Some(count) { return Err(unavailable()); }
+        let mut text = String::new();
+        for row in rows {
+            let row = std::str::from_utf8(row).map_err(|_| unavailable())?;
+            if row.chars().any(char::is_control) { return Err(unavailable()); }
+            text.push_str(row.trim_end_matches(' '));
+            text.push('\n');
+        }
+        Ok(text)
+    }
+
+    /// Determine the cloned grid's history using bounded two-row captures.
+    /// For n >= 1, tmux clamps -n..-(n-1) to one row iff history < n.
+    /// Read each probe twice, retain no text, and recheck the state at the end.
+    fn copy_grid_history(&self, state: &CopySelectionSnapshot) -> Result<u64, String> {
+        const MAX_HISTORY: u64 = 1_000_000;
+        let unavailable = || "No se pudo confirmar el historial de copia; yank cancelado".to_owned();
+        if state.history > MAX_HISTORY || state.scroll > MAX_HISTORY { return Err(unavailable()); }
+        let deadline = Instant::now() + Duration::from_secs(3);
+        let has = |n: u64| -> Result<bool, String> {
+            if n == 0 || n > MAX_HISTORY + 1 { return Err(unavailable()); }
+            let start = format!("-{n}");
+            let end = if n == 1 { "0".to_owned() } else { format!("-{}", n - 1) };
+            let capture = || {
+                let mut command = self.command();
+                command.args(["capture-pane", "-p", "-M", "-T", "-N", "-S", &start, "-E", &end, "-t", &state.target.pane]);
+                let remaining = deadline.checked_duration_since(Instant::now()).ok_or_else(unavailable)?;
+                output_bytes_with_timeout(command, remaining).map_err(|_| unavailable())
+            };
+            let first = capture()?;
+            let second = capture()?;
+            if first != second || !first.ends_with(b"\n") { return Err(unavailable()); }
+            match first.iter().filter(|byte| **byte == b'\n').count() {
+                1 => Ok(false),
+                2 => Ok(true),
+                _ => Err(unavailable()),
+            }
+        };
+        let live = state.history;
+        let history = if has(live + 1)? {
+            let mut low = live + 1;
+            let mut high = (low.saturating_mul(2)).min(MAX_HISTORY + 1);
+            while has(high)? {
+                if high == MAX_HISTORY + 1 { return Err(unavailable()); }
+                low = high;
+                high = (high.saturating_mul(2)).min(MAX_HISTORY + 1);
+            }
+            while high - low > 1 {
+                let mid = low + (high - low) / 2;
+                if has(mid)? { low = mid; } else { high = mid; }
+            }
+            low
+        } else if live == 0 || has(live)? {
+            live
+        } else {
+            let mut low = 0;
+            let mut high = live;
+            while high - low > 1 {
+                let mid = low + (high - low) / 2;
+                if has(mid)? { low = mid; } else { high = mid; }
+            }
+            low
+        };
+        if state.scroll > history || self.copy_selection_snapshot()? != *state { return Err(unavailable()); }
+        Ok(history)
+    }
+
+    fn copy_normal_lines(&self, window: &str, pane: &str, count: usize, anchor: &YankAnchor) -> Result<Option<TrackedCopy>, String> {
+        if !(1..=1024).contains(&count) { return Err("Conteo de yank fuera de límites".into()); }
+        let socket = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
+        let state = self.copy_selection_snapshot()?;
+        let confirmed = self.copy_selection_snapshot()?;
+        if state != confirmed || state != anchor.state || socket.dev() != anchor.socket_device
+            || socket.ino() != anchor.socket_inode || state.target.window != window || state.target.pane != pane
+            || state.active || state.present || state.cursor_y >= state.height
+        { return Err("Cambió la terminal o hay una selección activa; yank cancelado".into()); }
+        let grid_history = if state.scroll > state.history { self.copy_grid_history(&state)? } else { state.history };
+        let start = grid_history.checked_add(state.cursor_y)
+            .and_then(|n| n.checked_sub(state.scroll)).ok_or("Cursor de terminal fuera de rango")?;
+        let last = grid_history.checked_add(state.height).and_then(|n| n.checked_sub(1))
+            .ok_or("Tamaño de terminal inválido")?;
+        let end = start.checked_add((count - 1) as u64).ok_or("Conteo de yank fuera de límites")?;
+        if end > last {
+            return Err("El conteo de yank excede el final de la terminal; registros conservados".into());
+        }
+        let text = self.physical_copy_rows(&state, grid_history, start, end)?;
+        let after = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
+        if self.resume_target()? != state.target || socket.dev() != after.dev() || socket.ino() != after.ino() {
+            return Err("Cambió la terminal; yank cancelado".into());
+        }
+        Ok(Some(TrackedCopy { text, linewise: true, editor_register: true }))
+    }
+
+    fn copy_normal_motion(&self, window: &str, pane: &str, motion: &str, count: usize, anchor: &YankAnchor) -> Result<Option<TrackedCopy>, String> {
+        use unicode_segmentation::UnicodeSegmentation;
+        use unicode_width::UnicodeWidthStr;
+        let socket = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
+        let state = self.copy_selection_snapshot()?;
+        if self.copy_selection_snapshot()? != state || state != anchor.state
+            || socket.dev() != anchor.socket_device || socket.ino() != anchor.socket_inode || state.target.window != window
+            || state.target.pane != pane || state.active || state.present || state.cursor_y >= state.height
+        { return Err("Cambió la terminal o hay una selección activa; yank cancelado".into()); }
+        let grid_history = self.copy_grid_history(&state)?;
+        let row = grid_history.checked_add(state.cursor_y).and_then(|n| n.checked_sub(state.scroll))
+            .ok_or("Cursor de terminal fuera de rango")?;
+        let last = grid_history.checked_add(state.height).and_then(|n| n.checked_sub(1))
+            .ok_or("Tamaño de terminal inválido")?;
+        if row > last { return Err("Cursor de terminal fuera de rango".into()); }
+        // Capture at most 1024 nearby rows regardless of total scrollback.
+        // A motion touching a truncated boundary is rejected below.
+        let low = row.saturating_sub(511);
+        let high = low.saturating_add(1023).min(last);
+        let mut screen = self.physical_copy_rows(&state, grid_history, low, high)?;
+        if screen.pop() != Some('\n') { return Err("Contenido de terminal incompleto".into()); }
+        let row_index = usize::try_from(row - low).map_err(|_| "Cursor fuera de rango")?;
+        let current = screen.split('\n').nth(row_index).ok_or("Cursor fuera de rango")?;
+        let mut cells = 0_u64;
+        let mut chars = 0_usize;
+        let mut column = None;
+        for cluster in current.graphemes(true) {
+            if cells == state.cursor_x { column = Some(chars); break; }
+            cells = cells.checked_add(UnicodeWidthStr::width(cluster) as u64).ok_or("Columna fuera de rango")?;
+            if cells > state.cursor_x { return Err("Cursor dentro de un carácter ancho; yank cancelado".into()); }
+            chars = chars.checked_add(cluster.chars().count()).ok_or("Columna fuera de rango")?;
+        }
+        if current.is_empty() && state.cursor_x == 0 { column = Some(0); }
+        let column = column.ok_or("Cursor fuera del texto visible; yank cancelado")?;
+        let offset = screen.split('\n').take(row_index)
+            .try_fold(0_usize, |n, line| n.checked_add(line.chars().count())?.checked_add(1))
+            .and_then(|n| n.checked_add(column)).ok_or("Cursor fuera de rango")?;
+        let remaining = screen.chars().count().checked_sub(offset).ok_or("Cursor fuera de rango")?;
+        let result = crate::editor::Editor::projected_terminal_yank(screen, row_index, column, motion, count)?;
+        let backward = matches!(motion, "b" | "B" | "0" | "^" | "h");
+        let truncated = if backward { low > 0 } else { high < last };
+        let available = if backward { offset } else { remaining };
+        if truncated && result.as_ref().is_none_or(|(text, _)| text.chars().count() >= available) {
+            return Err("Movimiento fuera del rango capturado; registros conservados".into());
+        }
+        let after = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
+        if self.resume_target()? != state.target || self.copy_selection_snapshot()? != state
+            || socket.dev() != after.dev() || socket.ino() != after.ino()
+        { return Err("Cambió la terminal; yank cancelado".into()); }
+        Ok(result.map(|(text, linewise)| TrackedCopy { text, linewise, editor_register: true }))
     }
 
     /// Choose one vi motion when the logical line can be identified safely.
@@ -2362,7 +3020,9 @@ impl Session {
         window: &str,
         pane: &str,
         keep_mode: bool,
-    ) -> Result<Option<String>, String> {
+        line: Option<&LineSelection>,
+        first_yank_token: Option<u64>,
+    ) -> Result<(Option<TrackedCopy>, Option<YankAnchor>), String> {
         let expected = ResumeTarget {
             window: window.into(),
             pane: pane.into(),
@@ -2382,7 +3042,51 @@ impl Session {
             return Err("Cambió el destino o la selección; copia cancelada".into());
         }
         if !selection.active && !selection.present {
-            return Ok(None);
+            let anchor = first_yank_token.map(|token| YankAnchor {
+                token,
+                state: selection,
+                socket_device: socket.dev(),
+                socket_inode: socket.ino(),
+            });
+            return Ok((None, anchor));
+        }
+        let linewise = keep_mode && line.is_some_and(|line| {
+            selection.rectangle == 0
+                && selection.session == line.session
+                && selection.server == line.server
+                && socket.dev() == line.socket_device
+                && socket.ino() == line.socket_inode
+                && selection.endpoints.is_some_and(|ends| {
+                    ends[1] == line.anchor_row || ends[3] == line.anchor_row
+                })
+        });
+        if linewise {
+            let line = line.ok_or("No se pudo identificar la selección de líneas")?;
+            let text = self.physical_visual_lines(&selection, line)?;
+            let socket_before_clear = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
+            if socket.dev() != socket_before_clear.dev() || socket.ino() != socket_before_clear.ino() {
+                return Err("Cambió la terminal; selección conservada".into());
+            }
+            let command = format!("send-keys -t {pane} -X clear-selection ; display-message -p TWR_LINES_OK");
+            let result = self.run(&[
+                "if-shell", "-F", "-t", &format!("{}:", self.name),
+                &selection.condition(), &command, "display-message -p TWR_LINES_REJECT",
+            ])?;
+            if result.trim() != "TWR_LINES_OK" {
+                return Err("No se pudo confirmar el yank; revisá la selección antes de repetir".into());
+            }
+            let after = self.copy_selection_snapshot()?;
+            let socket_after = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
+            if after.target != selection.target || after.session != selection.session
+                || after.server != selection.server || after.active || after.present
+                || after.cursor_x != selection.cursor_x || after.cursor_y != selection.cursor_y
+                || after.scroll != selection.scroll || after.width != selection.width
+                || after.height != selection.height || after.history != selection.history
+                || socket.dev() != socket_after.dev() || socket.ino() != socket_after.ino()
+            {
+                return Err("Yank no confirmado; revisá la selección antes de repetir".into());
+            }
+            return Ok((Some(TrackedCopy { text, linewise: true, editor_register: true }), None));
         }
         let mut random = [0_u8; 16];
         fs::File::open("/dev/urandom")
@@ -2442,7 +3146,7 @@ impl Session {
         {
             return Err("Cambió el destino de la terminal; copia cancelada".into());
         }
-        Ok(Some(text))
+        Ok((Some(TrackedCopy { text, linewise, editor_register: false }), None))
     }
     fn action(&self, a: Action) -> Result<(), String> {
         self.action_with_target(a, None)
@@ -2462,6 +3166,8 @@ impl Session {
             | Action::InspectSelection { .. }
             | Action::VisualScreenMotion { .. }
             | Action::VisualLine { .. }
+            | Action::CopyNormalLines { .. }
+            | Action::CopyNormalMotion { .. }
             | Action::RestoreCopyMark(_, _)
             | Action::RestoreCopyMarkInSession(_, _) => {
                 return Err("Resume requires explicit acknowledgement".into());
@@ -2883,8 +3589,21 @@ impl Backend {
         personal_shell: bool,
         wake: Option<async_channel::Sender<()>>,
     ) -> Self {
+        let cwd = primary.root.clone();
+        Self::start_additional_at_notifying(primary, name, personal_shell, cwd, wake)
+    }
+
+    /// Preserve the session's workspace identity when starting its shell in a
+    /// different directory. The caller owns the selected cwd and its lifetime.
+    pub fn start_additional_at_notifying(
+        primary: Session,
+        name: String,
+        personal_shell: bool,
+        cwd: PathBuf,
+        wake: Option<async_channel::Sender<()>>,
+    ) -> Self {
         Self::start_with(wake, move || {
-            let (session, identity) = primary.create_additional_terminal(&name, personal_shell)?;
+            let (session, identity) = primary.create_additional_terminal_at(&name, personal_shell, &cwd)?;
             session
                 .persist_additional_identity(&identity)
                 .map_err(|error| {
@@ -3008,22 +3727,123 @@ impl Backend {
             let mut resume = None;
             let mut resume_error = None;
             let mut visual_lines = LineSelections::new();
+            let mut yank_anchor: Option<YankAnchor> = None;
+            let mut windows_poll_error_reported = false;
+            let poll_interval = Duration::from_millis(400);
+            let max_poll_backoff = Duration::from_secs(8);
+            let mut poll_backoff = poll_interval;
+            let mut next_windows_poll = Instant::now();
+            // Poll metadata in a single separate worker. A slow list-windows
+            // must not hold the command dispatcher. Only one request can be
+            // outstanding, and an epoch prevents a result sampled before a
+            // target-changing action from overwriting that action's state.
+            let (poll_request, poll_requests) = mpsc::sync_channel::<u64>(1);
+            let (poll_results, poll_result) = mpsc::sync_channel(1);
+            let poll_session = session.clone();
+            if let Err(error) = std::thread::Builder::new()
+                .name("twr-tmux-windows".into())
+                .spawn(move || {
+                    while let Ok(epoch) = poll_requests.recv() {
+                        let result = poll_session.windows();
+                        if poll_results.send((epoch, result)).is_err() { break; }
+                    }
+                })
+            {
+                let _ = tx.try_send(Event::Error(format!("No se pudo iniciar la consulta de ventanas: {error}")));
+                return;
+            }
+            let mut poll_in_flight = false;
+            let mut poll_alive = true;
+            let mut poll_worker_failure_reported = false;
+            let mut poll_epoch = 0_u64;
             loop {
-                match session.windows() {
-                    Ok(ws) if ws != previous => {
-                        previous = ws.clone();
-                        if tx.send(Event::Windows(ws)).is_err() {
-                            break;
+                if poll_in_flight {
+                    let response = match poll_result.try_recv() {
+                        Ok(value) => Some(value),
+                        Err(mpsc::TryRecvError::Empty) => None,
+                        Err(mpsc::TryRecvError::Disconnected) => {
+                            poll_alive = false;
+                            poll_in_flight = false;
+                            None
+                        }
+                    };
+                    if let Some((epoch, result)) = response {
+                        poll_in_flight = false;
+                        if epoch != poll_epoch {
+                            next_windows_poll = Instant::now();
+                        } else {
+                            match result {
+                                Ok(ws) => {
+                                    poll_backoff = poll_interval;
+                                    if windows_poll_error_reported {
+                                        match tx.try_send(Event::WindowsPollRecovered) {
+                                            Ok(()) => windows_poll_error_reported = false,
+                                            Err(mpsc::TrySendError::Full(_)) => {}
+                                            Err(mpsc::TrySendError::Disconnected(_)) => break,
+                                        }
+                                    }
+                                    if ws != previous {
+                                        match tx.try_send(Event::Windows(ws.clone())) {
+                                            Ok(()) => previous = ws,
+                                            Err(mpsc::TrySendError::Full(_)) => {}
+                                            Err(mpsc::TrySendError::Disconnected(_)) => break,
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    poll_backoff = poll_backoff.saturating_mul(2).min(max_poll_backoff);
+                                    if !windows_poll_error_reported {
+                                        match tx.try_send(Event::WindowsPollError(e)) {
+                                            Ok(()) => windows_poll_error_reported = true,
+                                            Err(mpsc::TrySendError::Full(_)) => {}
+                                            Err(mpsc::TrySendError::Disconnected(_)) => break,
+                                        }
+                                    }
+                                }
+                            }
+                            next_windows_poll = Instant::now() + poll_backoff;
                         }
                     }
-                    Err(e) => {
-                        if tx.try_send(Event::Error(e)).is_err() {
-                            break;
-                        }
-                    }
-                    _ => {}
                 }
-                let request = rx.recv_timeout(Duration::from_millis(400));
+                if poll_alive && !poll_in_flight && Instant::now() >= next_windows_poll {
+                    match poll_request.try_send(poll_epoch) {
+                        Ok(()) => poll_in_flight = true,
+                        Err(mpsc::TrySendError::Full(_)) => {
+                            next_windows_poll = Instant::now() + poll_interval;
+                        }
+                        Err(mpsc::TrySendError::Disconnected(_)) => {
+                            poll_alive = false;
+                        }
+                    }
+                }
+                // A previous transient error may already be visible. Report
+                // worker termination separately so it is not mistaken for a
+                // timeout that will recover on the next periodic poll.
+                if !poll_alive && !poll_worker_failure_reported {
+                    match tx.try_send(Event::WindowsPollError("Consulta de ventanas detenida".into())) {
+                        Ok(()) => poll_worker_failure_reported = true,
+                        Err(mpsc::TrySendError::Full(_)) => {}
+                        Err(mpsc::TrySendError::Disconnected(_)) => break,
+                    }
+                }
+                // A metadata poll is read-only and periodic. Between polls,
+                // process queued actions immediately, including while a
+                // repeatedly failing poll backs off.
+                let wait = if poll_in_flight {
+                    Duration::from_millis(25)
+                } else if !poll_alive {
+                    poll_interval
+                } else {
+                    next_windows_poll.saturating_duration_since(Instant::now()).min(poll_interval)
+                };
+                let request = rx.recv_timeout(wait);
+                if request.as_ref().is_ok_and(|action: &Action| {
+                    action.changes_input_target() || matches!(action, Action::TrackedTarget(..))
+                }) {
+                    let Some(next) = poll_epoch.checked_add(1) else { break };
+                    poll_epoch = next;
+                    next_windows_poll = Instant::now();
+                }
                 if let (Some(expected), Ok(action)) = (&guard, &request)
                     && let Err(error) = session.verify_additional_terminal(expected)
                 {
@@ -3258,9 +4078,28 @@ impl Backend {
                         window,
                         pane,
                         keep_mode,
+                        first_yank,
                     }) => {
-                        visual_lines.remove(&(window.clone(), pane.clone()));
-                        let result = session.copy_selection_tracked(&window, &pane, keep_mode);
+                        yank_anchor = None;
+                        let line = visual_lines.remove(&(window.clone(), pane.clone()));
+                        let result = session.copy_selection_tracked(
+                            &window, &pane, keep_mode, line.as_ref(), first_yank.then_some(token),
+                        ).map(|(copy, anchor)| {
+                            yank_anchor = anchor;
+                            copy
+                        });
+                        let _ = tx.send(Event::CopyTracked(token, result));
+                    }
+                    Ok(Action::CopyNormalLines { token, anchor_token, window, pane, count }) => {
+                        let result = yank_anchor.take().filter(|anchor| anchor.token == anchor_token)
+                            .ok_or_else(|| "Posición de yank no disponible; copia cancelada".to_owned())
+                            .and_then(|anchor| session.copy_normal_lines(&window, &pane, count, &anchor));
+                        let _ = tx.send(Event::CopyTracked(token, result));
+                    }
+                    Ok(Action::CopyNormalMotion { token, anchor_token, window, pane, motion, count }) => {
+                        let result = yank_anchor.take().filter(|anchor| anchor.token == anchor_token)
+                            .ok_or_else(|| "Posición de yank no disponible; copia cancelada".to_owned())
+                            .and_then(|anchor| session.copy_normal_motion(&window, &pane, &motion, count, &anchor));
                         let _ = tx.send(Event::CopyTracked(token, result));
                     }
                     Ok(Action::VisualLine {
@@ -3284,6 +4123,11 @@ impl Backend {
                             resume = None;
                         }
                         let result = session.action(a);
+                        if changed && result.is_ok() {
+                            // A successful target change should be reflected
+                            // promptly even after a metadata-poll failure.
+                            next_windows_poll = Instant::now();
+                        }
                         if changed {
                             resume_error = result.as_ref().err().cloned();
                         }

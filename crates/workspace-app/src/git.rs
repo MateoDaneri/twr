@@ -31,6 +31,18 @@ fn command(root: &Path) -> Command {
         "core.fsmonitor=false",
         "-c",
         "core.hooksPath=/dev/null",
+        // Repository config must not choose a program to run during a
+        // read-only view (log.showSignature makes `git log` call gpg.program).
+        "-c",
+        "log.showSignature=false",
+        "-c",
+        "gpg.program=/usr/bin/false",
+        "-c",
+        "gpg.openpgp.program=/usr/bin/false",
+        "-c",
+        "gpg.x509.program=/usr/bin/false",
+        "-c",
+        "gpg.ssh.program=/usr/bin/false",
         "-C",
     ])
     .arg(root);
@@ -181,6 +193,7 @@ pub fn tree_status(root: &Path) -> Result<BTreeMap<PathBuf, TreeStatus>, String>
         "status",
         "--porcelain=v1",
         "-z",
+        "--ignore-submodules=all",
         "--no-renames",
         "--untracked-files=all",
     ]);
@@ -193,7 +206,13 @@ pub fn overview(root: &Path, action: &str) -> Result<String, String> {
     let mut cmd = command(root);
     match action {
         "status" => {
-            cmd.args(["status", "--short", "--branch", "--untracked-files=normal"]);
+            cmd.args([
+                "status",
+                "--short",
+                "--branch",
+                "--untracked-files=normal",
+                "--ignore-submodules=all",
+            ]);
         }
         "log" => {
             cmd.args([
@@ -210,6 +229,7 @@ pub fn overview(root: &Path, action: &str) -> Result<String, String> {
                 "diff",
                 "HEAD",
                 "--no-color",
+                "--ignore-submodules=all",
                 "--no-ext-diff",
                 "--no-textconv",
                 "--",
@@ -217,7 +237,7 @@ pub fn overview(root: &Path, action: &str) -> Result<String, String> {
         }
         _ => return Err("Vista Git desconocida".into()),
     }
-    let text = output(cmd)?;
+    let text = crate::text_safety::strip_bidi(&output(cmd)?).into_owned();
     let text = if action == "status" {
         text.lines()
             .map(|line| {
@@ -271,11 +291,13 @@ pub fn inspect(root: &Path, path: &Path, expected: &str) -> Result<Inspection, S
         "--no-color",
         "--no-ext-diff",
         "--no-textconv",
+        "--ignore-submodules=all",
         "--unified=0",
         "--",
     ])
     .arg(relative);
-    let diff = output(cmd)?;
+    // Display text only: bidi controls cannot reorder what the preview shows.
+    let diff = crate::text_safety::strip_bidi(&output(cmd)?).into_owned();
     let hunks = hunks(&diff)?;
     // Positions refer to the checked disk revision, not to a later rewrite.
     if std::fs::read_to_string(path).map_err(|e| e.to_string())? != expected {
@@ -285,6 +307,17 @@ pub fn inspect(root: &Path, path: &Path, expected: &str) -> Result<Inspection, S
 }
 pub fn blame(root: &Path, path: &Path, line: usize) -> Result<String, String> {
     let relative = relative(root, path)?;
+    // The installed git does not document --no-textconv for blame, and the
+    // diff views already pass it. Decline blame when the repository config
+    // names a textconv program instead of letting blame run it.
+    let mut config = command(root);
+    config.args(["config", "--list", "--name-only"]);
+    if output(config)?
+        .lines()
+        .any(|name| name.starts_with("diff.") && name.ends_with(".textconv"))
+    {
+        return Err("Este repositorio define textconv de Git; blame no lo ejecuta".into());
+    }
     let mut cmd = command(root);
     cmd.args(["blame", "--line-porcelain", "-L"])
         .arg(format!("{},{}", line.max(1), line.max(1)))
@@ -306,7 +339,7 @@ pub fn blame(root: &Path, path: &Path, line: usize) -> Result<String, String> {
             summary.push(line.to_owned());
         }
     }
-    Ok(summary.join("\n"))
+    Ok(crate::text_safety::strip_bidi(&summary.join("\n")).into_owned())
 }
 pub fn hunks(diff: &str) -> Result<Vec<Hunk>, String> {
     let pattern = regex::Regex::new(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")

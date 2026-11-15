@@ -237,10 +237,18 @@ def doctor():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['bootstrap', 'doctor', 'test', 'check', 'demo', 'pty-smoke', 'bench', 'edit-bench', 'fmt', 'format', 'resolve', 'gui-build', 'gui-release-build', 'gui-check', 'gui'])
-    parser.add_argument('--ghostty-stage', type=Path, help='Opt into the evaluated C core using this prepared private stage')
+    ghostty = parser.add_mutually_exclusive_group()
+    ghostty.add_argument('--ghostty-stage', type=Path, help='Use the prepared source-built Ghostty core')
+    ghostty.add_argument('--ghostty-release-stage', type=Path, help='Use the verified official Ghostty 1.0.0 XCFramework')
     args = parser.parse_args()
+    # A caller must select the provenance explicitly, never through inherited
+    # environment variables that would contradict the generated receipt.
+    os.environ.pop('TERMINAL_WORKSPACE_GHOSTTY_STAGE', None)
+    os.environ.pop('TERMINAL_WORKSPACE_GHOSTTY_RELEASE_STAGE', None)
     if args.ghostty_stage:
         os.environ['TERMINAL_WORKSPACE_GHOSTTY_STAGE'] = str(args.ghostty_stage.resolve(strict=True))
+    if args.ghostty_release_stage:
+        os.environ['TERMINAL_WORKSPACE_GHOSTTY_RELEASE_STAGE'] = str(args.ghostty_release_stage.resolve(strict=True))
     if args.command == 'doctor':
         doctor()
         return
@@ -281,7 +289,7 @@ def main_locked(args):
         'edit-bench': ['run', '--release', '--locked', '-p', 'workspace-cli', '--', 'edit-bench'],
         'bench': ['run', '--release', '--locked', '-p', 'workspace-cli', '--', 'bench'],
     }
-    if args.ghostty_stage and args.command not in ('format', 'fmt', 'resolve'):
+    if (args.ghostty_stage or args.ghostty_release_stage) and args.command not in ('format', 'fmt', 'resolve'):
         flags = options[args.command]
         enable_ghostty(flags)
     source_root = ROOT
@@ -317,8 +325,21 @@ def main_locked(args):
             if hashlib.sha256(archive.read_bytes()).hexdigest() != expected:
                 raise RuntimeError('Terminal core archive changed during build')
             core = {'commit': prepared['commit'], 'static_archive_sha256': expected, 'graphics': 'experimental Kitty RGB/RGBA and bounded PNG in GPUI; animation pending; file/temp/shm disabled'}
+        elif args.ghostty_release_stage:
+            stage = args.ghostty_release_stage.resolve(strict=True)
+            zip_path = stage / 'ghostty-vt-1.0.0.xcframework.zip'
+            archive = stage / 'libghostty-vt.a'
+            zip_hash = '2c32b7409b2b6c2ef6cfd606526de357762ad458bdc27134ad074e86506a8bc2'
+            archive_hash = '497ecbe334670fa194d4c10e50693e0ed3faa925418196960291356962c9c9e5'
+            if (hashlib.sha256(zip_path.read_bytes()).hexdigest() != zip_hash or
+                    hashlib.sha256(archive.read_bytes()).hexdigest() != archive_hash):
+                raise RuntimeError('Official Ghostty release changed during build')
+            core = {'distribution': 'official-minisign-release', 'release': '1.0.0',
+                    'commit': '0fa3d577a5614150ff8e2c152de5fb9d5c6d2dec',
+                    'release_zip_sha256': zip_hash, 'static_archive_sha256': archive_hash,
+                    'graphics': 'experimental Kitty RGB/RGBA and bounded PNG in GPUI; animation pending; file/temp/shm disabled'}
         receipt.write_text(json.dumps({'profile': profile, 'source_sha256': source_sha, 'source_files': files, 'source_snapshot': str(source_root),
-                                       'terminal_engine': 'libghostty-vt' if args.ghostty_stage else 'vt100', 'terminal_core': core,
+                                       'terminal_engine': 'libghostty-vt' if (args.ghostty_stage or args.ghostty_release_stage) else 'vt100', 'terminal_core': core,
                                        'binary_sha256': hashlib.sha256(binary.read_bytes()).hexdigest()}, indent=2) + '\n')
         receipt.chmod(0o600)
 

@@ -288,7 +288,7 @@ enum Command {
     },
     #[cfg(test)]
     WriterBarrier(std::sync::mpsc::SyncSender<()>),
-    Resize(u16, u16, u16, u16),
+    Resize(u16, u16, u16, u16, Option<SyncSender<Result<(), String>>>),
     Scroll(usize),
     Shutdown,
 }
@@ -300,6 +300,13 @@ pub struct Terminal {
     child_pid: Option<u32>,
     size: (u16, u16),
     cell_size: (u16, u16),
+    pending_resize: Option<PendingResize>,
+}
+struct PendingResize {
+    size: (u16, u16),
+    cell_size: (u16, u16),
+    reply: mpsc::Receiver<Result<(), String>>,
+    started: std::time::Instant,
 }
 impl Terminal {
     pub fn spawn(cwd: &Path, label: &str) -> Result<Self, String> {
@@ -527,23 +534,23 @@ impl Terminal {
                         Ok(Command::WriterBarrier(done)) => {
                             let _ = done.send(());
                         }
-                        Ok(Command::Resize(rows, cols, width, height)) => {
+                        Ok(Command::Resize(rows, cols, width, height, reply)) => {
                             content_revision = content_revision.saturating_add(1);
                             let rows = rows.clamp(2, 200);
                             let cols = cols.clamp(2, 400);
-                            if let Err(e) = pair.master.resize(PtySize {
+                            let result = pair.master.resize(PtySize {
                                 rows,
                                 cols,
                                 pixel_width: cols.saturating_mul(width),
                                 pixel_height: rows.saturating_mul(height),
-                            }) {
-                                error = Some(e.to_string());
-                            } else {
-                                if let Err(e) =
-                                    parser.resize(rows, cols, width as u32, height as u32)
-                                {
-                                    error = Some(e);
-                                }
+                            }).map_err(|e| e.to_string()).and_then(|_| {
+                                parser.resize(rows, cols, width as u32, height as u32)
+                            });
+                            if let Err(e) = &result {
+                                error = Some(e.clone());
+                            }
+                            if let Some(reply) = reply {
+                                let _ = reply.try_send(result);
                             }
                             changed = true;
                         }
@@ -668,6 +675,7 @@ impl Terminal {
             child_pid,
             size: (24, 80),
             cell_size: (0, 0),
+            pending_resize: None,
         })
     }
     pub fn snapshot(&self) -> Option<Arc<Snapshot>> {
@@ -797,17 +805,67 @@ impl Terminal {
         width: u16,
         height: u16,
     ) -> Result<(), String> {
+        if self.pending_resize.is_some() {
+            return Err("Terminal resize confirmation pending".into());
+        }
         let next = (rows.clamp(2, 200), cols.clamp(2, 400));
         let cells = (width.min(256), height.min(256));
         if next == self.size && cells == self.cell_size {
             return Ok(());
         }
         self.commands
-            .try_send(Command::Resize(next.0, next.1, cells.0, cells.1))
+            .try_send(Command::Resize(next.0, next.1, cells.0, cells.1, None))
             .map_err(|e| e.to_string())?;
         self.size = next;
         self.cell_size = cells;
         Ok(())
+    }
+
+    /// Return true only after the PTY and parser accepted the current size.
+    /// At most one tracked resize is in flight; newer geometry is sent after
+    /// the previous acknowledgement, preserving the command queue's order.
+    pub fn resize_cells_confirmed(
+        &mut self, rows: u16, cols: u16, width: u16, height: u16,
+    ) -> Result<bool, String> {
+        if let Some(pending) = &self.pending_resize {
+            match pending.reply.try_recv() {
+                Err(TryRecvError::Empty) => return Ok(false),
+                Err(TryRecvError::Disconnected) => {
+                    self.pending_resize = None;
+                    return Err("Terminal resize acknowledgement disconnected".into());
+                }
+                Ok(result) => {
+                    let completed = self.pending_resize.take().expect("pending resize exists");
+                    result?;
+                    self.size = completed.size;
+                    self.cell_size = completed.cell_size;
+                }
+            }
+        }
+        let next = (rows.clamp(2, 200), cols.clamp(2, 400));
+        let cells = (width.min(256), height.min(256));
+        if next == self.size && cells == self.cell_size {
+            return Ok(true);
+        }
+        let (reply, received) = mpsc::sync_channel(1);
+        self.commands.try_send(Command::Resize(next.0, next.1, cells.0, cells.1, Some(reply)))
+            .map_err(|e| e.to_string())?;
+        self.pending_resize = Some(PendingResize {
+            size: next,
+            cell_size: cells,
+            reply: received,
+            started: std::time::Instant::now(),
+        });
+        Ok(false)
+    }
+    /// A slow acknowledgement remains in flight; callers must not resend it.
+    pub fn resize_confirmation_slow(&self, now: std::time::Instant) -> bool {
+        self.pending_resize.as_ref().is_some_and(|pending| {
+            now.saturating_duration_since(pending.started) >= Duration::from_secs(2)
+        })
+    }
+    pub fn resize_confirmation_in_flight(&self) -> bool {
+        self.pending_resize.is_some()
     }
     pub fn scroll(&self, rows: usize) -> Result<(), String> {
         self.commands
@@ -979,11 +1037,13 @@ mod tests {
         let (commands, _receiver) = mpsc::sync_channel(2);
         let terminal = Terminal {
             commands,
+            identity: Arc::new(()),
             latest: latest.clone(),
             initial: initial.clone(),
             child_pid: None,
             size: (24, 80),
             cell_size: (0, 0),
+            pending_resize: None,
         };
         let mut held = latest.lock().unwrap();
         assert!(terminal.snapshot().is_none());

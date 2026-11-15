@@ -76,7 +76,25 @@ def publish_progress(frames, metadata, previous):
     return count
 
 
-def run(command, output, error, seconds, env, frames=None, metadata=None):
+SANDBOX = '/usr/bin/sandbox-exec'
+
+
+def sandbox_profile(job, decoder):
+    # Same Seatbelt approach as render_preview.py (duplicated: helpers run with
+    # python3 -I -S, and the PR flow loads this file by path). The decoder gets
+    # no network, reads only system libraries, its own directory and the job
+    # (input copy), and writes only the job directory.
+    job, decoder = os.path.realpath(job), os.path.realpath(decoder)
+    allowed = ['/System', '/usr/lib', '/usr/share', '/private/var/db/dyld', '/dev', decoder, job]
+    profile = ('(version 1)(allow default)(deny network*)(deny file-read*)(deny file-write*)'
+               '(allow file-read-metadata)(allow file-read* (literal "/"))'
+               '(allow file-write* (subpath ' + json.dumps(job) + '))')
+    return profile + ''.join('(allow file-read* (subpath ' + json.dumps(p) + '))' for p in allowed)
+
+
+def run(command, output, error, seconds, env, frames=None, metadata=None, profile=None):
+    if profile is not None:
+        command = [SANDBOX, '-p', profile, *command]
     with output.open('xb') as stdout, error.open('xb') as stderr:
         process = subprocess.Popen(command, env=env, stdin=subprocess.DEVNULL,
                                    stdout=stdout, stderr=stderr)
@@ -121,6 +139,8 @@ def main():
         regular(decoder / name, 32 * 1024**2)
         if not os.access(decoder / name, os.X_OK):
             raise RuntimeError('Video: decoder no ejecutable')
+    regular(Path(SANDBOX), 32 * 1024**2)
+    profile = sandbox_profile(job, decoder)
     (job / 'home').mkdir(mode=0o700)
     env = {'PATH': '/usr/bin:/bin', 'HOME': str(job / 'home'), 'TMPDIR': str(job),
            'LC_ALL': 'C', 'AV_LOG_FORCE_NOCOLOR': '1'}
@@ -147,7 +167,7 @@ def main():
               '-analyzeduration', '5000000']
     run([str(decoder / 'ffprobe'), *common, '-select_streams', 'v:0', '-show_entries',
          'stream=width,height:format=duration', '-of', 'json', str(copy)],
-        job / 'probe.json', job / 'probe.log', 15, env)
+        job / 'probe.json', job / 'probe.log', 15, env, profile=profile)
     if (job / 'probe.json').stat().st_size > 65536:
         raise RuntimeError('Video: metadata fuera de límites')
     probe = json.loads((job / 'probe.json').read_text())
@@ -167,7 +187,7 @@ def main():
          '-vf', "fps=12,scale='min(1280,iw)':'min(1280,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2",
          '-frames:v', str(math.ceil(duration * 12)), '-threads', '2', '-filter_threads', '1',
          '-compression_level', '1', '-atomic_writing', '1', str(frames / 'frame-%06d.png')],
-        job / 'decode.out', job / 'decode.log', 120, env, frames, metadata)
+        job / 'decode.out', job / 'decode.log', 120, env, frames, metadata, profile)
     entries = sorted(frames.iterdir())
     if not entries or len(entries) > 2160:
         raise RuntimeError('Video: sin cuadros o cantidad fuera de límites')

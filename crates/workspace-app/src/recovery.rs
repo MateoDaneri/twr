@@ -9,7 +9,9 @@ use std::{
     time::Duration,
 };
 const MAX_BUFFERS: usize = 128;
-const MAX_BUFFER_BYTES: usize = 8 * 1024 * 1024;
+/// Larger dirty buffers are left out of the snapshot by the caller so the
+/// remaining buffers are still covered.
+pub const MAX_BUFFER_BYTES: usize = 8 * 1024 * 1024;
 const MAX_SNAPSHOT_BYTES: usize = 16 * 1024 * 1024;
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Buffer {
@@ -23,12 +25,22 @@ pub struct Buffer {
     #[serde(default)]
     pub unnamed: bool,
 }
+/// Lookup key for the default interactive Snacks terminal within a workspace.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+pub struct SnacksTerminalKey {
+    pub cwd: PathBuf,
+    pub count: u32,
+}
 /// A listed terminal is only a request to verify a private tmux identity at
 /// startup; the name is never itself authority to adopt a session.
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Terminal {
     pub root: PathBuf,
     pub name: String,
+    /// A lookup hint only. The tmux server and session must still pass the
+    /// existing private identity verification before this key can be used.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub snacks: Option<SnacksTerminalKey>,
 }
 /// Keep both in-memory edits and the older recovered text when startup races
 /// with an edit of the same file. The synthetic ID never names a real file.
@@ -104,9 +116,16 @@ fn validate(state: &State) -> Result<(), String> {
     {
         return Err("Snapshot de recuperación fuera de límites".into());
     }
+    let mut session_names = std::collections::BTreeSet::new();
+    let mut snacks_keys = std::collections::BTreeSet::new();
     if state.terminals.len() > MAX_BUFFERS
         || state.terminals.iter().any(|terminal| {
             !crate::tmux::valid_additional_terminal_name(&terminal.root, &terminal.name)
+                || !session_names.insert((&terminal.root, &terminal.name))
+                || terminal.snacks.as_ref().is_some_and(|key| {
+                    !key.cwd.is_absolute() || key.cwd.as_os_str().len() > 4096 || key.count == 0
+                        || !snacks_keys.insert((&terminal.root, key))
+                })
         })
         || state
             .terminals
@@ -272,6 +291,7 @@ mod tests {
         let terminal = Terminal {
             root: root.clone(),
             name: session.additional_terminal_name().unwrap(),
+            snacks: None,
         };
         let state = State {
             terminals: vec![terminal.clone()],
@@ -310,7 +330,8 @@ mod tests {
             validate(&State {
                 terminals: vec![Terminal {
                     root,
-                    name: "../escape".into()
+                    name: "../escape".into(),
+                    snacks: None,
                 }],
                 ..State::default()
             })

@@ -98,10 +98,14 @@ pub enum Effect {
     Split(bool),
     SplitNew(bool),
     SplitNewSized(bool, usize),
+    SplitCurrentPosition(bool, usize, SplitPosition),
     SplitPath(bool, String),
     SplitPathSized(bool, usize, String),
     Only,
     CloseWindow,
+    CountedClose(usize),
+    CountedOnly(usize),
+    CountedQuit(usize, bool),
     WindowCommand(char, usize),
     WrappedMove(bool, usize),
     WrappedOperator(char, bool, usize),
@@ -110,6 +114,11 @@ pub enum Effect {
     WrappedTop,
     WrappedBottom,
     OpenPath(String),
+    OpenPathForced(String),
+    Reload(bool),
+    ChangeLocalDirectory(String),
+    ChangeGlobalDirectory(String),
+    PrintDirectory,
     Write(String, bool),
     WriteCopy(String),
     SaveAs(String),
@@ -132,6 +141,8 @@ pub enum Effect {
     Diagnostics(bool),
     Metrics(bool),
     MetricsExport,
+    /// Validation-only UI state snapshot; the view refuses it otherwise.
+    StateDump,
     SyntaxToggle,
     Wrap(Option<bool>),
     Theme(String),
@@ -176,9 +187,14 @@ pub struct Editor {
     prompt_register_pending: bool,
     prompt_clipboard_pending: Option<(String, usize, Mode, u64, usize)>,
     pub message: String,
+    /// A paste refused at the `:`/`/` prompt: the notice and the prompt text at
+    /// that moment. Kept apart from `message` (search previews rewrite it); the
+    /// notice is shown beside the prompt only while the prompt has this text.
+    pub prompt_notice: Option<(&'static str, String)>,
     pub version: u64,
     pub saving: bool,
     original: String,
+    baseline_revision: u64,
     saved: String,
     crlf: bool,
     anchor: usize,
@@ -229,6 +245,8 @@ pub struct Editor {
     operator_goal_column: Option<usize>,
     wrap_input: bool,
     operator_count_explicit: bool,
+    /// Set once the size bound first leaves this buffer with few undo levels.
+    undo_depth_warned: bool,
     automatic_indent: Option<(u64, Range<usize>)>,
     input: Option<input::Composition>,
     snippet: Option<snippets::Active>,
@@ -241,6 +259,24 @@ pub struct Editor {
     csv_delimiter: char,
     pub csv: Option<crate::csv::Table>,
 }
+/// Short forms shown beside an open `:`/`/` prompt, where the status bar has
+/// little room (GPUI 0.2.2 cannot always ellipsize a nowrap text measured
+/// before its width is known). The full text is the editor message.
+pub fn prompt_notice_short(notice: &str) -> &'static str {
+    if notice == PROMPT_LENGTH_REFUSED {
+        "No pegado: >1024"
+    } else {
+        "No pegado: multilínea"
+    }
+}
+/// Shown when a paste would make a `:` or `/` line longer than 1024 characters.
+pub const PROMPT_LENGTH_REFUSED: &str =
+    "Límite de 1024 caracteres en esta línea; texto no insertado";
+/// Shown when a paste into a `:` or `/` line contains a newline or another
+/// control character.
+pub const PROMPT_PASTE_REJECTED: &str =
+    "Texto multilínea o con caracteres de control no disponible en esta línea";
+
 fn targeted_buffer_delete(command: &str) -> Option<(bool, VimBufferTarget)> {
     let index = command.find(|c: char| !c.is_ascii_alphabetic())?;
     let (name, rest) = command.split_at(index);
@@ -276,6 +312,149 @@ fn numbered_buffer_command(command: &str) -> Option<u64> {
     Some(rest.parse().unwrap_or(u64::MAX))
 }
 
+/// Parse one Ex line address with optional +/- offsets, without a command.
+/// Other Ex expressions are left to the command dispatcher.
+fn single_line_address(
+    command: &str,
+    current: usize,
+    last: usize,
+) -> Option<Result<usize, &'static str>> {
+    let bytes = command.as_bytes();
+    if bytes.iter().any(|byte| {
+        !byte.is_ascii_digit() && !matches!(*byte, b'.' | b'$' | b'+' | b'-' | b' ' | b'\t')
+    }) {
+        return None;
+    }
+    let mut pos = 0;
+    let mut line = match *bytes.first()? {
+        b'.' => {
+            pos = 1;
+            current as i128
+        }
+        b'$' => {
+            pos = 1;
+            last as i128
+        }
+        b'0'..=b'9' => {
+            while pos < bytes.len() && bytes[pos].is_ascii_digit() {
+                pos += 1;
+            }
+            command[..pos].parse::<i128>().unwrap_or(i128::MAX)
+        }
+        b'+' | b'-' => current as i128,
+        _ => return None,
+    };
+    while pos < bytes.len() {
+        while pos < bytes.len() && matches!(bytes[pos], b' ' | b'\t') {
+            pos += 1;
+        }
+        if pos == bytes.len() {
+            break;
+        }
+        let sign = match bytes[pos] {
+            b'+' | b'-' => {
+                let sign = bytes[pos];
+                pos += 1;
+                sign
+            }
+            b'0'..=b'9' => b'+',
+            _ => return None,
+        };
+        let start = pos;
+        while pos < bytes.len() && bytes[pos].is_ascii_digit() {
+            pos += 1;
+        }
+        let amount = if start == pos {
+            1
+        } else {
+            command[start..pos].parse::<i128>().unwrap_or(i128::MAX)
+        };
+        line = match if sign == b'+' {
+            line.checked_add(amount)
+        } else {
+            line.checked_sub(amount)
+        } {
+            Some(value) => value,
+            None => return Some(Err("Número de línea fuera de rango")),
+        };
+    }
+    if line < 0 {
+        return Some(Err("E16: Invalid range"));
+    }
+    Some(Ok(line.max(1).min(last as i128) as usize))
+}
+
+/// Parse the documented :e[dit][!] spelling without confusing commands
+/// whose names merely start with `e`. The caller owns filename expansion.
+fn edit_command(command: &str) -> Option<(bool, &str)> {
+    let name_end = command.bytes().take_while(u8::is_ascii_alphabetic).count();
+    if !matches!(&command[..name_end], "e" | "ed" | "edi" | "edit") {
+        return None;
+    }
+    let rest = &command[name_end..];
+    let (force, rest) = rest.strip_prefix('!').map_or((false, rest), |tail| (true, tail));
+    if !rest.is_empty() && !rest.starts_with(char::is_whitespace) {
+        return None;
+    }
+    Some((force, rest.trim()))
+}
+
+/// v1 does not chain Ex commands. In Vim an unescaped `|` after :w, :write,
+/// :wq, :saveas or :edit separates the next command; here it would become
+/// part of a file name (`:w | q` wrote a copy named `| q`), so refuse it.
+fn chained_file_argument(command: &str) -> bool {
+    let argument = if let Some((_, argument)) = edit_command(command) {
+        argument
+    } else if let Some(rest) = ["w ", "write ", "wq ", "saveas "]
+        .iter()
+        .find_map(|prefix| command.strip_prefix(prefix))
+    {
+        rest
+    } else {
+        return false;
+    };
+    let mut escaped = false;
+    for c in argument.chars() {
+        if escaped {
+            escaped = false;
+        } else if c == '\\' {
+            escaped = true;
+        } else if c == '|' {
+            return true;
+        }
+    }
+    false
+}
+
+/// With no filename, :new +[line] still creates an empty buffer. Its only
+/// possible cursor position is line one, so use the existing new-window path.
+fn positioned_empty_new(command: &str) -> Option<Result<(bool, usize), &'static str>> {
+    let digits = command.bytes().take_while(u8::is_ascii_digit).count();
+    let rest = command[digits..].trim_start();
+    let name_end = rest.find(char::is_whitespace)?;
+    let vertical = match &rest[..name_end] {
+        "new" => false,
+        "vne" | "vnew" => true,
+        _ => return None,
+    };
+    let position = rest[name_end..].trim().strip_prefix('+')?;
+    if !position.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    if !position.is_empty() && position.parse::<usize>().is_err() {
+        return Some(Err("Número de línea fuera de rango"));
+    }
+    let count = if digits == 0 {
+        0
+    } else {
+        match command[..digits].parse::<usize>() {
+            Ok(count @ 1..=9999) => count,
+            _ => return Some(Err("Conteo fuera de rango para el split")),
+        }
+    };
+    Some(Ok((vertical, count)))
+}
+
 fn counted_split_command(
     command: &str,
 ) -> Option<Result<(char, usize, Option<String>), &'static str>> {
@@ -286,14 +465,14 @@ fn counted_split_command(
     let rest = command[digits..].trim_start();
     let name_end = rest.find(char::is_whitespace).unwrap_or(rest.len());
     let key = match &rest[..name_end] {
-        "sp" | "split" => 's',
-        "vs" | "vsplit" => 'v',
+        "sp" | "spl" | "spli" | "split" => 's',
+        "vs" | "vsp" | "vspl" | "vspli" | "vsplit" => 'v',
         "new" => 'n',
         "vne" | "vnew" => 'N',
         _ => return None,
     };
     let argument = rest[name_end..].trim();
-    if argument.starts_with('+') || matches!(argument, "#" | "%") || argument.contains('|') {
+    if split_path_position(argument).is_err() || matches!(argument, "#" | "%") || argument.contains('|') {
         return Some(Err("Argumento de split con conteo aún no disponible"));
     }
     let path = (!argument.is_empty()).then(|| argument.to_owned());
@@ -301,6 +480,180 @@ fn counted_split_command(
         Ok(count @ 1..=9999) => Ok((key, count, path)),
         _ => Err("Conteo fuera de rango para el split"),
     })
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SplitPosition {
+    Line(usize),
+    Last,
+}
+
+/// A numeric +command without a filename positions a duplicated view.
+fn positioned_current_split(command: &str) -> Option<Result<(bool, usize, SplitPosition), &'static str>> {
+    let digits = command.bytes().take_while(u8::is_ascii_digit).count();
+    let rest = command[digits..].trim_start();
+    let name_end = rest.find(char::is_whitespace)?;
+    let vertical = match &rest[..name_end] {
+        "sp" | "spl" | "spli" | "split" => false,
+        "vs" | "vsp" | "vspl" | "vspli" | "vsplit" => true,
+        _ => return None,
+    };
+    let position = rest[name_end..].trim().strip_prefix('+')?;
+    if !position.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    let position = if position.is_empty() {
+        SplitPosition::Last
+    } else {
+        match position.parse::<usize>() {
+            Ok(line) => SplitPosition::Line(line.max(1)),
+            Err(_) => return Some(Err("Número de línea fuera de rango")),
+        }
+    };
+    let count = if digits == 0 {
+        0
+    } else {
+        match command[..digits].parse::<usize>() {
+            Ok(count @ 1..=9999) => count,
+            _ => return Some(Err("Conteo fuera de rango para el split")),
+        }
+    };
+    Some(Ok((vertical, count, position)))
+}
+
+/// Parse :split +{line} file and :split + file without interpreting other
+/// Ex commands or options as part of a filename.
+pub fn split_path_position(argument: &str) -> Result<(&str, Option<SplitPosition>), &'static str> {
+    if !argument.starts_with('+') {
+        return Ok((argument, None));
+    }
+    let Some(end) = argument.find(char::is_whitespace) else {
+        return Err("Opciones y comandos de split aún no disponibles");
+    };
+    let digits = &argument[1..end];
+    if !digits.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err("Opciones y comandos de split aún no disponibles");
+    }
+    let position = if digits.is_empty() {
+        SplitPosition::Last
+    } else {
+        let line = digits.parse::<usize>().map_err(|_| "Número de línea fuera de rango")?;
+        SplitPosition::Line(line.max(1))
+    };
+    let name = argument[end..].trim_start();
+    if name.is_empty() || name.starts_with('+') || name.contains('|') {
+        return Err("Opciones y comandos de split aún no disponibles");
+    }
+    Ok((name, Some(position)))
+}
+
+/// Never treat an unsupported Ex +cmd or ++opt as a literal split filename.
+fn split_has_ex_options(command: &str) -> bool {
+    let Some(end) = command.find(char::is_whitespace) else { return false };
+    matches!(&command[..end],
+        "sp" | "spl" | "spli" | "split" | "vs" | "vsp" | "vspl" | "vspli" | "vsplit"
+            | "new" | "vne" | "vnew")
+        && split_path_position(command[end..].trim_start()).is_err()
+}
+
+/// Parse an explicit numeric window for :close. Relative addresses remain
+/// unsupported until they have their own rules.
+fn counted_close_command(command: &str) -> Option<Result<usize, &'static str>> {
+    let digits = command.bytes().take_while(u8::is_ascii_digit).count();
+    if digits == 0 || !matches!(command[digits..].trim(),
+        "clo" | "clos" | "close" | "clo!" | "clos!" | "close!") {
+        return None;
+    }
+    Some(match command[..digits].parse::<usize>() {
+        Ok(count @ 1..=9999) => Ok(count),
+        _ => Err("E16: Invalid range"),
+    })
+}
+
+/// Numeric :quit addresses a window; retain the force flag for the adapter.
+fn counted_quit_command(command: &str) -> Option<Result<(usize, bool), &'static str>> {
+    let digits = command.bytes().take_while(u8::is_ascii_digit).count();
+    let suffix = command[digits..].trim();
+    let (name, force) = suffix.strip_suffix('!').map_or((suffix, false), |name| (name, true));
+    if digits == 0 || !matches!(name, "q" | "qu" | "qui" | "quit") {
+        return None;
+    }
+    Some(match command[..digits].parse::<usize>() {
+        Ok(count @ 1..=9999) => Ok((count, force)),
+        _ => Err("E16: Invalid range"),
+    })
+}
+
+/// Parse an explicit window for :only. As with :wincmd o, this chooses the
+/// window to retain; the optional ! still keeps modified buffers hidden.
+fn counted_only_command(command: &str) -> Option<Result<usize, &'static str>> {
+    let digits = command.bytes().take_while(u8::is_ascii_digit).count();
+    if digits == 0 || !matches!(command[digits..].trim(),
+        "on" | "onl" | "only" | "on!" | "onl!" | "only!") {
+        return None;
+    }
+    Some(match command[..digits].parse::<usize>() {
+        Ok(count @ 1..=9999) => Ok(count),
+        _ => Err("E16: Invalid range"),
+    })
+}
+
+/// Translate the current-window :resize family to the same measured window
+/// operations as Ctrl-W. Explicit addresses remain rejected until they can
+/// resize another window without changing the current focus.
+fn resize_command(command: &str) -> Option<Result<Option<(char, usize)>, &'static str>> {
+    let mut rest = command;
+    let modifier_len = rest.bytes().take_while(u8::is_ascii_alphabetic).count();
+    let modifier = &rest[..modifier_len];
+    let vertical = matches!(modifier, "vert" | "verti" | "vertic" | "vertica" | "vertical");
+    if vertical {
+        let tail = &rest[modifier_len..];
+        if !tail.starts_with(char::is_whitespace) {
+            return None;
+        }
+        rest = tail.trim_start();
+    }
+    let address_len = rest.bytes().take_while(u8::is_ascii_digit).count();
+    let name = &rest[address_len..];
+    let name_len = name.bytes().take_while(u8::is_ascii_alphabetic).count();
+    if !matches!(&name[..name_len], "res" | "resi" | "resiz" | "resize") {
+        return None;
+    }
+    if address_len > 0 {
+        return Some(Err("Resize por número de ventana aún no disponible"));
+    }
+    let argument = name[name_len..].trim();
+    let (sign, digits) = match argument.as_bytes().first() {
+        Some(b'+') => (Some(true), &argument[1..]),
+        Some(b'-') => (Some(false), &argument[1..]),
+        _ => (None, argument),
+    };
+    if !digits.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Some(Err("Argumento inválido para :resize"));
+    }
+    let value = if digits.is_empty() {
+        if sign.is_some() { 1 } else { 0 }
+    } else {
+        match digits.parse::<usize>() {
+            Ok(value @ 0..=9999) => value,
+            _ => return Some(Err("Tamaño fuera de rango para :resize")),
+        }
+    };
+    if sign.is_some() && value == 0 {
+        return Some(Ok(None));
+    }
+    let key = match (vertical, sign) {
+        (true, Some(true)) => '>',
+        (true, Some(false)) => '<',
+        (false, Some(true)) => '+',
+        (false, Some(false)) => '-',
+        (true, None) => '|',
+        (false, None) => '_',
+    };
+    // The internal zero count means maximize; explicit :resize 0 means
+    // minimize. One requests the smallest representable text extent.
+    let count = if sign.is_none() && !digits.is_empty() && value == 0 { 1 } else { value };
+    Some(Ok(Some((key, count))))
 }
 
 /// Parse the supported subset of :[count]winc[md] [count] {arg}.
@@ -372,13 +725,21 @@ fn window_command(command: &str) -> Option<Result<(char, usize), &'static str>> 
     {
         return Some(Err("Argumento de :wincmd aún no disponible"));
     }
-    if count > 0 && matches!(key, 'o' | 'H' | 'J' | 'K' | 'L') {
-        return Some(Err("Conteo de :wincmd aún no disponible para esta acción"));
-    }
     Some(Ok((if key == 'S' { 's' } else { key }, count)))
 }
 
 impl Editor {
+    /// Drop a half-typed Normal command (operator, count, `"x` register
+    /// choice, awaited argument such as `f`, `m`, `r`) when focus leaves this
+    /// editor, so it cannot combine with a key typed after returning.
+    /// Register contents, undo history, marks and the mode are untouched.
+    pub fn abort_pending(&mut self) {
+        self.pending.clear();
+        self.count = 0;
+        self.awaiting = None;
+        self.chosen_register = None;
+        self.operator_count_explicit = false;
+    }
     pub fn identity(&self) -> EditorIdentity {
         EditorIdentity(self.identity.clone())
     }
@@ -404,9 +765,11 @@ impl Editor {
             prompt_register_pending: false,
             prompt_clipboard_pending: None,
             message: String::new(),
+            prompt_notice: None,
             version: 0,
             saving: false,
             original: text,
+            baseline_revision: 0,
             saved: normalized,
             crlf,
             anchor: 0,
@@ -457,6 +820,7 @@ impl Editor {
             operator_goal_column: None,
             wrap_input: false,
             operator_count_explicit: false,
+            undo_depth_warned: false,
             automatic_indent: None,
             input: None,
             snippet: None,
@@ -474,6 +838,37 @@ impl Editor {
         let mut editor = Self::new(text);
         editor.registers = registers;
         editor
+    }
+
+    /// Apply a supported yank motion to an isolated terminal-grid projection.
+    /// This private register bank never reads or writes the host clipboard.
+    pub fn projected_terminal_yank(
+        text: String, row: usize, column: usize, motion: &str, count: usize,
+    ) -> Result<Option<(String, bool)>, String> {
+        if !(1..=1024).contains(&count)
+            || !matches!(motion, "w" | "W" | "e" | "E" | "b" | "B" | "0" | "^" | "$" | "h" | "l")
+        { return Err("Movimiento de yank no disponible".into()); }
+        let bank = RegisterBank::default();
+        let mut editor = Self::with_registers(text, bank.clone());
+        editor.goto(row, column);
+        let version = editor.version;
+        if !matches!(editor.key("y"), Effect::None) { return Err("No se pudo iniciar el yank".into()); }
+        if count > 1 {
+            for digit in count.to_string().chars() {
+                if !matches!(editor.key(&digit.to_string()), Effect::None) {
+                    return Err("No se pudo aplicar el conteo de yank".into());
+                }
+            }
+        }
+        if !matches!(editor.key(motion), Effect::None) || editor.version != version
+            || editor.mode != Mode::Normal || !editor.pending.is_empty()
+        { return Err("No se pudo completar el yank de terminal".into()); }
+        match bank.get_kind('0') {
+            Some((text, registers::Kind::Character)) => Ok(Some((text, false))),
+            Some((text, registers::Kind::Line)) => Ok(Some((text, true))),
+            Some(_) => Err("Tipo de yank no disponible".into()),
+            None => Ok(None),
+        }
     }
     pub fn using_registers(mut self, registers: RegisterBank) -> Self {
         self.registers = registers;
@@ -582,6 +977,10 @@ impl Editor {
     pub fn original(&self) -> String {
         self.original.clone()
     }
+    /// Changes whenever the saved-on-disk baseline is replaced or confirmed.
+    pub fn baseline_revision(&self) -> u64 {
+        self.baseline_revision
+    }
     pub fn from_recovery(original: String, text: String, cursor: usize) -> Self {
         let mut e = Self::new(original);
         e.text = text.replace("\r\n", "\n").chars().collect();
@@ -601,8 +1000,35 @@ impl Editor {
     pub fn dirty(&self) -> bool {
         self.modified
     }
+    /// Replace this buffer from a guarded disk read without changing its
+    /// identity or losing its undo history. The caller must ensure that the
+    /// editor and its pending operations have not changed during the read.
+    pub fn reload_from_disk(&mut self, contents: String) {
+        let crlf = contents.contains("\r\n");
+        let normalized = contents.replace("\r\n", "\n");
+        let next = normalized.chars().collect::<Vec<_>>();
+        let changed = self.text != next;
+        let (row, column) = self.position();
+        if changed {
+            self.checkpoint();
+            self.track_visual_replacement(&next);
+            self.text = next;
+        }
+        self.original = contents;
+        self.baseline_revision = self.baseline_revision.wrapping_add(1);
+        self.saved = normalized;
+        self.crlf = crlf;
+        self.saving = false;
+        if changed {
+            self.changed();
+            self.goto(row, column);
+        } else {
+            self.modified = false;
+        }
+    }
     pub fn saved(&mut self, contents: String) {
         self.original = contents.clone();
+        self.baseline_revision = self.baseline_revision.wrapping_add(1);
         self.saved = contents.replace("\r\n", "\n");
         self.saving = false;
         self.modified = !self.text.iter().copied().eq(self.saved.chars());
@@ -923,6 +1349,37 @@ impl Editor {
         self.cursor = (start + column).min(self.line_end(start));
         self.clamp();
     }
+
+    /// A vertical-motion goal belongs to a window, not to the shared buffer.
+    /// `usize::MAX` represents the end-of-line goal created by `$`.
+    pub fn view_column_goal(&self) -> Option<usize> {
+        self.desired_column
+            .filter(|(expected, _)| *expected == self.cursor)
+            .map(|(_, column)| column)
+    }
+
+    pub fn restore_view_column_goal(&mut self, column: Option<usize>) {
+        self.desired_column = column.map(|column| (self.cursor, column));
+    }
+
+    /// Apply a one-based Ex line with the current desired display column.
+    /// Resolve before changing the cursor so an unrepresentable Unicode line
+    /// leaves the original position intact.
+    pub fn goto_ex_line_preserving_column(&mut self, line: usize) -> bool {
+        let Some(column) = self.view_column_goal().or_else(|| self.grapheme_column(self.cursor))
+        else {
+            return false;
+        };
+        let last = self.line_start(self.text.len().saturating_sub(1));
+        let start = self.line_number(line).min(last);
+        let Some(cursor) = self.grapheme_offset_at_column(start, column) else {
+            return false;
+        };
+        self.cursor = cursor;
+        self.clamp();
+        self.desired_column = Some((self.cursor, column));
+        true
+    }
     pub fn visible_lines(&self, top: usize, count: usize) -> Vec<Range<usize>> {
         let first = self.visible_row(top);
         (first..first.saturating_add(count))
@@ -942,6 +1399,7 @@ impl Editor {
     }
     fn checkpoint(&mut self) {
         // Bound retained history by character count as well as revision count.
+        let mut evicted = false;
         while self.undo.len() >= 100
             || self.undo.iter().map(|r| r.text.len()).sum::<usize>() + self.text.len() > 4_000_000
         {
@@ -949,6 +1407,16 @@ impl Editor {
                 break;
             }
             self.undo.remove(0);
+            evicted = true;
+        }
+        // Each revision stores the whole text, so a large file keeps only a
+        // few levels. Say so once per buffer instead of losing them silently.
+        let levels = self.undo.len() + 1;
+        if evicted && levels < 5 && !self.undo_depth_warned {
+            self.undo_depth_warned = true;
+            self.message = format!(
+                "Archivo grande: solo {levels} niveles de deshacer disponibles para este tamaño"
+            );
         }
         self.undo.push(Revision {
             text: self.text.clone(),
@@ -1033,6 +1501,9 @@ impl Editor {
                 if self.mode == Mode::Search {
                     self.refresh_search_preview(None);
                 }
+            } else {
+                self.message = PROMPT_LENGTH_REFUSED.into();
+                self.prompt_notice = Some((PROMPT_LENGTH_REFUSED, self.command.clone()));
             }
             return;
         }
@@ -1212,7 +1683,10 @@ impl Editor {
                 && p > self.line_start(p)
                 && (p == self.text.len() || self.text.get(p) == Some(&'\n'))
             {
-                p - 1
+                // `clamp` moves to the previous grapheme, which may consist
+                // of multiple Unicode scalars. Keep the saved motion goal
+                // anchored to that same position.
+                self.grapheme_move(p, 1, false, true).unwrap_or(p - 1)
             } else {
                 p
             };
@@ -1505,14 +1979,16 @@ impl Editor {
                 if search {
                     return self.submit_search(command);
                 } else {
-                    return match command.trim() {
-                        c if !c.is_empty() && c.bytes().all(|b| b.is_ascii_digit()) => {
-                            let number = c.parse::<usize>().unwrap_or(usize::MAX);
-                            self.cursor = self.line_number(number.max(1));
-                            self.clamp();
-                            self.desired_column = None;
-                            Effect::None
+                    let current = self.source_line_at(self.cursor) + 1;
+                    let last = self.source_line_at(self.text.len().saturating_sub(1)) + 1;
+                    if let Some(address) = single_line_address(command.trim(), current, last) {
+                        match address {
+                            Ok(line) => self.goto_line_column(line),
+                            Err(message) => self.message = message.into(),
                         }
+                        return Effect::None;
+                    }
+                    return match command.trim() {
                         "bn" | "bnext" => Effect::Buffer("buffers.next".into()),
                         "bf" | "bfi" | "bfir" | "bfirs" | "bfirst" | "br" | "bre" | "brew"
                         | "brewi" | "brewin" | "brewind" => Effect::Buffer("buffers.first".into()),
@@ -1547,13 +2023,78 @@ impl Editor {
                             Effect::Buffer("buffers.alternate".into())
                         }
                         "enew" => Effect::NewFile,
+                        "pw" | "pwd" => Effect::PrintDirectory,
+                        "cd" | "chd" | "chdi" | "chdir" | "cd!" | "chd!" | "chdi!" | "chdir!" => {
+                            Effect::ChangeGlobalDirectory(String::new())
+                        }
+                        c if ["cd ", "chd ", "chdi ", "chdir ", "cd! ", "chd! ", "chdi! ", "chdir! "]
+                            .iter().any(|prefix| c.starts_with(prefix)) => {
+                            let name = c.split_once(' ').map(|(_, name)| name.trim()).unwrap_or("");
+                            Effect::ChangeGlobalDirectory(name.into())
+                        }
+                        "lc" | "lcd" | "lch" | "lchd" | "lchdi" | "lchdir"
+                        | "lc!" | "lcd!" | "lch!" | "lchd!" | "lchdi!" | "lchdir!" => {
+                            Effect::ChangeLocalDirectory(String::new())
+                        }
+                        c if ["lc ", "lcd ", "lch ", "lchd ", "lchdi ", "lchdir ",
+                            "lc! ", "lcd! ", "lch! ", "lchd! ", "lchdi! ", "lchdir! "]
+                            .iter().any(|prefix| c.starts_with(prefix)) => {
+                            let name = c.split_once(' ').map(|(_, name)| name.trim()).unwrap_or("");
+                            Effect::ChangeLocalDirectory(name.into())
+                        }
                         "terminal" | "term" => Effect::NewTerminal,
-                        "sp" | "split" => Effect::Split(false),
-                        "vs" | "vsplit" => Effect::Split(true),
+                        "sp" | "spl" | "spli" | "split" => Effect::Split(false),
+                        "vs" | "vsp" | "vspl" | "vspli" | "vsplit" => Effect::Split(true),
                         "new" => Effect::SplitNew(false),
                         "vne" | "vnew" => Effect::SplitNew(true),
-                        "on" | "only" => Effect::Only,
-                        "clo" | "close" => Effect::CloseWindow,
+                        "on" | "onl" | "only" | "on!" | "onl!" | "only!" => Effect::Only,
+                        "clo" | "clos" | "close" | "clo!" | "clos!" | "close!" => Effect::CloseWindow,
+                        c if counted_only_command(c).is_some() => {
+                            match counted_only_command(c).unwrap() {
+                                Ok(count) => Effect::CountedOnly(count),
+                                Err(message) => {
+                                    self.message = message.into();
+                                    Effect::None
+                                }
+                            }
+                        }
+                        c if counted_quit_command(c).is_some() => {
+                            match counted_quit_command(c).unwrap() {
+                                Ok((count, force)) => Effect::CountedQuit(count, force),
+                                Err(message) => {
+                                    self.message = message.into();
+                                    Effect::None
+                                }
+                            }
+                        }
+                        c if counted_close_command(c).is_some() => {
+                            match counted_close_command(c).unwrap() {
+                                Ok(count) => Effect::CountedClose(count),
+                                Err(message) => {
+                                    self.message = message.into();
+                                    Effect::None
+                                }
+                            }
+                        }
+                        c if positioned_current_split(c).is_some() => {
+                            match positioned_current_split(c).unwrap() {
+                                Ok((vertical, count, position)) => Effect::SplitCurrentPosition(vertical, count, position),
+                                Err(message) => {
+                                    self.message = message.into();
+                                    Effect::None
+                                }
+                            }
+                        }
+                        c if positioned_empty_new(c).is_some() => {
+                            match positioned_empty_new(c).unwrap() {
+                                Ok((vertical, 0)) => Effect::SplitNew(vertical),
+                                Ok((vertical, count)) => Effect::SplitNewSized(vertical, count),
+                                Err(message) => {
+                                    self.message = message.into();
+                                    Effect::None
+                                }
+                            }
+                        }
                         c if counted_split_command(c).is_some() => {
                             match counted_split_command(c).unwrap() {
                                 Ok((key, count, Some(path))) => {
@@ -1569,6 +2110,14 @@ impl Editor {
                                 }
                             }
                         }
+                        c if resize_command(c).is_some() => match resize_command(c).unwrap() {
+                            Ok(Some((key, count))) => Effect::WindowCommand(key, count),
+                            Ok(None) => Effect::None,
+                            Err(message) => {
+                                self.message = message.into();
+                                Effect::None
+                            }
+                        },
                         c if window_command(c).is_some() => match window_command(c).unwrap() {
                             Ok((key, count)) => Effect::WindowCommand(key, count),
                             Err(message) => {
@@ -1576,37 +2125,57 @@ impl Editor {
                                 Effect::None
                             }
                         },
+                        c if split_has_ex_options(c) => {
+                            self.message = "Opciones y comandos de split aún no disponibles".into();
+                            Effect::None
+                        }
                         c if c.starts_with("sp ") => Effect::SplitPath(false, c[3..].trim().into()),
+                        c if c.starts_with("spl ") => Effect::SplitPath(false, c[4..].trim().into()),
+                        c if c.starts_with("spli ") => Effect::SplitPath(false, c[5..].trim().into()),
                         c if c.starts_with("split ") => {
                             Effect::SplitPath(false, c[6..].trim().into())
                         }
                         c if c.starts_with("vs ") => Effect::SplitPath(true, c[3..].trim().into()),
+                        c if c.starts_with("vsp ") => Effect::SplitPath(true, c[4..].trim().into()),
+                        c if c.starts_with("vspl ") => Effect::SplitPath(true, c[5..].trim().into()),
+                        c if c.starts_with("vspli ") => Effect::SplitPath(true, c[6..].trim().into()),
                         c if c.starts_with("vsplit ") => {
                             Effect::SplitPath(true, c[7..].trim().into())
                         }
                         c if c.starts_with("new ") => {
                             Effect::SplitPath(false, c[4..].trim().into())
                         }
+                        c if c.starts_with("vne ") => {
+                            Effect::SplitPath(true, c[4..].trim().into())
+                        }
                         c if c.starts_with("vnew ") => {
                             Effect::SplitPath(true, c[5..].trim().into())
                         }
-                        c if c
-                            .strip_prefix("e ")
-                            .or_else(|| c.strip_prefix("edit "))
-                            .is_some_and(|argument| argument.trim() == "#") =>
-                        {
-                            Effect::Buffer("buffers.alternate.edit".into())
+                        c if chained_file_argument(c) => {
+                            self.message = "Encadenar comandos con | no está disponible en v1; ejecutalos por separado".into();
+                            Effect::None
                         }
-                        c if c.starts_with("e ") => Effect::OpenPath(c[2..].trim().into()),
-                        c if c.starts_with("edit ") => Effect::OpenPath(c[5..].trim().into()),
+                        c if edit_command(c).is_some() => {
+                            let (force, argument) = edit_command(c).expect("matched edit command");
+                            match argument {
+                                "" | "%" => Effect::Reload(force),
+                                "#" => Effect::Buffer("buffers.alternate.edit".into()),
+                                argument if argument.starts_with('+') => {
+                                    self.message = "Opciones y comandos de :edit aún no disponibles".into();
+                                    Effect::None
+                                }
+                                argument if force => Effect::OpenPathForced(argument.into()),
+                                argument => Effect::OpenPath(argument.into()),
+                            }
+                        }
                         c if c.starts_with("w ") => Effect::WriteCopy(c[2..].trim().into()),
                         c if c.starts_with("write ") => Effect::WriteCopy(c[6..].trim().into()),
                         c if c.starts_with("wq ") => Effect::Write(c[3..].trim().into(), true),
                         c if c.starts_with("saveas ") => Effect::SaveAs(c[7..].trim().into()),
                         "w" | "write" => Effect::Save,
                         "wq" | "x" => Effect::SaveClose,
-                        "q" | "quit" => Effect::Close(false),
-                        "q!" | "quit!" => Effect::Close(true),
+                        "q" | "qu" | "qui" | "quit" => Effect::Close(false),
+                        "q!" | "qu!" | "qui!" | "quit!" => Effect::Close(true),
                         "noh" | "nohl" | "nohlsearch" => {
                             self.registers.set_search_highlight(false);
                             Effect::None
@@ -1636,6 +2205,7 @@ impl Editor {
                         "Metrics" => Effect::Metrics(true),
                         "MetricsStop" => Effect::Metrics(false),
                         "MetricsWrite" => Effect::MetricsExport,
+                        "TwrStateDump" => Effect::StateDump,
                         "SyntaxToggle" => Effect::SyntaxToggle,
                         "set wrap" | "setlocal wrap" => Effect::Wrap(Some(true)),
                         "set nowrap" | "setlocal nowrap" => Effect::Wrap(Some(false)),
@@ -2212,6 +2782,10 @@ impl Editor {
     }
 }
 
+/// Largest text `save_file` writes: 2,000,000 editor chars of up to four
+/// UTF-8 bytes each fit below it.
+const SAVE_MAX_BYTES: usize = 8 * 1024 * 1024;
+
 /// Existing regular UTF-8 files only. Refuse stale writes and preserve mode.
 pub fn save_file(root: &Path, path: &Path, expected: &str, text: &str) -> Result<(), String> {
     use std::{
@@ -2231,9 +2805,35 @@ pub fn save_file(root: &Path, path: &Path, expected: &str, text: &str) -> Result
             "Guardar requiere un archivo regular sin symlink/hardlink dentro del proyecto".into(),
         );
     }
-    if before.len() > 2 * 1024 * 1024
-        || fs::read_to_string(path).map_err(|e| e.to_string())? != expected
-    {
+    // The temp+rename below would replace a read-only file's inode. Refuse
+    // when the owner has no write permission; there is no :w! override.
+    if before.mode() & 0o200 == 0 {
+        return Err("Archivo de solo lectura; no se sobrescribió. Usá :saveas para guardar una copia".into());
+    }
+    // The editor holds at most 2,000,000 chars, i.e. at most 8,000,000 UTF-8
+    // bytes even with CRLF line ends. A larger write is refused with its own
+    // reason instead of being reported as a change on disk.
+    if text.len() > SAVE_MAX_BYTES {
+        return Err("El buffer supera 8 MiB; no se guardó. El buffer se conserva".into());
+    }
+    // A different size already proves the file changed; otherwise read at
+    // most the expected length (plus one byte) and compare bytes, so the
+    // comparison is bounded by the buffer's own baseline, not by 2 MiB.
+    let unchanged_on_disk = || -> Result<bool, String> {
+        use std::io::Read;
+        let size = fs::symlink_metadata(path).map_err(|e| e.to_string())?.len();
+        if size != expected.len() as u64 {
+            return Ok(false);
+        }
+        let mut found = Vec::with_capacity(expected.len());
+        fs::File::open(path)
+            .map_err(|e| e.to_string())?
+            .take(expected.len() as u64 + 1)
+            .read_to_end(&mut found)
+            .map_err(|e| e.to_string())?;
+        Ok(found == expected.as_bytes())
+    };
+    if before.len() != expected.len() as u64 || !unchanged_on_disk()? {
         return Err("El archivo cambió en disco. El buffer se conserva; no se sobrescribió".into());
     }
     let temp = path.with_file_name(format!(
@@ -2259,11 +2859,17 @@ pub fn save_file(root: &Path, path: &Path, expected: &str, text: &str) -> Result
         if now.ino() != before.ino()
             || now.mtime() != before.mtime()
             || now.mtime_nsec() != before.mtime_nsec()
-            || fs::read_to_string(path).map_err(|e| e.to_string())? != expected
+            || !unchanged_on_disk()?
         {
             return Err("Cambio concurrente detectado; se conserva el buffer".into());
         }
         fs::rename(&temp, path).map_err(|e| e.to_string())?;
+        // Persist the rename. Best effort: the new contents are already in
+        // place, and reporting a failure here would leave the buffer dirty
+        // against a file that now matches it.
+        if let Some(parent) = path.parent() {
+            let _ = fs::File::open(parent).and_then(|dir| dir.sync_all());
+        }
         Ok(())
     })();
     if result.is_err() {

@@ -135,6 +135,18 @@ impl Drop for Entries {
     }
 }
 fn children(file: &File) -> Result<Vec<OsString>, String> {
+    let (names, truncated) = children_bounded(file, 5000, &|| false)?;
+    if truncated {
+        return Err("Demasiadas entradas en una carpeta".into());
+    }
+    Ok(names)
+}
+
+pub(super) fn children_bounded(
+    file: &File,
+    limit: usize,
+    cancelled: &impl Fn() -> bool,
+) -> Result<(Vec<OsString>, bool), String> {
     let cloned = file.try_clone().map_err(|e| e.to_string())?;
     let fd = cloned.into_raw_fd();
     let pointer = unsafe { libc::fdopendir(fd) };
@@ -147,6 +159,9 @@ fn children(file: &File) -> Result<Vec<OsString>, String> {
     let entries = Entries(pointer);
     let mut names = Vec::new();
     loop {
+        if cancelled() {
+            return Err("cancelled".into());
+        }
         #[cfg(target_os = "macos")]
         unsafe {
             *libc::__error() = 0;
@@ -166,12 +181,12 @@ fn children(file: &File) -> Result<Vec<OsString>, String> {
         if name == b"." || name == b".." {
             continue;
         }
-        if names.len() == 5000 {
-            return Err("Demasiadas entradas en una carpeta".into());
+        if names.len() == limit {
+            return Ok((names, true));
         }
         names.push(OsStr::from_bytes(name).to_owned());
     }
-    Ok(names)
+    Ok((names, false))
 }
 fn copy_entry(
     parent: &OwnedFd,

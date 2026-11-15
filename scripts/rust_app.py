@@ -23,6 +23,69 @@ spec = importlib.util.spec_from_file_location('rust_workspace', ROOT / 'scripts/
 driver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(driver)
 BUNDLE = driver.BUILD / "bundle/Terminal Workspace Rust.app"
+INSTALLED_APP = Path('/Applications/Terminal Workspace Rust.app')
+
+
+def copy_installed_video(target):
+    """Reuse the sealed decoder from the installed app without inventing a build receipt."""
+    app = INSTALLED_APP
+    if app.is_symlink() or not app.is_dir() or app.resolve(strict=True) != app:
+        raise RuntimeError('Installed app unavailable or symlinked')
+    subprocess.run(['/usr/bin/codesign', '--verify', '--deep', '--strict', str(app)], check=True)
+    info = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
+    if info.get('CFBundleIdentifier') != 'dev.local.TerminalWorkspaceRust':
+        raise RuntimeError('Installed video source is not Terminal Workspace Rust')
+    resources = app / 'Contents/Resources'
+    source = resources / 'Video'
+
+    def checked_file(path, cap):
+        if path.resolve(strict=True) != path or path.is_symlink() or not path.is_file() or path.stat().st_size > cap:
+            raise RuntimeError('Unsafe installed video resource: ' + str(path))
+        return path
+
+    manifest_path = checked_file(resources / 'build-manifest.json', 1024**2)
+    provenance_path = checked_file(source / 'PROVENANCE.json', 1024**2)
+    manifest = json.loads(manifest_path.read_text())['video_decoder']
+    if manifest != json.loads(provenance_path.read_text()):
+        raise RuntimeError('Installed video provenance disagrees with sealed app manifest')
+    video_spec = importlib.util.spec_from_file_location('video_decoder', ROOT / 'scripts/video_decoder.py')
+    video_driver = importlib.util.module_from_spec(video_spec)
+    video_spec.loader.exec_module(video_driver)
+    if (manifest.get('version') != video_driver.VERSION or
+            manifest.get('source_sha256') != video_driver.SOURCE_SHA or
+            manifest.get('source_url') != video_driver.SOURCE_URL or
+            manifest.get('flags') != video_driver.FLAGS or
+            set(manifest.get('binaries', {})) != {'ffmpeg', 'ffprobe'}):
+        raise RuntimeError('Installed decoder provenance differs from the supported profile')
+    names = ['source-and-notices/ffmpeg-' + video_driver.VERSION + '.tar.xz',
+             'source-and-notices/COPYING.LGPLv2.1', 'source-and-notices/COPYING.LGPLv3',
+             'source-and-notices/LICENSE.md', 'source-and-notices/video_decoder.py',
+             'source-and-notices/ghostty_probe.py', 'source-and-notices/README.txt',
+             'bin/ffmpeg', 'bin/ffprobe']
+    for name in names:
+        original = checked_file(source / name, 32 * 1024**2)
+        digest = hashlib.sha256(original.read_bytes()).hexdigest()
+        if name.endswith('.tar.xz') and digest != video_driver.SOURCE_SHA:
+            raise RuntimeError('Installed decoder source archive changed')
+        if name.startswith('bin/'):
+            binary_name = Path(name).name
+            if digest != manifest['binaries'][binary_name]['signed_sha256']:
+                raise RuntimeError('Installed decoder binary changed')
+            subprocess.run(['/usr/bin/codesign', '--verify', '--strict', str(original)], check=True)
+        destination = target / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(original, destination)
+        if hashlib.sha256(destination.read_bytes()).hexdigest() != digest:
+            raise RuntimeError('Installed decoder copy changed')
+    # Record the actual reuse; retain upstream/build claims exactly as sealed.
+    executable = checked_file(app / 'Contents/MacOS/terminal-workspace', 64 * 1024**2)
+    manifest['reused_from_installed_app'] = {
+        'bundle_id': info['CFBundleIdentifier'],
+        'signed_executable_sha256': hashlib.sha256(executable.read_bytes()).hexdigest(),
+    }
+    (target / 'PROVENANCE.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    subprocess.run(['/usr/bin/codesign', '--verify', '--deep', '--strict', str(app)], check=True)
+    return manifest
 
 
 def build_html_renderer(source, target):
@@ -31,7 +94,7 @@ def build_html_renderer(source, target):
     flags = ['-fobjc-arc', '-fblocks', '-fno-modules', '-O2', '-Wall', '-Wextra', '-Werror',
              '-arch', 'arm64', '-mmacosx-version-min=12.0', '-framework', 'Cocoa', '-framework', 'WebKit']
     build = Path(tempfile.mkdtemp(prefix='html-build-', dir=target.parent.parent.parent.parent))
-    env = {'PATH': '/usr/bin:/bin', 'HOME': str(build), 'TMPDIR': str(build), 'LANG': 'en_US.UTF-8'}
+    env = {'PATH': '/usr/bin:/bin', 'TMPDIR': str(build), 'LANG': 'en_US.UTF-8'}
     def limit_compiler_output():
         resource.setrlimit(resource.RLIMIT_FSIZE, (32 * 1024**2, 32 * 1024**2))
     with (build / 'compile.log').open('xb') as log:
@@ -63,7 +126,7 @@ def build_html_renderer(source, target):
             'dependencies': dependencies, 'compiler_log': 'Contents/Resources/BuildLogs/html-preview.log'}
 
 
-def package(validation=False, staged=False, release=False, development=False, video_stage=None, archive_requested=False):
+def package(validation=False, staged=False, release=False, development=False, video_stage=None, archive_requested=False, video_from_installed=False):
     # Keep receipt, executable and source stable throughout packaging; the
     # same lock is held by the build driver while it writes those artifacts.
     driver.prepare_build()
@@ -73,12 +136,12 @@ def package(validation=False, staged=False, release=False, development=False, vi
             driver.managed_preflight('stage' if staged else 'fixed_bundle',
                                      (256 + (256 if archive_requested else 0)) * 1024**2,
                                      archive=archive_requested)
-            result = package_locked(validation, staged, release, development, video_stage, archive_requested)
+            result = package_locked(validation, staged, release, development, video_stage, archive_requested, video_from_installed)
     driver.run_managed_retention()
     return result
 
 
-def package_locked(validation=False, staged=False, release=False, development=False, video_stage=None, archive_requested=False):
+def package_locked(validation=False, staged=False, release=False, development=False, video_stage=None, archive_requested=False, video_from_installed=False):
     instance = uuid.uuid4().hex[:8] if validation and staged else None
     bundle = driver.BUILD / "validation/Terminal Workspace Validation.app" if validation else BUNDLE
     profile = 'release' if release else 'debug'
@@ -114,6 +177,8 @@ def package_locked(validation=False, staged=False, release=False, development=Fa
     if video_stage:
         stage_root = Path(video_stage).resolve(strict=True)
         inputs.extend((stage_root / 'source.tar.xz', stage_root / 'bin'))
+    if video_from_installed:
+        inputs.append(INSTALLED_APP / 'Contents/Resources/Video')
     binary_bytes, binary_entries = driver.retention.bounded_logical_bytes([binary], max_entries=1)
     estimate, entries = driver.retention.bounded_logical_bytes(inputs, max_file=32 * 1024**2, max_entries=8191)
     estimate += binary_bytes
@@ -153,6 +218,8 @@ def package_locked(validation=False, staged=False, release=False, development=Fa
         raise RuntimeError('HTML renderer differs from the frozen build snapshot')
     html_manifest = build_html_renderer(html_source, contents / 'MacOS/html-preview')
     video_manifest = None
+    if video_from_installed:
+        video_manifest = copy_installed_video(contents / 'Resources/Video')
     if video_stage:
         video_spec = importlib.util.spec_from_file_location('video_decoder', ROOT / 'scripts/video_decoder.py')
         video_driver = importlib.util.module_from_spec(video_spec)
@@ -309,14 +376,16 @@ def main():
     parser.add_argument('--staged', action='store_true', help='Package into a new staged bundle without changing a running bundle')
     parser.add_argument('--development', action='store_true', help='Stable app identity for sequential synthetic development; requires package --validation --staged')
     parser.add_argument('--archive', action='store_true', help='Also create an archive for a Development package')
-    parser.add_argument('--video-stage', help='Explicit private decoder stage from scripts/video_decoder.py; package only')
+    video = parser.add_mutually_exclusive_group()
+    video.add_argument('--video-stage', help='Explicit private decoder stage from scripts/video_decoder.py; package only')
+    video.add_argument('--video-from-installed', action='store_true', help='Reuse the verified decoder sealed in the installed TWR app')
     parser.add_argument('--validation-instance', help='Eight hexadecimal characters printed by a staged validation package; sessions/attach only')
     parser.add_argument('--session', help='App session ID, p- followed by 16 hex digits')
     args = parser.parse_args()
     if args.development and (args.command != 'package' or not args.validation or not args.staged):
         parser.error('--development requires package --validation --staged; close the previous Development app before opening the next')
-    if args.video_stage and args.command != 'package':
-        parser.error('--video-stage is for package only')
+    if (args.video_stage or args.video_from_installed) and args.command != 'package':
+        parser.error('Video source options are for package only')
     if args.archive and args.command != 'package':
         parser.error('--archive is for package only')
     if args.release and args.command != 'package':
@@ -326,7 +395,7 @@ def main():
     if args.validation_instance and (not args.validation or args.command not in ('sessions', 'attach') or not re.fullmatch(r'[0-9a-f]{8}', args.validation_instance)):
         parser.error('--validation-instance requires --validation and sessions/attach, with eight hexadecimal characters')
     if args.command == 'package':
-        package(args.validation, args.staged, args.release, args.development, args.video_stage, args.archive)
+        package(args.validation, args.staged, args.release, args.development, args.video_stage, args.archive, args.video_from_installed)
     elif args.command == 'launch':
         launch(args.validation)
     else:

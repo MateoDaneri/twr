@@ -2,7 +2,7 @@
 //! A split shares a buffer identity and clones view state; subsequent view
 //! changes belong to that pane. The GUI/buffer bank adapter is still pending.
 use crate::editor_jumplist::{AnchorId, JumpList, Location as JumpLocation, PendingJump};
-use std::{collections::BTreeMap, fmt, sync::Arc};
+use std::{collections::BTreeMap, fmt, path::{Path, PathBuf}, sync::Arc};
 #[path = "editor_pane_focus.rs"]
 mod spatial;
 pub use spatial::{Bounds, Direction, Point};
@@ -207,6 +207,7 @@ pub enum Error {
     ExhaustedIds,
     InvalidGeometry,
     InvalidRange,
+    InvalidDirectory,
     CannotRotateSplit,
 }
 
@@ -215,6 +216,8 @@ pub struct Layout {
     root: Node,
     panes: BTreeMap<PaneId, ViewState>,
     jumps: BTreeMap<PaneId, JumpList>,
+    local_directories: BTreeMap<PaneId, PathBuf>,
+    previous_local_directories: BTreeMap<PaneId, PathBuf>,
     active: PaneId,
     previous: Option<PaneId>,
     next_id: u64,
@@ -254,12 +257,67 @@ impl Layout {
             root: Node::Pane(id),
             panes: BTreeMap::from([(id, view)]),
             jumps: BTreeMap::from([(id, JumpList::default())]),
+            local_directories: BTreeMap::new(),
+            previous_local_directories: BTreeMap::new(),
             active: id,
             previous: None,
             next_id: 2,
             focus_epoch: 0,
             identity: Arc::new(()),
         }
+    }
+    /// Give a new floating window an independent copy of the focused view's
+    /// navigation history. Its identity must not be shared with the source.
+    pub fn clone_active_window(&self) -> Result<Self, Error> {
+        let view = self.panes.get(&self.active).ok_or(Error::UnknownPane)?.clone();
+        let jumps = self.jumps.get(&self.active).ok_or(Error::UnknownPane)?.clone();
+        let mut floating = Self::new(view);
+        *floating.jump_list_mut(floating.active())? = jumps;
+        if let Some(directory) = self.local_directories.get(&self.active) {
+            floating.local_directories.insert(floating.active, directory.clone());
+        }
+        if let Some(directory) = self.previous_local_directories.get(&self.active) {
+            floating.previous_local_directories.insert(floating.active, directory.clone());
+        }
+        Ok(floating)
+    }
+    /// Copy window-local navigation into an existing destination without
+    /// sharing either window's identity or changing its buffer/view.
+    pub fn copy_window_context_from(
+        &mut self,
+        target: PaneId,
+        source: &Layout,
+        source_pane: PaneId,
+    ) -> Result<(), Error> {
+        if !self.panes.contains_key(&target) || !source.panes.contains_key(&source_pane) {
+            return Err(Error::UnknownPane);
+        }
+        let jumps = source.jumps.get(&source_pane).ok_or(Error::UnknownPane)?.clone();
+        let directory = source.local_directories.get(&source_pane).cloned();
+        let previous = source.previous_local_directories.get(&source_pane).cloned();
+        self.jumps.insert(target, jumps);
+        match directory {
+            Some(path) => { self.local_directories.insert(target, path); }
+            None => { self.local_directories.remove(&target); }
+        }
+        match previous {
+            Some(path) => { self.previous_local_directories.insert(target, path); }
+            None => { self.previous_local_directories.remove(&target); }
+        }
+        Ok(())
+    }
+    /// Exact equality for a staged transaction based on a clone of this layout.
+    pub fn matches_snapshot(&self, snapshot: &Self) -> bool {
+        Arc::ptr_eq(&self.identity, &snapshot.identity)
+            && self.root == snapshot.root
+            && self.panes == snapshot.panes
+            && self.jumps == snapshot.jumps
+            && self.local_directories == snapshot.local_directories
+            && self.previous_local_directories == snapshot.previous_local_directories
+            && self.active == snapshot.active
+            && self.previous == snapshot.previous
+            && self.next_id == snapshot.next_id
+            && self.focus_epoch == snapshot.focus_epoch
     }
     pub fn root(&self) -> &Node {
         &self.root
@@ -282,6 +340,36 @@ impl Layout {
     pub fn jump_list_mut(&mut self, id: PaneId) -> Result<&mut JumpList, Error> {
         self.jumps.get_mut(&id).ok_or(Error::UnknownPane)
     }
+    /// A missing local override inherits the owner's global directory.
+    pub fn local_directory(&self, id: PaneId) -> Result<Option<&Path>, Error> {
+        if !self.panes.contains_key(&id) { return Err(Error::UnknownPane); }
+        Ok(self.local_directories.get(&id).map(PathBuf::as_path))
+    }
+    pub fn previous_local_directory(&self, id: PaneId) -> Result<Option<&Path>, Error> {
+        if !self.panes.contains_key(&id) { return Err(Error::UnknownPane); }
+        Ok(self.previous_local_directories.get(&id).map(PathBuf::as_path))
+    }
+    pub fn change_local_directory(&mut self, id: PaneId, directory: PathBuf, previous: PathBuf) -> Result<(), Error> {
+        if !previous.is_absolute() || previous.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+            return Err(Error::InvalidDirectory);
+        }
+        self.set_local_directory(id, Some(directory))?;
+        self.previous_local_directories.insert(id, previous);
+        Ok(())
+    }
+    /// The caller resolves the directory before changing the layout.
+    pub fn set_local_directory(&mut self, id: PaneId, directory: Option<PathBuf>) -> Result<(), Error> {
+        if !self.panes.contains_key(&id) { return Err(Error::UnknownPane); }
+        if let Some(directory) = directory {
+            if !directory.is_absolute() || directory.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+                return Err(Error::InvalidDirectory);
+            }
+            self.local_directories.insert(id, directory);
+        } else {
+            self.local_directories.remove(&id);
+        }
+        Ok(())
+    }
     pub fn focus_guard(&self) -> FocusGuard {
         FocusGuard {
             pane: self.active,
@@ -298,6 +386,23 @@ impl Layout {
     /// newly created layout that happens to reuse the same numeric pane ID.
     pub fn focus_guard_same_window(&self, guard: &FocusGuard) -> bool {
         self.active == guard.pane && Arc::ptr_eq(&self.identity, &guard.identity)
+    }
+    /// Accept only one synchronous focus move within the captured layout.
+    pub fn focus_guard_direct_move(&self, guard: &FocusGuard) -> bool {
+        self.active != guard.pane
+            && self.panes.contains_key(&guard.pane)
+            && self.panes.contains_key(&self.active)
+            && Arc::ptr_eq(&self.identity, &guard.identity)
+            && guard.epoch.checked_add(1) == Some(self.focus_epoch)
+    }
+    /// Accept only the immediate synchronous close of the captured active
+    /// pane, in the same layout, with a surviving active window.
+    pub fn focus_guard_direct_close(&self, guard: &FocusGuard, closed: PaneId) -> bool {
+        Arc::ptr_eq(&self.identity, &guard.identity)
+            && guard.pane == closed
+            && !self.panes.contains_key(&closed)
+            && self.panes.contains_key(&self.active)
+            && self.focus_epoch == guard.epoch.wrapping_add(1)
     }
     /// Check a saved window's identity without focusing it.
     pub fn focus_guard_window_exists(&self, guard: &FocusGuard, pane: PaneId) -> bool {
@@ -485,6 +590,8 @@ impl Layout {
         self.root = Node::Pane(self.active);
         self.panes.retain(|id, _| *id == self.active);
         self.jumps.retain(|id, _| *id == self.active);
+        self.local_directories.retain(|id, _| *id == self.active);
+        self.previous_local_directories.retain(|id, _| *id == self.active);
         self.previous = None;
         if !removed.is_empty() {
             self.focus_epoch = self.focus_epoch.wrapping_add(1);
@@ -514,6 +621,12 @@ impl Layout {
         }
         self.panes.insert(new, state);
         self.jumps.insert(new, jumps);
+        if let Some(directory) = self.local_directories.get(&self.active).cloned() {
+            self.local_directories.insert(new, directory);
+        }
+        if let Some(directory) = self.previous_local_directories.get(&self.active).cloned() {
+            self.previous_local_directories.insert(new, directory);
+        }
         self.next_id = next_id;
         self.focus(new)?;
         Ok(new)
@@ -537,6 +650,8 @@ impl Layout {
         self.root = root;
         self.panes.remove(&pane);
         self.jumps.remove(&pane);
+        self.local_directories.remove(&pane);
+        self.previous_local_directories.remove(&pane);
         if self.active == pane {
             self.active = next;
         }
