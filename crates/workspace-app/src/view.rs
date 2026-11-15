@@ -32340,80 +32340,6 @@ impl WorkspaceView {
                 cx.stop_propagation();
                 return;
             }
-            if key == "d" && !k.modifiers.control && !k.modifiers.alt {
-                let action = if k.modifiers.shift {
-                    TmuxAction::SplitVertical
-                } else {
-                    TmuxAction::Split
-                };
-                if self.submit_tmux_action(action) {
-                    self.set_focus(Surface::Terminal);
-                }
-                cx.notify();
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
-            if key == "z"
-                && k.modifiers.shift
-                && !k.modifiers.control
-                && !k.modifiers.alt
-            {
-                self.tmux_action(TmuxAction::Zoom);
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
-            if key == "w"
-                && !k.modifiers.control
-                && !k.modifiers.alt
-                && self.model.file.is_none()
-            {
-                // The tmux prefix bytes (kill-pane / kill-window, each with
-                // tmux's own confirmation) go only to the terminal that is
-                // the focused pane; with Explorer, Agents or another surface
-                // focused, `self.active` may be a hidden terminal. There is
-                // no targeted TmuxAction for these operations.
-                let terminal_focused = matches!(self.model.surface, Surface::Terminal | Surface::Normal)
-                    && self.windows.get(self.active).is_some_and(|terminal| {
-                        terminal.project == self.model.project
-                            && self.editor_panes.as_ref().is_none_or(|panes| {
-                                panes.content(panes.layout.active())
-                                    == Some(&PaneContent::Terminal(terminal.attachment))
-                            })
-                    });
-                if terminal_focused {
-                    self.set_focus(Surface::Terminal);
-                    self.effect(Effect::Pty(if k.modifiers.shift {
-                        b"\x01&".to_vec()
-                    } else {
-                        b"\x01x".to_vec()
-                    }));
-                } else {
-                    self.model.message = "Cmd+W actúa solo sobre la terminal enfocada".into();
-                }
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
-            if k.modifiers.shift
-                && !k.modifiers.control
-                && !k.modifiers.alt
-                && matches!(
-                    key,
-                    "h" | "j" | "k" | "l" | "left" | "right" | "up" | "down"
-                )
-            {
-                self.tmux_action(TmuxAction::Direction(match key {
-                    "h" | "left" => 'L',
-                    "j" | "down" => 'D',
-                    "k" | "up" => 'U',
-                    _ => 'R',
-                }));
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
             if key == "v"
                 && !k.modifiers.control
                 && !k.modifiers.alt
@@ -32471,22 +32397,6 @@ impl WorkspaceView {
         // Option combinations type characters on many layouts; text-entry
         // contexts fall through to the input handler below.
         let option_text_entry = self.option_text_entry_active();
-        if k.modifiers.alt
-            && k.modifiers.shift
-            && !k.modifiers.control
-            && !option_text_entry
-            && matches!(key, "h" | "j" | "k" | "l")
-        {
-            self.tmux_action(TmuxAction::Direction(match key {
-                "h" => 'L',
-                "j" => 'D',
-                "k" => 'U',
-                _ => 'R',
-            }));
-            window.prevent_default();
-            cx.stop_propagation();
-            return;
-        }
         if k.modifiers.alt
             && !k.modifiers.control
             && !k.modifiers.shift
@@ -36214,20 +36124,6 @@ impl WorkspaceView {
                 Ui::Tmux(TmuxAction::New, terminal_target.clone()),
                 p,
                 cx,
-            ))
-            .child(self.button(
-                "zoom",
-                "Zoom",
-                Ui::Tmux(TmuxAction::Zoom, terminal_target.clone()),
-                p,
-                cx,
-            ))
-            .child(self.button(
-                "split",
-                "Split",
-                Ui::Tmux(TmuxAction::Split, terminal_target),
-                p,
-                cx,
             ));
         let mut main = div()
             .flex()
@@ -36891,7 +36787,7 @@ impl WorkspaceView {
                     }),
             );
         } else if self.help {
-            let text = "Árbol y Agents\nCtrl-h  árbol    Ctrl-j  Agents    Ctrl-l  terminal\ngg/G o Ngg/NG  primera/última/fila visible\nCtrl+d/u  media página en el panel enfocado\nSpace e  sidebar    Space aa  Agents\na/A  archivo/carpeta    r  renombrar    m  mover    c  copiar\nv/V  rango visual j/k · Esc cancela · Tab marca rango\nTab  alternar selección sin avanzar    Ctrl+;  limpiar selección\nB  abrir documento en navegador / Excel / app asociada\ny/x  copiar/mover selección + nodo actual    p  pegar lote    Ctrl+r  limpiar portapapeles\nT  papelera recuperable con lista y confirmación · u restaura un recibo\n\nPickers\nSpace fp  proyectos    Space ff  archivos    Space ,  buffers\nInsert: escribir filtra; flechas/Home/End mueven cursor; Ctrl+w borra; Ctrl+d/u desplaza la lista; Ctrl+c cancela. Esc pasa a Normal.\nNormal del filtro: j/k selecciona; gg/G extremos; h/l, 0/$ y x editan filtro; i/a/I/A inserta. / o Alt+w alterna filtro/lista. Lista: i vuelve al filtro; q/Esc cierra. Un clic selecciona y enfoca la lista; doble clic abre.\n\nAgents\nj/k o conteo+j/k  seleccionar    gg/G o Ngg/NG  extremos/fila\nh/l  grupos\no/Enter  destino original    i  contexto    w  contexto compacto\nm  Main ↔ Backlog    x  ocultar ready    X  restaurar\nB / Ctrl-j  Backlog    Ctrl-k / Esc  volver a Main    s  lado\n\nTerminal\nCtrl+w p  ventana anterior    Ctrl+w t/b  primera/última\nN Ctrl+w w/W  ventana N    Ctrl+w Nw también\nCtrl+w w/W  recorrer ventanas    Ctrl+w h/j/k/l  dirección\nDoble Escape  modo normal    i  volver a input\nCtrl-/  terminal    Cmd+1…9  ventana    Cmd+T nueva ventana\nCmd+V  pegar    Ctrl+Shift+C  copiar selección\n\ntmux real: Ctrl+a c nueva ventana, Ctrl+a , nombre, Ctrl+a h/j/k/l panes.\nCtrl+a % / \" splits, Ctrl+a z zoom, Ctrl+a m número mover.\n\nEditor nativo inicial\nhjkl, w/b/e, 0/^/$, gg/G, conteos, d/c/y, dd/cc/yy, i/a/I/A/o/O, v/V/Ctrl+v, p/P, u/Ctrl+r, /?, n/N y conteos.\nRectángulo: hjkl, y/d/c, I/A, r, >/<, p/P · Escape termina · gv recupera el área.\n:w guardar, :wq guardar/cerrar, :q! descartar. Dot-repeat ., registros, macros q/@, f/F/t/T y textobjects disponibles.\nCSV: Space cv, Tab/Shift+Tab, Enter/Shift+Enter, if/af.\nJSON/XML: Space cf o :format.\nLSP C/C++ y Lua opt-in: :LspStart / :LspStop, K hover, gd definición, gr referencias, ]d/[d diagnósticos.\nInsert: Ctrl+Space completion, Ctrl+n/p seleccionar, Ctrl+y aceptar, Ctrl+e cerrar.\nIntegraciones y gramática completas siguen en desarrollo.";
+            let text = "Árbol y Agents\nCtrl-h  árbol    Ctrl-j  Agents    Ctrl-l  terminal\ngg/G o Ngg/NG  primera/última/fila visible\nCtrl+d/u  media página en el panel enfocado\nSpace e  sidebar    Space aa  Agents\na/A  archivo/carpeta    r  renombrar    m  mover    c  copiar\nv/V  rango visual j/k · Esc cancela · Tab marca rango\nTab  alternar selección sin avanzar    Ctrl+;  limpiar selección\nB  abrir documento en navegador / Excel / app asociada\ny/x  copiar/mover selección + nodo actual    p  pegar lote    Ctrl+r  limpiar portapapeles\nT  papelera recuperable con lista y confirmación · u restaura un recibo\n\nPickers\nSpace fp  proyectos    Space ff  archivos    Space ,  buffers\nInsert: escribir filtra; flechas/Home/End mueven cursor; Ctrl+w borra; Ctrl+d/u desplaza la lista; Ctrl+c cancela. Esc pasa a Normal.\nNormal del filtro: j/k selecciona; gg/G extremos; h/l, 0/$ y x editan filtro; i/a/I/A inserta. / o Alt+w alterna filtro/lista. Lista: i vuelve al filtro; q/Esc cierra. Un clic selecciona y enfoca la lista; doble clic abre.\n\nAgents\nj/k o conteo+j/k  seleccionar    gg/G o Ngg/NG  extremos/fila\nh/l  grupos\no/Enter  destino original    i  contexto    w  contexto compacto\nm  Main ↔ Backlog    x  ocultar ready    X  restaurar\nB / Ctrl-j  Backlog    Ctrl-k / Esc  volver a Main    s  lado\n\nTerminal\nCtrl+w p  ventana anterior    Ctrl+w t/b  primera/última\nN Ctrl+w w/W  ventana N    Ctrl+w Nw también\nCtrl+w w/W  recorrer ventanas    Ctrl+w h/j/k/l  dirección\nDoble Escape  modo normal    i  volver a input\nCtrl-/  terminal    Cmd+1…9  ventana    Cmd+T nueva ventana\nCmd+V  pegar    Ctrl+Shift+C  copiar selección\n\ntmux conserva sesiones y ventanas. Los paneles anteriores mantienen sus atajos heredados.\n\nEditor nativo inicial\nhjkl, w/b/e, 0/^/$, gg/G, conteos, d/c/y, dd/cc/yy, i/a/I/A/o/O, v/V/Ctrl+v, p/P, u/Ctrl+r, /?, n/N y conteos.\nRectángulo: hjkl, y/d/c, I/A, r, >/<, p/P · Escape termina · gv recupera el área.\n:w guardar, :wq guardar/cerrar, :q! descartar. Dot-repeat ., registros, macros q/@, f/F/t/T y textobjects disponibles.\nCSV: Space cv, Tab/Shift+Tab, Enter/Shift+Enter, if/af.\nJSON/XML: Space cf o :format.\nLSP C/C++ y Lua opt-in: :LspStart / :LspStop, K hover, gd definición, gr referencias, ]d/[d diagnósticos.\nInsert: Ctrl+Space completion, Ctrl+n/p seleccionar, Ctrl+y aceptar, Ctrl+e cerrar.\nIntegraciones y gramática completas siguen en desarrollo.";
             dialog = dialog.child(
                 div()
                     .id("help-text")
