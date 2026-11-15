@@ -1472,6 +1472,7 @@ pub struct WorkspaceView {
     primary_tmux_last_error: HashMap<usize, String>,
     pending_terminal_search: std::collections::HashSet<workspace_app::terminal_resume::Context>,
     pending_tmux_copy: Option<PendingTmuxCopy>,
+    paste_after_copy: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
     tmux_copy_token: u64,
     editors: HashMap<PathBuf, Editor>,
     pending_new_files: std::collections::HashSet<PathBuf>,
@@ -1862,6 +1863,7 @@ impl WorkspaceView {
             primary_tmux_last_error: HashMap::new(),
             pending_terminal_search: Default::default(),
             pending_tmux_copy: None,
+            paste_after_copy: Vec::new(),
             tmux_copy_token: 0,
             editors: HashMap::new(),
             pending_new_files: Default::default(),
@@ -6257,54 +6259,20 @@ impl WorkspaceView {
                     let pending = self.pending_tmux_copy.take().expect("token checked");
                     let first_yank = self.pending_yank_first.take_if(|(id, _)| *id == token)
                         .map(|(_, count)| count);
-                    let focus_current = self.terminal_focus_guard_current(
-                        pending.context, &pending.instance, &pending.focus, &pending.zoom,
-                    );
-                    let terminal_current = self.windows.get(self.active).is_some_and(|terminal| {
-                        terminal.project == pending.context.project
-                            && terminal.attachment == pending.context.attachment
-                            && Arc::ptr_eq(
-                                &terminal.terminal.instance_identity(),
-                                &pending.instance,
-                            )
-                    });
-                    let target_current = self.current_tmux_windows().is_some_and(|windows| {
-                        let mut active = windows.iter().filter(|window| window.active);
-                        active.next().is_some_and(|window| {
-                            window.id == pending.window && window.active_pane == pending.pane
-                        }) && active.next().is_none()
-                    });
-                    let tracked_copy = self.pending_terminal_key.as_ref().and_then(|key| {
-                        key.selection_action
-                            .as_ref()
-                            .filter(|copy| copy.token == token && copy.context == pending.context)
-                    });
-                    let tracked_current = match pending.replay_event {
-                        Some(event) => tracked_copy.is_some_and(|copy| {
-                            copy.event == event
-                                && !copy.timed_out
-                                && self.pending_terminal_key.as_ref().is_some_and(|key| {
-                                    key.gate.state()
-                                        == workspace_app::terminal_key_gate::State::Replaying
-                                        && key.destination.as_ref().is_some_and(|destination| {
-                                            self.terminal_key_destination_current(destination)
-                                        })
-                                })
-                        }),
-                        None => true,
-                    };
+                    // A copy belongs to the request that produced it, even
+                    // when the user has since moved focus to another panel.
                     let current = source == Some(pending.context)
-                        && self.terminal_input_context() == source
-                        && self.model.surface == pending.surface
-                        && self.model.focus_revision == pending.focus_revision
-                        && focus_current
-                        && terminal_current
-                        && target_current
-                        && tracked_current;
+                        && self.windows.iter().any(|terminal| {
+                            terminal.project == pending.context.project
+                                && terminal.attachment == pending.context.attachment
+                                && Arc::ptr_eq(&terminal.terminal.instance_identity(), &pending.instance)
+                        });
                     let mut completed = false;
+                    let waiting_pastes = std::mem::take(&mut self.paste_after_copy);
                     if current {
                         match result {
                             Ok(Some(copy)) => {
+                                let paste_canceled = self.deliver_waiting_pastes(waiting_pastes, &copy.text);
                                 // A linewise Visual yank can share the editor's
                                 // unnamed/+ and numbered yank registers, but
                                 // only if the exact text is representable.
@@ -6320,11 +6288,11 @@ impl WorkspaceView {
                                 } else {
                                     cx.write_to_clipboard(ClipboardItem::new_string(copy.text));
                                 }
-                                self.model.message = match register {
+                                if !paste_canceled { self.model.message = match register {
                                     Some(Ok(())) => "Copiado a los registros y al portapapeles".into(),
                                     Some(Err(_)) => "Copiado al portapapeles; registro no disponible".into(),
                                     None => "Selección tmux copiada explícitamente".into(),
-                                };
+                                }; }
                                 completed = true;
                             }
                             Ok(None) => {
@@ -6340,6 +6308,9 @@ impl WorkspaceView {
                         }
                     }
                     let destination = self.terminal_key_destination();
+                    let destination_current = destination.as_ref().is_some_and(|target| {
+                        self.terminal_key_destination_current(target)
+                    });
                     let mut release_failed_copy = false;
                     if let Some(key) = &mut self.pending_terminal_key
                         && key.selection_action.as_ref().is_some_and(|copy| {
@@ -6349,14 +6320,14 @@ impl WorkspaceView {
                         let copy = key.selection_action.take().expect("token checked");
                         if completed
                             && !copy.timed_out
-                            && destination.is_some()
+                            && destination_current
                             && key.gate.acknowledge(copy.event)
                         {
                             key.destination = destination;
                             key.revision = key.revision.wrapping_add(1);
                         } else if current
                             && !copy.timed_out
-                            && destination.is_some()
+                            && destination_current
                             && key.gate.acknowledge(copy.event)
                         {
                             // A failed copy is never replayed. When its exact
@@ -16926,22 +16897,6 @@ impl WorkspaceView {
                 .windows
                 .get(self.active)
                 .is_some_and(|terminal| terminal.snapshot.bracketed_paste);
-        // The gate ignores `bracket`: see `paste_into_terminal`.
-        if paste && text.len() <= TERMINAL_PASTE_LIMIT
-            && let Some(lines) = paste_line_count(text)
-        {
-            // A queued paste is not confirmed in the middle of a replay: the
-            // events after it would arrive while the prompt is open. Hold it
-            // and what follows, exactly like a refused paste; pasting again
-            // once the terminal is ready asks for confirmation.
-            self.model.message = held_paste_message(lines, false);
-            if let Some(pending) = &mut self.pending_terminal_key {
-                pending.replay_error = true;
-                pending.paste_held = Some(lines);
-            }
-            cx.notify();
-            return;
-        }
         let bytes = if paste {
             match terminal_paste_bytes(text, bracket) {
                 Ok(bytes) => bytes,
@@ -17247,6 +17202,7 @@ impl WorkspaceView {
             self.pending_terminal_key = None;
             if self.pending_tmux_copy.as_ref().is_some_and(|copy| copy.token == token) {
                 self.pending_tmux_copy = None;
+                self.paste_after_copy.clear();
             }
             self.pending_yank_first.take_if(|(id, _)| *id == token);
             self.model.message = "Copia sin respuesta; intentá copiar de nuevo".into();
@@ -17933,6 +17889,10 @@ impl WorkspaceView {
             return false;
         }
         // A newer explicit copy supersedes any older outstanding reply.
+        if self.pending_tmux_copy.is_some() && !self.paste_after_copy.is_empty() {
+            self.paste_after_copy.clear();
+            self.model.message = "Pegado pendiente cancelado al iniciar otra copia".into();
+        }
         self.pending_tmux_copy = None;
         self.pending_yank_first = None;
         let Some(context) = self.terminal_input_context() else {
@@ -31265,52 +31225,56 @@ impl WorkspaceView {
             e.toggle_csv(path);
         }
     }
-    /// Direct terminal paste (Cmd+V, Shift+Insert). Text with a line break
-    /// always waits for Enter: the app cannot know whether the receiving
-    /// program enabled bracketed paste. Every terminal window is a tmux
-    /// client, and the snapshot flag is that client's mode, not the pane's:
-    /// tmux enables 2004 on its client unconditionally (tty.c
-    /// `tty_start_tty`), strips the markers for a pane that did not enable
-    /// it (input-keys.c `input_key`), and exposes no format for the pane's
-    /// mode. Trusting the flag let `/bin/sh` run pasted lines unconfirmed.
-    /// The flag still decides the wrapping, which tmux then honours or
-    /// strips per pane.
+    /// Paste immediately using the terminal's bracketed-paste mode.
     fn paste_into_terminal(&mut self, text: String) {
         let bracket = self
             .windows
             .get(self.active)
             .is_some_and(|t| t.snapshot.bracketed_paste);
-        if text.len() <= TERMINAL_PASTE_LIMIT
-            && let Some(lines) = paste_line_count(&text)
-        {
-            if self.terminal_input_replaying() {
-                // A Cmd+V replayed from a queue never raises the prompt: a
-                // queued Enter would confirm it unseen. Hold it and stop the
-                // replay of what follows, like a refused queued paste.
-                self.model.message = held_paste_message(lines, false);
-                if let Some(pending) = self.pending_terminal_key.as_mut().filter(|p| p.replaying) {
-                    pending.replay_error = true;
-                    pending.paste_held = Some(lines);
-                }
-                if let Some(input) = self.pending_open_input.as_mut().filter(|i| i.replaying) {
-                    input.replay_error = true;
-                    input.paste_held = Some(lines);
-                }
-                return;
-            }
-            let Some((context, identity)) = self.terminal_input_context().map(|context| {
-                (context, self.windows[self.active].terminal.instance_identity())
-            }) else {
-                self.model.message = "Input no enviado: terminal no disponible".into();
-                return;
-            };
-            self.model.message = pending_paste_prompt(lines);
-            self.pending_paste = Some(PendingPaste { text, lines, context, identity });
-            return;
-        }
         match terminal_paste_bytes(&text, bracket) {
             Ok(bytes) => self.effect(Effect::Pty(bytes)),
             Err(error) => self.model.message = error,
+        }
+    }
+    fn deliver_waiting_pastes(
+        &mut self,
+        waiting: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
+        text: &str,
+    ) -> bool {
+        let mut canceled = false;
+        for (context, destination) in waiting {
+            if self.terminal_input_context() != Some(context)
+                || !self.terminal_key_destination_current(&destination)
+            {
+                self.model.message = "Cambió el destino; pegado pendiente cancelado".into();
+                canceled = true;
+                continue;
+            }
+            self.paste_into_terminal(text.to_owned());
+        }
+        canceled
+    }
+    fn request_terminal_paste(&mut self, cx: &App) {
+        #[cfg(feature = "ghostty")]
+        let native_copy_pending = self.native_selection.as_ref().is_some_and(|selection| {
+            selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+        });
+        #[cfg(not(feature = "ghostty"))]
+        let native_copy_pending = false;
+        if self.pending_tmux_copy.is_some() || native_copy_pending {
+            if let (Some(context), Some(destination)) =
+                (self.terminal_input_context(), self.terminal_key_destination())
+            {
+                if self.paste_after_copy.len() < 128 {
+                    self.paste_after_copy.push((context, destination));
+                } else {
+                    self.model.message = "Demasiados pegados pendientes; reintentá".into();
+                }
+            } else {
+                self.model.message = "Destino de pegado no disponible".into();
+            }
+        } else if let Some(text) = self.paste_text(cx) {
+            self.paste_into_terminal(text);
         }
     }
     /// Keys are being replayed from a terminal or open-input queue, or a
@@ -31971,6 +31935,29 @@ impl WorkspaceView {
         for pending in self.pending_additional_terminals.values_mut() {
             pending.show_when_ready = false;
         }
+        // Clipboard shortcuts remain responsive while unrelated navigation
+        // is in progress; copying must never put the whole terminal in review.
+        let key = &event.keystroke;
+        if self.model.surface == Surface::Terminal {
+            let shortcut = workspace_app::terminal_shortcuts::resolve(
+                &key.key, key.modifiers.platform, key.modifiers.control,
+                key.modifiers.alt, key.modifiers.shift,
+            );
+            let shift_insert = !key.modifiers.platform && !key.modifiers.control
+                && !key.modifiers.alt && key.modifiers.shift
+                && key.key.eq_ignore_ascii_case("insert");
+            if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy)) {
+                self.copy_selection(cx);
+            } else if shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Paste)) {
+                self.request_terminal_paste(cx);
+            }
+            if shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy | workspace_app::terminal_shortcuts::Shortcut::Paste)) {
+                window.prevent_default();
+                cx.stop_propagation();
+                cx.notify();
+                return;
+            }
+        }
         if self
             .pending_terminal_key
             .as_ref()
@@ -32040,36 +32027,6 @@ impl WorkspaceView {
             cx.stop_propagation();
             cx.notify();
             return;
-        }
-        // A target-changing shortcut must enter the ordered ledger before
-        // tmux receives it, so following keys cannot capture the old pane.
-        let key = &event.keystroke;
-        let direct_target = key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
-            && ((key.key == "d") || (!key.modifiers.shift && (key.key == "t"
-                || matches!(key.key.as_str(), "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"))))
-            || matches!(workspace_app::terminal_shortcuts::resolve(
-                &key.key, key.modifiers.platform, key.modifiers.control, key.modifiers.alt, key.modifiers.shift),
-                Some(workspace_app::terminal_shortcuts::Shortcut::Cycle(_) | workspace_app::terminal_shortcuts::Shortcut::Direction(_)));
-        let direct_copy = self.model.surface == Surface::Terminal
-            && matches!(workspace_app::terminal_shortcuts::resolve(
-                &key.key, key.modifiers.platform, key.modifiers.control, key.modifiers.alt, key.modifiers.shift),
-                Some(workspace_app::terminal_shortcuts::Shortcut::Copy));
-        if (direct_target && matches!(self.model.surface, Surface::Terminal | Surface::Normal) || direct_copy)
-            && self.pending_terminal_key.is_none() && self.pending_open_input.is_none()
-            && !self.terminal_resume.recovery_blocked()
-        {
-            // These shortcuts end in terminal input mode. Enter it before
-            // capturing the source so the split cannot outrun its ledger.
-            if self.model.surface == Surface::Normal { self.set_focus(Surface::Terminal); }
-            self.note_activity();
-            if self.begin_terminal_event_replay_on(
-                workspace_app::open_input::Event::Key(event.keystroke.clone()), Surface::Terminal)
-            {
-                window.prevent_default();
-                cx.stop_propagation();
-                cx.notify();
-                return;
-            }
         }
         self.finish_pending_new_file_before_input();
         self.note_activity();
@@ -32839,11 +32796,7 @@ impl WorkspaceView {
             use workspace_app::terminal_shortcuts::Shortcut;
             match shortcut {
                 Shortcut::Copy => self.copy_selection(cx),
-                Shortcut::Paste => {
-                    if let Some(text) = self.paste_text(cx) {
-                        self.paste_into_terminal(text);
-                    }
-                }
+                Shortcut::Paste => self.request_terminal_paste(cx),
                 Shortcut::Font(command) => self.set_typography(command),
                 Shortcut::Direction(d) => self.tmux_action(TmuxAction::Direction(d)),
                 Shortcut::Resize(d, n) => {
@@ -32968,9 +32921,7 @@ impl WorkspaceView {
                 && !k.modifiers.alt
                 && self.model.surface == Surface::Terminal
             {
-                if let Some(text) = self.paste_text(cx) {
-                    self.paste_into_terminal(text);
-                }
+                self.request_terminal_paste(cx);
                 window.prevent_default();
                 cx.stop_propagation();
                 return;
@@ -33723,6 +33674,11 @@ impl WorkspaceView {
     }
     #[cfg(feature = "ghostty")]
     fn clear_native_selection(&mut self) {
+        if self.native_selection.as_ref().is_some_and(|selection| {
+            selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+        }) {
+            self.paste_after_copy.clear();
+        }
         if let Some(selection) = self.native_selection.take()
             && let Some(window) = self.windows.iter().find(|window| {
                 window.project == selection.context.project
@@ -33818,6 +33774,9 @@ impl WorkspaceView {
             if selection.last_point == (row, col) {
                 return;
             }
+            if selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..))) {
+                self.paste_after_copy.clear();
+            }
             let Some(serial) = selection.serial.checked_add(1) else {
                 return;
             };
@@ -33848,6 +33807,7 @@ impl WorkspaceView {
                         changed = true;
                     }
                     Ok(Err(error)) => {
+                        self.paste_after_copy.clear();
                         self.model.message = error;
                         self.selecting = false;
                         return true;
@@ -33856,6 +33816,7 @@ impl WorkspaceView {
                         selection.pending = Some(NativeSelectionReply::Begin(reply))
                     }
                     Err(mpsc::TryRecvError::Disconnected) => {
+                        self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
                         self.selecting = false;
                         return true;
@@ -33867,6 +33828,7 @@ impl WorkspaceView {
                         changed = true;
                     }
                     Ok(Err(error)) => {
+                        self.paste_after_copy.clear();
                         self.model.message = error;
                         selection.endpoint_valid = false;
                         selection.copy_requested = false;
@@ -33876,6 +33838,7 @@ impl WorkspaceView {
                         selection.pending = Some(NativeSelectionReply::Extend(serial, reply))
                     }
                     Err(mpsc::TryRecvError::Disconnected) => {
+                        self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
                         self.selecting = false;
                         return true;
@@ -33883,16 +33846,20 @@ impl WorkspaceView {
                 },
                 NativeSelectionReply::Copy(serial, reply) => match reply.try_recv() {
                     Ok(Ok(text)) if selection.serial == serial => {
+                        let waiting = std::mem::take(&mut self.paste_after_copy);
+                        let paste_canceled = self.deliver_waiting_pastes(waiting, &text);
                         if self.validation { self.fixture_clipboard = Some((text, false, None)); }
                         else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
-                        self.model.message = "Selección copiada explícitamente".into();
+                        if !paste_canceled { self.model.message = "Selección copiada explícitamente".into(); }
                         changed = true;
                     }
                     Ok(Ok(_)) => {
+                        self.paste_after_copy.clear();
                         self.model.message = "La selección cambió antes de copiar".into();
                         changed = true;
                     }
                     Ok(Err(error)) => {
+                        self.paste_after_copy.clear();
                         self.model.message = error;
                         changed = true;
                     }
@@ -33900,6 +33867,7 @@ impl WorkspaceView {
                         selection.pending = Some(NativeSelectionReply::Copy(serial, reply))
                     }
                     Err(mpsc::TryRecvError::Disconnected) => {
+                        self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
                         self.selecting = false;
                         return true;
@@ -33919,6 +33887,7 @@ impl WorkspaceView {
                             Some(NativeSelectionReply::Extend(selection.serial, reply))
                     }
                     Err(error) => {
+                        self.paste_after_copy.clear();
                         self.model.message = error;
                         selection.copy_requested = false;
                         changed = true;
@@ -33927,6 +33896,7 @@ impl WorkspaceView {
             } else if selection.copy_requested {
                 selection.copy_requested = false;
                 if !selection.endpoint_valid {
+                    self.paste_after_copy.clear();
                     self.model.message =
                         "La selección no se confirmó; volvé a seleccionarla".into();
                     changed = true;
@@ -33937,6 +33907,7 @@ impl WorkspaceView {
                                 Some(NativeSelectionReply::Copy(selection.serial, reply))
                         }
                         Err(error) => {
+                            self.paste_after_copy.clear();
                             self.model.message = error;
                             changed = true;
                         }
@@ -38973,35 +38944,12 @@ fn has_unescaped_file_expansion(name: &str) -> bool {
     false
 }
 
-/// Clipboard text bound for the terminal: drops ESC and every other C0/C1
-/// control except tab, newline and carriage return, so pasted text cannot end
-/// a bracketed paste early or inject key sequences. Bracketed only when the
-/// terminal enabled mode 2004 (`Snapshot::bracketed_paste`).
-const TERMINAL_PASTE_LIMIT: usize = 2 * 1024 * 1024;
-fn sanitize_terminal_paste(text: &str) -> String {
-    text.chars()
-        .filter(|c| !c.is_control() || matches!(c, '\t' | '\n' | '\r'))
-        .collect()
-}
-/// Lines a paste would submit when not bracketed: None without a line break
-/// (after sanitizing); otherwise the count of lines, CRLF counted once.
-fn paste_line_count(text: &str) -> Option<usize> {
-    let clean = sanitize_terminal_paste(text);
-    if !clean.contains(['\n', '\r']) {
-        return None;
-    }
-    let normalized = clean.replace("\r\n", "\n").replace('\r', "\n");
-    Some(normalized.trim_end_matches('\n').split('\n').count().max(1))
-}
+/// Preserve clipboard bytes and use the terminal's bracketed-paste protocol when enabled.
 fn terminal_paste_bytes(text: &str, bracketed: bool) -> Result<Vec<u8>, String> {
-    if text.len() > TERMINAL_PASTE_LIMIT {
-        return Err("Pegado limitado a 2 MiB; no se envió nada".into());
-    }
-    let clean = sanitize_terminal_paste(text);
     Ok(if bracketed {
-        format!("\x1b[200~{clean}\x1b[201~").into_bytes()
+        format!("\x1b[200~{text}\x1b[201~").into_bytes()
     } else {
-        clean.into_bytes()
+        text.as_bytes().to_vec()
     })
 }
 
