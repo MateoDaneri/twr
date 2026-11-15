@@ -311,6 +311,31 @@ impl<K> Queue<K> {
         self.state = State::Recording;
         true
     }
+    /// Retry never-dispatched input without a new read only when the caller
+    /// has independently revalidated the exact original focus epoch and
+    /// destination. An uncertain or in-flight event is never retried here.
+    pub fn retry_current(&mut self, current: &Context, focus_current: bool) -> bool {
+        if self.state != State::Recover || self.in_flight.is_some()
+            || self.edit_in_flight.is_some() || !focus_current || &self.context != current
+        {
+            return false;
+        }
+        self.state = State::Ready;
+        true
+    }
+    /// Transfer only the remaining, undispatched events after the caller has
+    /// verified one synchronous focus move and the exact destination buffer.
+    pub fn transfer_after_direction_focus(&mut self, expected: &Context, next: Context) -> bool {
+        if self.state != State::Ready || self.in_flight.is_some() || self.edit_in_flight.is_some()
+            || &self.context != expected || next.workspace != expected.workspace
+            || next.pane == expected.pane || next.attachment != 0 || expected.attachment != 0
+            || next.generation != expected.generation
+        {
+            return false;
+        }
+        self.context = next;
+        true
+    }
     /// Inspect one event while retaining ownership. At most one event may be
     /// in flight; a changed destination cannot retarget the remaining input.
     pub fn begin(&mut self, current: &Context, focus_current: bool) -> Option<(u64, &Event<K>)> {
@@ -335,6 +360,21 @@ impl<K> Queue<K> {
         let entry = self.entries.pop_front().expect("front checked");
         self.bytes -= entry.bytes;
         self.in_flight = None;
+        true
+    }
+    /// Rebind a still-in-flight synchronous jump; its dispatcher remains
+    /// responsible for acknowledging exactly this event after it returns.
+    pub fn retarget_in_flight_jump(&mut self, id: u64, expected: &Context, next: Context) -> bool {
+        if self.state != State::Ready || self.in_flight != Some(id)
+            || self.edit_in_flight.is_some()
+            || self.entries.front().is_none_or(|entry| entry.id != id)
+            || &self.context != expected || next.workspace != expected.workspace
+            || next.pane != expected.pane || next.attachment != expected.attachment
+            || next.generation != expected.generation.wrapping_add(1)
+        {
+            return false;
+        }
+        self.context = next;
         true
     }
     /// Keep the :edit event in flight while its own guarded resolver and read
@@ -398,6 +438,19 @@ impl<K> Queue<K> {
         }
         self.in_flight = None;
         self.state = State::Recover;
+        true
+    }
+
+    /// The UI has not dispatched this event, so it may wait for a fresh
+    /// layout without changing the order or entering recovery.
+    pub fn defer_undispatched(&mut self, id: u64) -> bool {
+        if self.state != State::Ready || self.in_flight != Some(id)
+            || self.edit_in_flight.is_some()
+            || self.entries.front().is_none_or(|entry| entry.id != id)
+        {
+            return false;
+        }
+        self.in_flight = None;
         true
     }
     /// Delivery might have happened. Keep the front and block replay; the

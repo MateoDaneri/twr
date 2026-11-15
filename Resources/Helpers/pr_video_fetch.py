@@ -22,6 +22,7 @@ CDN = 'github-production-user-asset-6210df.s3.amazonaws.com'
 HOSTS = {'github.com', 'user-images.githubusercontent.com',
          'private-user-images.githubusercontent.com', CDN}
 PARENT = os.getppid()
+BIDI_CONTROLS = frozenset('\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069\u200e\u200f\u061c')
 
 
 def alive():
@@ -202,7 +203,12 @@ def review(repository, number, invoke=gh):
             return ''
         if len(value.encode()) > limit:
             raise RuntimeError('PR: texto supera el límite de la vista')
-        return ''.join(c for c in value if c in '\n\t' or ord(c) >= 32 and ord(c) != 127)
+        # Also drop bidi embedding/override/isolate/mark controls, which can
+        # reorder how untrusted PR text reads without changing its content,
+        # and C1 controls (U+0080-U+009F), which some terminals and views
+        # interpret like escape sequences.
+        return ''.join(c for c in value if (c in '\n\t' or ord(c) >= 32 and ord(c) != 127)
+                       and not 0x80 <= ord(c) <= 0x9f and c not in BIDI_CONTROLS)
     lines = [f'Git · PR {repository}#{number}', clean(data.get('title'), 1000),
              f"Estado: {data.get('state')} · draft: {data.get('draft')} · merged: {data.get('merged')} · mergeable: {data.get('mergeable')}",
              f"Base: {clean(data.get('base', {}).get('ref'), 1000)}  {clean(data.get('base', {}).get('sha'), 80)}",

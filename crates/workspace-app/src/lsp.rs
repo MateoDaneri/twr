@@ -83,8 +83,35 @@ fn private_profile(runtime: &Path, prefix: &str) -> Result<PathBuf, String> {
         .mode(0o700)
         .create(&profile)
         .map_err(|e| e.to_string())?;
-    crate::storage::private_directory(&profile)?;
+    if let Err(error) = crate::storage::private_directory(&profile) {
+        remove_profile(runtime, &profile);
+        return Err(error);
+    }
     Ok(profile)
+}
+
+/// Removes a profile directory this process created with private_profile.
+/// Only the exact recorded path is touched, and only when it is still a
+/// real directory (not a symlink) directly inside the runtime directory and
+/// named `<prefix>-<this pid>-…`. remove_dir_all does not follow symlinks
+/// inside it.
+fn remove_profile(runtime: &Path, profile: &Path) {
+    let owned_name = profile
+        .file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| {
+            ["lua-lsp", "tex-lsp"].iter().any(|prefix| {
+                name.strip_prefix(prefix)
+                    .and_then(|rest| rest.strip_prefix(&format!("-{}-", std::process::id())))
+                    .is_some_and(|ns| !ns.is_empty() && ns.bytes().all(|b| b.is_ascii_digit()))
+            })
+        });
+    if owned_name
+        && profile.parent() == Some(runtime)
+        && std::fs::symlink_metadata(profile).is_ok_and(|meta| meta.file_type().is_dir())
+    {
+        let _ = std::fs::remove_dir_all(profile);
+    }
 }
 
 fn configuration_reply(settings: &Value, items: &Value) -> Result<Vec<Value>, String> {
@@ -262,6 +289,12 @@ pub struct Server {
     tx: SyncSender<Work>,
     pub events: Receiver<Event>,
     stop: Arc<AtomicBool>,
+    /// Signalled by the worker after the server exited and its private
+    /// profile (if any) was removed.
+    done: Receiver<()>,
+    /// Wakes the idle worker: sent after queueing work and when a stop is
+    /// requested. A full slot already guarantees a wake, so sends never block.
+    kick: SyncSender<()>,
 }
 impl Server {
     pub fn clangd(root: &Path) -> Result<Self, String> {
@@ -289,19 +322,23 @@ impl Server {
         // Exclusive fresh profile, never reuse a server's logs/config or the user's HOME.
         let profile = private_profile(runtime, "lua-lsp")?;
         let config = profile.join("settings.json");
+        let fail = |error: String| {
+            remove_profile(runtime, &profile);
+            error
+        };
         let settings = json!({"runtime.version":"LuaJIT","runtime.plugin":"","workspace.checkThirdParty":"Disable","workspace.userThirdParty":[],"workspace.library":[],"workspace.maxPreload":5000,"workspace.preloadFileSize":512,"diagnostics.globals":["vim"],"completion.callSnippet":"Replace","completion.keywordSnippet":"Replace"});
         let mut file = fs::OpenOptions::new()
             .create_new(true)
             .write(true)
             .mode(0o600)
             .open(&config)
-            .map_err(|e| e.to_string())?;
+            .map_err(|e| fail(e.to_string()))?;
         file.write_all(
             serde_json::to_string(&settings)
-                .map_err(|e| e.to_string())?
+                .map_err(|e| fail(e.to_string()))?
                 .as_bytes(),
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| fail(e.to_string()))?;
         let mut command = Command::new(binary);
         command
             .arg(format!("--configpath={}", config.display()))
@@ -319,7 +356,14 @@ impl Server {
             .env_remove("LUA_INIT")
             .env_remove("LUA_PATH")
             .env_remove("LUA_CPATH");
-        Self::start_notifying(command, root, wake)
+        Self::start_configured(
+            command,
+            root,
+            wake,
+            Value::Null,
+            Value::Null,
+            Some((runtime.to_path_buf(), profile)),
+        )
     }
     pub fn tex_notifying(
         root: &Path,
@@ -348,6 +392,7 @@ impl Server {
             wake,
             tex_settings(),
             json!({"skipDistro":true}),
+            Some((runtime.to_path_buf(), profile)),
         )
     }
     pub fn start(command: Command, root: &Path) -> Result<Self, String> {
@@ -358,7 +403,7 @@ impl Server {
         root: &Path,
         wake: Option<async_channel::Sender<()>>,
     ) -> Result<Self, String> {
-        Self::start_configured(command, root, wake, Value::Null, Value::Null)
+        Self::start_configured(command, root, wake, Value::Null, Value::Null, None)
     }
     fn start_configured(
         mut command: Command,
@@ -366,15 +411,31 @@ impl Server {
         wake: Option<async_channel::Sender<()>>,
         settings: Value,
         initialization: Value,
+        profile: Option<(PathBuf, PathBuf)>,
     ) -> Result<Self, String> {
-        let root = root.canonicalize().map_err(|e| e.to_string())?;
-        let mut child = command
-            .current_dir(&root)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::null())
-            .spawn()
-            .map_err(|e| e.to_string())?;
+        let cleanup = move || {
+            if let Some((runtime, profile)) = &profile {
+                remove_profile(runtime, profile);
+            }
+        };
+        let spawned = root.canonicalize().map_err(|e| e.to_string()).and_then(|root| {
+            command
+                .current_dir(&root)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()
+                .map(|child| (root, child))
+                .map_err(|e| e.to_string())
+        });
+        let (root, mut child) = match spawned {
+            Ok(spawned) => spawned,
+            Err(error) => {
+                cleanup();
+                return Err(error);
+            }
+        };
+        let (done_tx, done) = mpsc::sync_channel(1);
         let mut input = child.stdin.take().unwrap();
         let mut output = child.stdout.take().unwrap();
         let (tx, rx) = mpsc::sync_channel(8);
@@ -382,6 +443,12 @@ impl Server {
         let (wire_tx, wire_rx) = mpsc::sync_channel(8);
         let stop = Arc::new(AtomicBool::new(false));
         let stopped = stop.clone();
+        // Every producer (server output reader, sync/request, stop) sends
+        // here after publishing its data, so the worker blocks instead of
+        // polling every 10 ms; the timeout bounds the checks that have no
+        // producer (child exit without EOF, 8 s request expiry, 10 s init).
+        let (kick, kicked) = mpsc::sync_channel::<()>(1);
+        let reader_kick = kick.clone();
         std::thread::spawn(move || {
             let mut codec = Codec::default();
             let mut b = [0; 8192];
@@ -394,15 +461,19 @@ impl Server {
                                 if wire_tx.send(Ok(m)).is_err() {
                                     return;
                                 }
+                                let _ = reader_kick.try_send(());
                             }
                         }
                         Err(e) => {
                             let _ = wire_tx.send(Err(e));
+                            let _ = reader_kick.try_send(());
                             return;
                         }
                     },
                 }
             }
+            // EOF: usually the server exited; let the worker notice now.
+            let _ = reader_kick.try_send(());
         });
         std::thread::spawn(move || {
             let result = (|| -> Result<(), String> {
@@ -565,7 +636,7 @@ impl Server {
                     if child.try_wait().map_err(|e| e.to_string())?.is_some() {
                         return Err("LSP terminó".into());
                     }
-                    std::thread::sleep(Duration::from_millis(10));
+                    let _ = kicked.recv_timeout(Duration::from_millis(250));
                 }
                 for path in documents.keys() {
                     let _ = send(
@@ -593,13 +664,17 @@ impl Server {
             }
             let _ = child.kill();
             let _ = child.wait();
+            cleanup();
+            let _ = done_tx.try_send(());
         });
-        Ok(Self { tx, events, stop })
+        Ok(Self { tx, events, stop, done, kick })
     }
     pub fn sync(&self, doc: Document) -> Result<(), String> {
         self.tx
             .try_send(Work::Sync(doc))
-            .map_err(|_| "LSP ocupado".into())
+            .map_err(|_| String::from("LSP ocupado"))?;
+        let _ = self.kick.try_send(());
+        Ok(())
     }
     pub fn request(&self, doc: Document, method: &str, position: Value) -> Result<(), String> {
         if !matches!(
@@ -613,12 +688,36 @@ impl Server {
         }
         self.tx
             .try_send(Work::Request(doc, method.into(), position))
-            .map_err(|_| "LSP ocupado".into())
+            .map_err(|_| String::from("LSP ocupado"))?;
+        let _ = self.kick.try_send(());
+        Ok(())
+    }
+}
+impl Server {
+    /// Asks the worker to shut the server down and waits up to `timeout` for
+    /// it to exit and remove its private profile. Used on app quit, where the
+    /// process may end before a detached worker runs.
+    pub fn stop_and_wait(&self, timeout: Duration) {
+        self.stop.store(true, Ordering::Relaxed);
+        let _ = self.kick.try_send(());
+        let _ = self.done.recv_timeout(timeout);
+    }
+    /// Asks the worker to shut the server down without waiting.
+    pub fn request_stop(&self) {
+        self.stop.store(true, Ordering::Relaxed);
+        let _ = self.kick.try_send(());
+    }
+    /// True once the worker reported that the server exited and its
+    /// profile was removed (or the worker is gone). Consumes the signal:
+    /// call it only on a server that is being discarded.
+    pub fn finished(&self) -> bool {
+        !matches!(self.done.try_recv(), Err(mpsc::TryRecvError::Empty))
     }
 }
 impl Drop for Server {
     fn drop(&mut self) {
         self.stop.store(true, Ordering::Relaxed);
+        let _ = self.kick.try_send(());
     }
 }
 #[cfg(test)]

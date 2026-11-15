@@ -117,8 +117,106 @@ pub fn private_directory(path: &Path) -> Result<(), String> {
     }
     Ok(())
 }
+/// `recovery-<pid>-<ns>.tmp` (recovery.rs) or `projects-<pid>-<ns>-<seq>.tmp`
+/// (registry_temp): the exact temporary names this app writes.
+fn own_temp_name(name: &str) -> bool {
+    let digits = |part: &str| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit());
+    let Some(stem) = name.strip_suffix(".tmp") else {
+        return false;
+    };
+    if let Some(rest) = stem.strip_prefix("recovery-") {
+        let parts: Vec<&str> = rest.split('-').collect();
+        parts.len() == 2 && parts.iter().all(|part| digits(part))
+    } else if let Some(rest) = stem.strip_prefix("projects-") {
+        let parts: Vec<&str> = rest.split('-').collect();
+        parts.len() == 3 && parts.iter().all(|part| digits(part))
+    } else {
+        false
+    }
+}
+
+/// Start of this process in whole seconds since the epoch, from the kernel.
+#[cfg(target_os = "macos")]
+fn process_start_seconds() -> Option<u64> {
+    let mut info: libc::proc_bsdinfo = unsafe { std::mem::zeroed() };
+    let size = std::mem::size_of::<libc::proc_bsdinfo>() as libc::c_int;
+    // SAFETY: proc_pidinfo writes at most `size` bytes into `info`, a
+    // zero-initialized plain C struct of exactly that size.
+    let written = unsafe {
+        libc::proc_pidinfo(
+            std::process::id() as libc::c_int,
+            libc::PROC_PIDTBSDINFO,
+            0,
+            (&mut info as *mut libc::proc_bsdinfo).cast(),
+            size,
+        )
+    };
+    (written == size && info.pbi_start_tvsec > 0).then_some(info.pbi_start_tvsec)
+}
+#[cfg(not(target_os = "macos"))]
+fn process_start_seconds() -> Option<u64> {
+    None
+}
+
+/// Remove temporaries left by an earlier crash or kill during a recovery or
+/// registry write. Only this app's exact names, regular files (not followed),
+/// owned by the user, mode 0600, one link, modified at least
+/// `SWEEP_MARGIN_SECS` before this process started, and whose embedded pid
+/// is not a live process (another running instance may share the state
+/// directory). Every error is ignored; anything uncertain is kept.
+const SWEEP_MARGIN_SECS: u64 = 60;
+/// The writer's pid embedded in an own temporary name (first number).
+fn temp_writer_pid(name: &str) -> Option<libc::pid_t> {
+    let stem = name.strip_suffix(".tmp")?;
+    let rest = stem
+        .strip_prefix("recovery-")
+        .or_else(|| stem.strip_prefix("projects-"))?;
+    rest.split('-').next()?.parse::<libc::pid_t>().ok().filter(|pid| *pid > 0)
+}
+/// True only when the kernel reports that no process has this pid.
+fn pid_gone(pid: libc::pid_t) -> bool {
+    // SAFETY: signal 0 performs only the existence/permission check.
+    let result = unsafe { libc::kill(pid, 0) };
+    result == -1 && std::io::Error::last_os_error().raw_os_error() == Some(libc::ESRCH)
+}
+fn sweep_stale_temps(state: &Path) {
+    let Some(start) = process_start_seconds() else {
+        return;
+    };
+    // SAFETY: getuid has no preconditions and cannot fail.
+    let uid = unsafe { libc::getuid() };
+    let Ok(entries) = fs::read_dir(state) else {
+        return;
+    };
+    for entry in entries.take(10_000).flatten() {
+        let name = entry.file_name();
+        if !name.to_str().is_some_and(own_temp_name) {
+            continue;
+        }
+        let path = entry.path();
+        let Ok(meta) = fs::symlink_metadata(&path) else {
+            continue;
+        };
+        let older = meta
+            .modified()
+            .ok()
+            .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+            .is_some_and(|age| age.as_secs().saturating_add(SWEEP_MARGIN_SECS) < start);
+        if meta.file_type().is_file()
+            && meta.uid() == uid
+            && meta.mode() & 0o7777 == 0o600
+            && meta.nlink() == 1
+            && older
+            && name.to_str().and_then(temp_writer_pid).is_some_and(pid_gone)
+        {
+            let _ = fs::remove_file(&path);
+        }
+    }
+}
+
 pub fn initialize(source: Option<&Path>, state: &Path) -> Result<Vec<PathBuf>, String> {
     private_directory(state)?;
+    sweep_stale_temps(state);
     fn copy(source: &Path, dest: &Path, depth: usize) -> Result<(), String> {
         if depth > 8 {
             return Err("Demo directory depth exceeds limit".into());

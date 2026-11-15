@@ -6,7 +6,7 @@ use std::{
     process::{Command, Stdio},
     sync::{
         Arc,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU8, Ordering},
         mpsc::{self, Receiver},
     },
     time::{Duration, Instant},
@@ -15,7 +15,7 @@ use workspace_core::{
     agents::Agent,
     codex::{self, JsonLines, StatusOverrides},
 };
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Metadata {
     pub cwd: Option<String>,
     pub branch: Option<String>,
@@ -32,6 +32,53 @@ pub struct Provider {
     pub events: Receiver<Event>,
     stop: Arc<AtomicBool>,
     refresh: Arc<AtomicBool>,
+    // Why the worker ended (ENDING_*), written once before it exits.
+    ending: Arc<AtomicU8>,
+}
+const ENDING_UNKNOWN: u8 = 0;
+/// The session initialized and was later lost (timeout, EOF, decode error).
+const ENDING_DROPPED: u8 = 1;
+/// The transport ended before Codex initialized.
+const ENDING_NEVER_READY: u8 = 2;
+/// Codex rejected initialization, or ssh reported an authentication or
+/// host-key failure: retrying cannot help and may lock the account.
+const ENDING_REFUSED: u8 = 3;
+const MAX_RECONNECTS: u32 = 8;
+/// A reconnected session that stays ready this long resets the attempt count.
+const RECONNECT_STABLE: Duration = Duration::from_secs(60);
+fn reconnect_delay(previous_attempts: u32) -> Duration {
+    Duration::from_secs((1u64 << previous_attempts.min(6)).min(60))
+}
+fn ssh_refusal(stderr: &str) -> bool {
+    let stderr = stderr.to_ascii_lowercase();
+    [
+        "permission denied",
+        "host key verification failed",
+        "remote host identification has changed",
+        "too many authentication failures",
+        "authentication failed",
+        "no matching host key type",
+    ]
+    .iter()
+    .any(|marker| stderr.contains(marker))
+}
+/// How to start a provider again for an automatic reconnect.
+#[derive(Clone)]
+enum Origin {
+    Local { validation: bool },
+    Remote { remote: Remote, validation: bool },
+}
+impl Origin {
+    fn start(&self, wake: Option<async_channel::Sender<()>>) -> Result<Provider, String> {
+        match self {
+            Self::Local { validation: true } => Provider::fixture_notifying(None, wake),
+            Self::Local { validation: false } => Provider::local_notifying(wake),
+            Self::Remote { remote, validation: true } => {
+                Provider::fixture_notifying(Some(remote.clone()), wake)
+            }
+            Self::Remote { remote, validation: false } => Provider::remote_notifying(remote, wake),
+        }
+    }
 }
 /// SSH destination and Codex app identity are distinct; never infer one from the other.
 #[derive(Clone, Debug)]
@@ -115,6 +162,17 @@ struct Slot {
     connection: Connection,
     error: Option<String>,
     refreshed: Option<Instant>,
+    reconnect: Reconnect,
+}
+/// Bounded automatic reconnect state. Only a session that initialized and
+/// then dropped schedules one; manual connect or disconnect clears it.
+#[derive(Default)]
+struct Reconnect {
+    origin: Option<Origin>,
+    due: Option<Instant>,
+    attempts: u32,
+    stable_since: Option<Instant>,
+    shown_secs: Option<u64>,
 }
 impl Registry {
     pub fn notifying(wake: async_channel::Sender<()>) -> Self {
@@ -140,6 +198,7 @@ impl Registry {
             slot.provider = Some(provider);
             slot.connection = Connection::Connecting;
             slot.error = None;
+            slot.reconnect = Reconnect::default();
         } else {
             self.slots.insert(
                 key,
@@ -150,10 +209,16 @@ impl Registry {
                     connection: Connection::Connecting,
                     error: None,
                     refreshed: None,
+                    reconnect: Reconnect::default(),
                 },
             );
         }
         Ok(())
+    }
+    fn remember_origin(&mut self, key: &str, origin: Origin) {
+        if let Some(slot) = self.slots.get_mut(key) {
+            slot.reconnect.origin = Some(origin);
+        }
     }
     pub fn connect_local(&mut self, validation: bool) -> Result<(), String> {
         if self.connected("local") {
@@ -173,7 +238,9 @@ impl Registry {
                 }
             }
         };
-        self.insert("local".into(), provider)
+        self.insert("local".into(), provider)?;
+        self.remember_origin("local", Origin::Local { validation });
+        Ok(())
     }
     fn start_failed(&mut self, key: &str, error: &str) {
         let slot = self.slots.entry(key.into()).or_insert_with(|| Slot {
@@ -183,6 +250,7 @@ impl Registry {
             connection: Connection::Disconnected,
             error: None,
             refreshed: None,
+            reconnect: Reconnect::default(),
         });
         Self::stop(slot);
         slot.error = Some(error.into());
@@ -202,16 +270,22 @@ impl Registry {
         } else {
             Provider::remote_notifying(&remote, self.wake.clone())?
         };
-        self.insert(remote.ssh_host, provider)
+        let key = remote.ssh_host.clone();
+        self.insert(key.clone(), provider)?;
+        self.remember_origin(&key, Origin::Remote { remote, validation });
+        Ok(())
     }
     pub fn disconnect(&mut self, key: &str) -> Result<(), String> {
+        // A manual disconnect also cancels any pending automatic reconnect.
         if key == "all" {
             for slot in self.slots.values_mut() {
                 Self::stop(slot);
+                slot.reconnect = Reconnect { origin: slot.reconnect.origin.take(), ..Default::default() };
             }
         } else {
             let slot = self.slots.get_mut(key).ok_or("Proveedor no registrado")?;
             Self::stop(slot);
+            slot.reconnect = Reconnect { origin: slot.reconnect.origin.take(), ..Default::default() };
         }
         Ok(())
     }
@@ -224,9 +298,42 @@ impl Registry {
             agent.coordination_targets = 0;
         }
     }
+    /// After a worker ended: schedule the next automatic reconnect when the
+    /// session had been established (or a reconnect sequence is under way and
+    /// the failure is not a refusal), otherwise stay disconnected.
+    fn after_end(key: &str, slot: &mut Slot, ending: u8, now: Instant) -> String {
+        let retrying = slot.reconnect.attempts > 0;
+        let eligible = slot.reconnect.origin.is_some()
+            && match ending {
+                ENDING_DROPPED => true,
+                ENDING_NEVER_READY => retrying,
+                _ => false,
+            };
+        if eligible && slot.reconnect.attempts < MAX_RECONNECTS {
+            let delay = reconnect_delay(slot.reconnect.attempts);
+            slot.reconnect.attempts += 1;
+            slot.reconnect.due = Some(now + delay);
+            slot.reconnect.stable_since = None;
+            slot.reconnect.shown_secs = None;
+            return format!("Agents {key} desconectado · reconectando en {} s", delay.as_secs());
+        }
+        slot.reconnect.due = None;
+        slot.reconnect.attempts = 0;
+        slot.reconnect.stable_since = None;
+        slot.reconnect.shown_secs = None;
+        if eligible {
+            format!("Agents {key} desconectado · sin reconexión tras {MAX_RECONNECTS} intentos · estado conservado")
+        } else if retrying && ending == ENDING_REFUSED {
+            format!("Agents {key} desconectado · reconexión rechazada · estado conservado")
+        } else {
+            format!("Agents {key} desconectado · estado conservado")
+        }
+    }
     pub fn poll(&mut self) -> (bool, Vec<String>) {
         let mut changed = false;
         let mut messages = Vec::new();
+        let now = Instant::now();
+        let wake = self.wake.clone();
         for (key, slot) in &mut self.slots {
             let mut closed = false;
             let mut events = Vec::new();
@@ -243,35 +350,91 @@ impl Registry {
                 }
             }
             for event in events {
-                changed = true;
                 match event {
                     Event::Connected => {
+                        changed = true;
                         slot.connection = Connection::Loading;
                         messages.push(format!("Agents {key} conectado · solo metadata"))
                     }
+                    // A periodic snapshot identical to the current one would
+                    // only re-render the same rows.
                     Event::Snapshot(agents, metadata) => {
-                        slot.agents = agents;
-                        slot.metadata = metadata;
+                        if slot.agents != agents || slot.metadata != metadata {
+                            changed = true;
+                            slot.agents = agents;
+                            slot.metadata = metadata;
+                        }
                     }
+                    // The timestamp always advances; the status line reads it
+                    // on the next render. Only a state change re-renders now.
                     Event::Refreshed => {
+                        changed |= slot.connection != Connection::Ready || slot.error.is_some();
+                        if slot.reconnect.attempts > 0 && slot.reconnect.stable_since.is_none() {
+                            slot.reconnect.stable_since = Some(now);
+                        }
                         slot.connection = Connection::Ready;
                         slot.error = None;
                         slot.refreshed = Some(Instant::now());
                     }
                     Event::Error(error) => {
+                        changed = true;
                         slot.error = Some(error.clone());
                         messages.push(format!("Agents {key}: {error}"));
                     }
                     Event::Disconnected => {
+                        changed = true;
+                        let ending = slot.provider.as_ref().map_or(ENDING_UNKNOWN, |p| p.ending.load(Ordering::Acquire));
                         Self::stop(slot);
-                        messages.push(format!("Agents {key} desconectado · estado conservado"));
+                        messages.push(Self::after_end(key, slot, ending, now));
                     }
                 }
             }
             if closed && slot.provider.is_some() {
+                let ending = slot.provider.as_ref().map_or(ENDING_UNKNOWN, |p| p.ending.load(Ordering::Acquire));
                 Self::stop(slot);
                 changed = true;
-                messages.push(format!("Agents {key} desconectado · estado conservado"));
+                messages.push(Self::after_end(key, slot, ending, now));
+            }
+            if slot.reconnect.attempts > 0
+                && slot.connection == Connection::Ready
+                && slot.reconnect.stable_since.is_some_and(|since| now.duration_since(since) >= RECONNECT_STABLE)
+            {
+                slot.reconnect.attempts = 0;
+                slot.reconnect.stable_since = None;
+            }
+            if slot.provider.is_none() && let Some(due) = slot.reconnect.due {
+                if now >= due {
+                    slot.reconnect.due = None;
+                    slot.reconnect.shown_secs = None;
+                    changed = true;
+                    let started = slot
+                        .reconnect
+                        .origin
+                        .as_ref()
+                        .ok_or_else(|| "Sin origen de conexión".to_owned())
+                        .and_then(|origin| origin.start(wake.clone()));
+                    match started {
+                        Ok(provider) => {
+                            slot.provider = Some(provider);
+                            slot.connection = Connection::Connecting;
+                            messages.push(format!(
+                                "Agents {key} reconectando · intento {}/{MAX_RECONNECTS}",
+                                slot.reconnect.attempts
+                            ));
+                        }
+                        Err(error) => {
+                            slot.error = Some(error);
+                            messages.push(Self::after_end(key, slot, ENDING_NEVER_READY, now));
+                        }
+                    }
+                } else {
+                    // Re-render once per second so the countdown stays current.
+                    let secs = due.duration_since(now).as_secs() + 1;
+                    if slot.reconnect.shown_secs != Some(secs) {
+                        slot.reconnect.shown_secs = Some(secs);
+                        changed = true;
+                    }
+                }
             }
         }
         (changed, messages)
@@ -298,7 +461,15 @@ impl Registry {
                     Connection::Ready => "conectado",
                     Connection::Disconnected => "desconectado",
                 };
-                let mut text = format!("{key} · {state} · {} tareas", slot.agents.len());
+                let mut text = match slot.reconnect.due.filter(|_| slot.provider.is_none()) {
+                    Some(due) => format!(
+                        "{key} · reconectando en {} s (intento {}/{MAX_RECONNECTS}) · {} tareas",
+                        due.saturating_duration_since(Instant::now()).as_secs() + 1,
+                        slot.reconnect.attempts,
+                        slot.agents.len()
+                    ),
+                    None => format!("{key} · {state} · {} tareas", slot.agents.len()),
+                };
                 if let Some(time) = slot.refreshed {
                     text.push_str(&format!(
                         " · última consulta hace {} s",
@@ -490,7 +661,7 @@ impl Protocol {
                     .filter(|s| !s.is_empty())
                     .unwrap_or("Sin título")
                     .chars()
-                    .filter(|c| !c.is_control())
+                    .filter(|c| !c.is_control() && !crate::text_safety::is_bidi_control(*c))
                     .take(512)
                     .collect();
                 if let Some((id, project)) = self.project_for_thread(t, &mut Default::default()) {
@@ -676,7 +847,9 @@ impl Protocol {
                                 CodexProject {
                                     name: name
                                         .chars()
-                                        .filter(|c| !c.is_control())
+                                        .filter(|c| {
+                                            !c.is_control() && !crate::text_safety::is_bidi_control(*c)
+                                        })
                                         .take(512)
                                         .collect(),
                                     position: p["position"].as_i64().unwrap_or_default(),
@@ -817,6 +990,12 @@ impl Provider {
         let (tx, rx) = mpsc::sync_channel(64);
         let stop = Arc::new(AtomicBool::new(false));
         let cancelled = stop.clone();
+        let ending = Arc::new(AtomicU8::new(ENDING_UNKNOWN));
+        let worker_ending = ending.clone();
+        // Keep the end of stderr only to recognize ssh refusals; never shown.
+        let stderr_tail = Arc::new(std::sync::Mutex::new(Vec::<u8>::new()));
+        let stderr_done = Arc::new(AtomicBool::new(false));
+        let (tail_writer, done_writer) = (stderr_tail.clone(), stderr_done.clone());
         let refresh = Arc::new(AtomicBool::new(false));
         let requested = refresh.clone();
         std::thread::spawn(move || {
@@ -833,13 +1012,20 @@ impl Provider {
                 if n == 0 {
                     break;
                 }
+                if let Ok(mut tail) = tail_writer.lock() {
+                    tail.extend_from_slice(&bytes[..n]);
+                    let excess = tail.len().saturating_sub(4096);
+                    tail.drain(..excess);
+                }
             }
+            done_writer.store(true, Ordering::Release);
         });
         std::thread::spawn(move || {
             let mut protocol = Protocol::new(host);
             protocol.codex_host = codex_host;
             let mut decoder = JsonLines::default();
             let mut ready = false;
+            let mut refused = false;
             let mut published_generation = 0;
             let mut last = Instant::now();
             let mut response_deadline = Instant::now() + Duration::from_secs(10);
@@ -877,6 +1063,7 @@ impl Provider {
                                     let _ = events_tx.try_send(Event::Error(error));
                                 }
                                 if rejected_init {
+                                    refused = true;
                                     cancelled.store(true, Ordering::Release);
                                     break;
                                 }
@@ -930,12 +1117,36 @@ impl Provider {
             }
             let _ = child.kill();
             let _ = child.wait();
+            if !ready && !refused {
+                // Give the stderr reader a moment to collect the exit reason.
+                let waited = Instant::now();
+                while !stderr_done.load(Ordering::Acquire)
+                    && waited.elapsed() < Duration::from_millis(200)
+                {
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+                refused = stderr_tail
+                    .lock()
+                    .map(|tail| ssh_refusal(&String::from_utf8_lossy(&tail)))
+                    .unwrap_or(false);
+            }
+            worker_ending.store(
+                if refused {
+                    ENDING_REFUSED
+                } else if ready {
+                    ENDING_DROPPED
+                } else {
+                    ENDING_NEVER_READY
+                },
+                Ordering::Release,
+            );
             let _ = events_tx.try_send(Event::Disconnected);
         });
         Ok(Self {
             events,
             stop,
             refresh,
+            ending,
         })
     }
 }
@@ -1012,6 +1223,7 @@ mod tests {
                     events: rx,
                     stop: Arc::new(AtomicBool::new(false)),
                     refresh: refresh.clone(),
+                    ending: Default::default(),
                 },
             )
             .unwrap();
@@ -1052,6 +1264,7 @@ mod tests {
                     events: rx,
                     stop: Arc::new(AtomicBool::new(false)),
                     refresh: Arc::new(AtomicBool::new(false)),
+                    ending: Default::default(),
                 },
             )
             .unwrap();
@@ -1453,6 +1666,7 @@ mod tests {
             events: rx,
             stop: Arc::new(AtomicBool::new(false)),
             refresh: Arc::new(AtomicBool::new(false)),
+            ending: Default::default(),
         });
         assert!(registry.poll().0);
         assert!(!registry.connected("local"));

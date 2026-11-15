@@ -211,6 +211,18 @@ impl<K> Gate<K> {
         true
     }
 
+    /// Return an event to the front only when the owner proved it was not
+    /// dispatched. Used when pane geometry changes before the UI callback.
+    pub fn defer_undispatched(&mut self, id: u64) -> bool {
+        if self.state != State::Replaying || self.in_flight != Some(id)
+            || self.events.front().is_none_or(|entry| entry.id != id)
+        {
+            return false;
+        }
+        self.in_flight = None;
+        true
+    }
+
     /// Dispatch may have happened. Retain it, but never repeat automatically.
     pub fn uncertain(&mut self, id: u64) -> bool {
         if self.in_flight != Some(id) {

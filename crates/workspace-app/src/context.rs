@@ -11,7 +11,10 @@ pub fn collect(helper: &Path, dashboard: &Path, tasks: &Value) -> Result<Value, 
     if input.len() > 256000 {
         return Err("Lista de contexto excedida".into());
     }
+    // Isolated mode, like the other helpers: no PYTHON* variables, user
+    // site or script directory on sys.path. The helper imports only stdlib.
     let mut child = Command::new("/usr/bin/python3")
+        .args(["-I", "-S"])
         .arg(helper)
         .arg("--dashboard-root")
         .arg(dashboard)

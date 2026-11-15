@@ -107,17 +107,15 @@ bool tw_ghostty_scroll(TwGhostty *value, size_t rows_from_bottom) {
   /* A row at today's bottom is a pinned history position. BOTTOM follows
      future output, including when the scrollback prunes old pages. */
   if (rows_from_bottom == 0) {
-    GhosttyTerminalScrollViewport request = {.tag = GHOSTTY_SCROLL_VIEWPORT_BOTTOM};
-    ghostty_terminal_scroll_viewport(value->terminal, request);
-    return true;
+    GhosttyTerminalScrollViewport request = {.tag = GHOSTTY_TERMINAL_SCROLL_VIEWPORT_BOTTOM};
+    return ghostty_terminal_scroll_viewport(value->terminal, request) == GHOSTTY_SUCCESS;
   }
   GhosttyTerminalScrollbar scrollbar;
   REQUIRE(ghostty_terminal_get(value->terminal, GHOSTTY_TERMINAL_DATA_SCROLLBAR, &scrollbar));
   uint64_t bottom = scrollbar.total > scrollbar.len ? scrollbar.total - scrollbar.len : 0;
-  GhosttyTerminalScrollViewport request = {.tag = GHOSTTY_SCROLL_VIEWPORT_ROW};
+  GhosttyTerminalScrollViewport request = {.tag = GHOSTTY_TERMINAL_SCROLL_VIEWPORT_ROW};
   request.value.row = bottom > rows_from_bottom ? (size_t)(bottom - rows_from_bottom) : 0;
-  ghostty_terminal_scroll_viewport(value->terminal, request);
-  return true;
+  return ghostty_terminal_scroll_viewport(value->terminal, request) == GHOSTTY_SUCCESS;
 }
 static GhosttyPoint viewport_point(uint16_t row, uint16_t col) {
   return (GhosttyPoint){.tag = GHOSTTY_POINT_TAG_VIEWPORT,
@@ -129,12 +127,12 @@ bool tw_ghostty_selection_begin(TwGhostty *value, uint16_t row, uint16_t col) {
   REQUIRE(ghostty_terminal_get(value->terminal, GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN, &screen));
   GhosttyTrackedGridRef anchor = NULL;
   REQUIRE(ghostty_terminal_grid_ref_track(value->terminal, viewport_point(row, col), &anchor));
-  GhosttyGridRef first = GHOSTTY_INIT_SIZED(GhosttyGridRef);
+  GhosttyGridRef first = {0};
   if (!anchor || ghostty_tracked_grid_ref_snapshot(anchor, &first) != GHOSTTY_SUCCESS) {
     if (anchor) ghostty_tracked_grid_ref_free(anchor);
     return false;
   }
-  GhosttySelection selection = GHOSTTY_INIT_SIZED(GhosttySelection);
+  GhosttySelection selection = {0};
   selection.start = first;
   selection.end = first;
   if (ghostty_terminal_set(value->terminal, GHOSTTY_TERMINAL_OPT_SELECTION, &selection) != GHOSTTY_SUCCESS) {
@@ -151,11 +149,11 @@ bool tw_ghostty_selection_extend(TwGhostty *value, uint16_t row, uint16_t col) {
   GhosttyTerminalScreen screen;
   REQUIRE(ghostty_terminal_get(value->terminal, GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN, &screen));
   if (screen != value->selection_screen) return false;
-  GhosttyGridRef first = GHOSTTY_INIT_SIZED(GhosttyGridRef);
-  GhosttyGridRef last = GHOSTTY_INIT_SIZED(GhosttyGridRef);
+  GhosttyGridRef first = {0};
+  GhosttyGridRef last = {0};
   REQUIRE(ghostty_tracked_grid_ref_snapshot(value->selection_anchor, &first));
   REQUIRE(ghostty_terminal_grid_ref(value->terminal, viewport_point(row, col), &last));
-  GhosttySelection selection = GHOSTTY_INIT_SIZED(GhosttySelection);
+  GhosttySelection selection = {0};
   selection.start = first;
   selection.end = last;
   return ghostty_terminal_set(value->terminal, GHOSTTY_TERMINAL_OPT_SELECTION, &selection) == GHOSTTY_SUCCESS;
@@ -178,12 +176,20 @@ bool tw_ghostty_selection_copy(TwGhostty *value, uint8_t *out, size_t capacity, 
   GhosttyTerminalScreen screen;
   REQUIRE(ghostty_terminal_get(value->terminal, GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN, &screen));
   if (screen != value->selection_screen) return false;
-  GhosttyTerminalSelectionFormatOptions options = GHOSTTY_INIT_SIZED(GhosttyTerminalSelectionFormatOptions);
-  options.emit = GHOSTTY_FORMATTER_FORMAT_PLAIN;
-  options.unwrap = true;
-  options.trim = true;
+  GhosttySelection selection = {0};
+  REQUIRE(ghostty_terminal_get(value->terminal, GHOSTTY_TERMINAL_DATA_SELECTION, &selection));
+  GhosttyFormatter formatter = NULL;
+  REQUIRE(ghostty_formatter_terminal_new(NULL, &formatter, value->terminal));
+  GhosttyFormatterFormat format = GHOSTTY_FORMATTER_FORMAT_PLAIN;
+  bool unwrap = true, trim = true;
   size_t len = 0;
-  if (ghostty_terminal_selection_format_buf(value->terminal, options, out, capacity, &len) != GHOSTTY_SUCCESS || len > capacity) return false;
+  bool success = ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_EMIT, &format) == GHOSTTY_SUCCESS &&
+      ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_UNWRAP, &unwrap) == GHOSTTY_SUCCESS &&
+      ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_TRIM, &trim) == GHOSTTY_SUCCESS &&
+      ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_SELECTION, &selection) == GHOSTTY_SUCCESS &&
+      ghostty_formatter_format_buf(formatter, out, capacity, &len) == GHOSTTY_SUCCESS && len <= capacity;
+  ghostty_formatter_free(formatter);
+  if (!success) return false;
   *written = len;
   return true;
 }
@@ -219,7 +225,7 @@ static bool snapshot_images(TwGhostty *value, TwGhosttyInfo *info, TwGhosttyImag
   while (ghostty_render_state_image_iterator_next(value->images)) {
     if (++count > 64) { info->flags |= 8; break; }
     GhosttyImageProtocol protocol;
-    GhosttyRenderStateImageLayer layer;
+    GhosttyImageLayer layer;
     uint32_t id;
     TwGhosttyImage item = {0};
     GhosttyRenderStateImageData keys[] = {
@@ -241,14 +247,16 @@ static bool snapshot_images(TwGhostty *value, TwGhosttyInfo *info, TwGhosttyImag
     GhosttyKittyGraphicsImage handle = ghostty_kitty_graphics_image(storage, id);
     if (!handle) continue;
     GhosttyKittyImageFormat format;
-    REQUIRE(ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_IMAGE_DATA_WIDTH, &item.image_width));
-    REQUIRE(ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_IMAGE_DATA_HEIGHT, &item.image_height));
-    REQUIRE(ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_IMAGE_DATA_FORMAT, &format));
+    REQUIRE(ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_GRAPHICS_IMAGE_DATA_WIDTH, &item.image_width));
+    REQUIRE(ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_GRAPHICS_IMAGE_DATA_HEIGHT, &item.image_height));
+    REQUIRE(ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_GRAPHICS_IMAGE_DATA_FORMAT, &format));
     item.format = (uint32_t)format;
-    REQUIRE(ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_IMAGE_DATA_DATA_LEN, &item.len));
-    GhosttyResult result = ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_IMAGE_DATA_DATA_PTR, &item.data);
+    GhosttyString pixels = {0};
+    GhosttyResult result = ghostty_kitty_graphics_image_get(handle, GHOSTTY_KITTY_GRAPHICS_IMAGE_DATA_PIXELS, &pixels);
     if (result == GHOSTTY_NO_VALUE) continue;
     if (result != GHOSTTY_SUCCESS) return false;
+    item.len = pixels.len;
+    item.data = pixels.ptr;
     if (!image(context, &item)) info->flags |= 8;
   }
   return true;
@@ -265,7 +273,7 @@ bool tw_ghostty_snapshot(TwGhostty *value, TwGhosttyInfo *info, TwGhosttyCellFn 
   info->cursor_row = cursor.viewport_has_value ? cursor.viewport_y : 0;
   info->cursor_col = cursor.viewport_has_value ? cursor.viewport_x : 0;
   info->flags = cursor.visible && cursor.viewport_has_value ? 0 : 1;
-  GhosttyRenderStateCursorVisualStyle cursor_style;
+  GhosttyCursorStyle cursor_style;
   bool blinking = false, has_color = false;
   REQUIRE(ghostty_render_state_get(value->render, GHOSTTY_RENDER_STATE_DATA_CURSOR_VISUAL_STYLE, &cursor_style));
   REQUIRE(ghostty_render_state_get(value->render, GHOSTTY_RENDER_STATE_DATA_CURSOR_BLINKING, &blinking));
@@ -308,11 +316,14 @@ bool tw_ghostty_snapshot(TwGhostty *value, TwGhosttyInfo *info, TwGhosttyCellFn 
       } else if (text_result != GHOSTTY_SUCCESS) return false;
       bool has_grapheme = buffer.len != 0;
       if (buffer.len == 0) { bytes[0] = ' '; buffer.len = 1; }
-      GhosttyStyle style = GHOSTTY_INIT_SIZED(GhosttyStyle);
+      GhosttyStyle style = {0};
       REQUIRE(ghostty_render_state_row_cells_get(value->cells, GHOSTTY_RENDER_STATE_ROW_CELLS_DATA_STYLE, &style));
       uint32_t flags = (wide == GHOSTTY_CELL_WIDE_WIDE ? 1 : 0) |
           (wide == GHOSTTY_CELL_WIDE_SPACER_TAIL || wide == GHOSTTY_CELL_WIDE_SPACER_HEAD ? 2 : 0) |
-          (style.bold ? 4 : 0) | (style.italic ? 8 : 0) | (style.underline ? 16 : 0) | (style.inverse ? 32 : 0) |
+          ((style.flags & GHOSTTY_STYLE_FLAG_BOLD) ? 4 : 0) |
+          ((style.flags & GHOSTTY_STYLE_FLAG_ITALIC) ? 8 : 0) |
+          (GHOSTTY_STYLE_UNDERLINE(style) != GHOSTTY_SGR_UNDERLINE_NONE ? 16 : 0) |
+          ((style.flags & GHOSTTY_STYLE_FLAG_INVERSE) ? 32 : 0) |
           (has_grapheme ? 64 : 0) |
           (selected_result == GHOSTTY_SUCCESS && x >= selected.start_x && x <= selected.end_x ? 128 : 0);
       if (!cell(context, (uint16_t)y, x, bytes, buffer.len,

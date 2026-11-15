@@ -30,7 +30,8 @@ impl Bounds {
     fn bottom(self) -> i64 {
         self.y + self.height
     }
-    fn valid(self) -> bool {
+    /// Reject empty or unreasonably large renderer coordinates and extents.
+    pub fn valid(self) -> bool {
         const LIMIT: i64 = 1_000_000_000;
         (-LIMIT..=LIMIT).contains(&self.x)
             && (-LIMIT..=LIMIT).contains(&self.y)
@@ -137,6 +138,34 @@ impl Layout {
         }
         geometry_matches_tree(self.root(), bounds)
     }
+    /// Determine whether any sibling frame exists in a direction without
+    /// using renderer geometry. Selecting a specific neighbor still requires
+    /// current bounds and the cursor's perpendicular coordinate.
+    pub fn has_directional_neighbor(&self, direction: Direction) -> Result<bool, Error> {
+        let (axis, backwards) = match direction {
+            Direction::Left => (Axis::Row, true),
+            Direction::Right => (Axis::Row, false),
+            Direction::Up => (Axis::Column, true),
+            Direction::Down => (Axis::Column, false),
+        };
+        let mut path = Vec::new();
+        if !pane_path(self.root(), self.active(), &mut path) {
+            return Err(Error::InvalidGeometry);
+        }
+        while let Some(index) = path.pop() {
+            let Node::Split(parent_axis, children) = node_at(self.root(), &path).ok_or(Error::InvalidGeometry)? else {
+                return Err(Error::InvalidGeometry);
+            };
+            if index >= children.len() { return Err(Error::InvalidGeometry); }
+            if *parent_axis == axis
+                && if backwards { index > 0 } else { index + 1 < children.len() }
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
     /// Returns false at a boundary, leaving focus/history untouched. This lets
     /// the future mode adapter preserve a Visual range on an unsuccessful move.
     /// Geometry must contain every current pane once, with no overlapping content

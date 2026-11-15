@@ -2,7 +2,7 @@
 use std::{
     collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
-    sync::{Arc, mpsc},
+    sync::{Arc, mpsc, atomic::{AtomicUsize, Ordering}},
     time::Instant,
 };
 use workspace_core::{
@@ -59,6 +59,8 @@ pub enum PickerKind {
     Projects,
     Files,
     Buffers,
+    /// Buffers recovered after a crash, from every workspace.
+    Recovered,
     Restore,
     Grep,
     Discover,
@@ -87,6 +89,7 @@ impl PickerKind {
             Self::Projects => "Proyectos",
             Self::Files => "Archivos",
             Self::Buffers => "Buffers",
+            Self::Recovered => "Buffers recuperados · todos los workspaces",
             Self::Restore => "Restaurar ocultos",
             Self::Grep => "Buscar en el proyecto",
             Self::Discover => "Subproyectos · profundidad 3",
@@ -125,8 +128,19 @@ pub struct Picker {
     pub marked: Vec<Choice>,
     // Preserve how each choice was discovered even if the query later changes.
     marked_absolute: BTreeSet<String>,
+    file_root: Option<PathBuf>,
+    pending_file_root: Option<Arc<()>>,
+    file_root_error: Option<String>,
     pub generation: u64,
     pub previous: Surface,
+    /// Set when a root-scoped search was asked for in Home and this
+    /// Projects picker opened instead: the action to run after a workspace
+    /// is chosen. For "picker.files" a typed absolute path (/ or ~/) turns
+    /// the picker into an absolute-only Files picker.
+    pub home_redirect: Option<&'static str>,
+    /// Files picker that lists only typed absolute paths and never scans
+    /// the Home folder.
+    home_absolute_only: bool,
 }
 impl Picker {
     pub fn input_active(&self) -> bool {
@@ -137,6 +151,13 @@ impl Picker {
         self.insert = true;
         self.query_cursor = self.query.len();
         self.top_prefix = None;
+    }
+    /// The absolute path a Files query stands for: the query itself when it
+    /// starts with '/', or the home directory joined with the rest when it
+    /// starts with '~/'. The typed query is never rewritten.
+    fn absolute_file_query(&self) -> Option<String> {
+        if self.kind != PickerKind::Files { return None; }
+        effective_absolute_query(&self.query)
     }
     pub fn focus_list(&mut self) {
         self.focus = PickerFocus::List;
@@ -156,6 +177,11 @@ impl Picker {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Effect {
+    PickerFilesRoot,
+    PickerFilesCwd,
+    PickerRecovered,
+    /// Workspace root and path of a recovered buffer to open there.
+    RecoveredBuffer(PathBuf, PathBuf),
     DeleteBuffer,
     AlternateBuffer,
     NumberedBuffer(usize),
@@ -168,6 +194,8 @@ pub enum Effect {
     MarkedFiles(Vec<PathBuf>, bool),
     NewFile,
     EditorWindow(&'static str),
+    CountedEditorWindow(&'static str, usize),
+    SnacksTerminal { root: bool, focus: bool, count: usize },
     TerminalNormal(bool),
     TerminalMotion(String, usize),
     TerminalJump(bool, usize),
@@ -204,7 +232,81 @@ struct PickerUpdate {
     choices: Option<Vec<Choice>>,
     error: Option<String>,
 }
+const MAX_PICKER_WORKERS: usize = 4;
+struct PickerWorkerPermit(Arc<AtomicUsize>);
+impl PickerWorkerPermit {
+    fn acquire(active: &Arc<AtomicUsize>) -> Option<Self> {
+        active.try_update(Ordering::AcqRel, Ordering::Acquire, |count| {
+            (count < MAX_PICKER_WORKERS).then_some(count + 1)
+        }).ok().map(|_| Self(active.clone()))
+    }
+}
+impl Drop for PickerWorkerPermit {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::Release);
+    }
+}
 const PARTIAL_ABSOLUTE_SEARCH: &str = "Búsqueda parcial: límite o carpetas inaccesibles";
+
+/// Why a bounded file scan is incomplete. The warning distinguishes the
+/// traversal budget from an unreadable folder and names at most one folder.
+#[derive(Debug, Default)]
+struct ScanGaps {
+    limit: bool,
+    denied: Option<PathBuf>,
+    more_denied: bool,
+    other: bool,
+}
+impl ScanGaps {
+    fn any(&self) -> bool {
+        self.limit || self.denied.is_some() || self.other
+    }
+    fn deny(&mut self, folder: &Path) {
+        if self.denied.is_some() {
+            self.more_denied = true;
+        } else {
+            self.denied = Some(folder.to_path_buf());
+        }
+    }
+    fn warning(&self) -> Option<String> {
+        if !self.any() {
+            return None;
+        }
+        let denied = self.denied.as_ref().map(|folder| {
+            let name = folder
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_else(|| folder.display().to_string());
+            let name = name
+                .chars()
+                .filter(|c| !c.is_control() && !crate::text_safety::is_bidi_control(*c))
+                .take(60)
+                .collect::<String>();
+            if self.more_denied { format!("«{name}» y otras") } else { format!("«{name}»") }
+        });
+        Some(match (self.limit, denied) {
+            (true, Some(denied)) => format!("Búsqueda parcial: límite alcanzado; no se pudo leer {denied}"),
+            (false, Some(denied)) => format!("Búsqueda parcial: no se pudo leer la carpeta {denied}"),
+            (true, None) => "Búsqueda parcial: límite de archivos o profundidad alcanzado".into(),
+            (false, None) => PARTIAL_ABSOLUTE_SEARCH.into(),
+        })
+    }
+}
+
+/// A leading '~/' (not '~user') is the home directory; a leading '/' is
+/// already absolute. Anything else is a relative fuzzy query.
+fn starts_absolute_query(query: &str) -> bool {
+    query.starts_with('/') || query.starts_with("~/")
+}
+fn effective_absolute_query(query: &str) -> Option<String> {
+    if query.starts_with('/') {
+        return Some(query.to_owned());
+    }
+    let rest = query.strip_prefix("~/")?;
+    let home = std::env::var_os("HOME").map(PathBuf::from)?;
+    let home = home.to_str().filter(|home| home.starts_with('/'))?;
+    Some(format!("{}/{rest}", home.trim_end_matches('/')))
+}
 
 pub struct Workspace {
     pub surface: Surface,
@@ -223,6 +325,17 @@ pub struct Workspace {
     explorer_roots: BTreeMap<usize, PathBuf>,
     pub snacks_projects: Option<(crate::snacks_projects::Config, PathBuf)>,
     validation_root: Option<PathBuf>,
+    /// The Home folder in the normal app (None in validation, which has no
+    /// Home workspace). Root-scoped searches are not run over it.
+    home: Option<PathBuf>,
+    /// Search action to run once the Projects picker opened from Home has
+    /// switched workspace (taken by the view after the switch).
+    pub home_redirect_after_switch: Option<&'static str>,
+    /// Workspaces the user removed from the remembered list this session.
+    /// They stay in `projects` (indices are shared by terminals, buffers and
+    /// panes) but are hidden from the Projects picker and not written to
+    /// projects.json. Choosing the folder again clears the mark.
+    pub forgotten: BTreeSet<PathBuf>,
     pub entries: Vec<Entry>,
     pub expanded: BTreeSet<PathBuf>,
     pub tree_selected: usize,
@@ -253,12 +366,18 @@ pub struct Workspace {
     pub live_agents: bool,
     router: KeyRouter,
     picker_requests: PickerRequests,
+    picker_workers: Arc<AtomicUsize>,
+    picker_retry_pending: bool,
     picker_tx: crate::events::Sender<PickerUpdate>,
     picker_rx: mpsc::Receiver<PickerUpdate>,
     picker_message: Option<String>,
     generation: u64,
 }
 impl Workspace {
+    /// Surface that was focused when Details last opened.
+    pub fn details_previous(&self) -> Surface {
+        self.details_previous
+    }
     /// Normal launches never seed synthetic projects or agents. Validation stays
     /// inside its owned fixture directory and never starts a personal provider.
     pub fn from_profile(
@@ -302,6 +421,7 @@ impl Workspace {
                 state.join("demo"),
             ));
         } else {
+            model.home = Some(home.to_owned());
             model.snacks_projects = Some((
                 crate::snacks_projects::Config::configured()?,
                 home.to_owned(),
@@ -349,6 +469,9 @@ impl Workspace {
             explorer_roots: BTreeMap::new(),
             snacks_projects: None,
             validation_root: None,
+            home: None,
+            home_redirect_after_switch: None,
+            forgotten: BTreeSet::new(),
             entries: Vec::new(),
             expanded: BTreeSet::new(),
             tree_selected: 0,
@@ -379,6 +502,8 @@ impl Workspace {
             live_agents: false,
             router,
             picker_requests: PickerRequests::default(),
+            picker_workers: Arc::new(AtomicUsize::new(0)),
+            picker_retry_pending: false,
             picker_tx: tx,
             picker_rx: rx,
             picker_message: None,
@@ -644,6 +769,20 @@ impl Workspace {
         if self.surface == Surface::File && chord == "<Esc>" {
             return self.focus(Surface::Tree);
         }
+        // Neo-tree is an unlisted buffer in an ordinary Neovim window. Its
+        // normal-mode alternate-buffer command still acts on that window.
+        if self.surface == Surface::Tree
+            && self.pending_since.is_none()
+            && self.tree_anchor.is_none()
+            && matches!(chord, "<C-6>" | "<C-^>")
+        {
+            let count = std::mem::take(&mut self.count);
+            return if count == 0 {
+                Effect::AlternateBuffer
+            } else {
+                Effect::NumberedBuffer(count)
+            };
+        }
         if self.surface == Surface::Normal && self.pending_since.is_none() {
             if matches!(chord, "<C-o>" | "<C-i>" | "<Tab>") {
                 let count = std::mem::take(&mut self.count).max(1);
@@ -726,17 +865,19 @@ impl Workspace {
             }
             Route::Unhandled => {
                 self.pending_since = None;
-                if std::mem::take(&mut self.window_prefix) {
-                    self.count = 0;
-                }
+                self.window_prefix = false;
+                // An unrecognized normal-mode mapping consumes its count.
+                // Do not carry it into a later, unrelated Snacks action.
+                self.count = 0;
                 self.window_after_count = 0;
                 Effect::None
             }
         }
     }
     pub fn expire_prefix(&mut self) -> Effect {
-        self.pending_since = None;
-        if std::mem::take(&mut self.window_prefix) {
+        let had_pending = self.pending_since.take().is_some();
+        self.window_prefix = false;
+        if had_pending {
             self.count = 0;
         }
         self.window_after_count = 0;
@@ -1027,7 +1168,61 @@ impl Workspace {
             .map(|p| Effect::File(p.clone()))
             .unwrap_or(Effect::None)
     }
+    pub fn home_path(&self) -> Option<&Path> {
+        self.home.as_deref()
+    }
+    /// Path of the selected row of an open Projects picker.
+    pub fn selected_project_choice(&self) -> Option<(PathBuf, String)> {
+        let picker = self.picker.as_ref().filter(|p| p.kind == PickerKind::Projects)?;
+        let choice = picker.results.get(picker.selected).and_then(|i| picker.choices.get(*i))?;
+        let path = match choice.value.parse::<usize>() {
+            Ok(index) => self.projects.get(index)?.path.clone(),
+            Err(_) => PathBuf::from(&choice.value),
+        };
+        Some((path, choice.label.clone()))
+    }
+    /// Hide a workspace from the Projects picker and re-rank it.
+    pub fn forget_project(&mut self, path: PathBuf, index: usize) {
+        self.forgotten.insert(path);
+        self.explorer_roots.remove(&index);
+        self.rank_picker();
+    }
+    /// True while the current workspace is Home (normal app only).
+    pub fn in_home(&self) -> bool {
+        self.home.as_ref().is_some_and(|home| {
+            self.projects.get(self.project).is_some_and(|project| &project.path == home)
+        })
+    }
+    /// In Home, root-scoped searches (files, grep, TODOs) would walk the whole
+    /// Home folder. Open the Projects picker instead and remember the search.
+    /// Returns false (nothing done) outside Home or for other actions.
+    pub fn redirect_home_search(&mut self, action: &str) -> bool {
+        let action: &'static str = match action {
+            "picker.files" => "picker.files",
+            "picker.grep" => "picker.grep",
+            "picker.todo" => "picker.todo",
+            "picker.todo_fix" => "picker.todo_fix",
+            _ => return false,
+        };
+        if !self.in_home() {
+            return false;
+        }
+        self.home_redirect_after_switch = None;
+        self.open_picker(PickerKind::Projects);
+        if let Some(picker) = &mut self.picker {
+            picker.home_redirect = Some(action);
+        }
+        self.message = if action == "picker.files" {
+            "Elegí un workspace para buscar · o escribí una ruta absoluta (/ o ~/)".into()
+        } else {
+            "Elegí un workspace para buscar".into()
+        };
+        true
+    }
     pub fn action(&mut self, action: &str) -> Effect {
+        if self.redirect_home_search(action) {
+            return Effect::None;
+        }
         if let Some(action) = action.strip_prefix("git.") {
             return Effect::Git(action.into());
         }
@@ -1073,11 +1268,20 @@ impl Workspace {
             "tree_agents.toggle" => {
                 self.sidebar = !self.sidebar;
                 self.agents_visible = true;
-                return self.focus(if self.sidebar {
-                    Surface::Tree
+                return if self.sidebar {
+                    self.focus(Surface::Tree)
                 } else {
-                    Surface::Terminal
-                });
+                    // Keep the content window and terminal mode that were
+                    // active before Explorer was focused. Automatically
+                    // entering the shell can send editor keys to its prompt.
+                    if self.content_surface == Surface::Normal {
+                        // The layout has not selected its surviving pane yet;
+                        // do not send a tmux mode command through a sidebar.
+                        self.focus(Surface::Normal)
+                    } else {
+                        self.focus_content()
+                    }
+                };
             }
             "agents.toggle" => {
                 self.agents_visible = !self.agents_visible;
@@ -1093,9 +1297,21 @@ impl Workspace {
                 return self.focus(Surface::Tree);
             }
             "file.new" => return Effect::NewFile,
-            "editor.split.right" => return Effect::EditorWindow("v"),
-            "editor.split.below" => return Effect::EditorWindow("s"),
-            "editor.window.close" => return Effect::EditorWindow("q"),
+            "editor.split.right" | "editor.split.below" | "editor.window.close" | "editor.window.quit" => {
+                let key = match action {
+                    "editor.split.right" => "v",
+                    "editor.split.below" => "s",
+                    "editor.window.close" => "c",
+                    _ => "q",
+                };
+                let count = std::mem::take(&mut self.count);
+                return if count == 0 { Effect::EditorWindow(key) }
+                    else { Effect::CountedEditorWindow(key, count) };
+            }
+            "editor.window.zoom" => {
+                self.count = 0;
+                return Effect::EditorWindow("zoom");
+            }
             "workspace.close" => return Effect::CloseWorkspace,
             "workspace.next" => return Effect::CycleWorkspace(true),
             "workspace.prev" => return Effect::CycleWorkspace(false),
@@ -1107,7 +1323,11 @@ impl Workspace {
                 return Effect::TerminalNormal(true);
             }
             "terminal.focus_root" | "terminal.toggle_root" | "terminal.toggle_cwd" => {
-                return self.focus(Surface::Terminal);
+                return Effect::SnacksTerminal {
+                    root: action != "terminal.toggle_cwd",
+                    focus: action == "terminal.focus_root",
+                    count: std::mem::take(&mut self.count).max(1),
+                };
             }
             "focus.left" | "focus.right" => {
                 let sidebar = matches!(
@@ -1301,8 +1521,10 @@ impl Workspace {
             }
             "agent.restore_picker" => self.open_picker(PickerKind::Restore),
             "picker.projects" => self.open_picker(PickerKind::Projects),
-            "picker.files" => self.open_picker(PickerKind::Files),
+            "picker.files" => return Effect::PickerFilesRoot,
+            "picker.files.cwd" => return Effect::PickerFilesCwd,
             "picker.buffers" => self.open_picker(PickerKind::Buffers),
+            "picker.recovered" => return Effect::PickerRecovered,
             "picker.grep" => self.open_picker(PickerKind::Grep),
             "agent.context" => {
                 if self.live_agents
@@ -1343,7 +1565,8 @@ impl Workspace {
             "agents.refresh" => return Effect::RefreshAgents,
             "window.close" => {
                 self.count = 0;
-                return Effect::EditorWindow("q");
+                // The native terminal's q mapping is :close, not :quit.
+                return Effect::EditorWindow("c");
             }
             _ => self.message = format!("Acción pendiente: {action}"),
         }
@@ -1593,6 +1816,52 @@ impl Workspace {
         }
     }
     pub fn open_picker(&mut self, kind: PickerKind) {
+        self.open_picker_scoped(kind, None, None);
+    }
+    pub fn open_files_cwd(&mut self, root: PathBuf) -> Result<(), String> {
+        self.validate_picker_root(&root)?;
+        self.open_picker_scoped(PickerKind::Files, Some(root), None);
+        Ok(())
+    }
+    fn validate_picker_root(&self, root: &Path) -> Result<(), String> {
+        if !root.is_absolute()
+            || root.components().any(|part| matches!(part, std::path::Component::ParentDir))
+            || self.validation_root.as_ref().is_some_and(|limit| !root.starts_with(limit))
+        { return Err("Directorio del buscador fuera de límites".into()); }
+        Ok(())
+    }
+    /// Open the input immediately, without exposing stale workspace results.
+    pub fn open_files_pending_root(&mut self) -> Arc<()> {
+        let token = Arc::new(());
+        self.open_picker_scoped(PickerKind::Files, None, Some(token.clone()));
+        token
+    }
+    pub fn pending_file_root_is_current(&self, token: &Arc<()>) -> bool {
+        self.surface == Surface::Picker && self.picker.as_ref().is_some_and(|picker| {
+            picker.kind == PickerKind::Files
+                && picker.pending_file_root.as_ref().is_some_and(|current| Arc::ptr_eq(current, token))
+        })
+    }
+    /// Preserve the live query and marked paths when its guarded root arrives.
+    pub fn finish_pending_file_root(&mut self, token: &Arc<()>, result: Result<PathBuf, String>) -> bool {
+        if !self.pending_file_root_is_current(token) { return false; }
+        let result = result.and_then(|root| { self.validate_picker_root(&root)?; Ok(root) });
+        let picker = self.picker.as_mut().expect("current picker checked");
+        match result {
+            Ok(root) => {
+                picker.file_root = Some(root);
+                picker.pending_file_root = None;
+                picker.file_root_error = None;
+                self.rank_picker();
+            }
+            Err(error) => {
+                picker.file_root_error = Some(format!("No se pudo resolver la raíz: {error}"));
+                if picker.absolute_file_query().is_none() { self.rank_picker(); }
+            }
+        }
+        true
+    }
+    fn open_picker_scoped(&mut self, kind: PickerKind, file_root: Option<PathBuf>, pending_file_root: Option<Arc<()>>) {
         self.clear_picker_message();
         let previous = self.surface;
         let choices = match kind {
@@ -1609,12 +1878,14 @@ impl Workspace {
                 .projects
                 .iter()
                 .enumerate()
+                .filter(|(_, p)| !self.forgotten.contains(&p.path))
                 .map(|(i, p)| Choice {
                     label: p.label.clone(),
                     detail: p.path.display().to_string(),
                     value: i.to_string(),
                 })
                 .collect(),
+            PickerKind::Files if file_root.is_some() || pending_file_root.is_some() => Vec::new(),
             PickerKind::Files => self
                 .entries
                 .iter()
@@ -1634,6 +1905,8 @@ impl Workspace {
             // The view populates this picker from the current workspace's
             // authoritative registry after it opens.
             PickerKind::Buffers => Vec::new(),
+            // Filled by the view (open_locations) from the recovery load.
+            PickerKind::Recovered => Vec::new(),
             PickerKind::Restore => self
                 .overview
                 .agents()
@@ -1658,8 +1931,13 @@ impl Workspace {
             selected: 0,
             marked: Vec::new(),
             marked_absolute: BTreeSet::new(),
+            file_root,
+            pending_file_root,
+            file_root_error: None,
             generation: 0,
             previous,
+            home_redirect: None,
+            home_absolute_only: false,
         });
         let _ = self.focus(Surface::Picker);
         self.rank_picker();
@@ -1667,7 +1945,17 @@ impl Workspace {
     pub fn picker_text(&mut self, text: &str) {
         if let Some(p) = &mut self.picker
             && p.input_active()
-            && crate::picker_input::insert(&mut p.query, &mut p.query_cursor, text)
+            && {
+                let absolute_file = p.kind == PickerKind::Files && if p.query_cursor == 0 {
+                    starts_absolute_query(&format!("{text}{}", p.query))
+                } else {
+                    starts_absolute_query(&p.query)
+                };
+                crate::picker_input::insert_with_limit(
+                    &mut p.query, &mut p.query_cursor, text,
+                    if absolute_file { 1023 } else { 256 },
+                )
+            }
         {
             self.rank_picker();
         }
@@ -1807,7 +2095,7 @@ impl Workspace {
                             p.marked.retain(|c| c.value != choice.value);
                             p.marked_absolute.remove(&choice.value);
                         } else if p.marked.len() < 128 {
-                            if p.kind == PickerKind::Files && p.query.starts_with('/') {
+                            if p.kind == PickerKind::Files && (p.absolute_file_query().is_some() || p.file_root.is_some()) {
                                 p.marked_absolute.insert(choice.value.clone());
                             }
                             p.marked.push(choice.clone());
@@ -1833,7 +2121,7 @@ impl Workspace {
                             .filter_map(|i| p.choices.get(*i).cloned())
                             .collect();
                         p.marked_absolute =
-                            if p.kind == PickerKind::Files && p.query.starts_with('/') {
+                            if p.kind == PickerKind::Files && (p.absolute_file_query().is_some() || p.file_root.is_some()) {
                                 p.marked.iter().map(|choice| choice.value.clone()).collect()
                             } else {
                                 BTreeSet::new()
@@ -1873,7 +2161,7 @@ impl Workspace {
         };
         let absolute_file_query = p.kind == PickerKind::Files
             && if p.marked.is_empty() {
-                p.query.starts_with('/')
+                p.absolute_file_query().is_some() || p.file_root.is_some()
             } else {
                 p.marked_absolute.contains(&choice.value)
             };
@@ -1953,9 +2241,24 @@ impl Workspace {
         }
         let kind = p.kind;
         let previous = p.previous;
+        let home_redirect = p.home_redirect;
         self.picker = None;
         self.picker_requests.begin();
         self.clear_picker_message();
+        // Reselecting the current project should close the picker without
+        // tearing down and restoring the workspace or changing its pane focus.
+        let current_project = self.projects.get(self.project);
+        let same_project = current_project.is_some_and(|project| match kind {
+            PickerKind::Projects => {
+                choice.value.parse::<usize>().ok() == Some(self.project)
+                    || Path::new(&choice.value) == project.path.as_path()
+            }
+            PickerKind::Discover => Path::new(&choice.value) == project.path.as_path(),
+            _ => false,
+        });
+        if same_project {
+            return self.focus(previous);
+        }
         let _ = self.focus(Surface::Tree);
         match kind {
             PickerKind::PullRequests => {
@@ -2009,6 +2312,7 @@ impl Workspace {
                 Effect::Project(index)
             }
             PickerKind::Projects => {
+                self.home_redirect_after_switch = home_redirect;
                 if let Ok(index) = choice.value.parse() {
                     Effect::Project(index)
                 } else {
@@ -2030,6 +2334,12 @@ impl Workspace {
                     Effect::Project(index)
                 }
             }
+            PickerKind::Recovered => {
+                let _ = self.focus(previous);
+                serde_json::from_str::<(PathBuf, PathBuf)>(&choice.value)
+                    .map(|(root, path)| Effect::RecoveredBuffer(root, path))
+                    .unwrap_or(Effect::None)
+            }
             PickerKind::Buffers if choice.value.starts_with('\0') => {
                 let _ = self.focus(previous);
                 choice
@@ -2048,7 +2358,30 @@ impl Workspace {
                     return Effect::MarkedFiles(paths, absolute_file_query);
                 }
                 if absolute_file_query {
-                    Effect::ExplicitFile(choice.value.into())
+                    // Key the buffer by the canonical parent, as `:e` does, so
+                    // save_file's canonical-path guard accepts it (e.g. /tmp is
+                    // a symlink on macOS). A symbolic-link leaf opens its real
+                    // target when that is a regular file, and is refused
+                    // otherwise; on any other error keep the typed path.
+                    let typed = PathBuf::from(&choice.value);
+                    match crate::unnamed::open_target(&typed) {
+                        Ok((path, _, true)) => {
+                            self.message = format!(
+                                "Enlace simbólico: se abrió su destino real {}",
+                                path.display()
+                            );
+                            Effect::ExplicitFile(path)
+                        }
+                        Ok((path, _, false)) => Effect::ExplicitFile(path),
+                        Err(error)
+                            if std::fs::symlink_metadata(&typed)
+                                .is_ok_and(|meta| meta.file_type().is_symlink()) =>
+                        {
+                            self.message = error;
+                            Effect::None
+                        }
+                        Err(_) => Effect::ExplicitFile(typed),
+                    }
                 } else {
                     Effect::File(choice.value.into())
                 }
@@ -2067,6 +2400,20 @@ impl Workspace {
         let Some(p) = &mut self.picker else {
             return;
         };
+        // From Home, Leader Space keeps accepting absolute paths: typing / or
+        // ~/ in the Projects picker it opened turns it into a Files picker
+        // that lists only absolute paths (Home itself is never scanned).
+        if p.kind == PickerKind::Projects
+            && p.home_redirect == Some("picker.files")
+            && starts_absolute_query(&p.query)
+        {
+            p.kind = PickerKind::Files;
+            p.choices = Arc::new(Vec::new());
+            p.marked.clear();
+            p.marked_absolute.clear();
+            p.home_redirect = None;
+            p.home_absolute_only = true;
+        }
         self.generation += 1;
         p.generation = self.generation;
         p.selected = 0;
@@ -2075,32 +2422,73 @@ impl Workspace {
         p.results.clear();
         let generation = p.generation;
         let choices = p.choices.clone();
-        let query = p.query.clone();
+        let absolute_query = p.absolute_file_query();
+        let absolute = absolute_query.is_some();
+        // A '~/' query searches and ranks exactly like its absolute form.
+        let query = absolute_query.unwrap_or_else(|| p.query.clone());
+        let kind = p.kind;
+        let file_root = p.file_root.clone();
+        let root_waiting = p.pending_file_root.is_some() && !absolute;
+        let root_message = p.file_root_error.clone().unwrap_or_else(|| "Resolviendo raíz del buscador…".into());
+        let home_absolute_only = p.home_absolute_only && !absolute;
         let request = self.picker_requests.begin();
+        if home_absolute_only {
+            self.picker_retry_pending = false;
+            self.clear_picker_message();
+            let message =
+                "Escribí una ruta absoluta (/ o ~/) · Home no se recorre · Space f p elige un workspace"
+                    .to_owned();
+            self.message = message.clone();
+            self.picker_message = Some(message);
+            return;
+        }
+        if root_waiting {
+            self.picker_retry_pending = false;
+            self.clear_picker_message();
+            self.message = root_message.clone();
+            self.picker_message = Some(root_message);
+            return;
+        }
         let tx = self.picker_tx.clone();
+        let Some(permit) = PickerWorkerPermit::acquire(&self.picker_workers) else {
+            self.picker_retry_pending = true;
+            let message = "Esperando búsquedas anteriores; se reintentará la consulta actual".to_owned();
+            self.message = message.clone();
+            self.picker_message = Some(message);
+            return;
+        };
+        self.picker_retry_pending = false;
+        self.clear_picker_message();
         if matches!(
-            p.kind,
+            kind,
             PickerKind::Files
                 | PickerKind::Grep
                 | PickerKind::Discover
                 | PickerKind::Todo(_)
                 | PickerKind::Projects
         ) {
-            let root = self.projects[self.project].path.clone();
+            let root = if kind == PickerKind::Files {
+                file_root.clone().unwrap_or_else(|| self.projects[self.project].path.clone())
+            } else {
+                self.projects[self.project].path.clone()
+            };
+            let scoped_files = kind == PickerKind::Files && file_root.is_some();
             let validation_root = self.validation_root.clone();
-            let kind = p.kind;
             let configured = self.snacks_projects.clone();
+            let forgotten = self.forgotten.clone();
             let remembered = self
                 .projects
                 .iter()
                 .map(|p| p.path.clone())
+                .filter(|path| !forgotten.contains(path))
                 .collect::<Vec<_>>();
             let labels = self
                 .projects
                 .iter()
                 .map(|p| (p.path.clone(), p.label.clone()))
                 .collect::<BTreeMap<_, _>>();
-            std::thread::spawn(move || {
+            let worker = std::thread::Builder::new().name("twr-picker".into()).spawn(move || {
+                let _permit = permit;
                 let mut warning = None;
                 let choices = if kind == PickerKind::Projects {
                     let paths = match configured {
@@ -2110,6 +2498,7 @@ impl Workspace {
                     paths.map(|paths| {
                         paths
                             .into_iter()
+                            .filter(|path| !forgotten.contains(path))
                             .map(|path| Choice {
                                 label: labels.get(&path).cloned().unwrap_or_else(|| {
                                     path.file_name()
@@ -2122,18 +2511,42 @@ impl Workspace {
                             })
                             .collect()
                     })
-                } else if kind == PickerKind::Files && query.starts_with('/') {
-                    absolute_file_choices(&query, validation_root.as_deref(), &|| {
-                        request.cancelled()
+                } else if kind == PickerKind::Files && absolute {
+                    absolute_file_choices_with_exact(
+                        &query,
+                        validation_root.as_deref(),
+                        &|| request.cancelled(),
+                        &|choice| {
+                            if !request.cancelled() {
+                                let _ = tx.send(PickerUpdate {
+                                    generation,
+                                    results: vec![0],
+                                    choices: Some(vec![choice.clone()]),
+                                    error: None,
+                                });
+                            }
+                        },
+                    )
+                    .map(|(choices, gaps)| {
+                        warning = gaps.warning();
+                        choices
                     })
-                    .map(|(choices, partial)| {
-                        if partial {
-                            warning = Some(PARTIAL_ABSOLUTE_SEARCH.into());
+                } else if scoped_files && validation_root.is_some() {
+                    let query_root = root.to_str().ok_or_else(|| "Ruta del buscador inválida".to_owned())
+                        .map(|path| if path.ends_with('/') { path.to_owned() } else { format!("{path}/") });
+                    query_root.and_then(|path| validation_absolute_file_choices(
+                        &path, validation_root.as_deref().expect("checked"), &|| request.cancelled(), &|_| {},
+                    )).map(|(mut choices, gaps)| {
+                        warning = gaps.warning();
+                        for choice in &mut choices {
+                            let path = Path::new(&choice.value);
+                            choice.label = path.strip_prefix(&root).unwrap_or(path).display().to_string();
                         }
                         choices
                     })
                 } else if kind == PickerKind::Files {
-                    scan_project_while(&root, &|| request.cancelled()).map(|entries| {
+                    scan_project_while_partial(&root, &|| request.cancelled()).map(|(entries, gaps)| {
+                        warning = gaps.warning();
                         entries
                             .into_iter()
                             .filter(|e| !e.directory)
@@ -2250,9 +2663,15 @@ impl Workspace {
                     let _ = tx.send(update);
                 }
             });
+            if worker.is_err() {
+                let message = "No se pudo iniciar la búsqueda; cambiá la consulta para reintentar".to_owned();
+                self.message = message.clone();
+                self.picker_message = Some(message);
+            }
             return;
         }
-        std::thread::spawn(move || {
+        let worker = std::thread::Builder::new().name("twr-picker".into()).spawn(move || {
+            let _permit = permit;
             let candidates = choices.iter().map(|c| c.label.clone()).collect::<Vec<_>>();
             if let Ok(matches) = rank(&request, &query, &candidates, 100) {
                 let _ = tx.send(PickerUpdate {
@@ -2263,6 +2682,11 @@ impl Workspace {
                 });
             }
         });
+        if worker.is_err() {
+            let message = "No se pudo iniciar la búsqueda; cambiá la consulta para reintentar".to_owned();
+            self.message = message.clone();
+            self.picker_message = Some(message);
+        }
     }
     pub fn poll_picker(&mut self) -> bool {
         let mut changed = false;
@@ -2279,6 +2703,15 @@ impl Workspace {
                     self.message = error.clone();
                     self.picker_message = Some(error);
                 }
+                changed = true;
+            }
+        }
+        if self.picker_retry_pending {
+            if self.picker.is_none() {
+                self.picker_retry_pending = false;
+            } else if self.picker_workers.load(Ordering::Acquire) < MAX_PICKER_WORKERS {
+                self.picker_retry_pending = false;
+                self.rank_picker();
                 changed = true;
             }
         }
@@ -2338,46 +2771,60 @@ pub fn scan_expanded(root: &Path, expanded: &BTreeSet<PathBuf>) -> Result<Vec<En
 
 /// Search below the explicitly typed absolute parent, with bounded work.
 /// The breadth-first traversal does not recurse through discovered symlink directories.
+#[cfg(test)]
 fn absolute_file_choices(
     query: &str,
     validation_root: Option<&Path>,
     cancelled: &impl Fn() -> bool,
 ) -> Result<(Vec<Choice>, bool), String> {
+    absolute_file_choices_with_exact(query, validation_root, cancelled, &|_| {})
+        .map(|(choices, gaps)| (choices, gaps.any()))
+}
+
+fn absolute_file_choices_with_exact(
+    query: &str,
+    validation_root: Option<&Path>,
+    cancelled: &impl Fn() -> bool,
+    on_exact: &impl Fn(&Choice),
+) -> Result<(Vec<Choice>, ScanGaps), String> {
+    if let Some(root) = validation_root {
+        return validation_absolute_file_choices(query, root, cancelled, on_exact);
+    }
     let path = Path::new(query);
     let parent = if query.ends_with('/') {
         path
     } else {
         path.parent().unwrap_or(Path::new("/"))
     };
-    if let Some(root) = validation_root {
-        let relative = parent
-            .strip_prefix(root)
-            .map_err(|_| "Validación: ruta fuera de fixtures")?;
-        let mut current = root.to_path_buf();
-        for part in relative.components() {
-            let std::path::Component::Normal(name) = part else {
-                return Err("Validación: ruta fuera de fixtures".into());
-            };
-            current.push(name);
-            let metadata = std::fs::symlink_metadata(&current)
-                .map_err(|_| "Validación: ruta no disponible")?;
-            if metadata.file_type().is_symlink() || !metadata.is_dir() {
-                return Err("Validación: enlaces no permitidos".into());
-            }
-        }
-    }
     const MAX_ENTRIES: usize = 10_000;
     const MAX_DEPTH: usize = 12;
+    // An explicitly typed file must not be lost behind a large parent's
+    // traversal budget. Apply the same symlink policy as the directory walk.
+    let exact = if !query.ends_with('/') && !cancelled() {
+        std::fs::symlink_metadata(path).ok().and_then(|metadata| {
+            let kind = metadata.file_type();
+            (kind.is_file() || (validation_root.is_none() && kind.is_symlink() && path.is_file()))
+                .then(|| path.to_path_buf())
+        })
+    } else {
+        None
+    };
     let mut pending = std::collections::VecDeque::from([(parent.to_path_buf(), 0usize)]);
-    let mut choices = Vec::new();
+    let mut choices = exact.iter().map(|path| {
+        let value = path.to_string_lossy().into_owned();
+        Choice { label: value.clone(), detail: "Ruta absoluta".into(), value }
+    }).collect::<Vec<_>>();
+    if let Some(choice) = choices.first() && !cancelled() {
+        on_exact(choice);
+    }
     let mut visited = 0usize;
-    let mut partial = false;
+    let mut gaps = ScanGaps::default();
     while let Some((directory, depth)) = pending.pop_front() {
         if cancelled() {
             return Err("cancelled".into());
         }
-        let Ok(entries) = std::fs::read_dir(directory) else {
-            partial = true;
+        let Ok(entries) = std::fs::read_dir(&directory) else {
+            gaps.deny(&directory);
             continue;
         };
         let mut batch = Vec::new();
@@ -2388,7 +2835,7 @@ fn absolute_file_choices(
             visited += 1;
             match entry {
                 Ok(entry) => batch.push(entry),
-                Err(_) => partial = true,
+                Err(_) => gaps.other = true,
             }
         }
         batch.sort_by_key(|entry| entry.file_name());
@@ -2397,14 +2844,17 @@ fn absolute_file_choices(
                 return Err("cancelled".into());
             }
             let Ok(kind) = entry.file_type() else {
-                partial = true;
+                gaps.other = true;
                 continue;
             };
             let path = entry.path();
+            if exact.as_ref().is_some_and(|exact| exact == &path) {
+                continue;
+            }
             if kind.is_dir() && depth < MAX_DEPTH {
                 pending.push_back((path, depth + 1));
             } else if kind.is_dir() {
-                partial = true;
+                gaps.limit = true;
             } else if kind.is_file()
                 || (validation_root.is_none() && kind.is_symlink() && path.is_file())
             {
@@ -2417,34 +2867,143 @@ fn absolute_file_choices(
             }
         }
         if visited >= MAX_ENTRIES {
-            partial = true;
+            gaps.limit = true;
             break;
         }
     }
-    Ok((choices, partial))
+    Ok((choices, gaps))
+}
+
+// Validation fixtures are traversed through directory descriptors, not by
+// reopening checked pathnames: a replaced child cannot redirect the walk.
+fn validation_absolute_file_choices(
+    query: &str,
+    root: &Path,
+    cancelled: &impl Fn() -> bool,
+    on_exact: &impl Fn(&Choice),
+) -> Result<(Vec<Choice>, ScanGaps), String> {
+    use crate::tree_edit::{cstring, descend, parts, root_fd};
+    use std::{fs::File, os::fd::AsRawFd};
+
+    let path = Path::new(query);
+    let parent = if query.ends_with('/') { path } else { path.parent().unwrap_or(Path::new("/")) };
+    let relative = parent.strip_prefix(root).map_err(|_| "Validación: ruta fuera de fixtures")?;
+    let root_parts = parts(root.strip_prefix("/").map_err(|_| "Validación: raíz inválida")?)?;
+    let parent_parts = parts(relative)?;
+    let root = descend(root_fd(Path::new("/"))?, &root_parts, false)
+        .map_err(|_| "Validación: raíz no disponible o contiene enlaces")?;
+    let parent_fd = descend(root.try_clone().map_err(|e| e.to_string())?, &parent_parts, false)
+        .map_err(|_| "Validación: ruta no disponible o contiene enlaces")?;
+    let kind_at = |dir: &std::os::fd::OwnedFd, name: &std::ffi::OsStr| -> Option<libc::mode_t> {
+        let name = cstring(name).ok()?;
+        let mut stat = std::mem::MaybeUninit::<libc::stat>::uninit();
+        if unsafe { libc::fstatat(dir.as_raw_fd(), name.as_ptr(), stat.as_mut_ptr(), libc::AT_SYMLINK_NOFOLLOW) } != 0 {
+            return None;
+        }
+        Some(unsafe { stat.assume_init() }.st_mode & libc::S_IFMT)
+    };
+    let exact = if !query.ends_with('/') && !cancelled() {
+        path.file_name().filter(|name| kind_at(&parent_fd, name) == Some(libc::S_IFREG))
+            .map(|_| path.to_path_buf())
+    } else { None };
+    let mut choices = exact.iter().map(|path| {
+        let value = path.to_string_lossy().into_owned();
+        Choice { label: value.clone(), detail: "Ruta absoluta".into(), value }
+    }).collect::<Vec<_>>();
+    if let Some(choice) = choices.first() && !cancelled() { on_exact(choice); }
+    let mut pending = std::collections::VecDeque::from([(parent.to_path_buf(), parent_parts, 0usize)]);
+    let mut visited = 0usize;
+    let mut gaps = ScanGaps::default();
+    while let Some((directory, components, depth)) = pending.pop_front() {
+        if cancelled() { return Err("cancelled".into()); }
+        let Ok(cloned) = root.try_clone() else { gaps.other = true; continue };
+        let Ok(fd) = descend(cloned, &components, false) else { gaps.deny(&directory); continue };
+        let file = File::from(fd);
+        let (mut names, truncated) = match crate::tree_transfer::children_bounded(
+            &file, 10_000usize.saturating_sub(visited), cancelled,
+        ) {
+            Ok(result) => result,
+            Err(_) if cancelled() => return Err("cancelled".into()),
+            Err(_) => { gaps.deny(&directory); continue; }
+        };
+        gaps.limit |= truncated;
+        names.sort();
+        for name in names {
+            if cancelled() { return Err("cancelled".into()); }
+            if visited == 10_000 { gaps.limit = true; break; }
+            visited += 1;
+            let Ok(component) = parts(Path::new(&name)) else { gaps.other = true; continue };
+            if component.len() != 1 { gaps.other = true; continue; }
+            let fd = file.as_raw_fd();
+            let name_c = match cstring(&name) { Ok(name) => name, Err(_) => { gaps.other = true; continue } };
+            let mut stat = std::mem::MaybeUninit::<libc::stat>::uninit();
+            if unsafe { libc::fstatat(fd, name_c.as_ptr(), stat.as_mut_ptr(), libc::AT_SYMLINK_NOFOLLOW) } != 0 {
+                gaps.other = true;
+                continue;
+            }
+            let kind = unsafe { stat.assume_init() }.st_mode & libc::S_IFMT;
+            let path = directory.join(&name);
+            if exact.as_ref().is_some_and(|exact| exact == &path) { continue; }
+            if kind == libc::S_IFDIR && depth < 12 {
+                let mut next = components.clone();
+                next.push(name);
+                pending.push_back((path, next, depth + 1));
+            } else if kind == libc::S_IFDIR {
+                gaps.limit = true;
+            } else if kind == libc::S_IFREG {
+                let value = path.to_string_lossy().into_owned();
+                choices.push(Choice { label: value.clone(), detail: "Ruta absoluta".into(), value });
+            }
+        }
+        if visited == 10_000 { gaps.limit = true; break; }
+    }
+    Ok((choices, gaps))
 }
 
 pub fn scan_project(root: &Path) -> Result<Vec<Entry>, String> {
     scan_project_while(root, &|| false)
 }
 fn scan_project_while(root: &Path, cancelled: &dyn Fn() -> bool) -> Result<Vec<Entry>, String> {
+    scan_project_while_partial(root, cancelled).map(|(entries, _)| entries)
+}
+/// Like scan_project_while, also reporting whether the listing is partial
+/// (entry limit, depth limit or unreadable entries/folders). Traversal order
+/// and exclusions are unchanged.
+fn scan_project_while_partial(
+    root: &Path,
+    cancelled: &dyn Fn() -> bool,
+) -> Result<(Vec<Entry>, ScanGaps), String> {
     let mut result = Vec::new();
+    let mut gaps = ScanGaps::default();
     fn walk(
         root: &Path,
         path: &Path,
         depth: usize,
         out: &mut Vec<Entry>,
         cancelled: &dyn Fn() -> bool,
+        gaps: &mut ScanGaps,
     ) -> Result<(), String> {
         if cancelled() {
             return Err("cancelled".into());
         }
         if depth > 12 || out.len() >= 10000 {
+            gaps.limit = true;
             return Ok(());
         }
         let mut entries = std::fs::read_dir(path)
-            .map_err(|e| e.to_string())?
-            .filter_map(Result::ok)
+            .map_err(|e| {
+                // The root failing is an error, not a partial listing.
+                if depth > 0 {
+                    gaps.deny(path);
+                }
+                e.to_string()
+            })?
+            .filter_map(|entry| {
+                if entry.is_err() {
+                    gaps.other = true;
+                }
+                entry.ok()
+            })
             .take(10000_usize.saturating_sub(out.len()))
             .collect::<Vec<_>>();
         entries.sort_by_key(|e| {
@@ -2456,6 +3015,7 @@ fn scan_project_while(root: &Path, cancelled: &dyn Fn() -> bool) -> Result<Vec<E
                 return Err("cancelled".into());
             }
             if out.len() >= 10000 {
+                gaps.limit = true;
                 break;
             }
             let ty = e.file_type().map_err(|e| e.to_string())?;
@@ -2478,16 +3038,18 @@ fn scan_project_while(root: &Path, cancelled: &dyn Fn() -> bool) -> Result<Vec<E
             });
             if ty.is_dir() {
                 // Inaccessible child folders must not hide accessible siblings.
-                let _ = walk(root, &path, depth + 1, out, cancelled);
+                if walk(root, &path, depth + 1, out, cancelled, gaps).is_err() && !cancelled() {
+                    gaps.other = true;
+                }
             }
         }
         Ok(())
     }
-    walk(root, root, 0, &mut result, cancelled)?;
+    walk(root, root, 0, &mut result, cancelled, &mut gaps)?;
     if cancelled() {
         return Err("cancelled".into());
     }
-    Ok(result)
+    Ok((result, gaps))
 }
 
 #[cfg(test)]
@@ -2500,7 +3062,7 @@ mod tests {
             (["<Space>", "b", "d"], Effect::DeleteBuffer),
             (["<Space>", "b", "p"], Effect::ToggleBufferPin),
             (["<Space>", "w", "q"], Effect::EditorWindow("q")),
-            (["<Space>", "w", "d"], Effect::EditorWindow("q")),
+            (["<Space>", "w", "d"], Effect::EditorWindow("c")),
         ] {
             let mut w = model();
             w.focus(Surface::File);
@@ -2930,9 +3492,9 @@ mod tests {
         w.focus(Surface::Tree);
         assert_eq!(
             w.action("terminal.focus_root"),
-            Effect::TerminalNormal(false)
+            Effect::SnacksTerminal { root: true, focus: true, count: 1 }
         );
-        assert_eq!(w.surface, Surface::Terminal);
+        assert_eq!(w.surface, Surface::Tree);
     }
     #[test]
     fn terminal_normal_routes_counted_jump_keys_without_sending_them_to_shell() {

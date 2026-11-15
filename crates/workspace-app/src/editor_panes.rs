@@ -108,6 +108,24 @@ impl PaneWrap {
             self.mode = None;
         }
     }
+
+    /// Keep the window-local option while leaving a file buffer. Returning
+    /// to a file must establish a fresh cursor and viewport for that buffer.
+    pub fn deactivate_file(&mut self) {
+        self.path = None;
+        self.top = WrappedTop {
+            source_line: 0,
+            visual_row: 0,
+        };
+        self.cursor = None;
+        self.desired_column = None;
+        self.wheel_goal = None;
+        self.wheel_coladd = None;
+        self.version = None;
+        self.width = None;
+        self.height = None;
+        self.mode = None;
+    }
 }
 /// Locate the active wrapped cursor in the same bounded viewport used by paint.
 /// Return None while composition or stale/unsupported geometry prevents a
@@ -169,14 +187,28 @@ pub fn navigation_interior(
     mut bounds: workspace_core::editor_panes::Bounds,
 ) -> workspace_core::editor_panes::Bounds {
     if bounds.width > 2 {
-        bounds.x += 1;
+        bounds.x = bounds.x.saturating_add(1);
         bounds.width -= 2;
     }
     if bounds.height > 2 {
-        bounds.y += 1;
+        bounds.y = bounds.y.saturating_add(1);
         bounds.height -= 2;
     }
     bounds
+}
+/// Check the full pane set and sibling order, allowing the same shared paint
+/// borders as directional navigation without relaxing raw coordinate limits.
+fn measured_geometry_valid(
+    layout: &Layout,
+    bounds: &[workspace_core::editor_panes::Bounds],
+) -> bool {
+    if bounds.iter().any(|bounds| !bounds.valid()) {
+        return false;
+    }
+    layout.geometry_valid(bounds) || {
+        let interiors: Vec<_> = bounds.iter().copied().map(navigation_interior).collect();
+        layout.geometry_valid(&interiors)
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Content {
@@ -354,6 +386,10 @@ pub struct PendingFileSplits {
     recovery_revision: u64,
 }
 impl PendingFileSplits {
+    /// A read can still own this pane even before split keys are queued.
+    pub fn has_active(&self) -> bool {
+        self.context.is_some()
+    }
     pub fn begin(&mut self, generation: u64, project: usize, pane: PaneId, origin: Content) {
         self.retain_active();
         self.context = Some((generation, project, pane));
@@ -572,6 +608,18 @@ impl WindowPrefix {
         }
     }
 }
+/// A floating window has its own identity even when another window displays
+/// the same buffer. The origin is still required for attached focus routing.
+#[derive(Clone)]
+struct FloatingWrap {
+    origin: PaneId,
+    content: Arc<()>,
+    window: Arc<()>,
+    focus: workspace_core::editor_panes::FocusGuard,
+    detached: bool,
+    state: PaneWrap,
+}
+
 #[derive(Clone)]
 pub struct Panes {
     pub layout: Layout,
@@ -580,8 +628,10 @@ pub struct Panes {
     pub sizes: BTreeMap<PaneId, (usize, usize)>,
     weights: BTreeMap<(u8, Vec<PaneId>), f32>,
     sidebar_dock: BTreeSet<PaneId>,
+    last_content_pane: Option<PaneId>,
     equalized: bool,
     wrap: BTreeMap<PaneId, PaneWrap>,
+    floating_wrap: Option<FloatingWrap>,
 }
 
 /// The structural and sizing inputs used by the pane renderer. View/cursor
@@ -1294,6 +1344,36 @@ pub fn stage_vim_delete_workspaces(
     Ok(staged)
 }
 impl Panes {
+    /// Reject a staged layout if any window state, content identity, sizing,
+    /// wrap or floating state changed since it was captured.
+    pub fn matches_snapshot(&self, snapshot: &Self) -> bool {
+        let identities_match = self.content_identities.len() == snapshot.content_identities.len()
+            && self.content_identities.iter().all(|(pane, identity)| {
+                snapshot.content_identities.get(pane).is_some_and(|saved| Arc::ptr_eq(identity, saved))
+            });
+        let float_matches = match (&self.floating_wrap, &snapshot.floating_wrap) {
+            (None, None) => true,
+            (Some(a), Some(b)) => a.origin == b.origin
+                && Arc::ptr_eq(&a.content, &b.content)
+                && Arc::ptr_eq(&a.window, &b.window)
+                && a.detached == b.detached
+                && a.state == b.state
+                && self.layout.focus_guard_is_current(&a.focus)
+                && snapshot.layout.focus_guard_is_current(&b.focus),
+            _ => false,
+        };
+        self.layout.matches_snapshot(&snapshot.layout)
+            && self.contents == snapshot.contents
+            && identities_match
+            && self.sizes == snapshot.sizes
+            && self.weights == snapshot.weights
+            && self.sidebar_dock == snapshot.sidebar_dock
+            && self.last_content_pane == snapshot.last_content_pane
+            && self.equalized == snapshot.equalized
+            && self.wrap == snapshot.wrap
+            && float_matches
+    }
+
     pub fn geometry_key(&self) -> GeometryKey {
         GeometryKey {
             root: self.layout.root().clone(),
@@ -1312,20 +1392,282 @@ impl Panes {
             sizes: BTreeMap::new(),
             weights: BTreeMap::new(),
             sidebar_dock: BTreeSet::new(),
+            last_content_pane: Some(PaneId(1)),
             equalized: false,
             wrap: BTreeMap::new(),
+            floating_wrap: None,
         }
     }
 
     pub fn wrap_state(&self, pane: PaneId) -> Option<&PaneWrap> {
+        if let Some(floating) = &self.floating_wrap
+            && self.layout.focus_guard_is_current(&floating.focus)
+            && if floating.detached {
+                self.layout.active() == pane && !self.layout.panes().contains_key(&floating.origin)
+            } else {
+                floating.origin == pane && self.content_identity_is_current(pane, &floating.content)
+            }
+        {
+            return Some(&floating.state);
+        }
+        self.wrap.get(&pane)
+    }
+
+    /// Resolve the wrap of this exact floating window, without falling back
+    /// to the ordinary pane if a stale render belongs to another session.
+    pub fn floating_wrap_state(&self, pane: PaneId, window: &Arc<()>) -> Option<&PaneWrap> {
+        let floating = self.floating_wrap.as_ref()?;
+        (floating.origin == pane
+            && Arc::ptr_eq(&floating.window, window)
+            && self.layout.focus_guard_is_current(&floating.focus)
+            && if floating.detached {
+                !self.layout.panes().contains_key(&pane)
+            } else {
+                self.content_identity_is_current(pane, &floating.content)
+            })
+        .then_some(&floating.state)
+    }
+
+    /// A live zoom must agree with the float's content generation as well
+    /// as its window identity; a prior buffer may reuse the same window.
+    pub fn floating_content_identity_is_current(
+        &self, pane: PaneId, identity: &Arc<()>, window: &Arc<()>,
+    ) -> bool {
+        self.floating_wrap_state(pane, window).is_some()
+            && self.floating_wrap.as_ref()
+                .is_some_and(|floating| Arc::ptr_eq(&floating.content, identity))
+    }
+
+    /// The layout renderer must never paint its hidden window using a
+    /// floating window's independent wrap viewport.
+    pub fn layout_wrap_state(&self, pane: PaneId) -> Option<&PaneWrap> {
         self.wrap.get(&pane)
     }
 
     pub fn wrap_state_mut(&mut self, pane: PaneId) -> Option<&mut PaneWrap> {
+        let floating = self.floating_wrap.as_ref().is_some_and(|floating| {
+            self.layout.focus_guard_is_current(&floating.focus)
+                && if floating.detached {
+                    self.layout.active() == pane && !self.layout.panes().contains_key(&floating.origin)
+                } else {
+                    floating.origin == pane && self.content_identity_is_current(pane, &floating.content)
+                }
+        });
+        if floating {
+            return self.floating_wrap.as_mut().map(|floating| &mut floating.state);
+        }
         self.layout
             .panes()
             .contains_key(&pane)
             .then(|| self.wrap.entry(pane).or_default())
+    }
+
+    /// Start with the parent's wrap settings but keep all subsequent
+    /// viewport and cursor changes local to the floating view.
+    pub fn begin_floating_wrap(&mut self, pane: PaneId, identity: Arc<()>, window: Arc<()>) -> bool {
+        if self.floating_wrap.is_some()
+            || self.layout.active() != pane
+            || !self.content_identity_is_current(pane, &identity)
+        {
+            return false;
+        }
+        let mut state = self.wrap.get(&pane).cloned().unwrap_or_default();
+        match self.content(pane) {
+            Some(Content::File(path)) => {
+                let top = self.layout.panes().get(&pane).map_or(0, |view| view.top);
+                state.activate(path, top);
+            }
+            Some(Content::Terminal(_) | Content::Explorer(_) | Content::Agents(_)) => {
+                state.deactivate_file();
+            }
+            None => return false,
+        }
+        self.floating_wrap = Some(FloatingWrap {
+            origin: pane, content: identity, window, focus: self.layout.focus_guard(),
+            detached: false, state,
+        });
+        true
+    }
+
+    /// Discard only the overlay that belongs to this pane and content
+    /// identity, including after focus or content has changed.
+    pub fn end_floating_wrap(&mut self, pane: PaneId, identity: &Arc<()>, window: &Arc<()>) -> bool {
+        if !self.floating_wrap.as_ref().is_some_and(|floating| {
+            floating.origin == pane && Arc::ptr_eq(&floating.content, identity)
+                && Arc::ptr_eq(&floating.window, window)
+        }) {
+            return false;
+        }
+        self.floating_wrap = None;
+        true
+    }
+
+    /// Complete an already validated synchronous close of the origin. The
+    /// float keeps its own wrap state; the active layout pane becomes only a
+    /// focus anchor and never acquires the float's content or identity.
+    pub fn detach_floating_after_origin_close(
+        &mut self,
+        origin: PaneId,
+        identity: &Arc<()>,
+        window: &Arc<()>,
+    ) -> bool {
+        let valid = self.floating_wrap.as_ref().is_some_and(|floating| {
+            !floating.detached
+                && floating.origin == origin
+                && Arc::ptr_eq(&floating.content, identity)
+                && Arc::ptr_eq(&floating.window, window)
+                && self.layout.focus_guard_direct_close(&floating.focus, origin)
+        });
+        if !valid {
+            return false;
+        }
+        let focus = self.layout.focus_guard();
+        if let Some(floating) = &mut self.floating_wrap {
+            floating.focus = focus;
+            floating.detached = true;
+        }
+        true
+    }
+
+    /// Replace the content of an already detached float, without modifying
+    /// any layout pane. The caller must resolve the real editor or PTY owner.
+    pub fn rebind_detached_floating_wrap(
+        &mut self,
+        origin: PaneId,
+        previous: &Arc<()>,
+        window: &Arc<()>,
+        target: &Content,
+        top: usize,
+    ) -> Option<(u64, Arc<()>)> {
+        let valid = self.floating_wrap.as_ref().is_some_and(|floating| {
+            floating.detached
+                && floating.origin == origin
+                && Arc::ptr_eq(&floating.content, previous)
+                && Arc::ptr_eq(&floating.window, window)
+                && self.layout.focus_guard_is_current(&floating.focus)
+                && !self.layout.panes().contains_key(&origin)
+        });
+        if !valid {
+            return None;
+        }
+        let existing = self.contents.iter().find(|(_, content)| *content == target)
+            .map(|(id, _)| *id);
+        let id = match existing {
+            Some(id) => id,
+            None => self.contents.keys().next_back().copied().unwrap_or(0).checked_add(1)?,
+        };
+        let next = Arc::new(());
+        if existing.is_none() {
+            self.contents.insert(id, target.clone());
+        }
+        let floating = self.floating_wrap.as_mut()?;
+        match target {
+            Content::File(path) => floating.state.activate(path, top),
+            Content::Terminal(_) | Content::Explorer(_) | Content::Agents(_) => floating.state.deactivate_file(),
+        }
+        floating.content = Arc::clone(&next);
+        Some((id, next))
+    }
+
+    /// Rename the buffer of the exact detached float without changing its
+    /// window-local wrap state or assigning its identity to another buffer.
+    pub fn rename_detached_floating_file(
+        &mut self, origin: PaneId, identity: &Arc<()>, window: &Arc<()>,
+        buffer: u64, old: &Path, new: &Path,
+    ) -> bool {
+        if old == new
+            || !self.floating_content_identity_is_current(origin, identity, window)
+            || !self.floating_wrap.as_ref().is_some_and(|floating| {
+                floating.detached && floating.state.path.as_deref() == Some(old)
+            })
+            || self.contents.get(&buffer) != Some(&Content::File(old.to_owned()))
+            || self.contents.values().any(|content| *content == Content::File(new.to_owned()))
+        {
+            return false;
+        }
+        self.rebind_file(old, new);
+        if let Some(floating) = &mut self.floating_wrap {
+            floating.state.path = Some(new.to_owned());
+        }
+        true
+    }
+
+    /// Refresh only the surviving float's focus epoch after another pane
+    /// closes; never attach its window-local state to a replacement pane.
+    pub fn refresh_floating_focus(&mut self, pane: PaneId, identity: &Arc<()>, window: &Arc<()>) -> bool {
+        if self.layout.active() != pane || !self.content_identity_is_current(pane, identity) {
+            return false;
+        }
+        let valid = self.floating_wrap.as_ref().is_some_and(|floating| {
+            floating.origin == pane
+                && Arc::ptr_eq(&floating.content, identity)
+                && Arc::ptr_eq(&floating.window, window)
+                && self.layout.focus_guard_window_exists(&floating.focus, pane)
+        });
+        if !valid {
+            return false;
+        }
+        let focus = self.layout.focus_guard();
+        if let Some(floating) = &mut self.floating_wrap {
+            floating.focus = focus;
+        }
+        true
+    }
+
+    /// Refresh a detached float only if the same ordinary anchor survived.
+    pub fn refresh_detached_floating_focus(
+        &mut self, origin: PaneId, identity: &Arc<()>, window: &Arc<()>, anchor: PaneId,
+    ) -> bool {
+        let valid = self.layout.active() == anchor
+            && !self.layout.panes().contains_key(&origin)
+            && self.floating_wrap.as_ref().is_some_and(|floating| {
+                floating.detached && floating.origin == origin
+                    && Arc::ptr_eq(&floating.content, identity)
+                    && Arc::ptr_eq(&floating.window, window)
+                    && self.layout.focus_guard_window_exists(&floating.focus, anchor)
+            });
+        if !valid { return false; }
+        let focus = self.layout.focus_guard();
+        if let Some(floating) = &mut self.floating_wrap { floating.focus = focus; }
+        true
+    }
+
+    /// A floating window keeps its own wrap option when its buffer changes.
+    /// Only the exact prior overlay may be rebound.
+    pub fn rebind_floating_wrap(
+        &mut self,
+        pane: PaneId,
+        previous: &Arc<()>,
+        window: &Arc<()>,
+        next: Arc<()>,
+        top: usize,
+    ) -> bool {
+        if !self.content_identity_is_current(pane, &next)
+            || !self.floating_wrap.as_ref().is_some_and(|floating| {
+                floating.origin == pane
+                    && Arc::ptr_eq(&floating.content, previous)
+                    && Arc::ptr_eq(&floating.window, window)
+                    && self.layout.focus_guard_is_current(&floating.focus)
+            })
+        {
+            return false;
+        }
+        let path = match self.content(pane) {
+            Some(Content::File(path)) => Some(path.clone()),
+            Some(Content::Terminal(_) | Content::Explorer(_) | Content::Agents(_)) => None,
+            None => return false,
+        };
+        let Some(floating) = &mut self.floating_wrap else {
+            return false;
+        };
+        if let Some(path) = path {
+            floating.state.activate(&path, top);
+        } else {
+            floating.state.deactivate_file();
+        }
+        floating.content = next;
+        floating.focus = self.layout.focus_guard();
+        true
     }
 
     /// Change one window's wrap option; splits inherit the current value.
@@ -1375,6 +1717,15 @@ impl Panes {
             self.wrap.insert(target, state);
         } else {
             self.wrap.remove(&target);
+        }
+    }
+
+    /// A split created from a floating view inherits that view's local wrap
+    /// settings and viewport, while its scroll option starts independently.
+    pub fn inherit_floating_wrap(&mut self, target: PaneId, mut state: PaneWrap) {
+        if self.layout.panes().contains_key(&target) {
+            state.scroll = PaneScroll::default();
+            self.wrap.insert(target, state);
         }
     }
 
@@ -1459,10 +1810,30 @@ impl Panes {
         }
         result
     }
+    /// Remember a content window independently of movements between sidebars.
+    pub fn remember_active_content_pane(&mut self) {
+        let active = self.layout.active();
+        if matches!(self.content(active), Some(Content::File(_) | Content::Terminal(_))) {
+            self.last_content_pane = Some(active);
+        }
+    }
+
+    pub fn previous_content_pane(&self) -> Option<PaneId> {
+        let valid = |id: &PaneId| {
+            self.layout.panes().contains_key(id)
+                && matches!(self.content(*id), Some(Content::File(_) | Content::Terminal(_)))
+        };
+        self.layout.previous().filter(valid).or_else(|| self.last_content_pane.filter(valid))
+    }
+
     /// Remove sidebar views only; never stop a process or close a file.
     pub fn remove_sidebar(&mut self) -> Result<Vec<PaneId>, workspace_core::editor_panes::Error> {
         let original = self.clone();
         let previous = self.layout.active();
+        // When the sidebar itself has focus, return to the last content
+        // window when it is still known, rather than whichever neighbor the
+        // sequence of sidebar removals happens to select.
+        let return_to = self.previous_content_pane();
         let mut removed = Vec::new();
         let result = (|| {
             let ids = self.layout.order();
@@ -1478,8 +1849,10 @@ impl Panes {
                     self.topology_changed_from(&previous);
                 }
             }
-            if self.layout.panes().contains_key(&previous) {
-                self.layout.focus(previous)?;
+            let target = self.layout.panes().contains_key(&previous).then_some(previous)
+                .or_else(|| return_to.filter(|id| self.layout.panes().contains_key(id)));
+            if let Some(target) = target {
+                self.layout.focus(target)?;
             }
             Ok(())
         })();
@@ -1846,6 +2219,61 @@ impl Panes {
                 .unwrap_or(40),
         }
     }
+    /// Stage a new terminal at the right edge of the complete layout. Bounds
+    /// must belong to the current layout; a failed operation changes nothing.
+    pub fn split_right_terminal(
+        &mut self,
+        attachment: u64,
+        bounds: &[workspace_core::editor_panes::Bounds],
+    ) -> Result<PaneId, workspace_core::editor_panes::Error> {
+        use workspace_core::editor_panes::{Direction, Error};
+        if !measured_geometry_valid(&self.layout, bounds) {
+            return Err(Error::InvalidGeometry);
+        }
+        let min_x = bounds.iter().map(|b| b.x).min().ok_or(Error::InvalidGeometry)?;
+        let max_x = bounds.iter().filter_map(|b| b.x.checked_add(b.width)).max().ok_or(Error::InvalidGeometry)?;
+        let total = max_x.checked_sub(min_x).ok_or(Error::InvalidGeometry)?;
+        if total < 80 { return Err(Error::InvalidGeometry); }
+        let target = (total.saturating_mul(2) / 5).clamp(40, total - 40);
+        let mut staged = self.clone();
+        let previous = staged.layout.clone();
+        let source = previous.active();
+        let created = staged.layout.split(Axis::Row, true)?;
+        staged.layout.move_to_edge(Direction::Right)?;
+        staged.topology_changed_from(&previous);
+        staged.duplicate_wrap(source, created);
+        staged.set_content(Content::Terminal(attachment))?;
+        let Node::Split(Axis::Row, children) = staged.layout.root() else {
+            return Err(Error::InvalidGeometry);
+        };
+        let mut old_children = Vec::new();
+        let mut sum = 0_i64;
+        for child in children {
+            if *child == Node::Pane(created) { continue; }
+            let mut ids = Vec::new();
+            Self::leaves(child, &mut ids);
+            let mut start = i64::MAX;
+            let mut end = i64::MIN;
+            for id in ids {
+                let b = bounds.iter().find(|b| b.pane == id).ok_or(Error::InvalidGeometry)?;
+                start = start.min(b.x);
+                end = end.max(b.x.checked_add(b.width).ok_or(Error::InvalidGeometry)?);
+            }
+            let width = end.checked_sub(start).filter(|n| *n > 0).ok_or(Error::InvalidGeometry)?;
+            sum = sum.checked_add(width).ok_or(Error::InvalidGeometry)?;
+            old_children.push((Self::weight_key(Axis::Row, child).ok_or(Error::InvalidGeometry)?, width));
+        }
+        if sum <= 0 || old_children.is_empty() { return Err(Error::InvalidGeometry); }
+        for (key, width) in old_children {
+            let scaled = width as f64 * (total - target) as f64 / sum as f64;
+            if scaled < 40.0 { return Err(Error::InvalidGeometry); }
+            staged.weights.insert(key, scaled as f32);
+        }
+        staged.weights.insert(Self::weight_key(Axis::Row, &Node::Pane(created)).ok_or(Error::InvalidGeometry)?, target as f32);
+        *self = staged;
+        Ok(created)
+    }
+
     /// Stage a split with a requested new-view size using the last measured
     /// geometry. Keep the original state if any sibling lacks a measurement.
     pub fn split_sized(
@@ -1857,7 +2285,7 @@ impl Panes {
         bounds: &[workspace_core::editor_panes::Bounds],
     ) -> Result<PaneId, workspace_core::editor_panes::Error> {
         use workspace_core::editor_panes::Error;
-        if !self.layout.geometry_valid(bounds) {
+        if !measured_geometry_valid(&self.layout, bounds) {
             return Err(Error::InvalidGeometry);
         }
         let source = self.layout.active();
@@ -1940,10 +2368,11 @@ impl Panes {
             return true;
         };
         // Resizing uses sibling rectangles to derive relative weights. Refuse
-        // an incomplete or contradictory frame before deriving any sizes, as
-        // directional focus and measured splits already do. An axis with no
-        // matching split remains a no-op even before the first measurement.
-        if !self.layout.geometry_valid(bounds) {
+        // an incomplete or contradictory frame before deriving any sizes.
+        // Like directional focus, permit shared rasterized border pixels by
+        // checking pane interiors when the full frames overlap. Keep the full
+        // measurements below for the actual size and minimum calculations.
+        if !measured_geometry_valid(&self.layout, bounds) {
             return false;
         }
         let mut sizes = Vec::new();

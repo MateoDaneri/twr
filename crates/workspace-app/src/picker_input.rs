@@ -28,7 +28,13 @@ pub fn normal(text: &str, cursor: usize) -> usize {
     boundary(text, cursor).min(previous(text, text.len()))
 }
 pub fn insert(text: &mut String, cursor: &mut usize, value: &str) -> bool {
-    if value.is_empty() || text.chars().count() + value.chars().count() > 256 {
+    insert_with_limit(text, cursor, value, 256)
+}
+
+pub fn insert_with_limit(text: &mut String, cursor: &mut usize, value: &str, max_chars: usize) -> bool {
+    if value.is_empty() || text.chars().count().saturating_add(value.chars().count()) > max_chars
+        || text.len().saturating_add(value.len()) > 4096
+    {
         return false;
     }
     *cursor = boundary(text, *cursor);

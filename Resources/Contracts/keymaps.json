@@ -169,6 +169,16 @@
     "context": "workspace",
     "sequence": [
       "<Space>",
+      "f",
+      "F"
+    ],
+    "action": "picker.files.cwd",
+    "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
       "<Space>"
     ],
     "action": "picker.files",
@@ -182,6 +192,16 @@
     ],
     "action": "picker.buffers",
     "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "f",
+      "r"
+    ],
+    "action": "picker.recovered",
+    "source": "Terminal Workspace crash recovery"
   },
   {
     "context": "workspace",
@@ -293,6 +313,16 @@
     "context": "terminal_normal",
     "sequence": [
       "<Space>",
+      "f",
+      "r"
+    ],
+    "action": "picker.recovered",
+    "source": "Terminal Workspace crash recovery"
+  },
+  {
+    "context": "terminal_normal",
+    "sequence": [
+      "<Space>",
       "/"
     ],
     "action": "picker.grep",
@@ -394,6 +424,16 @@
     ],
     "action": "picker.buffers",
     "source": "LazyVim snacks_picker.lua"
+  },
+  {
+    "context": "tree",
+    "sequence": [
+      "<Space>",
+      "f",
+      "r"
+    ],
+    "action": "picker.recovered",
+    "source": "Terminal Workspace crash recovery"
   },
   {
     "context": "tree",
@@ -1241,6 +1281,26 @@
     "sequence": [
       "<Space>",
       "w",
+      "m"
+    ],
+    "action": "editor.window.zoom",
+    "source": "LazyVim config/keymaps.lua202"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "u",
+      "Z"
+    ],
+    "action": "editor.window.zoom",
+    "source": "LazyVim config/keymaps.lua202"
+  },
+  {
+    "context": "workspace",
+    "sequence": [
+      "<Space>",
+      "w",
       "n"
     ],
     "action": "workspace.next",
@@ -1283,7 +1343,7 @@
       "w",
       "q"
     ],
-    "action": "editor.window.close",
+    "action": "editor.window.quit",
     "source": "requested pane close"
   },
   {"context": "workspace", "sequence": ["<C-w>", "<Left>"], "action": "focus.left", "source": "Neovim windows.txt CTRL-W aliases"},
@@ -1294,7 +1354,7 @@
   {"context": "workspace", "sequence": ["<C-w>", "S"], "action": "editor.split.below", "source": "Neovim windows.txt CTRL-W aliases"},
   {"context": "workspace", "sequence": ["<C-w>", "<C-s>"], "action": "editor.split.below", "source": "Neovim windows.txt CTRL-W aliases"},
   {"context": "workspace", "sequence": ["<C-w>", "<C-v>"], "action": "editor.split.right", "source": "Neovim windows.txt CTRL-W aliases"},
-  {"context": "workspace", "sequence": ["<C-w>", "<C-q>"], "action": "editor.window.close", "source": "Neovim windows.txt CTRL-W aliases"},
+  {"context": "workspace", "sequence": ["<C-w>", "<C-q>"], "action": "editor.window.quit", "source": "Neovim windows.txt CTRL-W aliases"},
   {"context": "workspace", "sequence": ["<C-w>", "n"], "action": "editor.split.new", "source": "Neovim windows.txt CTRL-W_n"},
   {"context": "workspace", "sequence": ["<C-w>", "<C-n>"], "action": "editor.split.new", "source": "Neovim windows.txt CTRL-W_n"}
 ]

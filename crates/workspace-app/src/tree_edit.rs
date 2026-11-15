@@ -1,7 +1,7 @@
 //! Project-relative file operations through directory descriptors. No shell.
 use std::{
     ffi::{CString, OsString},
-    io,
+    io::{self, Read},
     os::{
         fd::{AsRawFd, FromRawFd, OwnedFd},
         unix::ffi::OsStrExt,
@@ -122,6 +122,44 @@ pub(super) fn descend(
         directory = owned(fd)?;
     }
     Ok(directory)
+}
+
+/// Read a regular UTF-8 fixture through no-follow directory handles.
+pub fn read_fixture_text(root: &Path, path: &Path) -> Result<String, String> {
+    const LIMIT: u64 = 2 * 1024 * 1024;
+    let root_relative = root.strip_prefix("/").map_err(|_| "Raíz inválida")?;
+    let relative = path.strip_prefix(root).map_err(|_| "Archivo fuera de fixtures")?;
+    let root_parts = parts(root_relative)?;
+    let names = parts(relative)?;
+    let (leaf, parents) = names.split_last().ok_or("Ruta sin archivo")?;
+    let directory = descend(root_fd(Path::new("/"))?, &root_parts, false)?;
+    let directory = descend(directory, parents, false)?;
+    let leaf = cstring(leaf)?;
+    let fd = owned(unsafe {
+        libc::openat(
+            directory.as_raw_fd(),
+            leaf.as_ptr(),
+            libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_CLOEXEC | libc::O_NONBLOCK,
+        )
+    })?;
+    let file = std::fs::File::from(fd);
+    let metadata = file.metadata().map_err(|e| e.to_string())?;
+    if metadata.is_dir() {
+        return Err("Es una carpeta; no se abre como archivo".into());
+    }
+    if !metadata.is_file() {
+        return Err("No es un archivo regular; no se abre".into());
+    }
+    if metadata.len() > LIMIT {
+        return Err("Vista previa limitada a archivos de texto de hasta 2 MiB".into());
+    }
+    let mut bytes = Vec::new();
+    file.take(LIMIT + 1).read_to_end(&mut bytes).map_err(|e| e.to_string())?;
+    if bytes.len() as u64 > LIMIT {
+        return Err("Vista previa limitada a 2 MiB".into());
+    }
+    if bytes.contains(&0) { return Err("Archivo binario · preview no disponible".into()); }
+    String::from_utf8(bytes).map_err(|_| "El archivo no es UTF-8".into())
 }
 pub fn create(root: &Path, base: &Path, name: &str, directory: bool) -> Result<Change, String> {
     if name.is_empty() || name.len() > 1024 || Path::new(name).is_absolute() {

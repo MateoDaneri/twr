@@ -99,7 +99,7 @@ pub fn rank(
     candidates: &[String],
     limit: usize,
 ) -> Result<Vec<Match>, String> {
-    if candidates.len() > 100_000 || query.chars().count() > 256 || limit > 200 {
+    if candidates.len() > 100_000 || query.chars().count() > 1023 || limit > 200 {
         return Err("picker request exceeds bounded budget".into());
     }
     let query: Vec<_> = query.chars().flat_map(char::to_lowercase).collect();
