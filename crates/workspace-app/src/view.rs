@@ -38993,12 +38993,20 @@ fn has_unescaped_file_expansion(name: &str) -> bool {
     false
 }
 
-/// Preserve clipboard bytes and use the terminal's bracketed-paste protocol when enabled.
+/// Drop C0/C1 controls except tab, LF and CR before terminal paste.
+/// This prevents clipboard bytes from closing the bracketed-paste envelope.
+const TERMINAL_PASTE_LIMIT: usize = 2 * 1024 * 1024;
 fn terminal_paste_bytes(text: &str, bracketed: bool) -> Result<Vec<u8>, String> {
+    if text.len() > TERMINAL_PASTE_LIMIT {
+        return Err("Pegado limitado a 2 MiB; no se envió nada".into());
+    }
+    let clean: String = text.chars()
+        .filter(|c| !c.is_control() || matches!(c, '\t' | '\n' | '\r'))
+        .collect();
     Ok(if bracketed {
-        format!("\x1b[200~{text}\x1b[201~").into_bytes()
+        format!("\x1b[200~{clean}\x1b[201~").into_bytes()
     } else {
-        text.as_bytes().to_vec()
+        clean.into_bytes()
     })
 }
 
