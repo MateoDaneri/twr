@@ -19,30 +19,6 @@ pub enum Shortcut {
 }
 pub fn resolve(key: &str, cmd: bool, ctrl: bool, alt: bool, shift: bool) -> Option<Shortcut> {
     use Shortcut::*;
-    let direction = match key {
-        "h" | "left" => Some('L'),
-        "j" | "down" => Some('D'),
-        "k" | "up" => Some('U'),
-        "l" | "right" => Some('R'),
-        _ => None,
-    };
-    let arrow = matches!(key, "left" | "down" | "up" | "right");
-    // Ghostty maps Cmd+Ctrl+arrow to 10 px, and the four-modifier variant
-    // to 100 px. Do not consume other modifier combinations as resizes.
-    if cmd && ctrl && arrow && ((!alt && !shift) || (alt && shift)) {
-        return direction.map(|d| Resize(d, if alt && shift { 100 } else { 10 }));
-    }
-    if cmd
-        && !alt
-        && ((ctrl && !shift) || (shift && !ctrl))
-        && !arrow
-        && let Some(d) = direction
-    {
-        return Some(Direction(d));
-    }
-    if cmd && alt && !ctrl && !shift && arrow {
-        return direction.map(Direction);
-    }
     if !cmd && key == "insert" {
         if shift && !ctrl && !alt {
             return Some(Paste);
@@ -78,9 +54,6 @@ pub fn resolve(key: &str, cmd: bool, ctrl: bool, alt: bool, shift: bool) -> Opti
             "k" if !shift => Some(Clear),
             _ => None,
         };
-    }
-    if cmd && ctrl && !alt && matches!(key, "=" | "+") {
-        return Some(Equalize);
     }
     if !cmd && alt && !ctrl && !shift {
         return match key {
@@ -118,25 +91,9 @@ mod tests {
     }
     #[test]
     fn custom_ghostty_navigation_clipboard_resize_and_line_editing_are_unambiguous() {
-        for (key, d) in [("h", 'L'), ("j", 'D'), ("k", 'U'), ("l", 'R')] {
-            assert_eq!(
-                resolve(key, true, true, false, false),
-                Some(Shortcut::Direction(d))
-            );
-            assert_eq!(
-                resolve(key, true, false, false, true),
-                Some(Shortcut::Direction(d))
-            );
-        }
-        for (key, d) in [("left", 'L'), ("down", 'D'), ("up", 'U'), ("right", 'R')] {
-            assert_eq!(
-                resolve(key, true, true, true, true),
-                Some(Shortcut::Resize(d, 100))
-            );
-            assert_eq!(
-                resolve(key, true, true, false, false),
-                Some(Shortcut::Resize(d, 10))
-            );
+        for key in ["h", "j", "k", "l", "left", "down", "up", "right"] {
+            assert_eq!(resolve(key, true, true, false, false), None);
+            assert_eq!(resolve(key, true, false, false, true), None);
         }
         assert_eq!(
             resolve("c", true, false, false, false),
@@ -161,7 +118,7 @@ mod tests {
         for key in ["=", "+"] {
             assert_eq!(
                 resolve(key, true, true, false, false),
-                Some(Shortcut::Equalize)
+                None
             );
         }
         for key in ["c", "a", "f", "left", "insert"] {

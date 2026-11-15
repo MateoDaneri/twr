@@ -32340,80 +32340,6 @@ impl WorkspaceView {
                 cx.stop_propagation();
                 return;
             }
-            if key == "d" && !k.modifiers.control && !k.modifiers.alt {
-                let action = if k.modifiers.shift {
-                    TmuxAction::SplitVertical
-                } else {
-                    TmuxAction::Split
-                };
-                if self.submit_tmux_action(action) {
-                    self.set_focus(Surface::Terminal);
-                }
-                cx.notify();
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
-            if key == "z"
-                && k.modifiers.shift
-                && !k.modifiers.control
-                && !k.modifiers.alt
-            {
-                self.tmux_action(TmuxAction::Zoom);
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
-            if key == "w"
-                && !k.modifiers.control
-                && !k.modifiers.alt
-                && self.model.file.is_none()
-            {
-                // The tmux prefix bytes (kill-pane / kill-window, each with
-                // tmux's own confirmation) go only to the terminal that is
-                // the focused pane; with Explorer, Agents or another surface
-                // focused, `self.active` may be a hidden terminal. There is
-                // no targeted TmuxAction for these operations.
-                let terminal_focused = matches!(self.model.surface, Surface::Terminal | Surface::Normal)
-                    && self.windows.get(self.active).is_some_and(|terminal| {
-                        terminal.project == self.model.project
-                            && self.editor_panes.as_ref().is_none_or(|panes| {
-                                panes.content(panes.layout.active())
-                                    == Some(&PaneContent::Terminal(terminal.attachment))
-                            })
-                    });
-                if terminal_focused {
-                    self.set_focus(Surface::Terminal);
-                    self.effect(Effect::Pty(if k.modifiers.shift {
-                        b"\x01&".to_vec()
-                    } else {
-                        b"\x01x".to_vec()
-                    }));
-                } else {
-                    self.model.message = "Cmd+W actúa solo sobre la terminal enfocada".into();
-                }
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
-            if k.modifiers.shift
-                && !k.modifiers.control
-                && !k.modifiers.alt
-                && matches!(
-                    key,
-                    "h" | "j" | "k" | "l" | "left" | "right" | "up" | "down"
-                )
-            {
-                self.tmux_action(TmuxAction::Direction(match key {
-                    "h" | "left" => 'L',
-                    "j" | "down" => 'D',
-                    "k" | "up" => 'U',
-                    _ => 'R',
-                }));
-                window.prevent_default();
-                cx.stop_propagation();
-                return;
-            }
             if key == "v"
                 && !k.modifiers.control
                 && !k.modifiers.alt
@@ -32471,22 +32397,6 @@ impl WorkspaceView {
         // Option combinations type characters on many layouts; text-entry
         // contexts fall through to the input handler below.
         let option_text_entry = self.option_text_entry_active();
-        if k.modifiers.alt
-            && k.modifiers.shift
-            && !k.modifiers.control
-            && !option_text_entry
-            && matches!(key, "h" | "j" | "k" | "l")
-        {
-            self.tmux_action(TmuxAction::Direction(match key {
-                "h" => 'L',
-                "j" => 'D',
-                "k" => 'U',
-                _ => 'R',
-            }));
-            window.prevent_default();
-            cx.stop_propagation();
-            return;
-        }
         if k.modifiers.alt
             && !k.modifiers.control
             && !k.modifiers.shift
@@ -36212,20 +36122,6 @@ impl WorkspaceView {
                 "new-window",
                 "+ Ventana",
                 Ui::Tmux(TmuxAction::New, terminal_target.clone()),
-                p,
-                cx,
-            ))
-            .child(self.button(
-                "zoom",
-                "Zoom",
-                Ui::Tmux(TmuxAction::Zoom, terminal_target.clone()),
-                p,
-                cx,
-            ))
-            .child(self.button(
-                "split",
-                "Split",
-                Ui::Tmux(TmuxAction::Split, terminal_target),
                 p,
                 cx,
             ));

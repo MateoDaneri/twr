@@ -1782,6 +1782,77 @@ impl Session {
             }
             Err(e) => return Err(e.to_string()),
         }
+        // Keep the legacy contract untouched: old binaries and already-running
+        // servers may still need its pane bindings to reach pre-existing panes.
+        // Only a newly started server reads the new, separate contract.
+        let conf = directory.join("navigation-v2.conf");
+        let mut contents = String::from(contents);
+        contents.push_str(r#"
+unbind-key -T root M-H
+unbind-key -T root M-J
+unbind-key -T root M-K
+unbind-key -T root M-L
+unbind-key -T root MouseDrag1Border
+unbind-key -T root MouseDown3Status
+unbind-key -T root M-MouseDown3Status
+bind-key -T root MouseDown3Pane send-keys -M
+bind-key -T root M-MouseDown3Pane send-keys -M
+unbind-key -T prefix '<'
+unbind-key -T prefix h
+unbind-key -T prefix j
+unbind-key -T prefix k
+unbind-key -T prefix l
+unbind-key -T prefix m
+unbind-key -T prefix x
+unbind-key -T prefix '"'
+unbind-key -T prefix %
+unbind-key -T prefix !
+unbind-key -T prefix >
+unbind-key -T prefix E
+unbind-key -T prefix M
+unbind-key -T prefix o
+unbind-key -T prefix z
+unbind-key -T prefix '{'
+unbind-key -T prefix '}'
+unbind-key -T prefix Up
+unbind-key -T prefix Down
+unbind-key -T prefix Left
+unbind-key -T prefix Right
+unbind-key -T prefix M-Up
+unbind-key -T prefix M-Down
+unbind-key -T prefix M-Left
+unbind-key -T prefix M-Right
+unbind-key -T prefix C-Up
+unbind-key -T prefix C-Down
+unbind-key -T prefix C-Left
+unbind-key -T prefix C-Right
+unbind-key -T prefix M-o
+unbind-key -T prefix C-o
+unbind-key -T prefix M-1
+unbind-key -T prefix M-2
+unbind-key -T prefix M-3
+unbind-key -T prefix M-4
+unbind-key -T prefix M-5
+unbind-key -T prefix M-6
+unbind-key -T prefix M-7
+unbind-key -a -T movepane
+"#);
+        match fs::symlink_metadata(&conf) {
+            Ok(m) if !m.is_file() || m.uid() != uid || m.nlink() != 1 || m.mode() & 0o022 != 0 => {
+                return Err("unsafe tmux config path".into());
+            }
+            Ok(_) if fs::read_to_string(&conf).map_err(|e| e.to_string())? != contents => {
+                return Err("Private tmux v2 config differs from the bundled contract".into());
+            }
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                use std::{io::Write, os::unix::fs::OpenOptionsExt};
+                let mut out = fs::OpenOptions::new().write(true).create_new(true).mode(0o600)
+                    .open(&conf).map_err(|e| e.to_string())?;
+                out.write_all(contents.as_bytes()).map_err(|e| e.to_string())?;
+            }
+            Err(e) => return Err(e.to_string()),
+        }
         // -f is used only when this private server starts. Never source user config.
         if session.run(&["has-session", "-t", &session.name]).is_ok() {
             session.configure_terminal_protocols()?;
