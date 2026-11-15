@@ -2103,7 +2103,9 @@ unbind-key -a -T movepane
     }
     pub fn attach(&self) -> CommandBuilder {
         let mut c = CommandBuilder::new(&self.binary);
-        c.args(["-S"]);
+        // The GUI can inherit a non-UTF-8 locale even when the pane's shell
+        // uses UTF-8. Always tell tmux that this terminal accepts UTF-8.
+        c.args(["-u", "-S"]);
         c.arg(&self.socket);
         c.args(["attach-session", "-t", &self.name]);
         c.env_remove("TMUX");
@@ -2118,7 +2120,7 @@ unbind-key -a -T movepane
     ) -> Result<CommandBuilder, String> {
         self.verify_additional_terminal(identity)?;
         let mut c = CommandBuilder::new(&self.binary);
-        c.args(["-N", "-S"]);
+        c.args(["-u", "-N", "-S"]);
         c.arg(&self.socket);
         c.args(["attach-session", "-t", &identity.session_id]);
         c.env_remove("TMUX");
