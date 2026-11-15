@@ -32887,6 +32887,18 @@ impl WorkspaceView {
             return;
         }
         if k.modifiers.platform {
+            if key == "d" && !k.modifiers.control && !k.modifiers.alt {
+                let action = if k.modifiers.shift {
+                    TmuxAction::SplitVertical
+                } else {
+                    TmuxAction::Split
+                };
+                self.tmux_action(action);
+                window.prevent_default();
+                cx.stop_propagation();
+                cx.notify();
+                return;
+            }
             if !k.modifiers.control && !k.modifiers.alt && !k.modifiers.shift {
                 let action = match key {
                     "t" => Some(TmuxAction::New),
