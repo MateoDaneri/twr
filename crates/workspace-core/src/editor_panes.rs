@@ -252,7 +252,13 @@ impl PaneJump {
 }
 impl Layout {
     pub fn new(view: ViewState) -> Self {
-        let id = PaneId(1);
+        Self::new_in_namespace(view, 0)
+    }
+
+    /// Each independent tab gets its own pane-number range. Namespace zero
+    /// keeps the existing identifiers for layouts made by older callers.
+    pub fn new_in_namespace(view: ViewState, namespace: u32) -> Self {
+        let id = PaneId(((namespace as u64) << 32) | 1);
         Self {
             root: Node::Pane(id),
             panes: BTreeMap::from([(id, view)]),
@@ -261,7 +267,7 @@ impl Layout {
             previous_local_directories: BTreeMap::new(),
             active: id,
             previous: None,
-            next_id: 2,
+            next_id: id.0 + 1,
             focus_epoch: 0,
             identity: Arc::new(()),
         }
@@ -580,6 +586,26 @@ impl Layout {
         self.focus_epoch = self.focus_epoch.wrapping_add(1);
         Ok(true)
     }
+    /// Move the active root-level pane immediately before the root group
+    /// containing `target`, without splitting or moving that group.
+    pub fn move_active_before_root_group(&mut self, target: PaneId) -> Result<(), Error> {
+        let Node::Split(Axis::Row, children) = &mut self.root else {
+            return Err(Error::InvalidGeometry);
+        };
+        let source = children.iter().position(|child| *child == Node::Pane(self.active))
+            .ok_or(Error::UnknownPane)?;
+        let destination = children.iter().position(|child| {
+            let mut panes = Vec::new();
+            child.order(&mut panes);
+            panes.contains(&target)
+        }).ok_or(Error::UnknownPane)?;
+        if source == destination { return Err(Error::InvalidGeometry); }
+        let active = children.remove(source);
+        let destination = if source < destination { destination - 1 } else { destination };
+        children.insert(destination, active);
+        self.focus_epoch = self.focus_epoch.wrapping_add(1);
+        Ok(())
+    }
     /// Remove views only; the owner retains buffers and terminal processes.
     pub fn only(&mut self) -> Vec<PaneId> {
         let removed: Vec<_> = self
@@ -605,6 +631,11 @@ impl Layout {
             return Err(Error::Limit);
         }
         let next_id = self.next_id.checked_add(1).ok_or(Error::ExhaustedIds)?;
+        if (self.next_id >> 32) != (self.active.0 >> 32)
+            || (next_id >> 32) != (self.active.0 >> 32)
+        {
+            return Err(Error::ExhaustedIds);
+        }
         let new = PaneId(self.next_id);
         let state = self
             .panes

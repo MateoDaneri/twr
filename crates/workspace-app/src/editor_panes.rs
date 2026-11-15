@@ -1383,16 +1383,22 @@ impl Panes {
         }
     }
 
-    pub fn new(path: PathBuf, mut view: ViewState) -> Self {
+    pub fn new(path: PathBuf, view: ViewState) -> Self {
+        Self::new_in_namespace(path, view, 0)
+    }
+
+    pub fn new_in_namespace(path: PathBuf, mut view: ViewState, namespace: u32) -> Self {
         view.buffer = 1;
+        let layout = Layout::new_in_namespace(view, namespace);
+        let first = layout.active();
         Self {
-            layout: Layout::new(view),
+            layout,
             contents: BTreeMap::from([(1, Content::File(path))]),
             content_identities: BTreeMap::new(),
             sizes: BTreeMap::new(),
             weights: BTreeMap::new(),
             sidebar_dock: BTreeSet::new(),
-            last_content_pane: Some(PaneId(1)),
+            last_content_pane: Some(first),
             equalized: false,
             wrap: BTreeMap::new(),
             floating_wrap: None,
@@ -1733,7 +1739,11 @@ impl Panes {
         self.wrap.remove(&pane);
     }
     pub fn terminal(id: u64) -> Self {
-        let mut panes = Self::new(
+        Self::terminal_in_namespace(id, 0)
+    }
+
+    pub fn terminal_in_namespace(id: u64, namespace: u32) -> Self {
+        let mut panes = Self::new_in_namespace(
             PathBuf::new(),
             ViewState {
                 buffer: 1,
@@ -1741,7 +1751,7 @@ impl Panes {
                 column: 0,
                 top: 0,
                 left: 0,
-            },
+            }, namespace,
         );
         panes.contents.insert(1, Content::Terminal(id));
         panes
@@ -1754,7 +1764,17 @@ impl Panes {
         agents: Option<u64>,
         right: bool,
     ) -> Result<Self, workspace_core::editor_panes::Error> {
-        let mut panes = Self::terminal(terminal);
+        Self::with_sidebar_in_namespace(terminal, explorer, agents, right, 0)
+    }
+
+    pub fn with_sidebar_in_namespace(
+        terminal: u64,
+        explorer: u64,
+        agents: Option<u64>,
+        right: bool,
+        namespace: u32,
+    ) -> Result<Self, workspace_core::editor_panes::Error> {
+        let mut panes = Self::terminal_in_namespace(terminal, namespace);
         let original = panes.layout.active();
         panes.layout.split(Axis::Row, right)?;
         panes.sidebar_dock.insert(panes.layout.active());
@@ -1982,6 +2002,28 @@ impl Panes {
     }
     pub fn weight(&self, axis: Axis, node: &Node) -> Option<f32> {
         self.weights.get(&Self::weight_key(axis, node)?).copied()
+    }
+    /// Carry the project sidebar width to another tab while keeping that
+    /// tab's own relative content-pane proportions.
+    pub fn set_sidebar_width(&mut self, width: f32, total: f32) {
+        let Node::Split(Axis::Row, children) = self.layout.root().clone() else { return };
+        let docks: Vec<_> = children.iter().filter(|child| self.contains_sidebar_dock(child)).collect();
+        if docks.len() != 1 || children.len() < 2 || !width.is_finite() || !total.is_finite()
+            || width <= 0.0 || total <= width
+        { return; }
+        let dock = docks[0];
+        let content_weight: f32 = children.iter().filter(|child| !std::ptr::eq(*child, dock))
+            .map(|child| self.weight(Axis::Row, child).unwrap_or(1.0).max(0.001)).sum();
+        if content_weight <= 0.0 { return; }
+        for child in &children {
+            let Some(key) = Self::weight_key(Axis::Row, child) else { return };
+            let value = if std::ptr::eq(child, dock) {
+                width
+            } else {
+                (total - width) * self.weight(Axis::Row, child).unwrap_or(1.0).max(0.001) / content_weight
+            };
+            self.weights.insert(key, value);
+        }
     }
     pub fn equalize(&mut self) {
         self.weights.clear();
@@ -2219,8 +2261,8 @@ impl Panes {
                 .unwrap_or(40),
         }
     }
-    /// Stage a new terminal at the right edge of the complete layout. Bounds
-    /// must belong to the current layout; a failed operation changes nothing.
+    /// Stage a new terminal at the right edge of the content, keeping a
+    /// docked sidebar at its existing outer edge and width.
     pub fn split_right_terminal(
         &mut self,
         attachment: u64,
@@ -2234,12 +2276,18 @@ impl Panes {
         let max_x = bounds.iter().filter_map(|b| b.x.checked_add(b.width)).max().ok_or(Error::InvalidGeometry)?;
         let total = max_x.checked_sub(min_x).ok_or(Error::InvalidGeometry)?;
         if total < 80 { return Err(Error::InvalidGeometry); }
-        let target = (total.saturating_mul(2) / 5).clamp(40, total - 40);
+        let right_dock = self.sidebar_dock.iter().find_map(|id| {
+            bounds.iter().find(|b| b.pane == *id && b.x.checked_add(b.width) == Some(max_x))
+                .map(|_| *id)
+        });
         let mut staged = self.clone();
         let previous = staged.layout.clone();
         let source = previous.active();
         let created = staged.layout.split(Axis::Row, true)?;
         staged.layout.move_to_edge(Direction::Right)?;
+        if let Some(dock) = right_dock {
+            staged.layout.move_active_before_root_group(dock)?;
+        }
         staged.topology_changed_from(&previous);
         staged.duplicate_wrap(source, created);
         staged.set_content(Content::Terminal(attachment))?;
@@ -2247,7 +2295,8 @@ impl Panes {
             return Err(Error::InvalidGeometry);
         };
         let mut old_children = Vec::new();
-        let mut sum = 0_i64;
+        let mut content_sum = 0_i64;
+        let mut dock_sum = 0_i64;
         for child in children {
             if *child == Node::Pane(created) { continue; }
             let mut ids = Vec::new();
@@ -2260,12 +2309,17 @@ impl Panes {
                 end = end.max(b.x.checked_add(b.width).ok_or(Error::InvalidGeometry)?);
             }
             let width = end.checked_sub(start).filter(|n| *n > 0).ok_or(Error::InvalidGeometry)?;
-            sum = sum.checked_add(width).ok_or(Error::InvalidGeometry)?;
-            old_children.push((Self::weight_key(Axis::Row, child).ok_or(Error::InvalidGeometry)?, width));
+            let dock = staged.contains_sidebar_dock(child);
+            if dock { dock_sum = dock_sum.checked_add(width).ok_or(Error::InvalidGeometry)?; }
+            else { content_sum = content_sum.checked_add(width).ok_or(Error::InvalidGeometry)?; }
+            old_children.push((Self::weight_key(Axis::Row, child).ok_or(Error::InvalidGeometry)?, width, dock));
         }
-        if sum <= 0 || old_children.is_empty() { return Err(Error::InvalidGeometry); }
-        for (key, width) in old_children {
-            let scaled = width as f64 * (total - target) as f64 / sum as f64;
+        let content_total = total.checked_sub(dock_sum).ok_or(Error::InvalidGeometry)?;
+        if content_sum <= 0 || content_total < 80 || old_children.is_empty() { return Err(Error::InvalidGeometry); }
+        let target = (content_total.saturating_mul(2) / 5).clamp(40, content_total - 40);
+        for (key, width, dock) in old_children {
+            let scaled = if dock { width as f64 }
+                else { width as f64 * (content_total - target) as f64 / content_sum as f64 };
             if scaled < 40.0 { return Err(Error::InvalidGeometry); }
             staged.weights.insert(key, scaled as f32);
         }

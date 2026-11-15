@@ -164,6 +164,60 @@ struct TerminalWindow {
     terminal: Terminal,
     snapshot: Arc<Snapshot>,
 }
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct TabLayoutKey {
+    context: workspace_app::terminal_resume::Context,
+    session: workspace_app::tmux::WindowSessionIdentity,
+    window: String,
+}
+
+/// Workspace layouts and hidden tab layouts must both participate in buffer
+/// preservation, path rebinding and jump-history updates.
+#[derive(Default)]
+struct SavedPaneLayouts {
+    workspaces: HashMap<usize, (EditorPanes, bool)>,
+    tabs: HashMap<TabLayoutKey, (EditorPanes, bool)>,
+}
+impl SavedPaneLayouts {
+    fn get(&self, project: &usize) -> Option<&(EditorPanes, bool)> {
+        self.workspaces.get(project)
+    }
+    fn get_mut(&mut self, project: &usize) -> Option<&mut (EditorPanes, bool)> {
+        self.workspaces.get_mut(project)
+    }
+    fn insert(&mut self, project: usize, value: (EditorPanes, bool)) {
+        self.workspaces.insert(project, value);
+    }
+    fn remove(&mut self, project: &usize) -> Option<(EditorPanes, bool)> {
+        self.workspaces.remove(project)
+    }
+    fn contains_key(&self, project: &usize) -> bool {
+        self.workspaces.contains_key(project)
+            || self.tabs.keys().any(|key| key.context.project == *project)
+    }
+    fn values(&self) -> impl Iterator<Item = &(EditorPanes, bool)> {
+        self.workspaces.values().chain(self.tabs.values())
+    }
+    fn values_mut(&mut self) -> impl Iterator<Item = &mut (EditorPanes, bool)> {
+        self.workspaces.values_mut().chain(self.tabs.values_mut())
+    }
+    fn iter(&self) -> impl Iterator<Item = (&usize, &(EditorPanes, bool))> {
+        self.workspaces.iter().chain(self.tabs.iter().map(|(key, value)| (&key.context.project, value)))
+    }
+    fn pane_mut(&mut self, project: usize, pane: PaneId) -> Option<&mut EditorPanes> {
+        if self.workspaces.get(&project).is_some_and(|(panes, _)| panes.layout.panes().contains_key(&pane)) {
+            return self.workspaces.get_mut(&project).map(|(panes, _)| panes);
+        }
+        self.tabs.iter_mut().find_map(|(key, (panes, _))| {
+            (key.context.project == project && panes.layout.panes().contains_key(&pane)).then_some(panes)
+        })
+    }
+    fn hidden_tab_shows(&self, project: usize, path: &Path) -> bool {
+        self.tabs.iter().any(|(key, (panes, _))| key.context.project == project
+            && panes.layout.order().into_iter().any(|pane| panes.path(pane).map(PathBuf::as_path) == Some(path)))
+    }
+}
 struct PendingTerminalResize {
     identity: Arc<()>,
     desired: Option<(u16, u16, u16, u16)>,
@@ -324,6 +378,9 @@ struct PendingTerminalSplit {
 }
 struct PendingTerminalKey {
     source: PendingTmuxCopy,
+    transition_tab: Option<TabLayoutKey>,
+    tab_reconcile: Option<TabLayoutKey>,
+    transition_activity: Option<std::time::Instant>,
     gate: workspace_app::terminal_key_gate::Gate<Keystroke>,
     overflow: VecDeque<workspace_app::open_input::Event<Keystroke>>,
     destination: Option<TerminalKeyDestination>,
@@ -1405,6 +1462,8 @@ pub struct WorkspaceView {
     terminal_recovery_attempted: std::collections::BTreeSet<workspace_app::recovery::Terminal>,
     tmux_windows: HashMap<usize, Vec<WindowInfo>>,
     additional_tmux_windows: HashMap<(usize, u64), Vec<WindowInfo>>,
+    /// Windows paired with the verified lifetime of their tmux session.
+    observed_tab_windows: HashMap<workspace_app::terminal_resume::Context, workspace_app::tmux::WindowSnapshot>,
     tmux_windows_poll_error: Option<(usize, Option<u64>, String)>,
     /// Primary tmux control worker ended (its event stream closed) per
     /// project, with the last error it reported. Cleared when a primary
@@ -1453,7 +1512,11 @@ pub struct WorkspaceView {
     // renderer, input ownership and lifecycle are integrated.
     editor_zoom: Option<workspace_app::editor_zoom::ZoomSession>,
     zoom_list_state: Option<ZoomListState>,
-    workspace_panes: HashMap<usize, (EditorPanes, bool)>,
+    workspace_panes: SavedPaneLayouts,
+    visible_tab: Option<TabLayoutKey>,
+    tab_focus: HashMap<TabLayoutKey, (Surface, Option<PathBuf>)>,
+    tab_focus_before_action: Option<(TabLayoutKey, Surface, Option<PathBuf>, std::time::Instant, std::time::Instant)>,
+    next_tab_namespace: u32,
     // Expanded folders and selection of each workspace's Explorer while
     // another workspace is shown. Marks and the visual anchor are not kept.
     workspace_explorers: HashMap<usize, SavedExplorer>,
@@ -1793,6 +1856,7 @@ impl WorkspaceView {
             terminal_recovery_attempted: Default::default(),
             tmux_windows: HashMap::new(),
             additional_tmux_windows: HashMap::new(),
+            observed_tab_windows: HashMap::new(),
             tmux_windows_poll_error: None,
             primary_tmux_lost: HashMap::new(),
             primary_tmux_last_error: HashMap::new(),
@@ -1827,7 +1891,11 @@ impl WorkspaceView {
             editor_panes: None,
             editor_zoom: None,
             zoom_list_state: None,
-            workspace_panes: HashMap::new(),
+            workspace_panes: SavedPaneLayouts::default(),
+            visible_tab: None,
+            tab_focus: HashMap::new(),
+            tab_focus_before_action: None,
+            next_tab_namespace: 0,
             workspace_explorers: HashMap::new(),
             workspace_normal_terminals: HashMap::new(),
             last_normal_terminal: None,
@@ -2501,6 +2569,246 @@ impl WorkspaceView {
             }
             Err(error) => self.model.message = format!("No se pudo crear el layout: {error:?}"),
         }
+    }
+
+    /// Reconcile a confirmed tmux window with the native content layout.
+    /// Layouts are retained until their exact server/session/window returns;
+    /// a server replacement must not reuse a prior window's state.
+    fn reconcile_tab_layout(&mut self) {
+        let Some(context) = self.terminal_input_context() else { return };
+        if context.project != self.model.project { return; }
+        let Some(snapshot) = self.observed_tab_windows.get(&context) else { return };
+        let mut active = snapshot.windows.iter().filter(|window| window.active);
+        let Some(window) = active.next() else { return };
+        if active.next().is_some() { return; }
+        let target = TabLayoutKey {
+            context,
+            session: snapshot.identity.clone(),
+            window: window.id.clone(),
+        };
+        let Some(previous) = self.visible_tab.clone() else {
+            self.visible_tab = Some(target);
+            return;
+        };
+        // A different terminal within the same layout has its own tmux
+        // session. Focusing it does not itself replace the surrounding layout.
+        if previous.context != context {
+            self.visible_tab = Some(target);
+            return;
+        }
+        if previous == target { return; }
+        let follow_queued_tab = self.pending_terminal_key.as_ref().is_some_and(|pending| {
+            pending.tab_reconcile.as_ref() == Some(&target)
+                && pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
+                && pending.gate.in_flight_id().is_none() && !pending.replaying && !pending.scheduled
+                && !pending.mixed_context && pending.write.is_none() && pending.target_action.is_none()
+                && pending.selection_action.is_none() && pending.split.is_none()
+                && pending.capture_wait.is_none() && pending.marked_selection.is_none()
+                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
+                && pending.destination.as_ref().is_some_and(|destination| {
+                    destination.tmux_target.as_ref().is_some_and(|(window, _)| window == &target.window)
+                        && self.terminal_key_destination_current(destination)
+                })
+        });
+        let previous_closed = previous.session == snapshot.identity
+            && !snapshot.windows.iter().any(|window| window.id == previous.window);
+        if self.editor_zoom.is_some()
+            || matches!(self.model.surface, Surface::Picker | Surface::Details)
+            || !self.marked.is_empty()
+            || self.pending_open_input.is_some()
+            || (self.pending_terminal_key.is_some() && !follow_queued_tab)
+            || self.pending_file_splits.has_active()
+            || self.pending_measured_splits.is_some()
+            || self.pending_read_guard.is_some()
+            || self.pending_edit_guard.is_some()
+            || self.terminal_resume.active()
+            || !self.pending_saves.is_empty()
+        {
+            self.model.message = "Esperando la operación actual para cambiar de pestaña".into();
+            return;
+        }
+        if self.workspace_panes.tabs.contains_key(&previous) {
+            self.model.message = "Cambió el layout; paneles conservados".into();
+            return;
+        }
+        let saved = self.workspace_panes.tabs.get(&target);
+        if let Some((panes, _)) = saved {
+            let available = panes.layout.order().into_iter().all(|id| match panes.content(id) {
+                Some(PaneContent::File(path)) => self.editors.contains_key(path),
+                Some(PaneContent::Terminal(id)) => self.windows.iter().any(|terminal| {
+                    terminal.project == context.project && terminal.attachment == *id
+                }),
+                Some(PaneContent::Explorer(_) | PaneContent::Agents(_)) => true,
+                None => false,
+            });
+            if !available {
+                self.model.message = "El layout de destino no está disponible; paneles conservados".into();
+                return;
+            }
+        } else if self.workspace_panes.tabs.len() >= 128 {
+            self.model.message = "Límite de layouts alcanzado; paneles conservados".into();
+            return;
+        }
+        let namespace = if saved.is_none() {
+            let Some(next) = self.next_tab_namespace.checked_add(1) else {
+                self.model.message = "Identidades de panel agotadas; paneles conservados".into();
+                return;
+            };
+            Some(next)
+        } else { None };
+        let new_panes = if let Some(namespace) = namespace {
+            let panes = if self.model.sidebar {
+                EditorPanes::with_sidebar_in_namespace(
+                    context.attachment, context.project as u64,
+                    self.model.agents_visible.then_some(context.project as u64),
+                    self.model.right, namespace,
+                )
+            } else {
+                Ok(EditorPanes::terminal_in_namespace(context.attachment, namespace))
+            };
+            match panes {
+                Ok(panes) => Some(panes),
+                Err(error) => {
+                    self.model.message = format!("No se pudo crear el layout: {error:?}");
+                    return;
+                }
+            }
+        } else { None };
+        self.sync_editor_pane();
+        self.sync_sidebar_pane();
+        self.ensure_terminal_layout(context.project, context.attachment);
+        if self.editor_panes.is_none() && !self.model.sidebar && self.model.file.is_none() {
+            self.editor_panes = Some(EditorPanes::terminal(context.attachment));
+        }
+        let Some(old_panes) = self.editor_panes.take() else {
+            self.model.message = "Layout anterior no disponible; contenido conservado".into();
+            return;
+        };
+        let old_focus = self.tab_focus_before_action.take()
+            .filter(|(key, _, _, at, activity)| *key == previous && *activity == self.last_activity
+                && at.elapsed() < Duration::from_secs(5))
+            .map_or_else(|| (self.model.surface, self.model.file.as_ref().map(|(path, _)| path.clone())),
+                |(_, surface, path, _, _)| (surface, path));
+        let sidebar_geometry = {
+            let order = old_panes.layout.order();
+            let bounds: Option<Vec<_>> = order.iter().map(|id| {
+                self.pane_outer_bounds.get(id).or_else(|| self.pane_bounds.get(id)).copied()
+            }).collect();
+            bounds.and_then(|bounds| {
+                let left = bounds.iter().map(|rect| f32::from(rect.left())).fold(f32::INFINITY, f32::min);
+                let right = bounds.iter().map(|rect| f32::from(rect.right())).fold(f32::NEG_INFINITY, f32::max);
+                let sidebar_bounds: Vec<_> = order.iter().zip(&bounds).filter_map(|(id, rect)| {
+                    matches!(old_panes.content(*id), Some(PaneContent::Explorer(_) | PaneContent::Agents(_)))
+                        .then_some(rect)
+                }).collect();
+                if sidebar_bounds.is_empty() { return None; }
+                let sidebar_left = sidebar_bounds.iter().map(|rect| f32::from(rect.left())).fold(f32::INFINITY, f32::min);
+                let sidebar_right = sidebar_bounds.iter().map(|rect| f32::from(rect.right())).fold(f32::NEG_INFINITY, f32::max);
+                Some((sidebar_right - sidebar_left, right - left))
+            })
+        };
+        let sidebar_states: Vec<_> = old_panes.layout.order().into_iter().filter_map(|id| {
+            let kind = match old_panes.content(id) {
+                Some(PaneContent::Explorer(_)) => 0,
+                Some(PaneContent::Agents(_)) => 1,
+                _ => return None,
+            };
+            self.pane_lists.get(&(context.project, id)).cloned().map(|state| (kind, state))
+        }).collect();
+        let (mut next_panes, _) = match self.workspace_panes.tabs.remove(&target) {
+            Some(saved) => saved,
+            None => (new_panes.expect("new layout prepared"), false),
+        };
+        if let Some((width, total)) = sidebar_geometry {
+            next_panes.set_sidebar_width(width, total);
+        }
+        for id in next_panes.layout.order() {
+            let kind = match next_panes.content(id) {
+                Some(PaneContent::Explorer(_)) => 0,
+                Some(PaneContent::Agents(_)) => 1,
+                _ => continue,
+            };
+            if let Some((_, state)) = sidebar_states.iter().find(|(saved_kind, _)| *saved_kind == kind) {
+                self.pane_lists.insert((context.project, id), state.clone());
+            }
+        }
+        let old_order = old_panes.layout.order();
+        let keep_closed = old_order.iter().any(|pane| old_panes.path(*pane).is_some_and(|path| {
+            self.editors.get(path).is_some_and(|editor| editor.dirty() || editor.saving)
+                || self.pending_saves.contains_key(path) || self.formatting.contains(path)
+        }));
+        if previous_closed && !keep_closed {
+            self.tab_focus.remove(&previous);
+            for pane in &old_order {
+                self.pane_lists.remove(&(context.project, *pane));
+                if let Some(registry) = self.listed_buffers.get_mut(&context.project) {
+                    registry.close_pane(*pane);
+                }
+            }
+            self.pane_buffer_cursors.retain(|(project, pane, _), _| {
+                *project != context.project || !old_order.contains(pane)
+            });
+            for ((project, _), view) in &mut self.snacks_views {
+                if *project == context.project
+                    && matches!(view, SnacksView::Managed { pane, .. } if old_order.contains(pane))
+                {
+                    *view = SnacksView::Unmanaged;
+                }
+            }
+        } else {
+            self.tab_focus.insert(previous.clone(), old_focus);
+            self.workspace_panes.tabs.insert(previous, (old_panes, self.model.file.is_some()));
+        }
+        if let Some(namespace) = namespace { self.next_tab_namespace = namespace; }
+        let (focus, focused_file) = self.tab_focus.remove(&target).unwrap_or((Surface::Terminal, None));
+        let pane = if focus == Surface::File {
+            focused_file.as_ref().and_then(|path| next_panes.layout.order().into_iter().find(|pane| {
+                next_panes.content(*pane) == Some(&PaneContent::File(path.clone()))
+            })).unwrap_or_else(|| next_panes.layout.active())
+        } else if matches!(focus, Surface::Tree | Surface::Agents | Surface::Backlog) {
+            next_panes.layout.order().into_iter().find(|pane| matches!(
+                (focus, next_panes.content(*pane)),
+                (Surface::Tree, Some(PaneContent::Explorer(_)))
+                    | (Surface::Agents | Surface::Backlog, Some(PaneContent::Agents(_)))
+            )).unwrap_or_else(|| next_panes.layout.active())
+        } else { next_panes.layout.active() };
+        self.editor_panes = Some(next_panes);
+        self.model.file = None;
+        self.visible_tab = Some(target);
+        self.pane_bounds.clear();
+        self.pane_outer_bounds.clear();
+        self.pane_measurements.clear();
+        self.pane_outer_measurements.clear();
+        self.geometry_render = self.geometry_render.wrapping_add(1);
+        self.navigation_generation = self.navigation_generation.wrapping_add(1);
+        self.editor_window_prefix = None;
+        self.activate_editor_pane(pane);
+        if focus == Surface::Terminal
+            && self.editor_panes.as_ref().is_some_and(|panes| matches!(panes.content(pane), Some(PaneContent::Terminal(_))))
+        {
+            self.set_focus(Surface::Terminal);
+        }
+        if follow_queued_tab {
+            let destination = self.terminal_key_destination();
+            if let Some(pending) = &mut self.pending_terminal_key {
+                pending.tab_reconcile = None;
+                pending.destination = destination;
+                if pending.destination.is_none() { pending.gate.invalidate(); }
+                pending.revision = pending.revision.wrapping_add(1);
+            }
+            let _ = self.terminal_wake.try_send(());
+        }
+    }
+
+    fn tab_transition_pending(&self) -> bool {
+        let Some(context) = self.terminal_input_context() else { return false };
+        let Some(visible) = self.visible_tab.as_ref().filter(|tab| tab.context == context) else {
+            return false;
+        };
+        let Some(snapshot) = self.observed_tab_windows.get(&context) else { return false };
+        let mut active = snapshot.windows.iter().filter(|window| window.active);
+        let Some(window) = active.next() else { return true };
+        active.next().is_some() || visible.session != snapshot.identity || visible.window != window.id
     }
     /// Reuse the normal terminal/sidebar layout when a user opens a file
     /// before that layout has been materialized. Never invent a terminal.
@@ -6007,7 +6315,11 @@ impl WorkspaceView {
                                         self.registers.record_terminal_chars(copy.text.clone())
                                     }
                                 });
-                                cx.write_to_clipboard(ClipboardItem::new_string(copy.text));
+                                if self.validation {
+                                    self.fixture_clipboard = Some((copy.text, copy.linewise, None));
+                                } else {
+                                    cx.write_to_clipboard(ClipboardItem::new_string(copy.text));
+                                }
                                 self.model.message = match register {
                                     Some(Ok(())) => "Copiado a los registros y al portapapeles".into(),
                                     Some(Err(_)) => "Copiado al portapapeles; registro no disponible".into(),
@@ -6078,6 +6390,13 @@ impl WorkspaceView {
                     }
                     if release_failed_copy {
                         self.pending_terminal_key = None;
+                    }
+                }
+                TmuxEvent::WindowsObserved(snapshot) => {
+                    if let Some(source) = source {
+                        self.observed_tab_windows.insert(source, snapshot);
+                        // Reconcile confirmed tab changes before accepting input.
+                        self.reconcile_tab_layout();
                     }
                 }
                 TmuxEvent::Windows(ws) => {
@@ -8641,6 +8960,19 @@ impl WorkspaceView {
                     held.extend_from_slice(&bytes);
                     bytes = held;
                 }
+                if self.tab_transition_pending() {
+                    self.reconcile_tab_layout();
+                }
+                if self.tab_transition_pending() && !self.terminal_resume.active() {
+                    if let Some(context) = self.terminal_input_context()
+                        && self.terminal_resume.retain_before_backend(context, bytes, std::time::Instant::now()).is_ok()
+                    {
+                        self.model.message = "Cambio de pestaña pendiente; entrada conservada para revisar".into();
+                    } else {
+                        self.model.message = "Cambio de pestaña pendiente; esta entrada no se envió".into();
+                    }
+                    return;
+                }
                 let stale_resume_zoom = self.terminal_resume.active()
                     && self.terminal_resume_zoom_owner.as_ref().map(|owner| owner.context)
                         .or_else(|| self.terminal_input_context())
@@ -9562,6 +9894,14 @@ impl WorkspaceView {
         self.editor_panes = None;
         self.model.file = None;
         self.workspace_panes.remove(&current);
+        // Closing a workspace has already checked every owned dirty buffer and
+        // parked its terminals. Do not retain tab layouts that would refer to
+        // the editor instances just released above.
+        self.workspace_panes.tabs.retain(|key, _| key.context.project != current);
+        self.tab_focus.retain(|key, _| key.context.project != current);
+        if self.visible_tab.as_ref().is_some_and(|key| key.context.project == current) {
+            self.visible_tab = None;
+        }
         self.workspace_explorers.remove(&current);
         self.workspace_normal_terminals.remove(&current);
         self.pane_lists
@@ -9807,12 +10147,11 @@ impl WorkspaceView {
             if target != path || !saved.editor.matches(editor) {
                 continue;
             }
-            let panes = if *project == self.model.project {
+            let panes = if *project == self.model.project && self.editor_panes.as_ref()
+                .is_some_and(|panes| panes.layout.panes().contains_key(pane)) {
                 self.editor_panes.as_mut()
             } else {
-                self.workspace_panes
-                    .get_mut(project)
-                    .map(|(panes, _)| panes)
+                self.workspace_panes.pane_mut(*project, *pane)
             };
             let Some(panes) = panes else {
                 continue;
@@ -10892,6 +11231,8 @@ impl WorkspaceView {
         self.tmux_copy_token = input_token;
         self.pending_terminal_key = Some(PendingTerminalKey {
             source,
+            transition_tab: None, tab_reconcile: None,
+            transition_activity: None,
             gate: workspace_app::terminal_key_gate::Gate::for_replay(
                 input_token,
                 4096,
@@ -11035,6 +11376,8 @@ impl WorkspaceView {
         self.tmux_copy_token = input_token;
         self.pending_terminal_key = Some(PendingTerminalKey {
             source: source_input,
+            transition_tab: None, tab_reconcile: None,
+            transition_activity: None,
             gate: workspace_app::terminal_key_gate::Gate::for_replay(input_token, 4096, 1024 * 1024)
                 .expect("fixed valid limits"),
             overflow: VecDeque::new(), destination: Some(destination), open_identity: None, open_switch_event: None,
@@ -13074,8 +13417,8 @@ impl WorkspaceView {
                 return;
             }
             let views_here = order.iter().filter(|id| **id != target && panes.path(**id) == Some(path)).count();
-            let views_elsewhere = self.workspace_panes.iter().any(|(project, (other, _))| {
-                *project != self.model.project && other.layout.order().into_iter().any(|id| other.path(id) == Some(path))
+            let views_elsewhere = self.workspace_panes.values().any(|(other, _)| {
+                other.layout.order().into_iter().any(|id| other.path(id) == Some(path))
             });
             let owned_elsewhere = self.buffer_workspaces.get(path).is_some_and(|owners| {
                 owners.iter().any(|project| *project != self.model.project)
@@ -15470,6 +15813,10 @@ impl WorkspaceView {
     /// Report whether the backend accepted the action, not whether tmux has
     /// completed it. Callers must not switch panes after a rejected submission.
     fn submit_tmux_action(&mut self, action: TmuxAction) -> bool {
+        if self.tab_transition_pending() {
+            self.model.message = "Esperá a que termine el cambio de pestaña".into();
+            return false;
+        }
         if matches!(action, TmuxAction::Copy | TmuxAction::CopyNormal) {
             let accepted = self.request_tmux_copy(matches!(action, TmuxAction::CopyNormal), None, None, None, None);
             if !accepted
@@ -15499,6 +15846,11 @@ impl WorkspaceView {
             }
             return false;
         }
+        let tab_focus = matches!(&action, TmuxAction::New | TmuxAction::Select(_)
+            | TmuxAction::SelectIndex(_) | TmuxAction::Cycle(_))
+            .then(|| self.visible_tab.clone().map(|tab| (tab, self.model.surface,
+                self.model.file.as_ref().map(|(path, _)| path.clone()), std::time::Instant::now(), self.last_activity)))
+            .flatten();
         self.invalidate_terminal_jumps();
         let changed = action.changes_input_target();
         let resume =
@@ -15566,6 +15918,7 @@ impl WorkspaceView {
             self.model.message = e;
             return false;
         }
+        if let Some(focus) = tab_focus { self.tab_focus_before_action = Some(focus); }
         // File-read replies are applied by this UI thread after this handler
         // returns. Invalidate them after queue acceptance but before they can
         // be applied; a rejected tmux action must not cancel a valid open.
@@ -15592,6 +15945,62 @@ impl WorkspaceView {
         }
         if resume {
             self.begin_terminal_resume();
+        }
+        true
+    }
+    /// A tab or split clicked with the mouse needs the same ordered target
+    /// acknowledgement as its keyboard equivalent. The placeholder remains
+    /// in flight and is acknowledged by the backend; it is never dispatched.
+    fn submit_ordered_ui_target(&mut self, action: TmuxAction) -> bool {
+        if !matches!(self.model.surface, Surface::Terminal | Surface::Normal) { return false; }
+        if self.pending_terminal_key.is_some() || self.pending_open_input.is_some()
+            || self.terminal_resume.recovery_blocked()
+        {
+            self.model.message = "Esperá a que termine la operación de terminal".into();
+            return true;
+        }
+        if self.model.surface == Surface::Normal { self.set_focus(Surface::Terminal); }
+        let Some(marker) = Keystroke::parse("escape").ok() else { return true; };
+        if !self.begin_terminal_event_replay_on(workspace_app::open_input::Event::Key(marker), Surface::Terminal) {
+            self.model.message = "Terminal todavía no disponible; reintentá".into();
+            return true;
+        }
+        let Some(event) = self.pending_terminal_key.as_mut()
+            .and_then(|pending| pending.gate.begin_event(true).map(|(id, _)| id))
+        else {
+            self.pending_terminal_key = None;
+            self.model.message = "No se pudo iniciar el cambio; reintentá".into();
+            return true;
+        };
+        if let Some(pending) = &mut self.pending_terminal_key {
+            pending.replaying = true;
+            pending.replay_event = Some(event);
+        }
+        let accepted = self.submit_tmux_action(action);
+        if accepted { self.set_focus(Surface::Terminal); }
+        if !accepted {
+            // The UI handler is synchronous: no later input can have entered
+            // this newly created ledger before the backend rejects the send.
+            self.pending_terminal_key = None;
+            return true;
+        }
+        let new = self.terminal_key_destination();
+        if let Some(pending) = &mut self.pending_terminal_key {
+            let same_owner = pending.destination.as_ref().zip(new.as_ref()).is_some_and(|(old, new)| {
+                old.project == new.project && old.pane == new.pane && old.surface == new.surface
+                    && old.content == new.content && old.focus_revision == new.focus_revision
+                    && old.terminal_instance.as_ref().zip(new.terminal_instance.as_ref())
+                        .is_some_and(|(a, b)| Arc::ptr_eq(a, b))
+            });
+            pending.replaying = false;
+            pending.replay_event = None;
+            if same_owner {
+                if let Some(old) = &mut pending.destination { old.generation = self.file_generation; }
+            } else {
+                pending.mixed_context = true;
+                pending.gate.uncertain(event);
+                self.model.message = "Cambió el panel; entrada conservada".into();
+            }
         }
         true
     }
@@ -15681,6 +16090,8 @@ impl WorkspaceView {
         self.tmux_copy_token = token;
         self.pending_terminal_key = Some(PendingTerminalKey {
             source,
+            transition_tab: None, tab_reconcile: None,
+            transition_activity: None,
             gate: workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
                 .expect("fixed valid limits"),
             overflow: VecDeque::new(),
@@ -16058,9 +16469,59 @@ impl WorkspaceView {
                 )
             })
     }
+    fn rebind_undispatched_tab_key(&mut self) -> bool {
+        let rebound = self.pending_terminal_key.as_ref().and_then(|pending| {
+            let before = pending.transition_tab.as_ref()?;
+            let after = self.visible_tab.as_ref()?;
+            let old = pending.destination.as_ref()?;
+            let new = self.terminal_key_destination()?;
+            let (window, _) = old.tmux_target.as_ref()?;
+            let same_instance = old.terminal_instance.as_ref().zip(new.terminal_instance.as_ref())
+                .is_some_and(|(a, b)| Arc::ptr_eq(a, b));
+            (pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
+                && !pending.replaying && !pending.scheduled
+                && before != after && before.context == after.context
+                && before.session == after.session && after.window == *window
+                && old.project == new.project && old.surface == Surface::Terminal
+                && new.surface == Surface::Terminal && old.content == new.content
+                && old.tmux_target == new.tmux_target && same_instance
+                && old.zoom.is_none() && new.zoom.is_none()
+                && old.command.is_none() && new.command.is_none()
+                && !old.window_prefix && !new.window_prefix
+                && !old.file_prompt && !new.file_prompt
+                && !old.remote_prompt && !new.remote_prompt
+                && !old.help && !new.help && !old.notifications && !new.notifications
+                && !old.media && !new.media && !pending.mixed_context
+                && pending.transition_activity == Some(self.last_activity)
+                && pending.gate.in_flight_id().is_none() && pending.marked_selection.is_none()
+                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
+                && pending.write.is_none() && pending.target_action.is_none()
+                && pending.selection_action.is_none() && pending.split.is_none()
+                && pending.capture_wait.is_none() && self.terminal_key_tmux_target_current(&new))
+                .then_some(new)
+        });
+        let Some(rebound) = rebound else { return false };
+        let Some(pending) = &mut self.pending_terminal_key else { return false };
+        pending.destination = Some(rebound);
+        pending.transition_tab = None;
+        pending.transition_activity = None;
+        pending.revision = pending.revision.wrapping_add(1);
+        let _ = self.terminal_wake.try_send(());
+        true
+    }
     fn enqueue_terminal_key(&mut self, event: workspace_app::open_input::Event<Keystroke>) -> bool {
+        self.rebind_undispatched_tab_key();
+        let target_in_flight = self.pending_terminal_key.as_ref().is_some_and(|pending| {
+            pending.target_action.as_ref().is_some_and(|action| !action.timed_out)
+                && pending.destination.as_ref().is_some_and(|destination| {
+                    self.terminal_key_pane_current(destination)
+                        && self.model.surface == destination.surface
+                        && self.model.focus_revision == destination.focus_revision
+                        && self.file_generation == destination.generation
+                })
+        });
         let stale = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            !pending.replaying
+            !target_in_flight && !pending.replaying
                 && match &pending.destination {
                     Some(destination) => !self.terminal_key_destination_current(destination),
                     None => !self.terminal_key_source_current(&pending.source),
@@ -16125,8 +16586,12 @@ impl WorkspaceView {
             return false;
         }
         self.tmux_copy_token = token;
+        let transition_tab = self.visible_tab.clone();
         self.pending_terminal_key = Some(PendingTerminalKey {
             source,
+            transition_tab,
+            tab_reconcile: None,
+            transition_activity: Some(self.last_activity),
             gate,
             overflow: VecDeque::new(),
             destination: Some(destination),
@@ -16178,6 +16643,8 @@ impl WorkspaceView {
         self.tmux_copy_token = token;
         self.pending_terminal_key = Some(PendingTerminalKey {
             source,
+            transition_tab: None, tab_reconcile: None,
+            transition_activity: None,
             gate: workspace_app::terminal_key_gate::Gate::new(token, 4096, 1024 * 1024)
                 .expect("fixed valid limits"),
             overflow: VecDeque::new(),
@@ -16344,6 +16811,22 @@ impl WorkspaceView {
         if let Ok(windows) = result
             && pane_current
         {
+            // The worker verified the action against the original tmux pane.
+            // If it selected another window, finish restoring that window's
+            // native layout before releasing the next queued input event.
+            let tab_reconcile = self.pending_terminal_key.as_ref()
+                .and_then(|pending| pending.destination.as_ref())
+                .and_then(|destination| destination.tmux_target.as_ref())
+                .and_then(|(old_window, _)| {
+                    let mut active = windows.iter().filter(|window| window.active);
+                    let window = active.next()?;
+                    if active.next().is_some() || &window.id == old_window { return None; }
+                    let snapshot = self.observed_tab_windows.get(&source)?;
+                    let visible = self.visible_tab.as_ref()?;
+                    (visible.context == source && visible.session == snapshot.identity).then(|| TabLayoutKey {
+                        context: source, session: snapshot.identity.clone(), window: window.id.clone(),
+                    })
+                });
             if self
                 .additional_backends
                 .contains_key(&(source.project, source.attachment))
@@ -16360,6 +16843,7 @@ impl WorkspaceView {
                     && pending.gate.acknowledge(event.event)
                 {
                     pending.destination = destination;
+                    pending.tab_reconcile = tab_reconcile;
                     pending.revision = pending.revision.wrapping_add(1);
                 } else {
                     pending.gate.uncertain(event.event);
@@ -16748,6 +17232,26 @@ impl WorkspaceView {
             self.model.message = "Cambio de terminal sin respuesta; entrada conservada".into();
             cx.notify();
         }
+        let expired_copy_alone = self.pending_terminal_key.as_ref().and_then(|pending| {
+            let copy = pending.selection_action.as_ref()?;
+            (!copy.timed_out && std::time::Instant::now() >= copy.deadline
+                && pending.gate.events().count() == 1
+                && pending.gate.in_flight_id() == Some(copy.event)
+                && pending.overflow.is_empty() && pending.marked_selection.is_none()
+                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
+                && pending.write.is_none() && pending.target_action.is_none()
+                && pending.split.is_none() && pending.capture_wait.is_none())
+                .then_some(copy.token)
+        });
+        if let Some(token) = expired_copy_alone {
+            self.pending_terminal_key = None;
+            if self.pending_tmux_copy.as_ref().is_some_and(|copy| copy.token == token) {
+                self.pending_tmux_copy = None;
+            }
+            self.pending_yank_first.take_if(|(id, _)| *id == token);
+            self.model.message = "Copia sin respuesta; intentá copiar de nuevo".into();
+            cx.notify();
+        }
         if let Some(pending) = &mut self.pending_terminal_key
             && let Some(copy) = &mut pending.selection_action
             && !copy.timed_out
@@ -16815,6 +17319,10 @@ impl WorkspaceView {
         if pending.scheduled || pending.replaying || pending.gate.state() != State::Replaying {
             return;
         }
+        if pending.tab_reconcile.is_some() {
+            self.reconcile_tab_layout();
+            return;
+        }
         // The existing resume fence owns PTY input until tmux confirms that
         // copy mode ended. Do not bypass it with replayed text or paste.
         if self.model.surface == Surface::Terminal && self.terminal_resume.active() {
@@ -16865,6 +17373,7 @@ impl WorkspaceView {
             .as_ref()
             .is_some_and(|destination| self.terminal_key_destination_current(destination));
         if !current {
+            if self.rebind_undispatched_tab_key() { return; }
             if let Some(pending) = &mut self.pending_terminal_key {
                 pending.gate.invalidate();
             }
@@ -17174,6 +17683,26 @@ impl WorkspaceView {
                         && !pending.replay_error
                         && pending.target_action.is_some()
                     {
+                        // Focusing an already selected terminal invalidates
+                        // file reads and advances the generation. This is a
+                        // synchronous effect of this event, not a new owner.
+                        let same_owner = pending.destination.as_ref().zip(destination.as_ref())
+                            .is_some_and(|(old, new)| {
+                                old.project == new.project && old.pane == new.pane
+                                    && old.surface == new.surface && old.content == new.content
+                                    && old.focus_revision == new.focus_revision
+                                    && old.terminal_instance.as_ref().zip(new.terminal_instance.as_ref())
+                                        .is_some_and(|(a, b)| Arc::ptr_eq(a, b))
+                            });
+                        if same_owner {
+                            if let Some(old) = &mut pending.destination {
+                                old.generation = view.file_generation;
+                            }
+                        } else {
+                            pending.mixed_context = true;
+                            pending.gate.uncertain(id);
+                            view.model.message = "Cambió el panel; entrada conservada".into();
+                        }
                         // The worker must observe the new tmux target before
                         // this event and the following input are released.
                     } else if result.is_ok()
@@ -19158,9 +19687,8 @@ impl WorkspaceView {
                         .filter(|id| *id != active && panes.path(*id) == Some(&path))
                         .count();
                     let views_elsewhere =
-                        self.workspace_panes.iter().any(|(project, (other, _))| {
-                            *project != self.model.project
-                                && other
+                        self.workspace_panes.values().any(|(other, _)| {
+                            other
                                     .layout
                                     .order()
                                     .into_iter()
@@ -19197,6 +19725,10 @@ impl WorkspaceView {
                 }
                 if self.formatting.contains(&path) {
                     self.model.message = "Esperá a que termine el formateo de este buffer".into();
+                    return;
+                }
+                if self.workspace_panes.hidden_tab_shows(self.model.project, &path) {
+                    self.model.message = "El buffer está abierto en otra pestaña; se conservó".into();
                     return;
                 }
                 if !force && self.editors.get(&path).is_some_and(|e| e.dirty()) {
@@ -19825,7 +20357,7 @@ impl WorkspaceView {
         let gate = workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
             .expect("checked nonzero token and limits");
         self.pending_terminal_key = Some(PendingTerminalKey {
-            source: terminal.source, gate, overflow: VecDeque::new(),
+            source: terminal.source, transition_tab: None, tab_reconcile: None, transition_activity: None, gate, overflow: VecDeque::new(),
             destination: Some(terminal.destination), open_identity: None, open_switch_event: None,
             forward: false, count: 0, replaying: false, scheduled: false, replay_error: false, paste_held: None,
             replay_event: None, write: None, target_action: None, selection_action: None,
@@ -23395,6 +23927,8 @@ impl WorkspaceView {
         self.tmux_copy_token = token;
         self.pending_terminal_key = Some(PendingTerminalKey {
             source,
+            transition_tab: None, tab_reconcile: None,
+            transition_activity: None,
             gate: workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
                 .expect("fixed valid limits"),
             overflow: VecDeque::new(), destination: Some(destination), open_identity: Some(identity),
@@ -26947,7 +27481,11 @@ impl WorkspaceView {
             return;
         }
         self.sync_editor_pane();
-        if self.workspace_panes.contains_key(&self.model.project) {
+        if self.workspace_panes.workspaces.contains_key(&self.model.project)
+            || self.workspace_panes.tabs.values().any(|(panes, _)| {
+                panes.layout.order().into_iter().any(|pane| panes.path(pane) == Some(&path))
+            })
+        {
             self.model.message = "El workspace tiene vistas duplicadas; buffer conservado".into();
             return;
         }
@@ -27970,6 +28508,15 @@ impl WorkspaceView {
             }
             return;
         };
+        // A buffer-delete plan keyed only by workspace cannot safely retarget
+        // multiple hidden layouts in that same workspace. Keep all views until
+        // that operation can address each exact tab.
+        if self.workspace_panes.tabs.values().any(|(panes, _)| {
+            panes.layout.order().into_iter().any(|pane| panes.path(pane) == Some(&old))
+        }) {
+            self.model.message = "El buffer está abierto en otra pestaña; se conservó".into();
+            return;
+        }
         if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached()) {
             self.delete_detached_current_buffer(old, discard);
             return;
@@ -27998,7 +28545,7 @@ impl WorkspaceView {
         };
         let mut other_plans = HashMap::new();
         let mut shared = false;
-        for (project, (panes, _)) in &self.workspace_panes {
+        for (project, (panes, _)) in self.workspace_panes.iter() {
             if panes
                 .layout
                 .order()
@@ -31234,8 +31781,10 @@ impl WorkspaceView {
             }
             Ui::Save => self.editor_effect(EditEffect::Save),
             Ui::Tmux(a, _) => {
-                self.tmux_action(a);
-                self.set_focus(Surface::Terminal);
+                if !a.changes_input_target() || !self.submit_ordered_ui_target(a.clone()) {
+                    self.tmux_action(a);
+                    self.set_focus(Surface::Terminal);
+                }
             }
             Ui::Action(a) => {
                 if a == "pr.review_video" {
@@ -31491,6 +32040,36 @@ impl WorkspaceView {
             cx.stop_propagation();
             cx.notify();
             return;
+        }
+        // A target-changing shortcut must enter the ordered ledger before
+        // tmux receives it, so following keys cannot capture the old pane.
+        let key = &event.keystroke;
+        let direct_target = key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
+            && ((key.key == "d") || (!key.modifiers.shift && (key.key == "t"
+                || matches!(key.key.as_str(), "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"))))
+            || matches!(workspace_app::terminal_shortcuts::resolve(
+                &key.key, key.modifiers.platform, key.modifiers.control, key.modifiers.alt, key.modifiers.shift),
+                Some(workspace_app::terminal_shortcuts::Shortcut::Cycle(_) | workspace_app::terminal_shortcuts::Shortcut::Direction(_)));
+        let direct_copy = self.model.surface == Surface::Terminal
+            && matches!(workspace_app::terminal_shortcuts::resolve(
+                &key.key, key.modifiers.platform, key.modifiers.control, key.modifiers.alt, key.modifiers.shift),
+                Some(workspace_app::terminal_shortcuts::Shortcut::Copy));
+        if (direct_target && matches!(self.model.surface, Surface::Terminal | Surface::Normal) || direct_copy)
+            && self.pending_terminal_key.is_none() && self.pending_open_input.is_none()
+            && !self.terminal_resume.recovery_blocked()
+        {
+            // These shortcuts end in terminal input mode. Enter it before
+            // capturing the source so the split cannot outrun its ledger.
+            if self.model.surface == Surface::Normal { self.set_focus(Surface::Terminal); }
+            self.note_activity();
+            if self.begin_terminal_event_replay_on(
+                workspace_app::open_input::Event::Key(event.keystroke.clone()), Surface::Terminal)
+            {
+                window.prevent_default();
+                cx.stop_propagation();
+                cx.notify();
+                return;
+            }
         }
         self.finish_pending_new_file_before_input();
         self.note_activity();
@@ -33292,7 +33871,8 @@ impl WorkspaceView {
                 },
                 NativeSelectionReply::Copy(serial, reply) => match reply.try_recv() {
                     Ok(Ok(text)) if selection.serial == serial => {
-                        cx.write_to_clipboard(ClipboardItem::new_string(text));
+                        if self.validation { self.fixture_clipboard = Some((text, false, None)); }
+                        else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
                         self.model.message = "Selección copiada explícitamente".into();
                         changed = true;
                     }
@@ -33406,7 +33986,9 @@ impl WorkspaceView {
                 );
             }
         }
-        cx.write_to_clipboard(ClipboardItem::new_string(lines.join("\n")));
+        let text = lines.join("\n");
+        if self.validation { self.fixture_clipboard = Some((text, false, None)); }
+        else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
         self.model.message = "Selección copiada explícitamente".into();
     }
     fn mouse_cell(&self, position: Point<Pixels>) -> Option<(u16, u16)> {
@@ -36914,6 +37496,7 @@ impl Render for WorkspaceView {
         let render_started = std::time::Instant::now();
         // GPUI refreshes the window on activation changes, so this tracks it.
         self.window_active = window.is_window_active();
+        self.reconcile_tab_layout();
         if self.pending_forget.is_some()
             && !(self.model.surface == Surface::Picker
                 && self.model.picker.as_ref().is_some_and(|p| p.kind == PickerKind::Projects))
