@@ -1506,14 +1506,25 @@ impl Workspace {
                     return Effect::None;
                 }
                 if let AgentRow::Task(id) = self.selected.clone() {
+                    let before = self.rows(Location::Main);
+                    let selected_index = before.iter().position(|(row, _)| row == &self.selected);
                     match self.overview.dismiss(&id, self.now()) {
                         Ok(_) => {
                             self.message = "Chat oculto de la lista · X para restaurar".into();
-                            self.selected = self
-                                .rows(Location::Main)
-                                .first()
-                                .map(|r| r.0.clone())
+                            let after = self.rows(Location::Main);
+                            // Keep the next surviving row under the cursor. If
+                            // the hidden chat was last, use the nearest prior
+                            // row; groups may disappear along with a task.
+                            let nearby = selected_index.and_then(|index| {
+                                before.iter().skip(index + 1)
+                                    .chain(before[..index].iter().rev())
+                                    .find(|(row, _)| after.iter().any(|(visible, _)| visible == row))
+                                    .map(|(row, _)| row.clone())
+                            });
+                            self.selected = nearby.or_else(|| after.first().map(|(row, _)| row.clone()))
                                 .unwrap_or(AgentRow::Group("demo-project".into()));
+                            self.main_selection = self.selected.clone();
+                            self.agent_scroll_requested = true;
                         }
                         Err(e) => self.message = e,
                     }
