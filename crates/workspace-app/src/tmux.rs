@@ -2510,12 +2510,12 @@ unbind-key -a -T movepane
             // either edge. Restore toward its original display column without
             // changing an existing tmux mark. Wide characters can move more
             // than one cell per step; check the live column before each step.
-            // Limit command size; extremely wide panes retain tmux's previous
-            // behavior rather than enqueueing an unbounded command list.
-            const MAX_RESTORE_STEPS: u64 = 256;
+            // Keep each tmux command short even in a wide pane. The live
+            // column guard in each step avoids moving past a wide character.
+            const STEPS_PER_COMMAND: u64 = 4;
             let desired = before.cursor_x;
-            let steps = post.cursor_x.abs_diff(desired);
-            if steps > 0 && steps <= MAX_RESTORE_STEPS {
+            while post.cursor_x != desired {
+                let steps = post.cursor_x.abs_diff(desired).min(STEPS_PER_COMMAND);
                 let fixed_x = format!("#{{==:#{{copy_cursor_x}},{}}}", post.cursor_x);
                 // Plain comparison modifiers compare strings, not coordinates.
                 let (comparison, movement) = if post.cursor_x > desired {
@@ -2566,7 +2566,8 @@ unbind-key -a -T movepane
                     || restored.present != post.present
                     || restored.rectangle != post.rectangle
                     || restored.endpoints != post.endpoints
-                    || (movement == "cursor-left" && restored.cursor_x > desired)
+                    || (movement == "cursor-left"
+                        && (restored.cursor_x > post.cursor_x || restored.cursor_x < desired))
                     // tmux cannot advance past the last selectable cell on a
                     // short line, even when the original cursor was beyond it.
                     || (movement == "cursor-right"
@@ -2579,7 +2580,10 @@ unbind-key -a -T movepane
                         restored.cursor_x, desired
                     ));
                 }
+                let stuck = restored.cursor_x == post.cursor_x;
                 post = restored;
+                // On a short line tmux cannot move past its last cell.
+                if stuck { break; }
             }
             let ends = post.endpoints.ok_or("Selección sin extremos")?;
             let grid_history = self.copy_grid_history(&post)?;

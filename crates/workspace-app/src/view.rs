@@ -16489,6 +16489,29 @@ impl WorkspaceView {
         let _ = self.terminal_wake.try_send(());
         true
     }
+    /// An acknowledged, empty replay no longer owns keyboard input. Release
+    /// it before checking focus: focus may legitimately change between the
+    /// last acknowledgement and the next scheduler tick.
+    fn release_idle_terminal_key(&mut self) -> bool {
+        let idle = self.pending_terminal_key.as_ref().is_some_and(|pending| {
+            pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
+                && pending.gate.is_empty()
+                && pending.gate.in_flight_id().is_none()
+                && pending.overflow.is_empty()
+                && !pending.replaying && !pending.scheduled
+                && pending.replay_event.is_none()
+                && pending.write.is_none() && pending.target_action.is_none()
+                && pending.selection_action.is_none() && pending.split.is_none()
+                && pending.capture_wait.is_none() && pending.marked_selection.is_none()
+                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
+                && pending.tab_reconcile.is_none()
+                && self.pending_open_input.is_none()
+        });
+        if idle {
+            self.pending_terminal_key = None;
+        }
+        idle
+    }
     fn enqueue_terminal_key(&mut self, event: workspace_app::open_input::Event<Keystroke>) -> bool {
         self.rebind_undispatched_tab_key();
         let target_in_flight = self.pending_terminal_key.as_ref().is_some_and(|pending| {
@@ -17333,6 +17356,10 @@ impl WorkspaceView {
             }
             return;
         }
+        if self.release_idle_terminal_key() {
+            return;
+        }
+        let pending = self.pending_terminal_key.as_ref().expect("idle queue already released");
         let current = pending
             .destination
             .as_ref()
@@ -31873,6 +31900,7 @@ impl WorkspaceView {
         cx.notify();
     }
     fn on_key(&mut self, event: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        self.release_idle_terminal_key();
         if self.pending_open_input.is_none() {
             self.pending_direction_replay = None;
         }
