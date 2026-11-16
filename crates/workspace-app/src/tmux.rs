@@ -516,7 +516,9 @@ fn output_bytes(cmd: Command) -> Result<Vec<u8>, String> {
     output_bytes_with_timeout(cmd, Duration::from_secs(3))
 }
 fn output_bytes_with_timeout(mut cmd: Command, timeout: Duration) -> Result<Vec<u8>, String> {
-    const LIMIT: usize = 262144;
+    output_bytes_with_limit(&mut cmd, timeout, 262144)
+}
+fn output_bytes_with_limit(cmd: &mut Command, timeout: Duration, limit: usize) -> Result<Vec<u8>, String> {
     fn nonblocking(fd: &impl AsRawFd) -> Result<(), String> {
         // Only the owned read end of each pipe is modified; the tmux server
         // and the child command's write ends are not reconfigured.
@@ -526,14 +528,14 @@ fn output_bytes_with_timeout(mut cmd: Command, timeout: Duration) -> Result<Vec<
         }
         Ok(())
     }
-    fn drain(reader: &mut impl Read, output: &mut Vec<u8>, start: Instant, timeout: Duration) -> Result<bool, String> {
+    fn drain(reader: &mut impl Read, output: &mut Vec<u8>, start: Instant, timeout: Duration, limit: usize) -> Result<bool, String> {
         let mut chunk = [0_u8; 8192];
         loop {
             if start.elapsed() >= timeout { return Err("tmux command timed out".into()); }
             match reader.read(&mut chunk) {
                 Ok(0) => return Ok(true),
                 Ok(n) => {
-                    if output.len().saturating_add(n) > LIMIT {
+                    if output.len().saturating_add(n) > limit {
                         return Err("tmux response exceeds limit".into());
                     }
                     output.extend_from_slice(&chunk[..n]);
@@ -568,13 +570,13 @@ fn output_bytes_with_timeout(mut cmd: Command, timeout: Duration) -> Result<Vec<
     let start = Instant::now();
     loop {
         if !out_closed {
-            match drain(&mut stdout, &mut out, start, timeout) {
+            match drain(&mut stdout, &mut out, start, timeout, limit) {
                 Ok(closed) => out_closed = closed,
                 Err(error) => { stop_child(&mut child); return Err(error); }
             }
         }
         if !err_closed {
-            match drain(&mut stderr, &mut err, start, timeout) {
+            match drain(&mut stderr, &mut err, start, timeout, 262144) {
                 Ok(closed) => err_closed = closed,
                 Err(error) => { stop_child(&mut child); return Err(error); }
             }
@@ -1671,15 +1673,7 @@ impl Session {
         Ok(target)
     }
     fn resume_input(&self, target: &ResumeTarget, bytes: &[u8]) -> Result<(), String> {
-        if bytes.is_empty()
-            || bytes.len() > 4096
-            || bytes
-                .iter()
-                .any(|b| *b < 32 && !matches!(*b, 8 | 9 | 10 | 13))
-            || bytes.contains(&127)
-        {
-            return Err("Entrada de transición fuera de límites".into());
-        }
+        if bytes.is_empty() { return Ok(()); }
         if self.resume_target()? != *target
             || self
                 .run(&[
@@ -1694,13 +1688,16 @@ impl Session {
         {
             return Err("Pane o ventana cambió; entrada pendiente cancelada".into());
         }
-        // One argv command, bounded to 4 KiB. Hex arguments cannot become tmux
-        // options or commands. Explicit pane ID prevents retargeting even if an
-        // external client changes the active pane after the check above.
-        let mut c = self.command();
-        c.args(["send-keys", "-t", &target.pane, "-H"]);
-        c.args(bytes.iter().map(|b| format!("{b:02x}")));
-        output(c).map(|_| ())
+        // Bound each argv while allowing an arbitrarily sized ordered batch.
+        // A failure after a chunk is an uncertain partial write and must not
+        // cause the caller to replay the batch automatically.
+        for chunk in bytes.chunks(4096) {
+            let mut c = self.command();
+            c.args(["send-keys", "-t", &target.pane, "-H"]);
+            c.args(chunk.iter().map(|b| format!("{b:02x}")));
+            output(c)?;
+        }
+        Ok(())
     }
     fn command(&self) -> Command {
         let mut c = Command::new(&self.binary);
@@ -2785,11 +2782,10 @@ unbind-key -a -T movepane
     }
 
     fn physical_copy_rows(&self, state: &CopySelectionSnapshot, grid_history: u64, low: u64, high: u64) -> Result<String, String> {
-        const MAX_ROWS: usize = 1024;
         let unavailable = || "No se pudo confirmar la selección de filas; selección conservada".to_owned();
         let count = high.checked_sub(low).and_then(|n| n.checked_add(1)).ok_or_else(unavailable)?;
         let total = grid_history.checked_add(state.height).ok_or_else(unavailable)?;
-        if count > MAX_ROWS as u64 || high >= total {
+        if high >= total {
             return Err(unavailable());
         }
         // tmux addresses copy-mode rows relative to the start of its visible
@@ -2799,12 +2795,12 @@ unbind-key -a -T movepane
             .checked_sub(history).ok_or_else(unavailable)?.to_string();
         let end = i64::try_from(high).map_err(|_| unavailable())?
             .checked_sub(history).ok_or_else(unavailable)?.to_string();
-        let deadline = Instant::now() + Duration::from_millis(750);
+        let deadline = Instant::now() + Duration::from_secs(15);
         let capture = || {
             let mut command = self.command();
             command.args(["capture-pane", "-p", "-M", "-T", "-N", "-S", &start, "-E", &end, "-t", &state.target.pane]);
             let remaining = deadline.checked_duration_since(Instant::now()).ok_or_else(unavailable)?;
-            output_bytes_with_timeout(command, remaining).map_err(|_| unavailable())
+            output_bytes_with_limit(&mut command, remaining, usize::MAX).map_err(|_| unavailable())
         };
         let first = capture()?;
         let second = capture()?;
@@ -3163,7 +3159,10 @@ unbind-key -a -T movepane
         if keep_mode {
             self.run(&["send-keys", "-t", &target, "-X", "clear-selection"])?;
         }
-        self.run(&["show-buffer"])
+        let mut command = self.command();
+        command.arg("show-buffer");
+        let bytes = output_bytes_with_limit(&mut command, Duration::from_secs(15), usize::MAX)?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
     }
     /// Copy from an explicitly identified pane into an automatically named
     /// buffer with a fresh random prefix. Never read tmux's global top buffer.
@@ -3287,7 +3286,7 @@ unbind-key -a -T movepane
         command.args(["show-buffer", "-b", name]);
         // Decode strictly, preserving a literal U+FFFD while refusing malformed
         // UTF-8 instead of silently changing the selection on the clipboard.
-        let text = String::from_utf8(output_bytes(command)?)
+        let text = String::from_utf8(output_bytes_with_limit(&mut command, Duration::from_secs(15), usize::MAX)?)
             .map_err(|_| "La selección no pudo decodificarse sin pérdida".to_owned())?;
         let after = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
         if self.resume_target()? != expected
