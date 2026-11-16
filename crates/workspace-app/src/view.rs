@@ -31263,10 +31263,6 @@ impl WorkspaceView {
         waiting: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
         text: &str,
     ) -> bool {
-        if !waiting.is_empty() && text.len() > TERMINAL_PASTE_LIMIT {
-            self.model.message = "Pegado limitado a 2 MiB; no se envió nada".into();
-            return true;
-        }
         let mut canceled = false;
         for (context, destination) in waiting {
             if self.terminal_input_context() != Some(context)
@@ -31292,11 +31288,7 @@ impl WorkspaceView {
             if let (Some(context), Some(destination)) =
                 (self.terminal_input_context(), self.terminal_key_destination())
             {
-                if self.paste_after_copy.len() < 128 {
-                    self.paste_after_copy.push((owner, context, destination));
-                } else {
-                    self.model.message = "Demasiados pegados pendientes; reintentá".into();
-                }
+                self.paste_after_copy.push((owner, context, destination));
             } else {
                 self.model.message = "Destino de pegado no disponible".into();
             }
@@ -31359,8 +31351,8 @@ impl WorkspaceView {
     }
     /// Clipboard text for a direct paste (Cmd+V, Shift+Insert, queued and
     /// replayed pastes, prompts, picker): the synthetic fixture clipboard in
-    /// the validation app, never the real one; at most 2 MiB. On refusal the
-    /// reason goes to the status line and nothing is pasted.
+    /// the validation app, never the real one. Non-terminal inputs retain
+    /// their existing size limit.
     fn paste_text(&mut self, cx: &App) -> Option<String> {
         let text = if self.validation {
             match &self.fixture_clipboard {
@@ -31374,7 +31366,7 @@ impl WorkspaceView {
         } else {
             cx.read_from_clipboard().and_then(|item| item.text())?
         };
-        if text.len() > 2 * 1024 * 1024 {
+        if self.model.surface != Surface::Terminal && text.len() > 2 * 1024 * 1024 {
             self.model.message = "Clipboard fuera de límites (2 MiB); no se pegó nada".into();
             return None;
         }
@@ -38997,20 +38989,12 @@ fn has_unescaped_file_expansion(name: &str) -> bool {
     false
 }
 
-/// Drop C0/C1 controls except tab, LF and CR before terminal paste.
-/// This prevents clipboard bytes from closing the bracketed-paste envelope.
-const TERMINAL_PASTE_LIMIT: usize = 2 * 1024 * 1024;
+/// Preserve clipboard text, including control characters, in terminal paste.
 fn terminal_paste_bytes(text: &str, bracketed: bool) -> Result<Vec<u8>, String> {
-    if text.len() > TERMINAL_PASTE_LIMIT {
-        return Err("Pegado limitado a 2 MiB; no se envió nada".into());
-    }
-    let clean: String = text.chars()
-        .filter(|c| !c.is_control() || matches!(c, '\t' | '\n' | '\r'))
-        .collect();
     Ok(if bracketed {
-        format!("\x1b[200~{clean}\x1b[201~").into_bytes()
+        format!("\x1b[200~{text}\x1b[201~").into_bytes()
     } else {
-        clean.into_bytes()
+        text.as_bytes().to_vec()
     })
 }
 

@@ -611,9 +611,7 @@ impl Fence {
         pending.in_flight = Some(bytes.clone());
         Some((pending.context, pending.token, bytes))
     }
-    /// During the short handshake, accept ordinary text and line editing only.
-    /// Prefix/escape/mouse sequences must not be reinterpreted as direct pane input.
-    /// Reject the whole event on overflow or unsupported control bytes.
+    /// During the handshake, retain input in order until the target is ready.
     pub fn push(&mut self, context: Context, bytes: &[u8]) -> Result<bool, String> {
         let Some(p) = self.pending.as_mut() else {
             return Ok(false);
@@ -624,16 +622,6 @@ impl Fence {
         }
         if p.halted_after_backend_failure || p.timed_out || p.rejected_waiting_ack {
             return Err("Entrada original conservada; este evento no se envió".into());
-        }
-        if bytes
-            .iter()
-            .any(|b| *b < 32 && !matches!(*b, 8 | 9 | 10 | 13))
-            || bytes.contains(&127)
-        {
-            return Err("Esperá el regreso a input antes de enviar controles, prefijos o pegar con bracketed paste".into());
-        }
-        if p.bytes.len().saturating_add(bytes.len()) > LIMIT {
-            return Err("Cola de regreso a input llena, 4 KiB; este evento no se envió".into());
         }
         p.bytes.extend_from_slice(bytes);
         Ok(true)
