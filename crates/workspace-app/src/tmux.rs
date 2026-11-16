@@ -44,6 +44,22 @@ pub struct WindowInfo {
     pub name: String,
     pub active: bool,
 }
+/// A tmux window ID is only unique for the lifetime of its server. Keep the
+/// socket and session identity with it when retaining UI state across tabs.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct WindowSessionIdentity {
+    pub session_id: String,
+    pub server_pid: u32,
+    pub socket_device: u64,
+    pub socket_inode: u64,
+}
+
+/// One coherent observation; it is not a lock on the tmux server.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct WindowSnapshot {
+    pub identity: WindowSessionIdentity,
+    pub windows: Vec<WindowInfo>,
+}
 /// Only treat an unambiguous change of active window or pane as a target change.
 /// Polling is observational and cannot guarantee that no change occurred
 /// between the sample and an asynchronous file read.
@@ -148,6 +164,8 @@ pub enum Event {
     CopyTracked(u64, Result<Option<TrackedCopy>, String>),
     SearchPrompt,
     Windows(Vec<WindowInfo>),
+    /// Same window observation with the lifetime of its server and session.
+    WindowsObserved(WindowSnapshot),
     WindowsPollError(String),
     WindowsPollRecovered,
     Error(String),
@@ -2141,6 +2159,7 @@ unbind-key -a -T movepane
     }
     pub fn windows(&self) -> Result<Vec<WindowInfo>, String> {
         let text = self.run(&[
+            "-N",
             "list-windows",
             "-t",
             &self.name,
@@ -2168,6 +2187,63 @@ unbind-key -a -T movepane
                 })
             })
             .collect()
+    }
+    /// Capture the server and session around the window list. A replaced
+    /// server may reuse both session and window numbers, so neither number
+    /// alone is safe as the owner of a saved layout.
+    pub fn window_snapshot(&self) -> Result<WindowSnapshot, String> {
+        use std::os::unix::fs::FileTypeExt;
+        let socket = fs::symlink_metadata(&self.socket).map_err(|e| e.to_string())?;
+        if !socket.file_type().is_socket() {
+            return Err("Socket tmux inválido".into());
+        }
+        let response = self.run(&[
+            "-N", "list-windows", "-t", &self.name, "-F",
+            "#{session_id}\t#{pid}\t#{session_name}\t#{window_id}\t#{window_index}\t#{window_active}\t#{pane_id}\t#{window_name}",
+        ])?;
+        let mut identity = None;
+        let mut windows = Vec::new();
+        for line in response.lines() {
+            let fields: Vec<_> = line.splitn(8, '\t').collect();
+            if fields.len() != 8 || fields[2] != self.name {
+                return Err("Identidad de sesión tmux cambió".into());
+            }
+            let id = fields[0];
+            if id.len() < 2 || id.len() > 24 || !id.starts_with('$')
+                || !id.as_bytes()[1..].iter().all(u8::is_ascii_digit)
+            {
+                return Err("ID de sesión tmux inválido".into());
+            }
+            let server_pid = fields[1].parse::<u32>().map_err(|_| "PID tmux inválido")?;
+            if server_pid < 2 {
+                return Err("PID tmux inválido".into());
+            }
+            let observed = WindowSessionIdentity {
+                session_id: id.into(), server_pid,
+                socket_device: socket.dev(), socket_inode: socket.ino(),
+            };
+            if identity.as_ref().is_some_and(|previous| previous != &observed) {
+                return Err("Identidad de sesión tmux cambió".into());
+            }
+            identity = Some(observed);
+            if !fields[3].starts_with('@') || !fields[6].starts_with('%') {
+                return Err("invalid tmux window metadata".into());
+            }
+            windows.push(WindowInfo {
+                id: fields[3].into(), active_pane: fields[6].into(),
+                index: fields[4].parse().map_err(|_| "invalid window index")?,
+                active: fields[5] == "1",
+                name: fields[7].chars()
+                    .filter(|c| !c.is_control() && !crate::text_safety::is_bidi_control(*c))
+                    .take(160).collect(),
+            });
+        }
+        let after = fs::symlink_metadata(&self.socket).map_err(|e| e.to_string())?;
+        if !after.file_type().is_socket() || after.dev() != socket.dev() || after.ino() != socket.ino() {
+            return Err("Servidor o sesión tmux cambió durante la consulta".into());
+        }
+        let identity = identity.ok_or("No hay ventanas tmux verificables")?;
+        Ok(WindowSnapshot { identity, windows })
     }
     fn copy_selection(&self) -> Result<String, String> {
         self.copy_selection_with_mode(false)
@@ -3796,7 +3872,7 @@ impl Backend {
             if tx.send(ready).is_err() {
                 return;
             }
-            let mut previous = Vec::new();
+            let mut previous: Option<WindowSnapshot> = None;
             let mut resume = None;
             let mut resume_error = None;
             let mut visual_lines = LineSelections::new();
@@ -3817,7 +3893,7 @@ impl Backend {
                 .name("twr-tmux-windows".into())
                 .spawn(move || {
                     while let Ok(epoch) = poll_requests.recv() {
-                        let result = poll_session.windows();
+                        let result = poll_session.window_snapshot();
                         if poll_results.send((epoch, result)).is_err() { break; }
                     }
                 })
@@ -3846,7 +3922,7 @@ impl Backend {
                             next_windows_poll = Instant::now();
                         } else {
                             match result {
-                                Ok(ws) => {
+                                Ok(snapshot) => {
                                     poll_backoff = poll_interval;
                                     if windows_poll_error_reported {
                                         match tx.try_send(Event::WindowsPollRecovered) {
@@ -3855,10 +3931,14 @@ impl Backend {
                                             Err(mpsc::TrySendError::Disconnected(_)) => break,
                                         }
                                     }
-                                    if ws != previous {
-                                        match tx.try_send(Event::Windows(ws.clone())) {
-                                            Ok(()) => previous = ws,
-                                            Err(mpsc::TrySendError::Full(_)) => {}
+                                    if previous.as_ref() != Some(&snapshot) {
+                                        match tx.try_send(Event::WindowsObserved(snapshot.clone())) {
+                                            Ok(()) => match tx.try_send(Event::Windows(snapshot.windows.clone())) {
+                                                Ok(()) => previous = Some(snapshot),
+                                                Err(mpsc::TrySendError::Full(_)) => {},
+                                                Err(mpsc::TrySendError::Disconnected(_)) => break,
+                                            },
+                                            Err(mpsc::TrySendError::Full(_)) => {},
                                             Err(mpsc::TrySendError::Disconnected(_)) => break,
                                         }
                                     }
