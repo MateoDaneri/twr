@@ -2570,7 +2570,10 @@ unbind-key -a -T movepane
                     || restored.rectangle != post.rectangle
                     || restored.endpoints != post.endpoints
                     || (movement == "cursor-left" && restored.cursor_x > desired)
-                    || (movement == "cursor-right" && restored.cursor_x != desired)
+                    // tmux cannot advance past the last selectable cell on a
+                    // short line, even when the original cursor was beyond it.
+                    || (movement == "cursor-right"
+                        && (restored.cursor_x < post.cursor_x || restored.cursor_x > desired))
                     || socket_restored.dev() != socket.dev()
                     || socket_restored.ino() != socket.ino()
                 {
