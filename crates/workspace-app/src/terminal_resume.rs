@@ -7,7 +7,6 @@ use std::{
 const LIMIT: usize = 4096;
 const TIMEOUT: Duration = Duration::from_secs(15);
 const MAX_DELIVERY_BATCHES: usize = 32;
-const MAX_DELIVERY_BYTES: usize = MAX_DELIVERY_BATCHES * LIMIT * 2;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Context {
     pub project: usize,
@@ -215,23 +214,9 @@ impl Deliveries {
             .map(|d| d.batches.len())
             .sum::<usize>()
             + self.failed.len();
-        let current_bytes: usize = self
-            .pending
-            .values()
-            .flat_map(|d| &d.batches)
-            .chain(self.failed.iter().map(|f| &f.bytes))
-            .filter_map(Option::as_ref)
-            .map(Vec::len)
-            .sum();
-        let new_bytes: usize = batches
-            .iter()
-            .filter_map(Option::as_ref)
-            .map(Vec::len)
-            .sum();
         if batches.is_empty()
             || self.pending.contains_key(&(context.project, token))
             || current_count.saturating_add(batches.len()) > MAX_DELIVERY_BATCHES
-            || current_bytes.saturating_add(new_bytes) > MAX_DELIVERY_BYTES
         {
             return false;
         }

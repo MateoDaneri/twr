@@ -103,7 +103,11 @@ impl<K> Gate<K> {
         let Some(total) = self.bytes.checked_add(bytes) else {
             return Err(event);
         };
-        if self.events.len() >= self.max_events || total > self.max_bytes {
+        // A single paste can exceed the normal queue budget. Accept it once
+        // it reaches the front; subsequent events stay in the owner's
+        // overflow queue until this paste is acknowledged.
+        let large_front_paste = self.events.is_empty() && matches!(&event, Event::Paste { .. });
+        if self.events.len() >= self.max_events || (total > self.max_bytes && !large_front_paste) {
             return Err(event);
         }
         self.next = id.checked_add(1);
