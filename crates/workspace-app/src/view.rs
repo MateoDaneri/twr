@@ -32017,8 +32017,13 @@ impl WorkspaceView {
             // tmux client after copy-mode ends. Sending its bracket framing
             // directly to the pane would leak those escape sequences to an
             // application that has not enabled bracketed paste.
-            let defer_paste = paste_shortcut && self.terminal_resume.active()
-                && self.pending_tmux_copy.is_none();
+            // A queued navigation/copy already owns the ordering of later
+            // input. Let the ledger below capture the shortcut in its proper
+            // position, including resolving a preceding copy on replay.
+            let queued_input = self.pending_terminal_key.as_ref()
+                .is_some_and(|pending| !pending.replaying);
+            let defer_paste = paste_shortcut && (queued_input
+                || self.terminal_resume.active() && self.pending_tmux_copy.is_none());
             if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy)) {
                 self.copy_selection(cx);
             } else if paste_shortcut && !defer_paste {
