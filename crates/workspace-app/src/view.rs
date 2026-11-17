@@ -18,8 +18,8 @@ use workspace_app::{
         detach_workspace_file, forget_deleted_file,
     },
     editor::{
-        Editor, Effect as EditEffect, LiveJumpTracking, Mode as EditMode, VimBufferTarget,
-        WrappedWheelRequest,
+        Editor, EditorIdentity, Effect as EditEffect, LiveJumpTracking, Mode as EditMode,
+        VimBufferTarget, WrappedWheelRequest,
     },
     editor_jump_navigation::{JumpApplied, JumpRequest},
     editor_panes::{
@@ -145,6 +145,7 @@ impl RemotePrompt {
 #[derive(Clone, PartialEq, Eq)]
 struct SyntaxKey {
     path: PathBuf,
+    identity: EditorIdentity,
     version: u64,
     language: workspace_app::syntax::Language,
 }
@@ -1510,7 +1511,6 @@ pub struct WorkspaceView {
     syntax_seen: std::collections::HashSet<workspace_app::syntax::Language>,
     last_syntax_error: Option<String>,
     syntax_request: Option<SyntaxRequest>,
-    syntax_snapshot: Option<(SyntaxKey, Vec<workspace_app::syntax::Span>)>,
     syntax_disabled: std::collections::HashSet<PathBuf>,
     state_dir: PathBuf,
     runtime_dir: PathBuf,
@@ -1892,7 +1892,6 @@ impl WorkspaceView {
             syntax_seen: Default::default(),
             last_syntax_error: None,
             syntax_request: None,
-            syntax_snapshot: None,
             syntax_disabled: Default::default(),
             state_dir,
             runtime_dir,
@@ -30837,7 +30836,6 @@ impl WorkspaceView {
             request.cancel.store(1, Ordering::Release);
         }
         self.syntax_anchor = None;
-        self.syntax_snapshot = None;
         self.model.message = if enabled {
             "Color sintáctico activado para este buffer"
         } else {
@@ -30976,22 +30974,25 @@ impl WorkspaceView {
         changed
     }
     fn poll_syntax(&mut self) -> bool {
-        let desired = self
-            .model
-            .file
-            .as_ref()
-            .filter(|_| self.preview.is_none() && self.markdown.is_none())
-            .and_then(|(path, _)| {
-                let editor = self.editors.get(path)?;
-                if editor.text.len() > workspace_app::syntax::MAX_CHARS || editor.text.is_empty() {
-                    return None;
-                }
-                Some(SyntaxKey {
-                    path: path.clone(),
-                    version: editor.version,
-                    language: workspace_app::syntax::Language::for_path(path)?,
-                })
-            });
+        // Moving focus out of an editor clears model.file even if the buffer
+        // is still visible. Let its pending syntax request finish.
+        let focused_path = self.model.file.as_ref().map(|(path, _)| path);
+        let visible_path = || {
+            let panes = self.editor_panes.as_ref()?;
+            panes.path(panes.previous_content_pane()?)
+        };
+        let desired = focused_path.or_else(visible_path).and_then(|path| {
+            let editor = self.editors.get(path)?;
+            if editor.text.len() > workspace_app::syntax::MAX_CHARS || editor.text.is_empty() {
+                return None;
+            }
+            Some(SyntaxKey {
+                path: path.clone(),
+                identity: editor.identity(),
+                version: editor.version,
+                language: workspace_app::syntax::Language::for_path(path)?,
+            })
+        });
         let mut changed = false;
         if desired != self.syntax_anchor {
             self.syntax_anchor = desired.clone();
@@ -31005,23 +31006,19 @@ impl WorkspaceView {
             if let Some(request) = self.syntax_request.take() {
                 request.cancel.store(1, Ordering::Release);
             }
-            changed |= self.syntax_snapshot.take().is_some();
         }
         if let Some(output) = self.syntax_worker.as_ref().and_then(|worker| worker.take())
             && let Some(request) = self.syntax_request.as_mut()
             && !request.finished
             && output.generation == request.generation
             && desired.as_ref() == Some(&request.key)
+            && let Some(editor) = self.editors.get_mut(&request.key.path)
         {
             request.finished = true;
-            if let Some(editor) = self.editors.get_mut(&request.key.path) {
-                editor.apply_parser_folds(request.key.version, output.folds);
-            }
+            editor.apply_parser_folds(request.key.version, output.folds);
             match output.result {
                 Ok(spans) => {
-                    if !self.syntax_disabled.contains(&request.key.path) {
-                        self.syntax_snapshot = Some((request.key.clone(), spans));
-                    }
+                    editor.set_syntax_spans(request.key.language, spans);
                     if let Some(previous) = self.last_syntax_error.take()
                         && self.model.message == previous
                     {
@@ -31051,7 +31048,9 @@ impl WorkspaceView {
         let Some(key) = desired else {
             return changed;
         };
-        if self.syntax_request.is_some() || self.syntax_since.elapsed() < Duration::from_millis(120)
+        if self.syntax_request.is_some()
+            || self.editors[&key.path].syntax_spans(key.language).is_some()
+            || self.syntax_since.elapsed() < Duration::from_millis(120)
         {
             return changed;
         }
@@ -35985,11 +35984,12 @@ impl WorkspaceView {
                     .or_else(|| editor.snippet_selection())
                     .or_else(|| editor.search_match())
             };
-            let syntax = self
-                .syntax_snapshot
-                .as_ref()
-                .filter(|(key, _)| key.path == *path && key.version == editor.version)
-                .map(|(_, spans)| spans.as_slice());
+            let syntax = if self.syntax_disabled.contains(path) {
+                None
+            } else {
+                workspace_app::syntax::Language::for_path(path)
+                    .and_then(|language| editor.syntax_spans(language))
+            };
             // Wrap remains dormant until its input and viewport integration is
             // complete. An active IME composition uses the existing renderer.
             let wrapped = self
