@@ -34057,6 +34057,7 @@ impl WorkspaceView {
                     Err(error) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         selection.copy_requested = false;
                         changed = true;
                     }
@@ -34067,6 +34068,7 @@ impl WorkspaceView {
                     self.paste_after_copy.clear();
                     self.model.message =
                         "La selección no se confirmó; volvé a seleccionarla".into();
+                    self.retain_paste_after_failed_native_copy();
                     changed = true;
                 } else {
                     match window.terminal.selection_copy(selection.token) {
@@ -34077,6 +34079,7 @@ impl WorkspaceView {
                         Err(error) => {
                             self.paste_after_copy.clear();
                             self.model.message = error;
+                            self.retain_paste_after_failed_native_copy();
                             changed = true;
                         }
                     }
