@@ -1385,7 +1385,8 @@ pub struct WorkspaceView {
     terminal_wake: async_channel::Sender<()>,
     // PTY sizes that could not be queued, scoped to the exact live instance.
     terminal_resize_pending: HashMap<(usize, u64), PendingTerminalResize>,
-    pending_yank_first: Option<(u64, usize)>,
+    pending_yank_first: HashMap<u64, usize>,
+    pending_yank_motion: std::collections::HashSet<u64>,
     terminal_yank_prefix: Option<(PendingTmuxCopy, usize)>,
     disk_tx: workspace_app::events::Sender<DiskResult>,
     disk_rx: mpsc::Receiver<DiskResult>,
@@ -1478,7 +1479,9 @@ pub struct WorkspaceView {
     primary_tmux_lost: HashMap<usize, String>,
     primary_tmux_last_error: HashMap<usize, String>,
     pending_terminal_search: std::collections::HashSet<workspace_app::terminal_resume::Context>,
-    pending_tmux_copy: Option<PendingTmuxCopy>,
+    pending_tmux_copy: HashMap<u64, PendingTmuxCopy>,
+    latest_tmux_copy: u64,
+    last_delivered_tmux_copy: u64,
     paste_after_copy: Vec<(PendingCopyOwner, workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
     tmux_copy_token: u64,
     editors: HashMap<PathBuf, Editor>,
@@ -1786,7 +1789,8 @@ impl WorkspaceView {
             detached_terminal_input: Default::default(),
             terminal_wake: wake_tx.clone(),
             terminal_resize_pending: HashMap::new(),
-            pending_yank_first: None,
+            pending_yank_first: HashMap::new(),
+            pending_yank_motion: Default::default(),
             terminal_yank_prefix: None,
             disk_tx: tx,
             disk_rx: rx,
@@ -1868,7 +1872,9 @@ impl WorkspaceView {
             primary_tmux_lost: HashMap::new(),
             primary_tmux_last_error: HashMap::new(),
             pending_terminal_search: Default::default(),
-            pending_tmux_copy: None,
+            pending_tmux_copy: HashMap::new(),
+            latest_tmux_copy: 0,
+            last_delivered_tmux_copy: 0,
             paste_after_copy: Vec::new(),
             tmux_copy_token: 0,
             editors: HashMap::new(),
@@ -6254,16 +6260,11 @@ impl WorkspaceView {
                     // current request and must not overwrite the clipboard.
                 }
                 TmuxEvent::CopyTracked(token, result) => {
-                    if self
-                        .pending_tmux_copy
-                        .as_ref()
-                        .is_none_or(|pending| pending.token != token)
-                    {
+                    let Some(pending) = self.pending_tmux_copy.remove(&token) else {
                         continue;
-                    }
-                    let pending = self.pending_tmux_copy.take().expect("token checked");
-                    let first_yank = self.pending_yank_first.take_if(|(id, _)| *id == token)
-                        .map(|(_, count)| count);
+                    };
+                    let first_yank = self.pending_yank_first.remove(&token);
+                    let yank_motion = self.pending_yank_motion.remove(&token);
                     // A copy belongs to the request that produced it, even
                     // when the user has since moved focus to another panel.
                     let current = source == Some(pending.context)
@@ -6284,19 +6285,23 @@ impl WorkspaceView {
                                 // A linewise Visual yank can share the editor's
                                 // unnamed/+ and numbered yank registers, but
                                 // only if the exact text is representable.
-                                let register = copy.editor_register.then(|| {
+                                let latest = token > self.last_delivered_tmux_copy;
+                                if latest { self.last_delivered_tmux_copy = token; }
+                                let register = (latest && copy.editor_register).then(|| {
                                     if copy.linewise {
                                         self.registers.record_terminal_lines(copy.text.clone(), true)
                                     } else {
                                         self.registers.record_terminal_chars(copy.text.clone())
                                     }
                                 });
-                                if self.validation {
-                                    self.fixture_clipboard = Some((copy.text, copy.linewise, None));
-                                } else {
-                                    cx.write_to_clipboard(ClipboardItem::new_string(copy.text));
+                                if latest {
+                                    if self.validation {
+                                        self.fixture_clipboard = Some((copy.text, copy.linewise, None));
+                                    } else {
+                                        cx.write_to_clipboard(ClipboardItem::new_string(copy.text));
+                                    }
                                 }
-                                if !paste_canceled { self.model.message = match register {
+                                if latest && !paste_canceled { self.model.message = match register {
                                     Some(Ok(())) => "Copiado a los registros y al portapapeles".into(),
                                     Some(Err(_)) => "Copiado al portapapeles; registro no disponible".into(),
                                     None => "Selección tmux copiada explícitamente".into(),
@@ -6304,11 +6309,20 @@ impl WorkspaceView {
                                 completed = true;
                             }
                             Ok(None) => {
-                                if let Some(count) = first_yank {
-                                    self.terminal_yank_prefix = Some((pending.clone(), count));
-                                    self.model.message = "y: elegí un movimiento".into();
-                                } else {
-                                    self.model.message = "No hay texto para copiar".into();
+                                if !waiting_pastes.is_empty() {
+                                    if let Some(text) = self.paste_text(cx) {
+                                        self.deliver_waiting_pastes(waiting_pastes, &text);
+                                    } else {
+                                        self.model.message = "No hay texto para pegar".into();
+                                    }
+                                }
+                                if token == self.latest_tmux_copy {
+                                    if let Some(count) = first_yank {
+                                        self.terminal_yank_prefix = Some((pending.clone(), count));
+                                        self.model.message = "y: elegí un movimiento".into();
+                                    } else if !yank_motion {
+                                        self.model.message = "No hay texto para copiar".into();
+                                    }
                                 }
                                 completed = true;
                             }
@@ -16555,9 +16569,6 @@ impl WorkspaceView {
         }
         true
     }
-    fn begin_terminal_copy_key(&mut self, key: Keystroke) -> bool {
-        self.begin_terminal_event_replay(workspace_app::open_input::Event::Key(key))
-    }
     fn begin_terminal_event_replay(
         &mut self,
         event: workspace_app::open_input::Event<Keystroke>,
@@ -17236,11 +17247,11 @@ impl WorkspaceView {
         });
         if let Some(token) = expired_copy_alone {
             self.pending_terminal_key = None;
-            if self.pending_tmux_copy.as_ref().is_some_and(|copy| copy.token == token) {
-                self.pending_tmux_copy = None;
-                self.paste_after_copy.clear();
+            if self.pending_tmux_copy.remove(&token).is_some() {
+                self.take_waiting_pastes(PendingCopyOwner::Tmux(token));
             }
-            self.pending_yank_first.take_if(|(id, _)| *id == token);
+            self.pending_yank_first.remove(&token);
+            self.pending_yank_motion.remove(&token);
             self.model.message = "Copia sin respuesta; intentá copiar de nuevo".into();
             cx.notify();
         }
@@ -17407,7 +17418,7 @@ impl WorkspaceView {
             && !self.help
             && !self.model.notifications
             && !self.media_active();
-        let copy_pending = self.pending_tmux_copy.is_some();
+        let copy_pending = self.pending_tmux_copy.keys().any(|token| *token > self.last_delivered_tmux_copy);
         #[cfg(feature = "ghostty")]
         let copy_pending = copy_pending || self.native_selection.as_ref().is_some_and(|selection| {
             selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
@@ -17850,21 +17861,20 @@ impl WorkspaceView {
                 };
             }
             let _ = self.terminal_wake.try_send(());
+        } else if let Err(error) = result {
+            self.model.message = format!("No se pudo seleccionar la línea: {error}");
         }
     }
     fn request_terminal_visual_line(&mut self, count: usize) -> bool {
-        let Some(event) = self.pending_terminal_key.as_ref().and_then(|pending| {
+        let event = self.pending_terminal_key.as_ref().and_then(|pending| {
             (pending.replaying
                 && pending.selection_action.is_none()
                 && pending.write.is_none()
                 && pending.target_action.is_none())
             .then_some(pending.replay_event)
             .flatten()
-        }) else {
-            self.model.message = "No se pudo identificar la selección; reintentá".into();
-            return false;
-        };
-        if !self.terminal_key_pty_destination_current() {
+        });
+        if event.is_some() && !self.terminal_key_pty_destination_current() {
             self.model.message = "Cambió el destino de la selección".into();
             return false;
         }
@@ -17891,7 +17901,7 @@ impl WorkspaceView {
             return false;
         }
         self.tmux_copy_token = token;
-        if let Some(pending) = &mut self.pending_terminal_key {
+        if let Some(event) = event && let Some(pending) = &mut self.pending_terminal_key {
             pending.selection_action = Some(PendingTerminalSelectionAction {
                 event,
                 token,
@@ -17903,7 +17913,10 @@ impl WorkspaceView {
         true
     }
     fn request_terminal_yank(&mut self, count: usize) -> bool {
-        if let Some((source, first_count)) = self.terminal_yank_prefix.take() {
+        let pending_prefix = self.pending_yank_first.get(&self.latest_tmux_copy)
+            .and_then(|count| self.pending_tmux_copy.get(&self.latest_tmux_copy)
+                .map(|source| (source.clone(), *count)));
+        if let Some((source, first_count)) = self.terminal_yank_prefix.take().or(pending_prefix) {
             if !self.terminal_key_source_current(&source) {
                 self.model.message = "Cambió el panel de terminal; yank cancelado".into();
                 return false;
@@ -17955,13 +17968,6 @@ impl WorkspaceView {
             self.model.message = "Cambió el destino de la copia".into();
             return false;
         }
-        // A newer explicit copy supersedes any older outstanding reply.
-        if self.pending_tmux_copy.is_some() && !self.paste_after_copy.is_empty() {
-            self.paste_after_copy.clear();
-            self.model.message = "Pegado pendiente cancelado al iniciar otra copia".into();
-        }
-        self.pending_tmux_copy = None;
-        self.pending_yank_first = None;
         let Some(context) = self.terminal_input_context() else {
             self.model.message = "Terminal no disponible".into();
             return false;
@@ -17998,12 +18004,15 @@ impl WorkspaceView {
             self.model.message = "No se pudo identificar la copia".into();
             return false;
         };
+        let fallback_count = anchor_token.and_then(|anchor| self.pending_yank_first.get(&anchor).copied());
+        let fallback_first = fallback_count.is_some();
+        let motion_followup = normal_motion.is_some();
         let action = if let Some((motion, count)) = normal_motion {
             let Some(anchor_token) = anchor_token else { return false; };
-            TmuxAction::CopyNormalMotion { token, anchor_token, window: window.clone(), pane: pane.clone(), motion, count }
+            TmuxAction::CopyNormalMotion { token, anchor_token, window: window.clone(), pane: pane.clone(), motion, count, fallback_motion: fallback_first }
         } else if let Some(count) = normal_lines {
             let Some(anchor_token) = anchor_token else { return false; };
-            TmuxAction::CopyNormalLines { token, anchor_token, window: window.clone(), pane: pane.clone(), count }
+            TmuxAction::CopyNormalLines { token, anchor_token, window: window.clone(), pane: pane.clone(), count, fallback_first }
         } else {
             TmuxAction::CopyTracked { token, window: window.clone(), pane: pane.clone(), keep_mode, first_yank: first_yank.is_some() }
         };
@@ -18014,8 +18023,14 @@ impl WorkspaceView {
             return false;
         }
         self.tmux_copy_token = token;
-        self.pending_yank_first = first_yank.map(|count| (token, count));
-        self.pending_tmux_copy = Some(PendingTmuxCopy {
+        self.latest_tmux_copy = token;
+        if let Some(count) = first_yank {
+            self.pending_yank_first.insert(token, count);
+        } else if let (Some(total), Some(first)) = (normal_lines, fallback_count) {
+            self.pending_yank_first.insert(token, total.checked_div(first).unwrap_or(1));
+        }
+        if fallback_first && motion_followup { self.pending_yank_motion.insert(token); }
+        self.pending_tmux_copy.insert(token, PendingTmuxCopy {
             token,
             context,
             surface: self.model.surface,
@@ -31335,7 +31350,9 @@ impl WorkspaceView {
         canceled
     }
     fn request_terminal_paste(&mut self, cx: &App) {
-        let owner = self.pending_tmux_copy.as_ref().map(|copy| PendingCopyOwner::Tmux(copy.token));
+        let owner = self.pending_tmux_copy.keys().copied()
+            .filter(|token| *token > self.last_delivered_tmux_copy)
+            .max().map(PendingCopyOwner::Tmux);
         #[cfg(feature = "ghostty")]
         let owner = owner.or_else(|| self.native_selection.as_ref().and_then(|selection| {
             if selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..))) {
@@ -32038,7 +32055,8 @@ impl WorkspaceView {
             let queued_input = self.pending_terminal_key.as_ref()
                 .is_some_and(|pending| !pending.replaying);
             let defer_paste = paste_shortcut && (queued_input
-                || self.terminal_resume.active() && self.pending_tmux_copy.is_none());
+                || self.terminal_resume.active() && !self.pending_tmux_copy.keys()
+                    .any(|token| *token > self.last_delivered_tmux_copy));
             if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy)) {
                 self.copy_selection(cx);
             } else if paste_shortcut && !defer_paste {
@@ -33222,6 +33240,20 @@ impl WorkspaceView {
                 _ => k.key_char.clone().unwrap_or_else(|| key.into()),
             }
         };
+        if self.model.surface == Surface::Normal && self.terminal_yank_prefix.is_none() {
+            let digit = chord.len() == 1 && chord.as_bytes()[0].is_ascii_digit()
+                && (chord != "0" || self.model.count > 0);
+            let motion = !digit && matches!(chord.as_str(), "w" | "W" | "e" | "E" | "b" | "B" | "0" | "^" | "$" | "h" | "l");
+            if let Some(count) = self.pending_yank_first.get(&self.latest_tmux_copy).copied() {
+                if motion {
+                    if let Some(source) = self.pending_tmux_copy.get(&self.latest_tmux_copy).cloned() {
+                        self.terminal_yank_prefix = Some((source, count));
+                    }
+                } else if !digit && chord != "y" {
+                    self.pending_yank_first.remove(&self.latest_tmux_copy);
+                }
+            }
+        }
         if let Some((source, _)) = &self.terminal_yank_prefix {
             let current = self.terminal_key_source_current(source);
             let digit = chord.len() == 1 && chord.as_bytes()[0].is_ascii_digit()
@@ -33233,14 +33265,11 @@ impl WorkspaceView {
                 self.terminal_yank_prefix = None;
                 self.model.count = 0;
             } else if yank_motion {
-                if self.pending_terminal_key.as_ref().is_some_and(|pending| pending.replaying) {
-                    let count = std::mem::take(&mut self.model.count).max(1);
-                    if !self.request_terminal_yank_motion(&chord, count)
-                        && let Some(pending) = &mut self.pending_terminal_key
-                    { pending.replay_error = true; }
-                } else if !self.begin_terminal_copy_key(k.clone()) {
-                    self.model.message = "No se pudo iniciar el yank; reintentá".into();
-                }
+                let count = std::mem::take(&mut self.model.count).max(1);
+                if !self.request_terminal_yank_motion(&chord, count)
+                    && let Some(pending) = &mut self.pending_terminal_key
+                    && pending.replaying
+                { pending.replay_error = true; }
                 window.prevent_default();
                 cx.stop_propagation();
                 cx.notify();
@@ -33622,23 +33651,6 @@ impl WorkspaceView {
             return;
         }
         let terminal_cycle_count = self.model.count;
-        if self.model.surface == Surface::Normal
-            && self.model.pending_since.is_none()
-            && self.editor_window_prefix.is_none()
-            && matches!(chord.as_str(), "y" | "V")
-            && !self
-                .pending_terminal_key
-                .as_ref()
-                .is_some_and(|pending| pending.replaying)
-        {
-            if !self.begin_terminal_copy_key(k.clone()) {
-                self.model.message = "No se pudo iniciar la acción; reintentá".into();
-            }
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
         if self.model.surface == Surface::Normal
             && let Some(forward) = workspace_app::buffer_registry::normal_buffer_cycle(
                 &chord,

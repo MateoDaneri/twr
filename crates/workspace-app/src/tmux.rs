@@ -82,6 +82,9 @@ pub enum Action {
     Normal(bool),
     Resume(u64),
     ResumeInput(u64, Vec<u8>),
+    /// Paste raw clipboard bytes after resume; tmux applies bracketed-paste
+    /// framing according to the destination application's current mode.
+    ResumePaste(u64, Vec<u8>),
     Barrier(u64),
     /// An input-replay action whose destination must be observed before the
     /// next event is released. The wrapped action cannot itself be tracked.
@@ -122,8 +125,8 @@ pub enum Action {
         keep_mode: bool,
         first_yank: bool,
     },
-    CopyNormalLines { token: u64, anchor_token: u64, window: String, pane: String, count: usize },
-    CopyNormalMotion { token: u64, anchor_token: u64, window: String, pane: String, motion: String, count: usize },
+    CopyNormalLines { token: u64, anchor_token: u64, window: String, pane: String, count: usize, fallback_first: bool },
+    CopyNormalMotion { token: u64, anchor_token: u64, window: String, pane: String, motion: String, count: usize, fallback_motion: bool },
     SelectAll,
     Find,
     EndSearch,
@@ -1676,6 +1679,9 @@ impl Session {
         Ok(target)
     }
     fn resume_input(&self, target: &ResumeTarget, bytes: &[u8]) -> Result<(), String> {
+        self.resume_buffer(target, bytes, false)
+    }
+    fn resume_buffer(&self, target: &ResumeTarget, bytes: &[u8], paste: bool) -> Result<(), String> {
         if bytes.is_empty() { return Ok(()); }
         if self.resume_target()? != *target
             || self
@@ -1746,7 +1752,8 @@ impl Session {
             {
                 return Err("Pane o ventana cambió; entrada pendiente cancelada".into());
             }
-            self.run(&["paste-buffer", "-r", "-d", "-b", &buffer, "-t", &target.pane]).map(|_| ())
+            let flags = if paste { "-prd" } else { "-rd" };
+            self.run(&["paste-buffer", flags, "-b", &buffer, "-t", &target.pane]).map(|_| ())
         });
         if delivered.is_err() {
             let _ = self.run(&["delete-buffer", "-b", &buffer]);
@@ -3369,6 +3376,7 @@ unbind-key -a -T movepane
         let args = match a {
             Action::Resume(_)
             | Action::ResumeInput(_, _)
+            | Action::ResumePaste(_, _)
             | Action::Barrier(_)
             | Action::TrackedTarget(_, _, _, _)
             | Action::CaptureCopyMark(_)
@@ -4063,6 +4071,7 @@ impl Backend {
                     let event = match action {
                         Action::Resume(token) => Event::Resumed(*token, Err(error)),
                         Action::ResumeInput(token, _) => Event::InputDelivered(*token, Err(error)),
+                        Action::ResumePaste(token, _) => Event::InputDelivered(*token, Err(error)),
                         Action::TrackedTarget(token, _, _, _) => {
                             Event::TargetActionDone(*token, Err(error))
                         }
@@ -4227,6 +4236,18 @@ impl Backend {
                         }
                         let _ = tx.send(Event::InputDelivered(token, result));
                     }
+                    Ok(Action::ResumePaste(token, bytes)) => {
+                        let result = match &resume {
+                            Some((id, target)) if *id == token => {
+                                session.resume_buffer(target, &bytes, true)
+                            }
+                            _ => Err("Transición obsoleta; pegado no enviado".into()),
+                        };
+                        if result.is_err() {
+                            resume = None;
+                        }
+                        let _ = tx.send(Event::InputDelivered(token, result));
+                    }
                     Ok(Action::CaptureCopyMark(token)) => {
                         let _ =
                             tx.send(Event::CopyMarkCaptured(token, session.capture_copy_mark()));
@@ -4303,16 +4324,34 @@ impl Backend {
                         });
                         let _ = tx.send(Event::CopyTracked(token, result));
                     }
-                    Ok(Action::CopyNormalLines { token, anchor_token, window, pane, count }) => {
-                        let result = yank_anchor.take().filter(|anchor| anchor.token == anchor_token)
-                            .ok_or_else(|| "Posición de yank no disponible; copia cancelada".to_owned())
-                            .and_then(|anchor| session.copy_normal_lines(&window, &pane, count, &anchor));
+                    Ok(Action::CopyNormalLines { token, anchor_token, window, pane, count, fallback_first }) => {
+                        let anchor = yank_anchor.take().filter(|anchor| anchor.token == anchor_token);
+                        let result = if let Some(anchor) = anchor {
+                            session.copy_normal_lines(&window, &pane, count, &anchor)
+                        } else if fallback_first {
+                            let line = visual_lines.remove(&(window.clone(), pane.clone()));
+                            session.copy_selection_tracked(&window, &pane, true, line.as_ref(), Some(token))
+                                .map(|(copy, anchor)| { yank_anchor = anchor; copy })
+                        } else {
+                            Err("Posición de yank no disponible; copia cancelada".to_owned())
+                        };
                         let _ = tx.send(Event::CopyTracked(token, result));
                     }
-                    Ok(Action::CopyNormalMotion { token, anchor_token, window, pane, motion, count }) => {
-                        let result = yank_anchor.take().filter(|anchor| anchor.token == anchor_token)
-                            .ok_or_else(|| "Posición de yank no disponible; copia cancelada".to_owned())
-                            .and_then(|anchor| session.copy_normal_motion(&window, &pane, &motion, count, &anchor));
+                    Ok(Action::CopyNormalMotion { token, anchor_token, window, pane, motion, count, fallback_motion }) => {
+                        let anchor = yank_anchor.take().filter(|anchor| anchor.token == anchor_token);
+                        let result = if let Some(anchor) = anchor {
+                            session.copy_normal_motion(&window, &pane, &motion, count, &anchor)
+                        } else if fallback_motion {
+                            match session.resume_target() {
+                                Ok(target) if target.window == window && target.pane == pane => {
+                                    session.action(Action::Motion(motion, count)).map(|()| None)
+                                }
+                                Ok(_) => Err("Cambió el panel antes del movimiento".into()),
+                                Err(error) => Err(error),
+                            }
+                        } else {
+                            Err("Posición de yank no disponible; copia cancelada".to_owned())
+                        };
                         let _ = tx.send(Event::CopyTracked(token, result));
                     }
                     Ok(Action::VisualLine {
