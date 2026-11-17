@@ -13,10 +13,13 @@ use std::{
     process::{Command, Stdio},
     sync::{
         Mutex,
+        atomic::{AtomicU64, Ordering},
         mpsc::{self, Receiver, SyncSender},
     },
     time::{Duration, Instant},
 };
+
+static RESUME_BUFFER_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Clone, Debug)]
 pub struct Session {
@@ -1688,16 +1691,67 @@ impl Session {
         {
             return Err("Pane o ventana cambió; entrada pendiente cancelada".into());
         }
-        // Bound each argv while allowing an arbitrarily sized ordered batch.
-        // A failure after a chunk is an uncertain partial write and must not
-        // cause the caller to replay the batch automatically.
-        for chunk in bytes.chunks(4096) {
-            let mut c = self.command();
-            c.args(["send-keys", "-t", &target.pane, "-H"]);
-            c.args(chunk.iter().map(|b| format!("{b:02x}")));
-            output(c)?;
+        // Use a uniquely named private-server buffer so a large paste does
+        // not require hundreds of tmux processes or expose text in argv.
+        // -r preserves line feeds, and -d removes the temporary buffer after
+        // delivery. Explicitly named buffers do not evict tmux's history.
+        let sequence = RESUME_BUFFER_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+            .map_err(|error| error.to_string())?.as_nanos();
+        let buffer = format!("twr-resume-{}-{nanos}-{sequence}", std::process::id());
+        let mut command = self.command();
+        command.args(["load-buffer", "-b", &buffer, "-"])
+            .stdin(Stdio::piped()).stdout(Stdio::null()).stderr(Stdio::null());
+        let mut child = command.spawn().map_err(|error| error.to_string())?;
+        let result = (|| -> Result<(), String> {
+            let mut input = child.stdin.take().ok_or("No se pudo abrir la entrada de tmux")?;
+            let flags = unsafe { libc::fcntl(input.as_raw_fd(), libc::F_GETFL) };
+            if flags < 0 || unsafe { libc::fcntl(input.as_raw_fd(), libc::F_SETFL, flags | libc::O_NONBLOCK) } < 0 {
+                return Err("No se pudo preparar la entrada de tmux".into());
+            }
+            let deadline = Instant::now() + Duration::from_secs(10);
+            let mut remaining = bytes;
+            while !remaining.is_empty() {
+                if Instant::now() >= deadline { return Err("Carga de entrada tmux sin respuesta".into()); }
+                match input.write(remaining) {
+                    Ok(0) => return Err("Entrada de tmux cerrada".into()),
+                    Ok(n) => remaining = &remaining[n..],
+                    Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        let mut fd = libc::pollfd { fd: input.as_raw_fd(), events: libc::POLLOUT, revents: 0 };
+                        let ready = unsafe { libc::poll(&mut fd, 1, 10) };
+                        if ready < 0 && std::io::Error::last_os_error().kind() != std::io::ErrorKind::Interrupted {
+                            return Err("No se pudo esperar la entrada de tmux".into());
+                        }
+                    }
+                    Err(error) => return Err(error.to_string()),
+                }
+            }
+            drop(input);
+            loop {
+                if let Some(status) = child.try_wait().map_err(|error| error.to_string())? {
+                    return status.success().then_some(()).ok_or_else(|| "No se pudo cargar la entrada en tmux".into());
+                }
+                if Instant::now() >= deadline { return Err("Carga de entrada tmux sin respuesta".into()); }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        })();
+        if result.is_err() {
+            let _ = child.kill();
+            let _ = child.wait();
         }
-        Ok(())
+        let delivered = result.and_then(|_| {
+            if self.resume_target()? != *target
+                || self.run(&["display-message", "-p", "-t", &target.pane, "#{pane_in_mode}"])?.trim() != "0"
+            {
+                return Err("Pane o ventana cambió; entrada pendiente cancelada".into());
+            }
+            self.run(&["paste-buffer", "-r", "-d", "-b", &buffer, "-t", &target.pane]).map(|_| ())
+        });
+        if delivered.is_err() {
+            let _ = self.run(&["delete-buffer", "-b", &buffer]);
+        }
+        delivered
     }
     fn command(&self) -> Command {
         let mut c = Command::new(&self.binary);

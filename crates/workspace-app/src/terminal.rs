@@ -708,9 +708,6 @@ impl Terminal {
             .map_err(|e| e.to_string())
     }
     pub fn input(&self, bytes: &[u8]) -> Result<(), String> {
-        if bytes.len() > 65536 {
-            return Err("input exceeds 64 KiB per event".into());
-        }
         self.commands
             .try_send(Command::Input(bytes.to_vec()))
             .map_err(|e| e.to_string())
@@ -721,9 +718,6 @@ impl Terminal {
         &self,
         bytes: &[u8],
     ) -> Result<mpsc::Receiver<Result<(), String>>, String> {
-        if bytes.len() > 65536 {
-            return Err("input exceeds 64 KiB per event".into());
-        }
         let (reply, received) = mpsc::sync_channel(1);
         self.commands
             .try_send(Command::InputTracked {
