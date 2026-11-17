@@ -76,6 +76,8 @@ fn main() {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 window_min_size: Some(size(px(760.), px(560.))),
                 titlebar: Some(TitlebarOptions {
+                    appears_transparent: true,
+                    traffic_light_position: Some(point(px(12.), px(12.))),
                     title: Some(
                         if let Some(instance) = &instance {
                             format!("Terminal Workspace · Validación {instance}")
@@ -122,3 +124,22 @@ fn configure_key_repeat() {
 
 #[cfg(not(target_os = "macos"))]
 fn configure_key_repeat() {}
+
+// AppKit requires the original mouse event to begin native window dragging.
+#[cfg(target_os = "macos")]
+#[allow(unexpected_cfgs)]
+fn drag_native_titlebar() {
+    use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+    unsafe {
+        let app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
+        let event: *mut Object = msg_send![app, currentEvent];
+        if !event.is_null() {
+            let window: *mut Object = msg_send![event, window];
+            if !window.is_null() {
+                let _: () = msg_send![window, performWindowDragWithEvent: event];
+            }
+        }
+    }
+}
+#[cfg(not(target_os = "macos"))]
+fn drag_native_titlebar() {}
