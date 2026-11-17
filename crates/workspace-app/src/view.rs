@@ -17408,6 +17408,11 @@ impl WorkspaceView {
             && !self.help
             && !self.model.notifications
             && !self.media_active();
+        let copy_pending = self.pending_tmux_copy.is_some();
+        #[cfg(feature = "ghostty")]
+        let copy_pending = copy_pending || self.native_selection.as_ref().is_some_and(|selection| {
+            selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+        });
         let pending = self.pending_terminal_key.as_mut().expect("checked above");
         while let Some(event) = pending.overflow.pop_front() {
             let bytes = PendingOpenInput::event_bytes(&event);
@@ -17423,6 +17428,17 @@ impl WorkspaceView {
                 pending.gate.invalidate();
                 self.model.message = "Entrada conservada: requiere revisión".into();
             }
+            return;
+        }
+        // Resolve a queued paste shortcut only after the copy that preceded
+        // it has updated the clipboard. Leave it at the front so later input
+        // cannot overtake the paste.
+        if copy_pending && pending.gate.events().next().is_some_and(|event| {
+            let Event::Key(key) = event else { return false; };
+            (key.modifiers.platform && key.key.eq_ignore_ascii_case("v"))
+                || (!key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
+                    && key.modifiers.shift && key.key.eq_ignore_ascii_case("insert"))
+        }) {
             return;
         }
         let direction_pending = unobstructed
@@ -32067,6 +32083,10 @@ impl WorkspaceView {
                                     && key.key_char.as_deref().unwrap_or(&key.key) == "y")
                             })
                 });
+                #[cfg(feature = "ghostty")]
+                let copy_before_paste = copy_before_paste || self.native_selection.as_ref().is_some_and(|selection| {
+                    selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+                });
                 if copy_before_paste {
                     // Resolve the clipboard only when this key is replayed,
                     // after the preceding terminal copy has completed.
@@ -32217,6 +32237,26 @@ impl WorkspaceView {
             && queued_direction_key(k, self.editor_window_prefix.is_some())
             && !self.directional_focus_geometry_ready()
             && self.begin_sidebar_direction_replay(k.clone())
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+            cx.notify();
+            return;
+        }
+        #[cfg(feature = "ghostty")]
+        if self.terminal_resume.active()
+            && self.model.surface == Surface::Terminal
+            && self.native_selection.as_ref().is_some_and(|selection| {
+                selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+            })
+            && self.terminal_command.is_none() && self.file_prompt.is_none()
+            && self.remote_prompt.is_none() && !self.help && !self.model.notifications
+            && !self.media_active()
+            && (k.modifiers.platform && key.eq_ignore_ascii_case("v")
+                || !k.modifiers.platform && !k.modifiers.control && !k.modifiers.alt
+                    && k.modifiers.shift && key.eq_ignore_ascii_case("insert"))
+            && self.begin_terminal_event_replay_on(
+                workspace_app::open_input::Event::Key(k.clone()), Surface::Terminal)
         {
             window.prevent_default();
             cx.stop_propagation();
