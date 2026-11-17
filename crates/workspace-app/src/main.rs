@@ -76,6 +76,8 @@ fn main() {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
                 window_min_size: Some(size(px(760.), px(560.))),
                 titlebar: Some(TitlebarOptions {
+                    appears_transparent: true,
+                    traffic_light_position: Some(point(px(12.), px(12.))),
                     title: Some(
                         if let Some(instance) = &instance {
                             format!("Terminal Workspace · Validación {instance}")
@@ -97,6 +99,7 @@ fn main() {
             },
         )
         .expect("open native workspace");
+        install_titlebar_input();
         cx.activate(true);
     });
 }
@@ -122,3 +125,56 @@ fn configure_key_repeat() {
 
 #[cfg(not(target_os = "macos"))]
 fn configure_key_repeat() {}
+
+// AppKit requires the original mouse event to begin native window dragging.
+#[cfg(target_os = "macos")]
+#[allow(unexpected_cfgs)]
+fn drag_native_titlebar() {
+    use objc::{class, msg_send, runtime::Object, sel, sel_impl};
+    unsafe {
+        let app: *mut Object = msg_send![class!(NSApplication), sharedApplication];
+        let event: *mut Object = msg_send![app, currentEvent];
+        if !event.is_null() {
+            let window: *mut Object = msg_send![event, window];
+            if !window.is_null() {
+                let _: () = msg_send![window, performWindowDragWithEvent: event];
+            }
+        }
+    }
+}
+#[cfg(not(target_os = "macos"))]
+fn drag_native_titlebar() {}
+
+// Backport GPUI's app-owned titlebar region for AppKit on macOS 27.
+// GPUI 0.2.2 lacks app_owns_titlebar_drag; this app handles dragging explicitly.
+#[cfg(target_os = "macos")]
+#[allow(unexpected_cfgs)]
+fn install_titlebar_input() {
+    use objc::{msg_send, sel, sel_impl, Encode, Encoding};
+    use objc::runtime::{Class, Object, Sel, Imp, class_addMethod};
+    #[repr(C)]
+    #[derive(Clone, Copy)]
+    struct Rect { x: f64, y: f64, width: f64, height: f64 }
+    unsafe impl Encode for Rect {
+        fn encode() -> Encoding { unsafe { Encoding::from_str("{CGRect={CGPoint=dd}{CGSize=dd}}") } }
+    }
+    extern "C" fn app_owned_region(view: &Object, _: Sel) -> Rect {
+        unsafe { msg_send![view, bounds] }
+    }
+    // Runs on the main thread after GPUI creates its view class. Never replace
+    // an implementation supplied by GPUI itself. CGRect ABI is four doubles.
+    unsafe {
+        if let Some(view_class) = Class::get("GPUIView") {
+            let selector = sel!(_opaqueRectForWindowMoveWhenInTitlebar);
+            {
+                // class_addMethod overrides an inherited implementation, but
+                // returns NO rather than replacing a method owned by GPUIView.
+                let imp: Imp = std::mem::transmute::<extern "C" fn(&Object, Sel) -> Rect, Imp>(app_owned_region);
+                class_addMethod(view_class as *const Class as *mut Class, selector, imp,
+                    c"{CGRect={CGPoint=dd}{CGSize=dd}}@:".as_ptr());
+            }
+        }
+    }
+}
+#[cfg(not(target_os = "macos"))]
+fn install_titlebar_input() {}

@@ -37868,12 +37868,14 @@ impl Render for WorkspaceView {
         let mut workspace_bar = div()
             .id("workspace-overview")
             .flex()
+            .items_center()
+            .h(px(40.))
             .min_w_0()
             .flex_shrink_0()
             .overflow_x_scroll()
             .gap_2()
-            .px_2()
-            .py_1()
+            .pl(px(80.))
+            .pr_2()
             .border_b_1()
             .border_color(rgb(p.line));
         for (index, item) in self.model.projects.iter().enumerate() {
@@ -37895,7 +37897,16 @@ impl Render for WorkspaceView {
             );
         }
 
-        workspace_bar = workspace_bar.child(div().flex_1()).child(self.button(
+        workspace_bar = workspace_bar.child(
+            div().id("workspace-titlebar-drag").flex_1().min_w(px(36.)).h_full()
+                .on_mouse_down(MouseButton::Left, |event, window, _cx| {
+                    if event.click_count == 2 {
+                        window.titlebar_double_click();
+                    } else {
+                        crate::drag_native_titlebar();
+                    }
+                })
+        ).child(self.button(
             "tools",
             if self.tools { "× Controles" } else { "⋯" },
             Ui::Tools,
