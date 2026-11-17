@@ -1,4 +1,5 @@
 //! Small native modal editor. Explicit subset, no Lua or hidden disk access.
+use crate::syntax;
 use std::{ops::Range, path::Path, sync::Arc};
 #[path = "editor_block.rs"]
 mod block;
@@ -171,10 +172,21 @@ struct Revision {
 /// Identity survives renames/moves of this editor but not replacing it.
 #[derive(Clone, Debug)]
 pub struct EditorIdentity(Arc<()>);
+impl PartialEq for EditorIdentity {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.0, &other.0)
+    }
+}
+impl Eq for EditorIdentity {}
 impl EditorIdentity {
     pub fn matches(&self, editor: &Editor) -> bool {
         Arc::ptr_eq(&self.0, &editor.identity)
     }
+}
+struct SyntaxSnapshot {
+    version: u64,
+    language: syntax::Language,
+    spans: Vec<syntax::Span>,
 }
 pub struct Editor {
     identity: Arc<()>,
@@ -201,6 +213,7 @@ pub struct Editor {
     folds: Option<folds::Folds>,
     fold_level: usize,
     fold_language: Option<crate::syntax::Language>,
+    syntax_snapshot: Option<SyntaxSnapshot>,
     parser_fold_result: Option<(u64, Result<Vec<crate::syntax_folds::Definition>, String>)>,
     block: Option<block::Selection>,
     block_insert: Option<block::Insertion>,
@@ -743,6 +756,21 @@ impl Editor {
     pub fn identity(&self) -> EditorIdentity {
         EditorIdentity(self.identity.clone())
     }
+    pub fn syntax_spans(&self, language: syntax::Language) -> Option<&[syntax::Span]> {
+        self.syntax_snapshot
+            .as_ref()
+            .filter(|snapshot| snapshot.version == self.version && snapshot.language == language)
+            .map(|snapshot| snapshot.spans.as_slice())
+    }
+
+    pub fn set_syntax_spans(&mut self, language: syntax::Language, spans: Vec<syntax::Span>) {
+        self.syntax_snapshot = Some(SyntaxSnapshot {
+            version: self.version,
+            language,
+            spans,
+        });
+    }
+
     pub fn new(text: String) -> Self {
         let crlf = text.contains("\r\n");
         let normalized = text.replace("\r\n", "\n");
@@ -776,6 +804,7 @@ impl Editor {
             folds: None,
             fold_level: 99,
             fold_language: None,
+            syntax_snapshot: None,
             parser_fold_result: None,
             block: None,
             block_insert: None,
