@@ -32012,12 +32012,21 @@ impl WorkspaceView {
             let shift_insert = !key.modifiers.platform && !key.modifiers.control
                 && !key.modifiers.alt && key.modifiers.shift
                 && key.key.eq_ignore_ascii_case("insert");
+            let paste_shortcut = shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Paste));
+            // A paste during resume must be replayed through the attached
+            // tmux client after copy-mode ends. Sending its bracket framing
+            // directly to the pane would leak those escape sequences to an
+            // application that has not enabled bracketed paste.
+            let defer_paste = paste_shortcut && self.terminal_resume.active()
+                && self.pending_tmux_copy.is_none();
             if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy)) {
                 self.copy_selection(cx);
-            } else if shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Paste)) {
+            } else if paste_shortcut && !defer_paste {
                 self.request_terminal_paste(cx);
             }
-            if shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy | workspace_app::terminal_shortcuts::Shortcut::Paste)) {
+            if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy))
+                || (paste_shortcut && !defer_paste)
+            {
                 window.prevent_default();
                 cx.stop_propagation();
                 cx.notify();
