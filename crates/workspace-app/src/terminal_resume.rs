@@ -6,7 +6,6 @@ use std::{
 };
 const LIMIT: usize = 4096;
 const TIMEOUT: Duration = Duration::from_secs(15);
-const MAX_DELIVERY_BATCHES: usize = 32;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Context {
     pub project: usize,
@@ -208,16 +207,7 @@ impl Deliveries {
         batches: VecDeque<Option<Vec<u8>>>,
         now: Instant,
     ) -> bool {
-        let current_count: usize = self
-            .pending
-            .values()
-            .map(|d| d.batches.len())
-            .sum::<usize>()
-            + self.failed.len();
-        if batches.is_empty()
-            || self.pending.contains_key(&(context.project, token))
-            || current_count.saturating_add(batches.len()) > MAX_DELIVERY_BATCHES
-        {
+        if batches.is_empty() || self.pending.contains_key(&(context.project, token)) {
             return false;
         }
         self.generation = self.generation.wrapping_add(1);
@@ -977,33 +967,6 @@ mod tests {
         assert_eq!(
             deliveries.ack(context().project, token, false),
             DeliveryAck::Unknown
-        );
-    }
-    #[test]
-    fn full_delivery_retention_refuses_new_detach_before_sending() {
-        let now = Instant::now();
-        let mut deliveries = Deliveries::default();
-        for i in 0..MAX_DELIVERY_BATCHES {
-            assert!(deliveries.track(99, i as u64, 1, now));
-        }
-        let mut fence = Fence::default();
-        let token = fence.begin(context(), now);
-        fence.push(context(), b"keep locally").unwrap();
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| {
-                panic!("full retention must reject before enqueue")
-            })
-            .is_err()
-        );
-        let guard = fence.retained_guard().unwrap();
-        assert_eq!(fence.text_if_guarded(&guard), Some("keep locally"));
-        assert_eq!(deliveries.ack(99, 0, true), DeliveryAck::Pending);
-        assert_eq!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, id, bytes| {
-                assert_eq!((id, bytes), (token, b"keep locally".as_slice()));
-                Ok(())
-            }),
-            Ok(true)
         );
     }
     #[test]

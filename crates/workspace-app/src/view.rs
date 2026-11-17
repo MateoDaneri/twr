@@ -31409,7 +31409,10 @@ impl WorkspaceView {
         } else {
             cx.read_from_clipboard().and_then(|item| item.text())?
         };
-        if self.model.surface != Surface::Terminal && text.len() > 2 * 1024 * 1024 {
+        let terminal_transition = self.model.surface == Surface::Normal
+            && self.pending_terminal_key.as_ref().and_then(|pending| pending.destination.as_ref())
+                .is_some_and(|destination| matches!(&destination.content, PaneContent::Terminal(_)));
+        if self.model.surface != Surface::Terminal && !terminal_transition && text.len() > 2 * 1024 * 1024 {
             self.model.message = "Clipboard fuera de límites (2 MiB); no se pegó nada".into();
             return None;
         }
