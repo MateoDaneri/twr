@@ -30976,11 +30976,11 @@ impl WorkspaceView {
         changed
     }
     fn poll_syntax(&mut self) -> bool {
+        // A preview can hide the editor without replacing its buffer.
         let desired = self
             .model
             .file
             .as_ref()
-            .filter(|_| self.preview.is_none() && self.markdown.is_none())
             .and_then(|(path, _)| {
                 let editor = self.editors.get(path)?;
                 if editor.text.len() > workspace_app::syntax::MAX_CHARS || editor.text.is_empty() {
