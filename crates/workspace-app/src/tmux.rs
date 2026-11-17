@@ -13,10 +13,13 @@ use std::{
     process::{Command, Stdio},
     sync::{
         Mutex,
+        atomic::{AtomicU64, Ordering},
         mpsc::{self, Receiver, SyncSender},
     },
     time::{Duration, Instant},
 };
+
+static RESUME_BUFFER_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Clone, Debug)]
 pub struct Session {
@@ -516,7 +519,9 @@ fn output_bytes(cmd: Command) -> Result<Vec<u8>, String> {
     output_bytes_with_timeout(cmd, Duration::from_secs(3))
 }
 fn output_bytes_with_timeout(mut cmd: Command, timeout: Duration) -> Result<Vec<u8>, String> {
-    const LIMIT: usize = 262144;
+    output_bytes_with_limit(&mut cmd, timeout, 262144)
+}
+fn output_bytes_with_limit(cmd: &mut Command, timeout: Duration, limit: usize) -> Result<Vec<u8>, String> {
     fn nonblocking(fd: &impl AsRawFd) -> Result<(), String> {
         // Only the owned read end of each pipe is modified; the tmux server
         // and the child command's write ends are not reconfigured.
@@ -526,14 +531,14 @@ fn output_bytes_with_timeout(mut cmd: Command, timeout: Duration) -> Result<Vec<
         }
         Ok(())
     }
-    fn drain(reader: &mut impl Read, output: &mut Vec<u8>, start: Instant, timeout: Duration) -> Result<bool, String> {
+    fn drain(reader: &mut impl Read, output: &mut Vec<u8>, start: Instant, timeout: Duration, limit: usize) -> Result<bool, String> {
         let mut chunk = [0_u8; 8192];
         loop {
             if start.elapsed() >= timeout { return Err("tmux command timed out".into()); }
             match reader.read(&mut chunk) {
                 Ok(0) => return Ok(true),
                 Ok(n) => {
-                    if output.len().saturating_add(n) > LIMIT {
+                    if output.len().saturating_add(n) > limit {
                         return Err("tmux response exceeds limit".into());
                     }
                     output.extend_from_slice(&chunk[..n]);
@@ -568,13 +573,13 @@ fn output_bytes_with_timeout(mut cmd: Command, timeout: Duration) -> Result<Vec<
     let start = Instant::now();
     loop {
         if !out_closed {
-            match drain(&mut stdout, &mut out, start, timeout) {
+            match drain(&mut stdout, &mut out, start, timeout, limit) {
                 Ok(closed) => out_closed = closed,
                 Err(error) => { stop_child(&mut child); return Err(error); }
             }
         }
         if !err_closed {
-            match drain(&mut stderr, &mut err, start, timeout) {
+            match drain(&mut stderr, &mut err, start, timeout, 262144) {
                 Ok(closed) => err_closed = closed,
                 Err(error) => { stop_child(&mut child); return Err(error); }
             }
@@ -1671,15 +1676,7 @@ impl Session {
         Ok(target)
     }
     fn resume_input(&self, target: &ResumeTarget, bytes: &[u8]) -> Result<(), String> {
-        if bytes.is_empty()
-            || bytes.len() > 4096
-            || bytes
-                .iter()
-                .any(|b| *b < 32 && !matches!(*b, 8 | 9 | 10 | 13))
-            || bytes.contains(&127)
-        {
-            return Err("Entrada de transición fuera de límites".into());
-        }
+        if bytes.is_empty() { return Ok(()); }
         if self.resume_target()? != *target
             || self
                 .run(&[
@@ -1694,13 +1691,67 @@ impl Session {
         {
             return Err("Pane o ventana cambió; entrada pendiente cancelada".into());
         }
-        // One argv command, bounded to 4 KiB. Hex arguments cannot become tmux
-        // options or commands. Explicit pane ID prevents retargeting even if an
-        // external client changes the active pane after the check above.
-        let mut c = self.command();
-        c.args(["send-keys", "-t", &target.pane, "-H"]);
-        c.args(bytes.iter().map(|b| format!("{b:02x}")));
-        output(c).map(|_| ())
+        // Use a uniquely named private-server buffer so a large paste does
+        // not require hundreds of tmux processes or expose text in argv.
+        // -r preserves line feeds, and -d removes the temporary buffer after
+        // delivery. Explicitly named buffers do not evict tmux's history.
+        let sequence = RESUME_BUFFER_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)
+            .map_err(|error| error.to_string())?.as_nanos();
+        let buffer = format!("twr-resume-{}-{nanos}-{sequence}", std::process::id());
+        let mut command = self.command();
+        command.args(["load-buffer", "-b", &buffer, "-"])
+            .stdin(Stdio::piped()).stdout(Stdio::null()).stderr(Stdio::null());
+        let mut child = command.spawn().map_err(|error| error.to_string())?;
+        let result = (|| -> Result<(), String> {
+            let mut input = child.stdin.take().ok_or("No se pudo abrir la entrada de tmux")?;
+            let flags = unsafe { libc::fcntl(input.as_raw_fd(), libc::F_GETFL) };
+            if flags < 0 || unsafe { libc::fcntl(input.as_raw_fd(), libc::F_SETFL, flags | libc::O_NONBLOCK) } < 0 {
+                return Err("No se pudo preparar la entrada de tmux".into());
+            }
+            let deadline = Instant::now() + Duration::from_secs(10);
+            let mut remaining = bytes;
+            while !remaining.is_empty() {
+                if Instant::now() >= deadline { return Err("Carga de entrada tmux sin respuesta".into()); }
+                match input.write(remaining) {
+                    Ok(0) => return Err("Entrada de tmux cerrada".into()),
+                    Ok(n) => remaining = &remaining[n..],
+                    Err(error) if error.kind() == std::io::ErrorKind::Interrupted => continue,
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        let mut fd = libc::pollfd { fd: input.as_raw_fd(), events: libc::POLLOUT, revents: 0 };
+                        let ready = unsafe { libc::poll(&mut fd, 1, 10) };
+                        if ready < 0 && std::io::Error::last_os_error().kind() != std::io::ErrorKind::Interrupted {
+                            return Err("No se pudo esperar la entrada de tmux".into());
+                        }
+                    }
+                    Err(error) => return Err(error.to_string()),
+                }
+            }
+            drop(input);
+            loop {
+                if let Some(status) = child.try_wait().map_err(|error| error.to_string())? {
+                    return status.success().then_some(()).ok_or_else(|| "No se pudo cargar la entrada en tmux".into());
+                }
+                if Instant::now() >= deadline { return Err("Carga de entrada tmux sin respuesta".into()); }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        })();
+        if result.is_err() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+        let delivered = result.and_then(|_| {
+            if self.resume_target()? != *target
+                || self.run(&["display-message", "-p", "-t", &target.pane, "#{pane_in_mode}"])?.trim() != "0"
+            {
+                return Err("Pane o ventana cambió; entrada pendiente cancelada".into());
+            }
+            self.run(&["paste-buffer", "-r", "-d", "-b", &buffer, "-t", &target.pane]).map(|_| ())
+        });
+        if delivered.is_err() {
+            let _ = self.run(&["delete-buffer", "-b", &buffer]);
+        }
+        delivered
     }
     fn command(&self) -> Command {
         let mut c = Command::new(&self.binary);
@@ -2513,12 +2564,12 @@ unbind-key -a -T movepane
             // either edge. Restore toward its original display column without
             // changing an existing tmux mark. Wide characters can move more
             // than one cell per step; check the live column before each step.
-            // Limit command size; extremely wide panes retain tmux's previous
-            // behavior rather than enqueueing an unbounded command list.
-            const MAX_RESTORE_STEPS: u64 = 256;
+            // Keep each tmux command short even in a wide pane. The live
+            // column guard in each step avoids moving past a wide character.
+            const STEPS_PER_COMMAND: u64 = 4;
             let desired = before.cursor_x;
-            let steps = post.cursor_x.abs_diff(desired);
-            if steps > 0 && steps <= MAX_RESTORE_STEPS {
+            while post.cursor_x != desired {
+                let steps = post.cursor_x.abs_diff(desired).min(STEPS_PER_COMMAND);
                 let fixed_x = format!("#{{==:#{{copy_cursor_x}},{}}}", post.cursor_x);
                 // Plain comparison modifiers compare strings, not coordinates.
                 let (comparison, movement) = if post.cursor_x > desired {
@@ -2569,8 +2620,12 @@ unbind-key -a -T movepane
                     || restored.present != post.present
                     || restored.rectangle != post.rectangle
                     || restored.endpoints != post.endpoints
-                    || (movement == "cursor-left" && restored.cursor_x > desired)
-                    || (movement == "cursor-right" && restored.cursor_x != desired)
+                    || (movement == "cursor-left"
+                        && (restored.cursor_x > post.cursor_x || restored.cursor_x < desired))
+                    // tmux cannot advance past the last selectable cell on a
+                    // short line, even when the original cursor was beyond it.
+                    || (movement == "cursor-right"
+                        && (restored.cursor_x < post.cursor_x || restored.cursor_x > desired))
                     || socket_restored.dev() != socket.dev()
                     || socket_restored.ino() != socket.ino()
                 {
@@ -2579,7 +2634,10 @@ unbind-key -a -T movepane
                         restored.cursor_x, desired
                     ));
                 }
+                let stuck = restored.cursor_x == post.cursor_x;
                 post = restored;
+                // On a short line tmux cannot move past its last cell.
+                if stuck { break; }
             }
             let ends = post.endpoints.ok_or("Selección sin extremos")?;
             let grid_history = self.copy_grid_history(&post)?;
@@ -2782,11 +2840,10 @@ unbind-key -a -T movepane
     }
 
     fn physical_copy_rows(&self, state: &CopySelectionSnapshot, grid_history: u64, low: u64, high: u64) -> Result<String, String> {
-        const MAX_ROWS: usize = 1024;
         let unavailable = || "No se pudo confirmar la selección de filas; selección conservada".to_owned();
         let count = high.checked_sub(low).and_then(|n| n.checked_add(1)).ok_or_else(unavailable)?;
         let total = grid_history.checked_add(state.height).ok_or_else(unavailable)?;
-        if count > MAX_ROWS as u64 || high >= total {
+        if high >= total {
             return Err(unavailable());
         }
         // tmux addresses copy-mode rows relative to the start of its visible
@@ -2796,12 +2853,12 @@ unbind-key -a -T movepane
             .checked_sub(history).ok_or_else(unavailable)?.to_string();
         let end = i64::try_from(high).map_err(|_| unavailable())?
             .checked_sub(history).ok_or_else(unavailable)?.to_string();
-        let deadline = Instant::now() + Duration::from_millis(750);
+        let deadline = Instant::now() + Duration::from_secs(15);
         let capture = || {
             let mut command = self.command();
             command.args(["capture-pane", "-p", "-M", "-T", "-N", "-S", &start, "-E", &end, "-t", &state.target.pane]);
             let remaining = deadline.checked_duration_since(Instant::now()).ok_or_else(unavailable)?;
-            output_bytes_with_timeout(command, remaining).map_err(|_| unavailable())
+            output_bytes_with_limit(&mut command, remaining, usize::MAX).map_err(|_| unavailable())
         };
         let first = capture()?;
         let second = capture()?;
@@ -3160,7 +3217,10 @@ unbind-key -a -T movepane
         if keep_mode {
             self.run(&["send-keys", "-t", &target, "-X", "clear-selection"])?;
         }
-        self.run(&["show-buffer"])
+        let mut command = self.command();
+        command.arg("show-buffer");
+        let bytes = output_bytes_with_limit(&mut command, Duration::from_secs(15), usize::MAX)?;
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
     }
     /// Copy from an explicitly identified pane into an automatically named
     /// buffer with a fresh random prefix. Never read tmux's global top buffer.
@@ -3284,7 +3344,7 @@ unbind-key -a -T movepane
         command.args(["show-buffer", "-b", name]);
         // Decode strictly, preserving a literal U+FFFD while refusing malformed
         // UTF-8 instead of silently changing the selection on the clipboard.
-        let text = String::from_utf8(output_bytes(command)?)
+        let text = String::from_utf8(output_bytes_with_limit(&mut command, Duration::from_secs(15), usize::MAX)?)
             .map_err(|_| "La selección no pudo decodificarse sin pérdida".to_owned())?;
         let after = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
         if self.resume_target()? != expected

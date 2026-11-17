@@ -6,8 +6,6 @@ use std::{
 };
 const LIMIT: usize = 4096;
 const TIMEOUT: Duration = Duration::from_secs(15);
-const MAX_DELIVERY_BATCHES: usize = 32;
-const MAX_DELIVERY_BYTES: usize = MAX_DELIVERY_BATCHES * LIMIT * 2;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Context {
     pub project: usize,
@@ -209,30 +207,7 @@ impl Deliveries {
         batches: VecDeque<Option<Vec<u8>>>,
         now: Instant,
     ) -> bool {
-        let current_count: usize = self
-            .pending
-            .values()
-            .map(|d| d.batches.len())
-            .sum::<usize>()
-            + self.failed.len();
-        let current_bytes: usize = self
-            .pending
-            .values()
-            .flat_map(|d| &d.batches)
-            .chain(self.failed.iter().map(|f| &f.bytes))
-            .filter_map(Option::as_ref)
-            .map(Vec::len)
-            .sum();
-        let new_bytes: usize = batches
-            .iter()
-            .filter_map(Option::as_ref)
-            .map(Vec::len)
-            .sum();
-        if batches.is_empty()
-            || self.pending.contains_key(&(context.project, token))
-            || current_count.saturating_add(batches.len()) > MAX_DELIVERY_BATCHES
-            || current_bytes.saturating_add(new_bytes) > MAX_DELIVERY_BYTES
-        {
+        if batches.is_empty() || self.pending.contains_key(&(context.project, token)) {
             return false;
         }
         self.generation = self.generation.wrapping_add(1);
@@ -611,9 +586,7 @@ impl Fence {
         pending.in_flight = Some(bytes.clone());
         Some((pending.context, pending.token, bytes))
     }
-    /// During the short handshake, accept ordinary text and line editing only.
-    /// Prefix/escape/mouse sequences must not be reinterpreted as direct pane input.
-    /// Reject the whole event on overflow or unsupported control bytes.
+    /// During the handshake, retain input in order until the target is ready.
     pub fn push(&mut self, context: Context, bytes: &[u8]) -> Result<bool, String> {
         let Some(p) = self.pending.as_mut() else {
             return Ok(false);
@@ -624,16 +597,6 @@ impl Fence {
         }
         if p.halted_after_backend_failure || p.timed_out || p.rejected_waiting_ack {
             return Err("Entrada original conservada; este evento no se envió".into());
-        }
-        if bytes
-            .iter()
-            .any(|b| *b < 32 && !matches!(*b, 8 | 9 | 10 | 13))
-            || bytes.contains(&127)
-        {
-            return Err("Esperá el regreso a input antes de enviar controles, prefijos o pegar con bracketed paste".into());
-        }
-        if p.bytes.len().saturating_add(bytes.len()) > LIMIT {
-            return Err("Cola de regreso a input llena, 4 KiB; este evento no se envió".into());
         }
         p.bytes.extend_from_slice(bytes);
         Ok(true)
@@ -1004,33 +967,6 @@ mod tests {
         assert_eq!(
             deliveries.ack(context().project, token, false),
             DeliveryAck::Unknown
-        );
-    }
-    #[test]
-    fn full_delivery_retention_refuses_new_detach_before_sending() {
-        let now = Instant::now();
-        let mut deliveries = Deliveries::default();
-        for i in 0..MAX_DELIVERY_BATCHES {
-            assert!(deliveries.track(99, i as u64, 1, now));
-        }
-        let mut fence = Fence::default();
-        let token = fence.begin(context(), now);
-        fence.push(context(), b"keep locally").unwrap();
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| {
-                panic!("full retention must reject before enqueue")
-            })
-            .is_err()
-        );
-        let guard = fence.retained_guard().unwrap();
-        assert_eq!(fence.text_if_guarded(&guard), Some("keep locally"));
-        assert_eq!(deliveries.ack(99, 0, true), DeliveryAck::Pending);
-        assert_eq!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, id, bytes| {
-                assert_eq!((id, bytes), (token, b"keep locally".as_slice()));
-                Ok(())
-            }),
-            Ok(true)
         );
     }
     #[test]

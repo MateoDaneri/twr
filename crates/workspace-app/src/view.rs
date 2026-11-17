@@ -16489,6 +16489,29 @@ impl WorkspaceView {
         let _ = self.terminal_wake.try_send(());
         true
     }
+    /// An acknowledged, empty replay no longer owns keyboard input. Release
+    /// it before checking focus: focus may legitimately change between the
+    /// last acknowledgement and the next scheduler tick.
+    fn release_idle_terminal_key(&mut self) -> bool {
+        let idle = self.pending_terminal_key.as_ref().is_some_and(|pending| {
+            pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
+                && pending.gate.is_empty()
+                && pending.gate.in_flight_id().is_none()
+                && pending.overflow.is_empty()
+                && !pending.replaying && !pending.scheduled
+                && pending.replay_event.is_none()
+                && pending.write.is_none() && pending.target_action.is_none()
+                && pending.selection_action.is_none() && pending.split.is_none()
+                && pending.capture_wait.is_none() && pending.marked_selection.is_none()
+                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
+                && pending.tab_reconcile.is_none()
+                && self.pending_open_input.is_none()
+        });
+        if idle {
+            self.pending_terminal_key = None;
+        }
+        idle
+    }
     fn enqueue_terminal_key(&mut self, event: workspace_app::open_input::Event<Keystroke>) -> bool {
         self.rebind_undispatched_tab_key();
         let target_in_flight = self.pending_terminal_key.as_ref().is_some_and(|pending| {
@@ -16525,7 +16548,12 @@ impl WorkspaceView {
         }
         pending.revision = pending.revision.wrapping_add(1);
         self.quit_intent.activity();
-        self.model.message = TERMINAL_NAVIGATION_HOLD_MESSAGE.into();
+        if !matches!(pending.gate.state(),
+            workspace_app::terminal_key_gate::State::Recover
+                | workspace_app::terminal_key_gate::State::Uncertain)
+        {
+            self.model.message = TERMINAL_NAVIGATION_HOLD_MESSAGE.into();
+        }
         true
     }
     fn begin_terminal_copy_key(&mut self, key: Keystroke) -> bool {
@@ -17333,16 +17361,31 @@ impl WorkspaceView {
             }
             return;
         }
+        if self.release_idle_terminal_key() {
+            return;
+        }
+        let pending = self.pending_terminal_key.as_ref().expect("idle queue already released");
         let current = pending
             .destination
             .as_ref()
             .is_some_and(|destination| self.terminal_key_destination_current(destination));
         if !current {
             if self.rebind_undispatched_tab_key() { return; }
+            let detail = if self.validation {
+                self.pending_terminal_key.as_ref().and_then(|pending| pending.destination.as_ref()).map(|destination| format!(
+                    " · proyecto={} superficie={} foco={} generación={} tmux={} panel={}",
+                    self.model.project == destination.project,
+                    self.model.surface == destination.surface,
+                    self.model.focus_revision == destination.focus_revision,
+                    self.file_generation == destination.generation,
+                    self.terminal_key_tmux_target_current(destination),
+                    self.terminal_key_pane_current(destination),
+                )).unwrap_or_else(|| " · destino ausente".into())
+            } else { String::new() };
             if let Some(pending) = &mut self.pending_terminal_key {
                 pending.gate.invalidate();
             }
-            self.model.message = "Entrada conservada: cambió el panel".into();
+            self.model.message = format!("Entrada conservada: cambió el panel{detail}");
             return;
         }
         let editor_mode = self.current_editor().map(|editor| editor.mode);
@@ -17365,6 +17408,11 @@ impl WorkspaceView {
             && !self.help
             && !self.model.notifications
             && !self.media_active();
+        let copy_pending = self.pending_tmux_copy.is_some();
+        #[cfg(feature = "ghostty")]
+        let copy_pending = copy_pending || self.native_selection.as_ref().is_some_and(|selection| {
+            selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+        });
         let pending = self.pending_terminal_key.as_mut().expect("checked above");
         while let Some(event) = pending.overflow.pop_front() {
             let bytes = PendingOpenInput::event_bytes(&event);
@@ -17380,6 +17428,17 @@ impl WorkspaceView {
                 pending.gate.invalidate();
                 self.model.message = "Entrada conservada: requiere revisión".into();
             }
+            return;
+        }
+        // Resolve a queued paste shortcut only after the copy that preceded
+        // it has updated the clipboard. Leave it at the front so later input
+        // cannot overtake the paste.
+        if copy_pending && pending.gate.events().next().is_some_and(|event| {
+            let Event::Key(key) = event else { return false; };
+            (key.modifiers.platform && key.key.eq_ignore_ascii_case("v"))
+                || (!key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
+                    && key.modifiers.shift && key.key.eq_ignore_ascii_case("insert"))
+        }) {
             return;
         }
         let direction_pending = unobstructed
@@ -31263,10 +31322,6 @@ impl WorkspaceView {
         waiting: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
         text: &str,
     ) -> bool {
-        if !waiting.is_empty() && text.len() > TERMINAL_PASTE_LIMIT {
-            self.model.message = "Pegado limitado a 2 MiB; no se envió nada".into();
-            return true;
-        }
         let mut canceled = false;
         for (context, destination) in waiting {
             if self.terminal_input_context() != Some(context)
@@ -31292,11 +31347,7 @@ impl WorkspaceView {
             if let (Some(context), Some(destination)) =
                 (self.terminal_input_context(), self.terminal_key_destination())
             {
-                if self.paste_after_copy.len() < 128 {
-                    self.paste_after_copy.push((owner, context, destination));
-                } else {
-                    self.model.message = "Demasiados pegados pendientes; reintentá".into();
-                }
+                self.paste_after_copy.push((owner, context, destination));
             } else {
                 self.model.message = "Destino de pegado no disponible".into();
             }
@@ -31359,8 +31410,8 @@ impl WorkspaceView {
     }
     /// Clipboard text for a direct paste (Cmd+V, Shift+Insert, queued and
     /// replayed pastes, prompts, picker): the synthetic fixture clipboard in
-    /// the validation app, never the real one; at most 2 MiB. On refusal the
-    /// reason goes to the status line and nothing is pasted.
+    /// the validation app, never the real one. Non-terminal inputs retain
+    /// their existing size limit.
     fn paste_text(&mut self, cx: &App) -> Option<String> {
         let text = if self.validation {
             match &self.fixture_clipboard {
@@ -31374,7 +31425,10 @@ impl WorkspaceView {
         } else {
             cx.read_from_clipboard().and_then(|item| item.text())?
         };
-        if text.len() > 2 * 1024 * 1024 {
+        let terminal_transition = self.model.surface == Surface::Normal
+            && self.pending_terminal_key.as_ref().and_then(|pending| pending.destination.as_ref())
+                .is_some_and(|destination| matches!(&destination.content, PaneContent::Terminal(_)));
+        if self.model.surface != Surface::Terminal && !terminal_transition && text.len() > 2 * 1024 * 1024 {
             self.model.message = "Clipboard fuera de límites (2 MiB); no se pegó nada".into();
             return None;
         }
@@ -31881,6 +31935,7 @@ impl WorkspaceView {
         cx.notify();
     }
     fn on_key(&mut self, event: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        self.release_idle_terminal_key();
         if self.pending_open_input.is_none() {
             self.pending_direction_replay = None;
         }
@@ -31973,12 +32028,26 @@ impl WorkspaceView {
             let shift_insert = !key.modifiers.platform && !key.modifiers.control
                 && !key.modifiers.alt && key.modifiers.shift
                 && key.key.eq_ignore_ascii_case("insert");
+            let paste_shortcut = shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Paste));
+            // A paste during resume must be replayed through the attached
+            // tmux client after copy-mode ends. Sending its bracket framing
+            // directly to the pane would leak those escape sequences to an
+            // application that has not enabled bracketed paste.
+            // A queued navigation/copy already owns the ordering of later
+            // input. Let the ledger below capture the shortcut in its proper
+            // position, including resolving a preceding copy on replay.
+            let queued_input = self.pending_terminal_key.as_ref()
+                .is_some_and(|pending| !pending.replaying);
+            let defer_paste = paste_shortcut && (queued_input
+                || self.terminal_resume.active() && self.pending_tmux_copy.is_none());
             if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy)) {
                 self.copy_selection(cx);
-            } else if shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Paste)) {
+            } else if paste_shortcut && !defer_paste {
                 self.request_terminal_paste(cx);
             }
-            if shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy | workspace_app::terminal_shortcuts::Shortcut::Paste)) {
+            if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy))
+                || (paste_shortcut && !defer_paste)
+            {
                 window.prevent_default();
                 cx.stop_propagation();
                 cx.notify();
@@ -32013,6 +32082,10 @@ impl WorkspaceView {
                                     && !key.modifiers.platform && !key.modifiers.shift
                                     && key.key_char.as_deref().unwrap_or(&key.key) == "y")
                             })
+                });
+                #[cfg(feature = "ghostty")]
+                let copy_before_paste = copy_before_paste || self.native_selection.as_ref().is_some_and(|selection| {
+                    selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
                 });
                 if copy_before_paste {
                     // Resolve the clipboard only when this key is replayed,
@@ -32164,6 +32237,26 @@ impl WorkspaceView {
             && queued_direction_key(k, self.editor_window_prefix.is_some())
             && !self.directional_focus_geometry_ready()
             && self.begin_sidebar_direction_replay(k.clone())
+        {
+            window.prevent_default();
+            cx.stop_propagation();
+            cx.notify();
+            return;
+        }
+        #[cfg(feature = "ghostty")]
+        if self.terminal_resume.active()
+            && self.model.surface == Surface::Terminal
+            && self.native_selection.as_ref().is_some_and(|selection| {
+                selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+            })
+            && self.terminal_command.is_none() && self.file_prompt.is_none()
+            && self.remote_prompt.is_none() && !self.help && !self.model.notifications
+            && !self.media_active()
+            && (k.modifiers.platform && key.eq_ignore_ascii_case("v")
+                || !k.modifiers.platform && !k.modifiers.control && !k.modifiers.alt
+                    && k.modifiers.shift && key.eq_ignore_ascii_case("insert"))
+            && self.begin_terminal_event_replay_on(
+                workspace_app::open_input::Event::Key(k.clone()), Surface::Terminal)
         {
             window.prevent_default();
             cx.stop_propagation();
@@ -33726,11 +33819,26 @@ impl WorkspaceView {
             }
     }
     #[cfg(feature = "ghostty")]
+    fn retain_paste_after_failed_native_copy(&mut self) {
+        let Some(pending) = self.pending_terminal_key.as_mut() else { return; };
+        let has_paste = pending.gate.events().chain(pending.overflow.iter()).any(|event| {
+            let workspace_app::open_input::Event::Key(key) = event else { return false; };
+            (key.modifiers.platform && key.key.eq_ignore_ascii_case("v"))
+                || (!key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
+                    && key.modifiers.shift && key.key.eq_ignore_ascii_case("insert"))
+        });
+        if has_paste {
+            pending.gate.invalidate();
+            self.model.message = "Copia no confirmada; pegado conservado para revisar".into();
+        }
+    }
+    #[cfg(feature = "ghostty")]
     fn clear_native_selection(&mut self) {
         if self.native_selection.as_ref().is_some_and(|selection| {
             selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
         }) {
             self.paste_after_copy.clear();
+            self.retain_paste_after_failed_native_copy();
         }
         if let Some(selection) = self.native_selection.take()
             && let Some(window) = self.windows.iter().find(|window| {
@@ -33862,6 +33970,7 @@ impl WorkspaceView {
                     Ok(Err(error)) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
@@ -33871,6 +33980,7 @@ impl WorkspaceView {
                     Err(mpsc::TryRecvError::Disconnected) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
@@ -33883,6 +33993,7 @@ impl WorkspaceView {
                     Ok(Err(error)) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         selection.endpoint_valid = false;
                         selection.copy_requested = false;
                         changed = true;
@@ -33893,6 +34004,7 @@ impl WorkspaceView {
                     Err(mpsc::TryRecvError::Disconnected) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
@@ -33909,11 +34021,13 @@ impl WorkspaceView {
                     Ok(Ok(_)) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La selección cambió antes de copiar".into();
+                        self.retain_paste_after_failed_native_copy();
                         changed = true;
                     }
                     Ok(Err(error)) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        self.retain_paste_after_failed_native_copy();
                         changed = true;
                     }
                     Err(mpsc::TryRecvError::Empty) => {
@@ -33922,6 +34036,7 @@ impl WorkspaceView {
                     Err(mpsc::TryRecvError::Disconnected) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
+                        self.retain_paste_after_failed_native_copy();
                         self.selecting = false;
                         return true;
                     }
@@ -33942,6 +34057,7 @@ impl WorkspaceView {
                     Err(error) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         selection.copy_requested = false;
                         changed = true;
                     }
@@ -33952,6 +34068,7 @@ impl WorkspaceView {
                     self.paste_after_copy.clear();
                     self.model.message =
                         "La selección no se confirmó; volvé a seleccionarla".into();
+                    self.retain_paste_after_failed_native_copy();
                     changed = true;
                 } else {
                     match window.terminal.selection_copy(selection.token) {
@@ -33962,6 +34079,7 @@ impl WorkspaceView {
                         Err(error) => {
                             self.paste_after_copy.clear();
                             self.model.message = error;
+                            self.retain_paste_after_failed_native_copy();
                             changed = true;
                         }
                     }
@@ -39008,20 +39126,12 @@ fn has_unescaped_file_expansion(name: &str) -> bool {
     false
 }
 
-/// Drop C0/C1 controls except tab, LF and CR before terminal paste.
-/// This prevents clipboard bytes from closing the bracketed-paste envelope.
-const TERMINAL_PASTE_LIMIT: usize = 2 * 1024 * 1024;
+/// Preserve clipboard text, including control characters, in terminal paste.
 fn terminal_paste_bytes(text: &str, bracketed: bool) -> Result<Vec<u8>, String> {
-    if text.len() > TERMINAL_PASTE_LIMIT {
-        return Err("Pegado limitado a 2 MiB; no se envió nada".into());
-    }
-    let clean: String = text.chars()
-        .filter(|c| !c.is_control() || matches!(c, '\t' | '\n' | '\r'))
-        .collect();
     Ok(if bracketed {
-        format!("\x1b[200~{clean}\x1b[201~").into_bytes()
+        format!("\x1b[200~{text}\x1b[201~").into_bytes()
     } else {
-        clean.into_bytes()
+        text.as_bytes().to_vec()
     })
 }
 
