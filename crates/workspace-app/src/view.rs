@@ -16548,7 +16548,12 @@ impl WorkspaceView {
         }
         pending.revision = pending.revision.wrapping_add(1);
         self.quit_intent.activity();
-        self.model.message = TERMINAL_NAVIGATION_HOLD_MESSAGE.into();
+        if !matches!(pending.gate.state(),
+            workspace_app::terminal_key_gate::State::Recover
+                | workspace_app::terminal_key_gate::State::Uncertain)
+        {
+            self.model.message = TERMINAL_NAVIGATION_HOLD_MESSAGE.into();
+        }
         true
     }
     fn begin_terminal_copy_key(&mut self, key: Keystroke) -> bool {
@@ -17366,10 +17371,21 @@ impl WorkspaceView {
             .is_some_and(|destination| self.terminal_key_destination_current(destination));
         if !current {
             if self.rebind_undispatched_tab_key() { return; }
+            let detail = if self.validation {
+                self.pending_terminal_key.as_ref().and_then(|pending| pending.destination.as_ref()).map(|destination| format!(
+                    " · proyecto={} superficie={} foco={} generación={} tmux={} panel={}",
+                    self.model.project == destination.project,
+                    self.model.surface == destination.surface,
+                    self.model.focus_revision == destination.focus_revision,
+                    self.file_generation == destination.generation,
+                    self.terminal_key_tmux_target_current(destination),
+                    self.terminal_key_pane_current(destination),
+                )).unwrap_or_else(|| " · destino ausente".into())
+            } else { String::new() };
             if let Some(pending) = &mut self.pending_terminal_key {
                 pending.gate.invalidate();
             }
-            self.model.message = "Entrada conservada: cambió el panel".into();
+            self.model.message = format!("Entrada conservada: cambió el panel{detail}");
             return;
         }
         let editor_mode = self.current_editor().map(|editor| editor.mode);
