@@ -33819,11 +33819,26 @@ impl WorkspaceView {
             }
     }
     #[cfg(feature = "ghostty")]
+    fn retain_paste_after_failed_native_copy(&mut self) {
+        let Some(pending) = self.pending_terminal_key.as_mut() else { return; };
+        let has_paste = pending.gate.events().chain(pending.overflow.iter()).any(|event| {
+            let workspace_app::open_input::Event::Key(key) = event else { return false; };
+            (key.modifiers.platform && key.key.eq_ignore_ascii_case("v"))
+                || (!key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
+                    && key.modifiers.shift && key.key.eq_ignore_ascii_case("insert"))
+        });
+        if has_paste {
+            pending.gate.invalidate();
+            self.model.message = "Copia no confirmada; pegado conservado para revisar".into();
+        }
+    }
+    #[cfg(feature = "ghostty")]
     fn clear_native_selection(&mut self) {
         if self.native_selection.as_ref().is_some_and(|selection| {
             selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
         }) {
             self.paste_after_copy.clear();
+            self.retain_paste_after_failed_native_copy();
         }
         if let Some(selection) = self.native_selection.take()
             && let Some(window) = self.windows.iter().find(|window| {
@@ -33955,6 +33970,7 @@ impl WorkspaceView {
                     Ok(Err(error)) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
@@ -33964,6 +33980,7 @@ impl WorkspaceView {
                     Err(mpsc::TryRecvError::Disconnected) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
@@ -33976,6 +33993,7 @@ impl WorkspaceView {
                     Ok(Err(error)) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         selection.endpoint_valid = false;
                         selection.copy_requested = false;
                         changed = true;
@@ -33986,6 +34004,7 @@ impl WorkspaceView {
                     Err(mpsc::TryRecvError::Disconnected) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
+                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
@@ -34002,11 +34021,13 @@ impl WorkspaceView {
                     Ok(Ok(_)) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La selección cambió antes de copiar".into();
+                        self.retain_paste_after_failed_native_copy();
                         changed = true;
                     }
                     Ok(Err(error)) => {
                         self.paste_after_copy.clear();
                         self.model.message = error;
+                        self.retain_paste_after_failed_native_copy();
                         changed = true;
                     }
                     Err(mpsc::TryRecvError::Empty) => {
@@ -34015,6 +34036,7 @@ impl WorkspaceView {
                     Err(mpsc::TryRecvError::Disconnected) => {
                         self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
+                        self.retain_paste_after_failed_native_copy();
                         self.selecting = false;
                         return true;
                     }
