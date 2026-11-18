@@ -12,7 +12,7 @@ use std::{
     path::{Path, PathBuf},
     process::{Command, Stdio},
     sync::{
-        Mutex,
+        Arc, Mutex,
         atomic::{AtomicU64, Ordering},
         mpsc::{self, Receiver, SyncSender},
     },
@@ -81,10 +81,14 @@ pub fn observed_active_target_changed(before: &[WindowInfo], after: &[WindowInfo
 pub enum Action {
     Normal(bool),
     Resume(u64),
-    ResumeInput(u64, Vec<u8>),
-    /// Paste raw clipboard bytes after resume; tmux applies bracketed-paste
-    /// framing according to the destination application's current mode.
-    ResumePaste(u64, Vec<u8>),
+    /// Input submitted immediately to this worker, with shared recovery bytes.
+    ResumeStreamInput(u64, Arc<Vec<u8>>, bool),
+    /// A FIFO batch whose paste spans are raw clipboard bytes, not preframed.
+    ResumeStreamMixed(u64, Arc<Vec<u8>>, Vec<(usize, usize)>),
+    /// Consume the native selection reply once, in the same input FIFO.
+    ResumeNativeCopied(u64, crate::terminal::SelectionCopyDelivery),
+    /// Paste an earlier copy in backend order after resuming.
+    ResumeCopied(u64, u64, Option<String>, Vec<u8>, Vec<(usize, usize)>),
     Barrier(u64),
     /// An input-replay action whose destination must be observed before the
     /// next event is released. The wrapped action cannot itself be tracked.
@@ -94,6 +98,12 @@ pub enum Action {
         token: u64,
         window: String,
         pane: String,
+    },
+    VisualSelection {
+        token: u64,
+        window: String,
+        pane: String,
+        action: Box<Action>,
     },
     VisualScreenMotion {
         token: u64,
@@ -152,10 +162,12 @@ pub enum Action {
 pub enum Event {
     Resumed(u64, Result<(), String>),
     InputDelivered(u64, Result<(), String>),
+    OrderedPasteFinished(u64, Result<(), String>),
     Barrier(u64),
     TargetActionDone(u64, Result<Vec<WindowInfo>, String>),
     CopyMarkCaptured(u64, Result<CopyMark, String>),
     SelectionInspected(u64, Result<bool, String>),
+    VisualSelectionDone(u64, Result<(), String>),
     VisualScreenMotionDone(u64, RestoreCopyMark),
     VisualLineDone(u64, Result<(), String>),
     CopyMarkRestored(u64, RestoreCopyMark),
@@ -1678,9 +1690,6 @@ impl Session {
         }
         Ok(target)
     }
-    fn resume_input(&self, target: &ResumeTarget, bytes: &[u8]) -> Result<(), String> {
-        self.resume_buffer(target, bytes, false)
-    }
     fn resume_buffer(&self, target: &ResumeTarget, bytes: &[u8], paste: bool) -> Result<(), String> {
         if bytes.is_empty() { return Ok(()); }
         if self.resume_target()? != *target
@@ -1759,6 +1768,22 @@ impl Session {
             let _ = self.run(&["delete-buffer", "-b", &buffer]);
         }
         delivered
+    }
+    fn resume_mixed(&self, target: &ResumeTarget, bytes: &[u8], ranges: &[(usize, usize)]) -> Result<(), String> {
+        let mut cursor = 0;
+        for &(start, end) in ranges {
+            if start < cursor || end < start || end > bytes.len() {
+                return Err("Delimitación de pegado inválida; entrada no enviada".into());
+            }
+            cursor = end;
+        }
+        cursor = 0;
+        for &(start, end) in ranges {
+            self.resume_buffer(target, &bytes[cursor..start], false)?;
+            self.resume_buffer(target, &bytes[start..end], true)?;
+            cursor = end;
+        }
+        self.resume_buffer(target, &bytes[cursor..], false)
     }
     fn command(&self) -> Command {
         let mut c = Command::new(&self.binary);
@@ -2431,15 +2456,8 @@ unbind-key -a -T movepane
         }
         let socket = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
         let before = self.copy_selection_snapshot()?;
-        let confirmed = self.copy_selection_snapshot()?;
-        let after = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
-        if before != confirmed
-            || before.target.window != window
-            || before.target.pane != pane
-            || socket.dev() != after.dev()
-            || socket.ino() != after.ino()
-        {
-            return Err("Cambió la selección; acción cancelada".into());
+        if before.target.window != window || before.target.pane != pane {
+            return Err("Cambió el destino de terminal".into());
         }
         let key = (before.target.window.clone(), before.target.pane.clone());
         let is_line = lines.get(&key).is_some_and(|line| {
@@ -2575,6 +2593,7 @@ unbind-key -a -T movepane
             // column guard in each step avoids moving past a wide character.
             const STEPS_PER_COMMAND: u64 = 4;
             let desired = before.cursor_x;
+            let mut interrupted = false;
             while post.cursor_x != desired {
                 let steps = post.cursor_x.abs_diff(desired).min(STEPS_PER_COMMAND);
                 let fixed_x = format!("#{{==:#{{copy_cursor_x}},{}}}", post.cursor_x);
@@ -2618,7 +2637,12 @@ unbind-key -a -T movepane
                 if restored.target != post.target
                     || restored.session != post.session
                     || restored.server != post.server
-                    || restored.cursor_y != post.cursor_y
+                    || socket_restored.dev() != socket.dev()
+                    || socket_restored.ino() != socket.ino()
+                {
+                    return Err("Cambió el destino de terminal".into());
+                }
+                if restored.cursor_y != post.cursor_y
                     || restored.scroll != post.scroll
                     || restored.width != post.width
                     || restored.height != post.height
@@ -2633,18 +2657,22 @@ unbind-key -a -T movepane
                     // short line, even when the original cursor was beyond it.
                     || (movement == "cursor-right"
                         && (restored.cursor_x < post.cursor_x || restored.cursor_x > desired))
-                    || socket_restored.dev() != socket.dev()
-                    || socket_restored.ino() != socket.ino()
                 {
-                    return Err(format!(
-                        "No se pudo confirmar la posición del cursor ({}, esperado hasta {})",
-                        restored.cursor_x, desired
-                    ));
+                    // Another navigation can legitimately move the cursor or
+                    // selection while this optional column adjustment runs.
+                    // Stop adjusting instead of turning that movement into a
+                    // failed selection and blocking the following keys.
+                    interrupted = true;
+                    break;
                 }
                 let stuck = restored.cursor_x == post.cursor_x;
                 post = restored;
                 // On a short line tmux cannot move past its last cell.
                 if stuck { break; }
+            }
+            if interrupted {
+                // The old line marker no longer describes the live selection.
+                return Ok(());
             }
             let ends = post.endpoints.ok_or("Selección sin extremos")?;
             let grid_history = self.copy_grid_history(&post)?;
@@ -2750,25 +2778,13 @@ unbind-key -a -T movepane
             present: flag(present)?,
         })
     }
-    /// Read selection state in worker order, while binding the reply to the
-    /// expected pane and server. The caller must still fence later input and
-    /// validate the frontend focus and attachment before acting on the reply.
+    /// Read selection state in worker order for the expected pane.
     fn inspect_selection(&self, window: &str, pane: &str) -> Result<bool, String> {
-        // Repeated complete observations and the socket check catch some,
-        // but not all, changes caused by concurrent tmux clients.
-        let socket = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
-        let first = self.selection_snapshot()?;
-        let second = self.selection_snapshot()?;
-        let after = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
-        if first != second
-            || first.target.window != window
-            || first.target.pane != pane
-            || socket.dev() != after.dev()
-            || socket.ino() != after.ino()
-        {
-            return Err("Cambió el destino o la selección de terminal".into());
+        let selection = self.selection_snapshot()?;
+        if selection.target.window != window || selection.target.pane != pane {
+            return Err("Cambió el destino de terminal".into());
         }
-        Ok(first.active || first.present)
+        Ok(selection.active || selection.present)
     }
 
     /// Infer two wrap boundaries only if exactly one byte representation fits.
@@ -3109,7 +3125,6 @@ unbind-key -a -T movepane
             pane: pane.into(),
         };
         let before = (|| -> Result<_, String> {
-            let socket = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
             let state = self.copy_selection_snapshot()?;
             if state.target != expected
                 || !(state.active || state.present)
@@ -3119,21 +3134,17 @@ unbind-key -a -T movepane
             {
                 return Err("Movimiento de terminal fuera de límites".into());
             }
-            Ok((socket.dev(), socket.ino(), state))
+            Ok(state)
         })();
-        let Ok((device, inode, state)) = before else {
+        let Ok(state) = before else {
             return RestoreCopyMark::RejectedBeforeMove;
         };
-        // Anchor the command to the observed cursor, selection endpoints,
-        // rectangle mode and geometry as well as target/server identity.
-        // A selection can change without changing its presence flag.
-        let search_condition = format!(
-            "#{{==:#{{search_present}},{}}}",
-            u8::from(state.search_present)
+        // Cursor and selection endpoints can change as the user navigates.
+        // Bind the operation to the requested pane, without requiring those
+        // transient values to remain identical to the earlier observation.
+        let condition = format!(
+            "#{{&&:#{{==:#{{window_id}},{window}}},#{{&&:#{{==:#{{pane_id}},{pane}}},#{{==:#{{pane_mode}},copy-mode}}}}}}"
         );
-        let condition = format!("#{{&&:{},{search_condition}}}", state.condition());
-        let session = state.session.clone();
-        let server = state.server;
         let height = state.height as usize;
         let context = format!("{}:", self.name);
         let motion = if bottom { "bottom-line" } else { "top-line" };
@@ -3184,24 +3195,7 @@ unbind-key -a -T movepane
         ]);
         match outcome.as_deref().map(str::trim) {
             Ok("TWR_VISUAL_MOVE_REJECT") => RestoreCopyMark::RejectedBeforeMove,
-            Ok("TWR_VISUAL_MOVE_OK") => {
-                let after = (|| -> Result<bool, String> {
-                    let state = self.selection_snapshot()?;
-                    let socket = fs::metadata(&self.socket).map_err(|error| error.to_string())?;
-                    Ok(socket.dev() == device
-                        && socket.ino() == inode
-                        && state.target == expected
-                        && state.session == session
-                        && state.server == server
-                        && state.height == height
-                        && (state.active || state.present))
-                })();
-                if after == Ok(true) {
-                    RestoreCopyMark::Restored
-                } else {
-                    RestoreCopyMark::UncertainAfterMove
-                }
-            }
+            Ok("TWR_VISUAL_MOVE_OK") => RestoreCopyMark::Restored,
             _ => RestoreCopyMark::UncertainAfterMove,
         }
     }
@@ -3248,10 +3242,8 @@ unbind-key -a -T movepane
         }
         let socket = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
         let selection = self.copy_selection_snapshot()?;
-        let confirmed = self.copy_selection_snapshot()?;
         let observed_socket = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
-        if selection != confirmed
-            || selection.target != expected
+        if selection.target != expected
             || socket.dev() != observed_socket.dev()
             || socket.ino() != observed_socket.ino()
         {
@@ -3309,32 +3301,12 @@ unbind-key -a -T movepane
             .and_then(|mut file| file.read_exact(&mut random))
             .map_err(|_| "No se pudo identificar la copia".to_owned())?;
         let prefix = format!("twr-copy-{}-", hex_bytes(&random));
-        selection.endpoints.ok_or("Selección sin extremos")?;
-        let condition = selection.condition();
         let action = if keep_mode {
             "copy-selection"
         } else {
             "copy-selection-and-cancel"
         };
-        // IDs and prefix contain only validated ASCII digits or generated hex.
-        // Evaluate the metadata predicate and enqueue the copy within tmux,
-        // reducing (but not eliminating) races with other clients.
-        let command =
-            format!("send-keys -t {pane} -X {action} -C {prefix} ; display-message -p TWR_COPY_OK");
-        let decision = self.run(&[
-            "if-shell",
-            "-F",
-            "-t",
-            &format!("{}:", self.name),
-            &condition,
-            &command,
-            "display-message -p TWR_COPY_REJECT",
-        ])?;
-        match decision.trim() {
-            "TWR_COPY_OK" => {}
-            "TWR_COPY_REJECT" => return Err("Cambió la selección; copia cancelada".into()),
-            _ => return Err("No se pudo confirmar la copia de terminal".into()),
-        }
+        self.run(&["send-keys", "-t", pane, "-X", action, "-C", &prefix])?;
         let names = self.run(&["list-buffers", "-F", "#{buffer_name}"])?;
         let mut matching = names.lines().filter(|name| {
             name.strip_prefix(&prefix).is_some_and(|suffix| {
@@ -3354,10 +3326,7 @@ unbind-key -a -T movepane
         let text = String::from_utf8(output_bytes_with_limit(&mut command, Duration::from_secs(15), usize::MAX)?)
             .map_err(|_| "La selección no pudo decodificarse sin pérdida".to_owned())?;
         let after = fs::metadata(&self.socket).map_err(|e| e.to_string())?;
-        if self.resume_target()? != expected
-            || self.session_id()? != selection.session
-            || self.server_pid(&expected)? != selection.server
-            || socket.dev() != after.dev()
+        if socket.dev() != after.dev()
             || socket.ino() != after.ino()
         {
             return Err("Cambió el destino de la terminal; copia cancelada".into());
@@ -3375,12 +3344,15 @@ unbind-key -a -T movepane
         let pane_target = expected.map_or_else(|| target.clone(), |target| target.pane.clone());
         let args = match a {
             Action::Resume(_)
-            | Action::ResumeInput(_, _)
-            | Action::ResumePaste(_, _)
+            | Action::ResumeStreamInput(_, _, _)
+            | Action::ResumeStreamMixed(_, _, _)
+            | Action::ResumeNativeCopied(_, _)
+            | Action::ResumeCopied(_, _, _, _, _)
             | Action::Barrier(_)
             | Action::TrackedTarget(_, _, _, _)
             | Action::CaptureCopyMark(_)
             | Action::InspectSelection { .. }
+            | Action::VisualSelection { .. }
             | Action::VisualScreenMotion { .. }
             | Action::VisualLine { .. }
             | Action::CopyNormalLines { .. }
@@ -3415,6 +3387,7 @@ unbind-key -a -T movepane
                     .map(|_| ());
             }
             Action::Motion(key, count) => {
+                let target = pane_target;
                 let command = normal_command(&key).ok_or("Movimiento normal no soportado")?;
                 if !(1..=9999).contains(&count) {
                     return Err("Conteo fuera de límites".into());
@@ -3484,6 +3457,7 @@ unbind-key -a -T movepane
                 ]
             }
             Action::SelectAll => {
+                let target = pane_target;
                 self.run(&["copy-mode", "-t", &target])?;
                 for command in [
                     "history-top",
@@ -3945,6 +3919,7 @@ impl Backend {
             let mut resume_error = None;
             let mut visual_lines = LineSelections::new();
             let mut yank_anchor: Option<YankAnchor> = None;
+            let mut copied: Option<(u64, Result<Option<String>, String>)> = None;
             let mut windows_poll_error_reported = false;
             let poll_interval = Duration::from_millis(400);
             let max_poll_backoff = Duration::from_secs(8);
@@ -4068,10 +4043,13 @@ impl Backend {
                 if let (Some(expected), Ok(action)) = (&guard, &request)
                     && let Err(error) = session.verify_additional_terminal(expected)
                 {
+                    resume = None;
                     let event = match action {
                         Action::Resume(token) => Event::Resumed(*token, Err(error)),
-                        Action::ResumeInput(token, _) => Event::InputDelivered(*token, Err(error)),
-                        Action::ResumePaste(token, _) => Event::InputDelivered(*token, Err(error)),
+                        Action::ResumeStreamInput(token, _, _)
+                        | Action::ResumeStreamMixed(token, _, _)
+                        | Action::ResumeNativeCopied(token, _) => Event::InputDelivered(*token, Err(error)),
+                        Action::ResumeCopied(token, _, _, _, _) => Event::OrderedPasteFinished(*token, Err(error)),
                         Action::TrackedTarget(token, _, _, _) => {
                             Event::TargetActionDone(*token, Err(error))
                         }
@@ -4080,6 +4058,9 @@ impl Backend {
                         }
                         Action::InspectSelection { token, .. } => {
                             Event::SelectionInspected(*token, Err(error))
+                        }
+                        Action::VisualSelection { token, .. } => {
+                            Event::VisualSelectionDone(*token, Err(error))
                         }
                         Action::VisualScreenMotion { token, .. } => Event::VisualScreenMotionDone(
                             *token,
@@ -4224,29 +4205,49 @@ impl Backend {
                         resume = result.as_ref().ok().cloned().map(|target| (token, target));
                         let _ = tx.send(Event::Resumed(token, result.map(|_| ())));
                     }
-                    Ok(Action::ResumeInput(token, bytes)) => {
+                    Ok(Action::ResumeStreamInput(token, bytes, paste)) => {
                         let result = match &resume {
-                            Some((id, target)) if *id == token => {
-                                session.resume_input(target, &bytes)
-                            }
-                            _ => Err("Transición obsoleta; entrada cancelada".into()),
+                            Some((id, target)) if *id == token => session.resume_buffer(target, &bytes, paste),
+                            _ => Err("Transición obsoleta; entrada no enviada".into()),
                         };
-                        if result.is_err() {
-                            resume = None;
-                        }
+                        if result.is_err() { resume = None; }
                         let _ = tx.send(Event::InputDelivered(token, result));
                     }
-                    Ok(Action::ResumePaste(token, bytes)) => {
+                    Ok(Action::ResumeStreamMixed(token, bytes, ranges)) => {
                         let result = match &resume {
-                            Some((id, target)) if *id == token => {
-                                session.resume_buffer(target, &bytes, true)
-                            }
-                            _ => Err("Transición obsoleta; pegado no enviado".into()),
+                            Some((id, target)) if *id == token => session.resume_mixed(target, &bytes, &ranges),
+                            _ => Err("Transición obsoleta; entrada no enviada".into()),
                         };
-                        if result.is_err() {
-                            resume = None;
-                        }
+                        if result.is_err() { resume = None; }
                         let _ = tx.send(Event::InputDelivered(token, result));
+                    }
+                    Ok(Action::ResumeNativeCopied(token, delivery)) => {
+                        let result = match &resume {
+                            Some((id, target)) if *id == token => delivery.receive(Duration::from_secs(3))
+                                .and_then(|bytes| session.resume_buffer(target, &bytes, true)),
+                            _ => Err("Transición obsoleta; entrada no enviada".into()),
+                        };
+                        if result.is_err() { resume = None; }
+                        let _ = tx.send(Event::InputDelivered(token, result));
+                    }
+                    Ok(Action::ResumeCopied(token, copy_token, fallback, bytes, ranges)) => {
+                        let copy = copied.as_ref().filter(|(id, _)| *id == copy_token).map(|(_, value)| value);
+                        let result = match &resume {
+                            Some((id, target)) if *id == token => session.resume_mixed(target, &bytes, &ranges)
+                                .and_then(|()| match copy {
+                                    Some(Ok(text)) => match text.as_ref().or(fallback.as_ref()) {
+                                        Some(text) => session.resume_buffer(target, text.as_bytes(), true),
+                                        None => Err("No hay texto para pegar".into()),
+                                    },
+                                    Some(Err(error)) => Err(error.clone()),
+                                    None => Err("No se pudo completar el pegado de la copia".into()),
+                                }),
+                            _ => Err("Transición obsoleta; entrada no enviada".into()),
+                        };
+                        // Earlier bytes may already have run. A failed copy
+                        // or paste invalidates every later dependent batch.
+                        if result.is_err() { resume = None; }
+                        let _ = tx.send(Event::OrderedPasteFinished(token, result));
                     }
                     Ok(Action::CaptureCopyMark(token)) => {
                         let _ =
@@ -4261,6 +4262,40 @@ impl Backend {
                             token,
                             session.inspect_selection(&window, &pane),
                         ));
+                    }
+                    Ok(Action::VisualSelection { token, window, pane, action }) => {
+                        resume = None;
+                        let result = (|| -> Result<(), String> {
+                            if !matches!(action.as_ref(), Action::SelectAll)
+                                && !matches!(action.as_ref(), Action::Motion(key, _)
+                                    if matches!(key.as_str(), "v" | "<C-v>" | "<Esc>"))
+                            {
+                                return Err("Acción de selección inválida".into());
+                            }
+                            let expected = ResumeTarget { window, pane };
+                            let observed = session.resume_target()?;
+                            if observed != expected {
+                                return Err("Cambió el destino antes de la selección".into());
+                            }
+                            visual_lines.remove(&(observed.window, observed.pane));
+                            match *action {
+                                Action::Motion(key, count) if key == "v" => {
+                                    if !(1..=9999).contains(&count) {
+                                        return Err("Conteo fuera de límites".into());
+                                    }
+                                    session.run(&["copy-mode", "-t", &expected.pane])?;
+                                    for command in ["clear-selection", "begin-selection"] {
+                                        session.run(&["send-keys", "-t", &expected.pane, "-X", command])?;
+                                    }
+                                }
+                                action => session.action_with_target(action, Some(&expected))?,
+                            }
+                            if session.resume_target()? != expected {
+                                return Err("Cambió el destino durante la selección".into());
+                            }
+                            Ok(())
+                        })();
+                        let _ = tx.send(Event::VisualSelectionDone(token, result));
                     }
                     Ok(Action::VisualScreenMotion {
                         token,
@@ -4322,6 +4357,7 @@ impl Backend {
                             yank_anchor = anchor;
                             copy
                         });
+                        copied = Some((token, result.as_ref().map(|copy| copy.as_ref().map(|copy| copy.text.clone())).map_err(Clone::clone)));
                         let _ = tx.send(Event::CopyTracked(token, result));
                     }
                     Ok(Action::CopyNormalLines { token, anchor_token, window, pane, count, fallback_first }) => {
@@ -4335,6 +4371,7 @@ impl Backend {
                         } else {
                             Err("Posición de yank no disponible; copia cancelada".to_owned())
                         };
+                        copied = Some((token, result.as_ref().map(|copy| copy.as_ref().map(|copy| copy.text.clone())).map_err(Clone::clone)));
                         let _ = tx.send(Event::CopyTracked(token, result));
                     }
                     Ok(Action::CopyNormalMotion { token, anchor_token, window, pane, motion, count, fallback_motion }) => {
@@ -4352,6 +4389,7 @@ impl Backend {
                         } else {
                             Err("Posición de yank no disponible; copia cancelada".to_owned())
                         };
+                        copied = Some((token, result.as_ref().map(|copy| copy.as_ref().map(|copy| copy.text.clone())).map_err(Clone::clone)));
                         let _ = tx.send(Event::CopyTracked(token, result));
                     }
                     Ok(Action::VisualLine {
@@ -5219,7 +5257,7 @@ mod tests {
     #[test]
     fn full_backend_queue_does_not_consume_detached_input() {
         use crate::editor_panes::{Content, Panes};
-        use crate::terminal_resume::{Context, Deliveries, Fence, detach_with_delivery};
+        use crate::terminal_resume::{Context, Deliveries, Fence, detach_with_delivery_typed};
         use workspace_core::editor_panes::Axis;
         let (commands, rx) = mpsc::sync_channel(1);
         let (_event_tx, events) = mpsc::channel();
@@ -5246,8 +5284,9 @@ mod tests {
             .unwrap();
         panes.layout.focus(terminal_pane).unwrap();
         assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, id, bytes| {
-                backend.send(Action::ResumeInput(id, bytes.to_vec()))
+            detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, id, bytes, ranges| {
+                assert!(ranges.is_empty());
+                backend.send(Action::ResumeStreamInput(id, Arc::new(bytes.to_vec()), false))
             })
             .is_err()
         );
@@ -5260,13 +5299,14 @@ mod tests {
         assert!(!deliveries.busy(1));
         assert!(matches!(rx.recv().unwrap(), Action::New));
         assert_eq!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, id, bytes| {
-                backend.send(Action::ResumeInput(id, bytes.to_vec()))
+            detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, id, bytes, ranges| {
+                assert!(ranges.is_empty());
+                backend.send(Action::ResumeStreamInput(id, Arc::new(bytes.to_vec()), false))
             }),
             Ok(true)
         );
         assert!(
-            matches!(rx.recv().unwrap(), Action::ResumeInput(id, bytes) if id == token && bytes == b"synthetic")
+            matches!(rx.recv().unwrap(), Action::ResumeStreamInput(id, bytes, false) if id == token && bytes.as_slice() == b"synthetic")
         );
         panes.layout.focus(file_pane).unwrap();
         assert_eq!(
@@ -5625,10 +5665,10 @@ mod tests {
         };
         let token = fence.begin(context, Instant::now());
         backend.send(Action::Resume(token)).unwrap();
-        // No wait between i and text. The only output path is the ack chain.
-        fence
-            .push(context, b"printf 'SYNTHETIC-RESUME-FAST\\n'\r")
-            .unwrap();
+        // Queue text directly behind Resume without consuming a UI reply.
+        fence.submit(context, b"printf 'SYNTHETIC-RESUME-FAST\\n'\r", false, Instant::now(),
+            |id, bytes, paste| backend.send(Action::ResumeStreamInput(id, bytes, paste)),
+        ).unwrap();
         let deadline = Instant::now() + Duration::from_secs(10);
         let mut delivered = false;
         while fence.active() {
@@ -5644,9 +5684,7 @@ mod tests {
                     _ => continue,
                 };
             result.unwrap();
-            if let Some(bytes) = fence.ack(context, id, ready, true, Instant::now()) {
-                backend.send(Action::ResumeInput(id, bytes)).unwrap();
-            }
+            assert!(fence.ack_with_failure_prefix(context, id, ready, true, Vec::new));
         }
         assert!(delivered);
         let target = session.resume_target().unwrap();
@@ -5670,12 +5708,13 @@ mod tests {
         let blur_token = fence.begin(context, Instant::now());
         backend.send(Action::Normal(true)).unwrap();
         backend.send(Action::Resume(blur_token)).unwrap();
-        fence.push(context, b"printf 'BLUR-FIFO-OK\\n'\r").unwrap();
-        let detached = fence.detach().unwrap();
-        assert_eq!(detached.token, blur_token);
-        backend
-            .send(Action::ResumeInput(blur_token, detached.bytes))
-            .unwrap();
+        fence.submit(context, b"printf 'BLUR-FIFO-OK\\n'\r", false, Instant::now(),
+            |id, bytes, paste| backend.send(Action::ResumeStreamInput(id, bytes, paste)),
+        ).unwrap();
+        let mut deliveries = crate::terminal_resume::Deliveries::default();
+        assert!(crate::terminal_resume::detach_with_delivery_typed(
+            &mut fence, &mut deliveries, Instant::now(), |_, _, _, _| panic!("already submitted"),
+        ).unwrap());
         // A window switch requested immediately afterward must be queued
         // behind the input, even before the UI has received either ack.
         backend.send(Action::New).unwrap();
@@ -5685,10 +5724,14 @@ mod tests {
                 Event::Resumed(id, result) if id == blur_token => {
                     result.unwrap();
                     resumed = true;
+                    assert_eq!(deliveries.ack_ready_for_context(context, id, true),
+                        crate::terminal_resume::DeliveryAck::Pending);
                 }
                 Event::InputDelivered(id, result) if id == blur_token => {
                     assert!(resumed);
                     result.unwrap();
+                    assert_eq!(deliveries.ack_for_context(context, id, true),
+                        crate::terminal_resume::DeliveryAck::Finished(None));
                     break;
                 }
                 Event::Error(error) => panic!("{error}"),
@@ -5715,22 +5758,22 @@ mod tests {
         assert_ne!(session.resume_target().unwrap().pane, target.pane);
         assert!(
             session
-                .resume_input(&target, b"SHOULD-NOT-ENTER\r")
+                .resume_buffer(&target, b"SHOULD-NOT-ENTER\r", false)
                 .is_err()
         );
         let target = session.resume().unwrap();
-        assert!(session.resume_input(&target, b"\x01").is_err());
-        assert!(session.resume_input(&target, b"\x1b[200~paste").is_err());
+        assert!(session.resume_buffer(&target, b"\x01", false).is_ok());
+        assert!(session.resume_buffer(&target, b"\x1b[200~paste", false).is_ok());
         session.action(Action::New).unwrap();
         assert!(
             session
-                .resume_input(&target, b"SHOULD-NOT-ENTER\r")
+                .resume_buffer(&target, b"SHOULD-NOT-ENTER\r", false)
                 .is_err()
         );
         // Target-changing backend actions invalidate even a previously acked token.
         backend.send(Action::New).unwrap();
         backend
-            .send(Action::ResumeInput(token, b"SHOULD-NOT-ENTER\r".to_vec()))
+            .send(Action::ResumeStreamInput(token, Arc::new(b"SHOULD-NOT-ENTER\r".to_vec()), false))
             .unwrap();
         loop {
             if let Event::InputDelivered(id, result) =
@@ -5751,7 +5794,7 @@ mod tests {
             {
                 assert_eq!(id, failed_token);
                 assert!(result.is_err(), "failed selection must not resume old pane");
-                assert_eq!(fence.ack(context, id, true, false, Instant::now()), None);
+                assert!(fence.ack_with_failure_prefix(context, id, true, false, Vec::new));
                 let guard = fence
                     .retained_guard()
                     .expect("queued text must survive a failed ready ack");
@@ -5760,9 +5803,10 @@ mod tests {
             }
         }
         backend
-            .send(Action::ResumeInput(
+            .send(Action::ResumeStreamInput(
                 failed_token,
-                b"SHOULD-NOT-ENTER\r".to_vec(),
+                Arc::new(b"SHOULD-NOT-ENTER\r".to_vec()),
+                false,
             ))
             .unwrap();
         loop {
@@ -5782,29 +5826,40 @@ mod tests {
         // backend then rejects the queued batch; keep it for manual review.
         let mut deliveries = crate::terminal_resume::Deliveries::default();
         let detached_token = fence.begin(context, Instant::now());
-        fence.push(context, b"DETACHED-RECOVERY-ONLY").unwrap();
         backend.send(Action::Select("@9999999999".into())).unwrap();
         backend.send(Action::Resume(detached_token)).unwrap();
+        fence.submit(context, b"DETACHED-RECOVERY-ONLY", false, Instant::now(),
+            |id, bytes, paste| backend.send(Action::ResumeStreamInput(id, bytes, paste)),
+        ).unwrap();
         assert_eq!(
-            crate::terminal_resume::detach_with_delivery(
+            crate::terminal_resume::detach_with_delivery_typed(
                 &mut fence,
                 &mut deliveries,
                 Instant::now(),
-                |_, id, bytes| { backend.send(Action::ResumeInput(id, bytes.to_vec())) }
+                |_, _, _, _| panic!("already submitted"),
             ),
             Ok(true)
         );
         loop {
-            if let Event::InputDelivered(id, result) =
-                backend.events.recv_timeout(Duration::from_secs(5)).unwrap()
-            {
-                assert_eq!(id, detached_token);
-                assert!(result.is_err());
-                assert_eq!(
-                    deliveries.ack(context.project, id, false),
-                    crate::terminal_resume::DeliveryAck::Failed
-                );
-                break;
+            match backend.events.recv_timeout(Duration::from_secs(5)).unwrap() {
+                Event::Resumed(id, result) => {
+                    assert_eq!(id, detached_token);
+                    assert!(result.is_err());
+                    assert_eq!(
+                        deliveries.ack_ready_for_context(context, id, false),
+                        crate::terminal_resume::DeliveryAck::Failed
+                    );
+                }
+                Event::InputDelivered(id, result) => {
+                    assert_eq!(id, detached_token);
+                    assert!(result.is_err());
+                    assert_eq!(
+                        deliveries.ack_for_context(context, id, false),
+                        crate::terminal_resume::DeliveryAck::Failed
+                    );
+                    break;
+                }
+                _ => {}
             }
         }
         let guard = deliveries
@@ -5844,16 +5899,7 @@ mod tests {
             fence.mark_expired(started + Duration::from_secs(16)),
             crate::terminal_resume::ResumeTimeout::Retained
         );
-        assert_eq!(
-            fence.ack(
-                context,
-                delayed_token,
-                true,
-                true,
-                started + Duration::from_secs(16)
-            ),
-            None
-        );
+        assert!(fence.ack_with_failure_prefix(context, delayed_token, true, true, Vec::new));
         let guard = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&guard), Some("TIMEOUT-MUST-NOT-SEND"));
         let captured = session

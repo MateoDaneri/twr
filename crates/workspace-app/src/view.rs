@@ -274,7 +274,8 @@ struct TerminalMouseDrag {
 enum NativeSelectionReply {
     Begin(mpsc::Receiver<Result<(), String>>),
     Extend(u64, mpsc::Receiver<Result<(), String>>),
-    Copy(u64, mpsc::Receiver<Result<String, String>>),
+    // Selection serial, global clipboard request order, exact worker result.
+    Copy(u64, u64, mpsc::Receiver<Result<String, String>>),
 }
 #[cfg(feature = "ghostty")]
 struct NativeSelection {
@@ -290,7 +291,6 @@ struct NativeSelection {
     endpoint_valid: bool,
     pending: Option<NativeSelectionReply>,
     queued: Option<(u64, u16, u16)>,
-    copy_requested: bool,
 }
 #[cfg(feature = "ghostty")]
 struct TerminalFrameOwner {
@@ -306,12 +306,6 @@ struct TerminalFrameOwner {
 struct TerminalBackend {
     backend: Backend,
     attachment: Option<u64>,
-}
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum PendingCopyOwner {
-    Tmux(u64),
-    #[cfg(feature = "ghostty")]
-    Native(u64, u64),
 }
 #[derive(Clone)]
 struct PendingTmuxCopy {
@@ -393,8 +387,6 @@ struct PendingTerminalKey {
     destination: Option<TerminalKeyDestination>,
     open_identity: Option<Arc<()>>,
     open_switch_event: Option<u64>,
-    forward: bool,
-    count: usize,
     replaying: bool,
     scheduled: bool,
     replay_error: bool,
@@ -499,15 +491,6 @@ fn storage_failure_cause(error: &str) -> String {
         }
     }
 }
-/// A multi-line paste waiting for Enter: the app cannot know whether the
-/// program behind tmux enabled bracketed paste, so each line may run as a
-/// command (see `paste_into_terminal`).
-struct PendingPaste {
-    text: String,
-    lines: usize,
-    context: workspace_app::terminal_resume::Context,
-    identity: Arc<()>,
-}
 /// Shorten `text` to at most `max_chars` characters, ending with an ellipsis.
 fn fit_status_text(text: &str, max_chars: usize) -> String {
     if text.chars().count() <= max_chars {
@@ -519,13 +502,6 @@ fn fit_status_text(text: &str, max_chars: usize) -> String {
     out
 }
 
-fn pending_paste_prompt(lines: usize) -> String {
-    if lines == 1 {
-        "Enter pega · Esc cancela · Pegar 1 línea con salto final; se ejecutará como comando".into()
-    } else {
-        format!("Enter pega · Esc cancela · Pegar {lines} líneas; se ejecutarán como comandos")
-    }
-}
 /// A multi-line paste replayed from a queue is held, never prompted: a
 /// queued Enter would confirm it unseen. Nothing reached the PTY. When input
 /// typed after it is still held, the queue must be discarded first.
@@ -1450,6 +1426,8 @@ pub struct WorkspaceView {
     #[cfg(feature = "ghostty")]
     native_selection: Option<NativeSelection>,
     #[cfg(feature = "ghostty")]
+    pending_native_clipboards: VecDeque<(u64, mpsc::Receiver<Result<String, String>>)>,
+    #[cfg(feature = "ghostty")]
     native_selection_token: u64,
     #[cfg(feature = "ghostty")]
     terminal_frame_owner: Option<TerminalFrameOwner>,
@@ -1480,9 +1458,10 @@ pub struct WorkspaceView {
     primary_tmux_last_error: HashMap<usize, String>,
     pending_terminal_search: std::collections::HashSet<workspace_app::terminal_resume::Context>,
     pending_tmux_copy: HashMap<u64, PendingTmuxCopy>,
+    terminal_visual_intent: Option<Arc<PendingTmuxCopy>>,
+    pending_visual_operations: HashMap<u64, Arc<PendingTmuxCopy>>,
     latest_tmux_copy: u64,
-    last_delivered_tmux_copy: u64,
-    paste_after_copy: Vec<(PendingCopyOwner, workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
+    last_delivered_terminal_copy: u64,
     tmux_copy_token: u64,
     editors: HashMap<PathBuf, Editor>,
     pending_new_files: std::collections::HashSet<PathBuf>,
@@ -1568,9 +1547,6 @@ pub struct WorkspaceView {
     /// Why storage::initialize failed; while set, recovery snapshots and the
     /// workspace registry are not written this session.
     storage_unavailable: Option<String>,
-    /// Multi-line paste awaiting confirmation; any other key, a focus or
-    /// terminal change, or the window losing focus cancels it.
-    pending_paste: Option<PendingPaste>,
     /// Buffers recovered at startup with their owner workspace roots, for
     /// the all-workspaces list (Space f r).
     recovered_buffers: Vec<(PathBuf, Vec<PathBuf>)>,
@@ -1847,6 +1823,8 @@ impl WorkspaceView {
             #[cfg(feature = "ghostty")]
             native_selection: None,
             #[cfg(feature = "ghostty")]
+            pending_native_clipboards: VecDeque::new(),
+            #[cfg(feature = "ghostty")]
             native_selection_token: 0,
             #[cfg(feature = "ghostty")]
             terminal_frame_owner: None,
@@ -1873,9 +1851,10 @@ impl WorkspaceView {
             primary_tmux_last_error: HashMap::new(),
             pending_terminal_search: Default::default(),
             pending_tmux_copy: HashMap::new(),
+            terminal_visual_intent: None,
+            pending_visual_operations: HashMap::new(),
             latest_tmux_copy: 0,
-            last_delivered_tmux_copy: 0,
-            paste_after_copy: Vec::new(),
+            last_delivered_terminal_copy: 0,
             tmux_copy_token: 0,
             editors: HashMap::new(),
             pending_new_files: Default::default(),
@@ -1945,7 +1924,6 @@ impl WorkspaceView {
             recovery_signature: String::new(),
             recovery_uncovered: Vec::new(),
             storage_unavailable: None,
-            pending_paste: None,
             recovered_buffers: Vec::new(),
             pending_forget: None,
             agent_providers: workspace_app::provider::Registry::notifying(wake_tx.clone()),
@@ -2477,6 +2455,14 @@ impl WorkspaceView {
                     // replacement was created. A failed spawn must not make
                     // an unrelated client the apparent active terminal.
                     let old = self.windows.remove(index);
+                    if self.terminal_visual_intent.as_ref().is_some_and(|intent| {
+                        intent.context.project == project && intent.context.attachment == old.attachment
+                    }) {
+                        self.terminal_visual_intent = None;
+                    }
+                    self.pending_visual_operations.retain(|_, owner| {
+                        owner.context.project != project || owner.context.attachment != old.attachment
+                    });
                     self.pending_terminal_rebind.insert(project, old.attachment);
                     if self.active > index {
                         self.active -= 1;
@@ -2634,7 +2620,6 @@ impl WorkspaceView {
             || self.pending_measured_splits.is_some()
             || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some()
-            || self.terminal_resume.active()
             || !self.pending_saves.is_empty()
         {
             self.model.message = "Esperando la operación actual para cambiar de pestaña".into();
@@ -5226,7 +5211,8 @@ impl WorkspaceView {
         let selection_busy = self
             .native_selection
             .as_ref()
-            .is_some_and(|s| s.pending.is_some() || s.queued.is_some() || s.copy_requested);
+            .is_some_and(|s| s.pending.is_some() || s.queued.is_some())
+            || !self.pending_native_clipboards.is_empty();
         #[cfg(not(feature = "ghostty"))]
         let selection_busy = false;
         let syntax_debounce = self.syntax_anchor.is_some() && self.syntax_request.is_none();
@@ -5270,7 +5256,6 @@ impl WorkspaceView {
         let selection_changed = self.poll_native_selection(cx);
         #[cfg(not(feature = "ghostty"))]
         let selection_changed = false;
-        let retried_input = self.retry_terminal_input();
         let timeout =
             self.terminal_resume
                 .mark_expired_with_prefix(std::time::Instant::now(), || {
@@ -5302,7 +5287,6 @@ impl WorkspaceView {
         let mut changed = self.model.poll_picker()
             || cancelled_root
             || selection_changed
-            || retried_input
             || resume_expired
             || !slow_deliveries.is_empty();
         let now = std::time::Instant::now();
@@ -5917,6 +5901,11 @@ impl WorkspaceView {
                         .position(|window| window.project == project && window.attachment == id)
                         .expect("verified terminal exists");
                     let window = &mut self.windows[index];
+                    let context = workspace_app::terminal_resume::Context { project, attachment: id };
+                    if self.terminal_visual_intent.as_ref().is_some_and(|intent| intent.context == context) {
+                        self.terminal_visual_intent = None;
+                    }
+                    self.pending_visual_operations.retain(|_, owner| owner.context != context);
                     window.snapshot = terminal.initial_snapshot();
                     window.terminal = terminal;
                     window.session = session;
@@ -6030,8 +6019,19 @@ impl WorkspaceView {
                         "Respuesta de reconexión inesperada; cliente conservado".into();
                 }
                 TmuxEvent::Resumed(token, result) => {
-                    if source.is_some() && self.terminal_input_context() == source {
-                        self.terminal_resume_ack(project, token, true, result)
+                    let Some(source) = source else { continue; };
+                    match self.detached_terminal_input.ack_ready_for_context(source, token, result.is_ok()) {
+                        workspace_app::terminal_resume::DeliveryAck::Unknown => {
+                            self.terminal_resume_ack(source, token, true, result);
+                        }
+                        workspace_app::terminal_resume::DeliveryAck::Failed => {
+                            self.quit_intent.cancel();
+                            self.model.message = "No se confirmó la vuelta a input; entrada conservada. Cmd+Q permite revisarla".into();
+                        }
+                        workspace_app::terminal_resume::DeliveryAck::Finished(Some(action)) => {
+                            deferred_terminal_actions.push((project, action));
+                        }
+                        _ => {}
                     }
                 }
                 TmuxEvent::CopyMarkCaptured(token, result) => {
@@ -6057,18 +6057,29 @@ impl WorkspaceView {
                         .is_some_and(|pending| pending.token == token)
                     {
                         self.workspace_normal_checked(source, token, result);
-                    } else if let Some(source) = source {
-                        self.terminal_key_inspected(source, token, result);
                     }
                 }
                 TmuxEvent::VisualScreenMotionDone(token, result) => {
                     if let Some(source) = source {
-                        self.terminal_key_motion_done(source, token, result);
+                        let ok = matches!(result, workspace_app::tmux::RestoreCopyMark::Restored);
+                        self.finish_terminal_visual_operation(source, token, ok);
+                        self.terminal_selection_done(source, token, if ok {
+                            Ok(())
+                        } else {
+                            Err("No se pudo mover la selección visual".into())
+                        });
+                    }
+                }
+                TmuxEvent::VisualSelectionDone(token, result) => {
+                    if let Some(source) = source {
+                        self.finish_terminal_visual_operation(source, token, result.is_ok());
+                        self.terminal_selection_done(source, token, result);
                     }
                 }
                 TmuxEvent::VisualLineDone(token, result) => {
                     if let Some(source) = source {
-                        self.terminal_visual_line_done(source, token, result);
+                        self.finish_terminal_visual_operation(source, token, result.is_ok());
+                        self.terminal_selection_done(source, token, result);
                     }
                 }
                 TmuxEvent::TargetActionDone(token, result) => {
@@ -6097,9 +6108,7 @@ impl WorkspaceView {
                         result.is_ok(),
                     ) {
                         workspace_app::terminal_resume::DeliveryAck::Unknown => {
-                            if self.terminal_input_context() == Some(source) {
-                                self.terminal_resume_ack(project, token, false, result)
-                            }
+                            self.terminal_resume_ack(source, token, false, result);
                         }
                         workspace_app::terminal_resume::DeliveryAck::Failed => {
                             self.quit_intent.cancel();
@@ -6110,6 +6119,24 @@ impl WorkspaceView {
                         }
                         workspace_app::terminal_resume::DeliveryAck::Pending
                         | workspace_app::terminal_resume::DeliveryAck::Finished(None) => {}
+                    }
+                }
+                TmuxEvent::OrderedPasteFinished(token, result) => {
+                    let Some(source) = source else { continue; };
+                    match self.detached_terminal_input.ack_for_context(source, token, result.is_ok()) {
+                        workspace_app::terminal_resume::DeliveryAck::Unknown => {
+                            self.terminal_resume_ack(source, token, false, result.clone());
+                        }
+                        workspace_app::terminal_resume::DeliveryAck::Finished(Some(action)) => {
+                            deferred_terminal_actions.push((project, action));
+                        }
+                        workspace_app::terminal_resume::DeliveryAck::Failed => {
+                            self.quit_intent.cancel();
+                        }
+                        _ => {}
+                    }
+                    if let Err(error) = result {
+                        self.model.message = format!("No se confirmó el pegado: {error}");
                     }
                 }
                 TmuxEvent::ReadyAdditional(session, _identity, terminal) => {
@@ -6274,19 +6301,14 @@ impl WorkspaceView {
                                 && Arc::ptr_eq(&terminal.terminal.instance_identity(), &pending.instance)
                         });
                     let mut completed = false;
-                    let waiting_pastes = self.take_waiting_pastes(PendingCopyOwner::Tmux(token));
-                    if !current && !waiting_pastes.is_empty() {
-                        self.model.message = "Cambió la terminal; pegado pendiente cancelado".into();
-                    }
                     if current {
                         match result {
                             Ok(Some(copy)) => {
-                                let paste_canceled = self.deliver_waiting_pastes(waiting_pastes, &copy.text);
                                 // A linewise Visual yank can share the editor's
                                 // unnamed/+ and numbered yank registers, but
                                 // only if the exact text is representable.
-                                let latest = token > self.last_delivered_tmux_copy;
-                                if latest { self.last_delivered_tmux_copy = token; }
+                                let latest = token > self.last_delivered_terminal_copy;
+                                if latest { self.last_delivered_terminal_copy = token; }
                                 let register = (latest && copy.editor_register).then(|| {
                                     if copy.linewise {
                                         self.registers.record_terminal_lines(copy.text.clone(), true)
@@ -6301,7 +6323,7 @@ impl WorkspaceView {
                                         cx.write_to_clipboard(ClipboardItem::new_string(copy.text));
                                     }
                                 }
-                                if latest && !paste_canceled { self.model.message = match register {
+                                if latest { self.model.message = match register {
                                     Some(Ok(())) => "Copiado a los registros y al portapapeles".into(),
                                     Some(Err(_)) => "Copiado al portapapeles; registro no disponible".into(),
                                     None => "Selección tmux copiada explícitamente".into(),
@@ -6309,13 +6331,6 @@ impl WorkspaceView {
                                 completed = true;
                             }
                             Ok(None) => {
-                                if !waiting_pastes.is_empty() {
-                                    if let Some(text) = self.paste_text(cx) {
-                                        self.deliver_waiting_pastes(waiting_pastes, &text);
-                                    } else {
-                                        self.model.message = "No hay texto para pegar".into();
-                                    }
-                                }
                                 if token == self.latest_tmux_copy {
                                     if let Some(count) = first_yank {
                                         self.terminal_yank_prefix = Some((pending.clone(), count));
@@ -6406,6 +6421,7 @@ impl WorkspaceView {
                             workspace_app::tmux::observed_active_target_changed(previous, &ws)
                         });
                     if target_changed {
+                        self.terminal_visual_intent = None;
                         self.invalidate_terminal_jumps();
                     }
                     if workspace_app::editor_panes::cancel_terminal_open_for_target_change(
@@ -6531,6 +6547,15 @@ impl WorkspaceView {
             if let Some(snapshot) = window.terminal.snapshot()
                 && Snapshot::is_new_frame(&snapshot, &window.snapshot)
             {
+                if snapshot.exited {
+                    let context = workspace_app::terminal_resume::Context {
+                        project: window.project, attachment: window.attachment,
+                    };
+                    if self.terminal_visual_intent.as_ref().is_some_and(|intent| intent.context == context) {
+                        self.terminal_visual_intent = None;
+                    }
+                    self.pending_visual_operations.retain(|_, owner| owner.context != context);
+                }
                 window.snapshot = snapshot;
                 changed |= window.project == self.model.project;
             }
@@ -8545,9 +8570,9 @@ impl WorkspaceView {
             // the original destination before carrying out its returned effect.
             if let Effect::Pty(bytes) = effect {
                 let result = self
-                    .terminal_input_context()
+                    .terminal_resume.context()
                     .ok_or_else(|| "Terminal original no disponible".to_owned())
-                    .and_then(|context| self.terminal_resume.push(context, &bytes));
+                    .and_then(|context| self.submit_terminal_resume_input(context, &bytes, false));
                 if let Err(error) = result {
                     self.retain_rejected_terminal_input(bytes, &error);
                     return;
@@ -8956,16 +8981,6 @@ impl WorkspaceView {
                 if self.tab_transition_pending() {
                     self.reconcile_tab_layout();
                 }
-                if self.tab_transition_pending() && !self.terminal_resume.active() {
-                    if let Some(context) = self.terminal_input_context()
-                        && self.terminal_resume.retain_before_backend(context, bytes, std::time::Instant::now()).is_ok()
-                    {
-                        self.model.message = "Cambio de pestaña pendiente; entrada conservada para revisar".into();
-                    } else {
-                        self.model.message = "Cambio de pestaña pendiente; esta entrada no se envió".into();
-                    }
-                    return;
-                }
                 let stale_resume_zoom = self.terminal_resume.active()
                     && self.terminal_resume_zoom_owner.as_ref().map(|owner| owner.context)
                         .or_else(|| self.terminal_input_context())
@@ -8982,7 +8997,7 @@ impl WorkspaceView {
                     let result = self
                         .terminal_input_context()
                         .ok_or_else(|| "Terminal original no disponible".to_owned())
-                        .and_then(|context| self.terminal_resume.push(context, &bytes));
+                        .and_then(|context| self.submit_terminal_resume_input(context, &bytes, false));
                     match result {
                         Ok(true) => return,
                         Ok(false) => {}
@@ -9916,6 +9931,9 @@ impl WorkspaceView {
     }
 
     fn set_focus(&mut self, surface: Surface) {
+        if surface != self.model.surface && surface != Surface::Normal {
+            self.terminal_visual_intent = None;
+        }
         if surface != self.model.surface {
             self.invalidate_terminal_jumps();
             self.cancel_jump_load();
@@ -10472,9 +10490,8 @@ impl WorkspaceView {
     }
 
     fn navigate_jump(&mut self, older: bool, count: usize) {
-        if self.terminal_resume.active() {
+        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
             self.retain_replayed_jump();
-            self.model.message = "Esperá a que termine la reconexión de la terminal".into();
             return;
         }
         let started_detached = self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached());
@@ -11236,8 +11253,6 @@ impl WorkspaceView {
             destination: Some(destination),
             open_identity: None,
             open_switch_event: None,
-            forward: false,
-            count: 0,
             replaying: false,
             scheduled: false,
             replay_error: false, paste_held: None,
@@ -11374,7 +11389,7 @@ impl WorkspaceView {
             gate: workspace_app::terminal_key_gate::Gate::for_replay(input_token, 4096, 1024 * 1024)
                 .expect("fixed valid limits"),
             overflow: VecDeque::new(), destination: Some(destination), open_identity: None, open_switch_event: None,
-            forward: false, count: 0, replaying: false, scheduled: false, replay_error: false, paste_held: None,
+            replaying: false, scheduled: false, replay_error: false, paste_held: None,
             replay_event: None, write: None, target_action: None, selection_action: None,
             split: None, capture_wait: None, mixed_context: false, revision: 0,
             marked_selection: None, navigation_geometry_deadline: None,
@@ -12490,6 +12505,14 @@ impl WorkspaceView {
         }
     }
     fn activate_editor_pane(&mut self, id: PaneId) {
+        if self.terminal_visual_intent.as_ref().is_some_and(|owner| {
+            self.editor_panes.as_ref().is_none_or(|panes| {
+                panes.layout.active() != id
+                    || panes.content(id) != Some(&PaneContent::Terminal(owner.context.attachment))
+            })
+        }) {
+            self.terminal_visual_intent = None;
+        }
         if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.parent() != id)
             && let Err(message) = self.end_floating_zoom()
         {
@@ -15806,9 +15829,15 @@ impl WorkspaceView {
     /// Report whether the backend accepted the action, not whether tmux has
     /// completed it. Callers must not switch panes after a rejected submission.
     fn submit_tmux_action(&mut self, action: TmuxAction) -> bool {
-        if self.tab_transition_pending() {
-            self.model.message = "Esperá a que termine el cambio de pestaña".into();
-            return false;
+        if matches!(&action, TmuxAction::SelectAll)
+            || matches!(&action, TmuxAction::Motion(key, _) if matches!(key.as_str(), "v" | "<C-v>"))
+        {
+            return self.submit_terminal_visual_selection(action);
+        }
+        if action.changes_input_target()
+            || matches!(&action, TmuxAction::Motion(key, _) if key == "<Esc>")
+        {
+            self.terminal_visual_intent = None;
         }
         if matches!(action, TmuxAction::Copy | TmuxAction::CopyNormal) {
             let accepted = self.request_tmux_copy(matches!(action, TmuxAction::CopyNormal), None, None, None, None);
@@ -15851,6 +15880,12 @@ impl WorkspaceView {
         if changed {
             // Queue the original pane's pending input before switching tmux
             // targets; otherwise a fast window change silently discards it.
+            if self.model.pending_since.is_some() && !self.terminal_resume.active() {
+                self.begin_terminal_resume();
+                if !self.terminal_resume.active() {
+                    return false;
+                }
+            }
             if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
                 if let Some(pending) = &mut self.pending_terminal_key
                     && pending.replaying
@@ -15909,6 +15944,9 @@ impl WorkspaceView {
                 pending.replay_error = true;
             }
             self.model.message = e;
+            if changed && self.model.surface == Surface::Terminal {
+                let _ = self.model.focus(Surface::Normal);
+            }
             return false;
         }
         if let Some(focus) = tab_focus { self.tab_focus_before_action = Some(focus); }
@@ -15941,60 +15979,12 @@ impl WorkspaceView {
         }
         true
     }
-    /// A tab or split clicked with the mouse needs the same ordered target
-    /// acknowledgement as its keyboard equivalent. The placeholder remains
-    /// in flight and is acknowledged by the backend; it is never dispatched.
+    /// Mouse and keyboard target changes use the same backend FIFO; the
+    /// following resume and input do not wait for a frontend acknowledgement.
     fn submit_ordered_ui_target(&mut self, action: TmuxAction) -> bool {
         if !matches!(self.model.surface, Surface::Terminal | Surface::Normal) { return false; }
-        if self.pending_terminal_key.is_some() || self.pending_open_input.is_some()
-            || self.terminal_resume.recovery_blocked()
-        {
-            self.model.message = "Esperá a que termine la operación de terminal".into();
-            return true;
-        }
         if self.model.surface == Surface::Normal { self.set_focus(Surface::Terminal); }
-        let Some(marker) = Keystroke::parse("escape").ok() else { return true; };
-        if !self.begin_terminal_event_replay_on(workspace_app::open_input::Event::Key(marker), Surface::Terminal) {
-            self.model.message = "Terminal todavía no disponible; reintentá".into();
-            return true;
-        }
-        let Some(event) = self.pending_terminal_key.as_mut()
-            .and_then(|pending| pending.gate.begin_event(true).map(|(id, _)| id))
-        else {
-            self.pending_terminal_key = None;
-            self.model.message = "No se pudo iniciar el cambio; reintentá".into();
-            return true;
-        };
-        if let Some(pending) = &mut self.pending_terminal_key {
-            pending.replaying = true;
-            pending.replay_event = Some(event);
-        }
-        let accepted = self.submit_tmux_action(action);
-        if accepted { self.set_focus(Surface::Terminal); }
-        if !accepted {
-            // The UI handler is synchronous: no later input can have entered
-            // this newly created ledger before the backend rejects the send.
-            self.pending_terminal_key = None;
-            return true;
-        }
-        let new = self.terminal_key_destination();
-        if let Some(pending) = &mut self.pending_terminal_key {
-            let same_owner = pending.destination.as_ref().zip(new.as_ref()).is_some_and(|(old, new)| {
-                old.project == new.project && old.pane == new.pane && old.surface == new.surface
-                    && old.content == new.content && old.focus_revision == new.focus_revision
-                    && old.terminal_instance.as_ref().zip(new.terminal_instance.as_ref())
-                        .is_some_and(|(a, b)| Arc::ptr_eq(a, b))
-            });
-            pending.replaying = false;
-            pending.replay_event = None;
-            if same_owner {
-                if let Some(old) = &mut pending.destination { old.generation = self.file_generation; }
-            } else {
-                pending.mixed_context = true;
-                pending.gate.uncertain(event);
-                self.model.message = "Cambió el panel; entrada conservada".into();
-            }
-        }
+        self.submit_tmux_action(action);
         true
     }
     /// Hold subsequent keys while a terminal-origin jump captures its mark.
@@ -16091,8 +16081,6 @@ impl WorkspaceView {
             destination: Some(destination),
             open_identity: None,
             open_switch_event: None,
-            forward: false,
-            count: 0,
             replaying: false,
             scheduled: false,
             replay_error: false, paste_held: None,
@@ -16569,228 +16557,128 @@ impl WorkspaceView {
         }
         true
     }
-    fn begin_terminal_event_replay(
-        &mut self,
-        event: workspace_app::open_input::Event<Keystroke>,
-    ) -> bool {
-        let surface = match &event {
-            workspace_app::open_input::Event::Key(_) => Surface::Normal,
-            workspace_app::open_input::Event::Paste { .. } => Surface::Terminal,
-            _ => return false,
-        };
-        self.begin_terminal_event_replay_on(event, surface)
+    fn terminal_visual_owner_current(&self, owner: &PendingTmuxCopy) -> bool {
+        self.terminal_input_context() == Some(owner.context)
+            && self.windows.get(self.active).is_some_and(|window| !window.snapshot.exited)
+            && self.terminal_focus_guard_current(
+                owner.context, &owner.instance, &owner.focus, &owner.zoom,
+            )
+            && self.current_tmux_windows().is_some_and(|windows| {
+                let mut active = windows.iter().filter(|window| window.active);
+                active.next().is_some_and(|window| {
+                    window.id == owner.window && window.active_pane == owner.pane
+                }) && active.next().is_none()
+            })
     }
-    fn begin_terminal_event_replay_on(
+    fn finish_terminal_visual_operation(
         &mut self,
-        event: workspace_app::open_input::Event<Keystroke>,
-        surface: Surface,
+        context: workspace_app::terminal_resume::Context,
+        token: u64,
+        ok: bool,
     ) -> bool {
-        if self.pending_terminal_key.is_some() || self.pending_open_input.is_some() {
-            return false;
+        let Some(owner) = self.pending_visual_operations.remove(&token) else { return false; };
+        if owner.context != context { return true; }
+        if !ok {
+            if self.terminal_visual_intent.as_ref().is_some_and(|intent| {
+                intent.token == owner.token && intent.context == context
+                    && Arc::ptr_eq(&intent.instance, &owner.instance)
+            }) {
+                self.terminal_visual_intent = None;
+            }
+            self.model.message = "No se confirmó la selección visual".into();
         }
-        let Some(token) = self.tmux_copy_token.checked_add(1) else {
-            return false;
-        };
-        let Some(source) = self.terminal_key_source_on(token, surface) else {
-            return false;
-        };
-        let Some(destination) = self.terminal_key_destination() else {
-            return false;
-        };
-        let mut gate = workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
-            .expect("fixed valid limits");
-        let bytes = PendingOpenInput::event_bytes(&event);
-        if gate.push(event, bytes).is_err() {
-            return false;
-        }
-        self.tmux_copy_token = token;
-        let transition_tab = self.visible_tab.clone();
-        self.pending_terminal_key = Some(PendingTerminalKey {
-            source,
-            transition_tab,
-            tab_reconcile: None,
-            transition_activity: Some(self.last_activity),
-            gate,
-            overflow: VecDeque::new(),
-            destination: Some(destination),
-            open_identity: None,
-            open_switch_event: None,
-            forward: false,
-            count: 0,
-            replaying: false,
-            scheduled: false,
-            replay_error: false, paste_held: None,
-            replay_event: None,
-            write: None,
-            target_action: None,
-            selection_action: None,
-            split: None,
-            capture_wait: None,
-            mixed_context: false,
-            revision: 0,
-            marked_selection: None,
-            navigation_geometry_deadline: None,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-        });
-        let _ = self.terminal_wake.try_send(());
         true
     }
-    fn begin_terminal_key(&mut self, forward: bool, count: usize) -> bool {
-        if self.pending_terminal_key.is_some() || self.pending_open_input.is_some() {
+    fn submit_terminal_visual_selection(&mut self, action: TmuxAction) -> bool {
+        if self.model.surface == Surface::Terminal && self.model.pending_since.is_some()
+            && !self.terminal_resume.active()
+        {
+            self.begin_terminal_resume();
+        }
+        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
             return false;
         }
-        let Some(token) = self.tmux_copy_token.checked_add(1) else {
+        let Some(token) = self.tmux_copy_token.checked_add(1) else { return false; };
+        let Some(owner) = self.terminal_key_source_on(token, self.model.surface) else {
+            self.model.message = "Destino de selección no disponible".into();
             return false;
         };
-        let Some(source) = self.terminal_key_source(token) else {
-            self.model.message = "Destino de terminal no disponible; reintentá".into();
-            return false;
+        let owner = Arc::new(owner);
+        let toggle_off = matches!(&action, TmuxAction::Motion(key, _) if key == "v")
+            && self.terminal_visual_intent.as_ref().is_some_and(|intent| {
+                self.terminal_visual_owner_current(intent)
+            });
+        let action = if toggle_off {
+            TmuxAction::Motion("<Esc>".into(), 1)
+        } else {
+            action
         };
-        let action = TmuxAction::InspectSelection {
-            token,
-            window: source.window.clone(),
-            pane: source.pane.clone(),
+        let outgoing = TmuxAction::VisualSelection {
+            token, window: owner.window.clone(), pane: owner.pane.clone(), action: Box::new(action),
         };
-        if let Err(error) =
-            terminal_backend_for(&self.backends, &self.additional_backends, source.context)
-                .and_then(|backend| backend.send(action))
+        if let Err(error) = terminal_backend_for(&self.backends, &self.additional_backends, owner.context)
+            .and_then(|backend| backend.send(outgoing))
         {
+            if self.model.surface == Surface::Terminal { let _ = self.model.focus(Surface::Normal); }
             self.model.message = error;
             return false;
         }
         self.tmux_copy_token = token;
-        self.pending_terminal_key = Some(PendingTerminalKey {
-            source,
-            transition_tab: None, tab_reconcile: None,
-            transition_activity: None,
-            gate: workspace_app::terminal_key_gate::Gate::new(token, 4096, 1024 * 1024)
-                .expect("fixed valid limits"),
-            overflow: VecDeque::new(),
-            destination: None,
-            open_identity: None,
-            open_switch_event: None,
-            forward,
-            count,
-            replaying: false,
-            scheduled: false,
-            replay_error: false, paste_held: None,
-            replay_event: None,
-            write: None,
-            target_action: None,
-            selection_action: None,
-            split: None,
-            capture_wait: None,
-            mixed_context: false,
-            revision: 0,
-            marked_selection: None,
-            navigation_geometry_deadline: None,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-        });
+        let context = owner.context;
+        self.terminal_visual_intent = (!toggle_off).then(|| owner.clone());
+        self.pending_visual_operations.insert(token, owner);
+        if let Some(pending) = &mut self.pending_terminal_key
+            && pending.replaying
+            && let Some(event) = pending.replay_event
+        {
+            pending.selection_action = Some(PendingTerminalSelectionAction {
+                event, token, context,
+                deadline: std::time::Instant::now() + Duration::from_secs(15),
+                timed_out: false,
+            });
+        }
+        let _ = self.model.focus(Surface::Normal);
         true
     }
-    fn terminal_key_inspected(
-        &mut self,
-        source: workspace_app::terminal_resume::Context,
-        token: u64,
-        result: Result<bool, String>,
-    ) {
-        use workspace_app::terminal_key_gate::Decision;
-        let Some(mut pending) = self.pending_terminal_key.take() else {
-            return;
+    fn navigate_terminal_normal(&mut self, forward: bool, count: usize) -> bool {
+        let owner = self.terminal_visual_intent.as_ref()
+            .filter(|owner| self.terminal_visual_owner_current(owner)).cloned();
+        let Some(owner) = owner else {
+            self.terminal_visual_intent = None;
+            // Buffer ownership changes now, before the next key is handled.
+            // External tmux selections do not redefine this app-owned mode.
+            return self.navigate_listed_buffer_checked(if forward {
+                "buffers.line.next"
+            } else {
+                "buffers.line.prev"
+            });
         };
-        if pending.source.token != token || pending.source.context != source {
-            self.pending_terminal_key = Some(pending);
-            return;
-        }
-        let current =
-            self.pending_open_input.is_none() && self.terminal_key_source_current(&pending.source);
-        if !pending
-            .gate
-            .inspected(token, current, result.map_err(|_| ()))
+        let Some(token) = self.tmux_copy_token.checked_add(1) else { return false; };
+        let action = TmuxAction::VisualScreenMotion {
+            token, window: owner.window.clone(), pane: owner.pane.clone(),
+            bottom: forward, count: count.max(1), scrolloff: 4,
+        };
+        if let Err(error) = terminal_backend_for(&self.backends, &self.additional_backends, owner.context)
+            .and_then(|backend| backend.send(action))
         {
-            self.model.message = "Navegación y entrada conservadas; revisá el destino".into();
-            self.pending_terminal_key = Some(pending);
-            return;
+            self.terminal_visual_intent = None;
+            self.model.message = error;
+            return false;
         }
-        let decision = pending.gate.begin_decision(current);
-        match decision {
-            Some(Decision::BufferCycle) => {
-                let previous_message = self.model.message.clone();
-                let switched = self.navigate_listed_buffer_checked(if pending.forward {
-                    "buffers.line.next"
-                } else {
-                    "buffers.line.prev"
-                });
-                pending.gate.finish_decision(Some(switched));
-                if switched {
-                    pending.destination = self.terminal_key_destination();
-                    pending.open_identity = self
-                        .pending_open_input
-                        .as_ref()
-                        .map(|open| open.queue.identity());
-                    if pending.destination.is_none() && self.pending_open_input.is_none() {
-                        pending.gate.invalidate();
-                    }
-                } else if self.model.message == previous_message {
-                    self.model.message =
-                        "Cambio de buffer no completado; entrada conservada".into();
-                }
-            }
-            Some(Decision::VisualMotion) => {
-                pending.deadline = std::time::Instant::now() + Duration::from_secs(15);
-                let action = TmuxAction::VisualScreenMotion {
-                    token,
-                    window: pending.source.window.clone(),
-                    pane: pending.source.pane.clone(),
-                    bottom: pending.forward,
-                    count: pending.count.max(1),
-                    scrolloff: 4,
-                };
-                if terminal_backend_for(&self.backends, &self.additional_backends, source)
-                    .and_then(|backend| backend.send(action))
-                    .is_err()
-                {
-                    pending.gate.finish_decision(Some(false));
-                    self.model.message = "Movimiento no enviado; entrada conservada".into();
-                }
-            }
-            None => self.model.message = "Navegación conservada; revisá el destino".into(),
+        self.tmux_copy_token = token;
+        let context = owner.context;
+        self.pending_visual_operations.insert(token, owner);
+        if let Some(pending) = &mut self.pending_terminal_key
+            && pending.replaying
+            && let Some(event) = pending.replay_event
+        {
+            pending.selection_action = Some(PendingTerminalSelectionAction {
+                event, token, context,
+                deadline: std::time::Instant::now() + Duration::from_secs(15),
+                timed_out: false,
+            });
         }
-        self.pending_terminal_key = Some(pending);
-        let _ = self.terminal_wake.try_send(());
-    }
-    fn terminal_key_motion_done(
-        &mut self,
-        source: workspace_app::terminal_resume::Context,
-        token: u64,
-        result: workspace_app::tmux::RestoreCopyMark,
-    ) {
-        use workspace_app::tmux::RestoreCopyMark;
-        let Some(mut pending) = self.pending_terminal_key.take() else {
-            return;
-        };
-        if pending.source.token != token || pending.source.context != source {
-            self.pending_terminal_key = Some(pending);
-            return;
-        }
-        let current =
-            self.pending_open_input.is_none() && self.terminal_key_source_current(&pending.source);
-        let applied = match result {
-            RestoreCopyMark::Restored if current => Some(true),
-            RestoreCopyMark::RejectedBeforeMove => Some(false),
-            _ => None,
-        };
-        if pending.gate.finish_decision(applied) {
-            pending.destination = self.terminal_key_destination();
-            if pending.destination.is_none() {
-                pending.gate.invalidate();
-            }
-        } else {
-            self.model.message =
-                "Movimiento o destino sin confirmar; entrada conservada para revisar".into();
-        }
-        self.pending_terminal_key = Some(pending);
-        let _ = self.terminal_wake.try_send(());
+        true
     }
     fn terminal_key_target_action_done(
         &mut self,
@@ -17247,9 +17135,7 @@ impl WorkspaceView {
         });
         if let Some(token) = expired_copy_alone {
             self.pending_terminal_key = None;
-            if self.pending_tmux_copy.remove(&token).is_some() {
-                self.take_waiting_pastes(PendingCopyOwner::Tmux(token));
-            }
+            self.pending_tmux_copy.remove(&token);
             self.pending_yank_first.remove(&token);
             self.pending_yank_motion.remove(&token);
             self.model.message = "Copia sin respuesta; intentá copiar de nuevo".into();
@@ -17407,21 +17293,10 @@ impl WorkspaceView {
             && !self.media_active();
         let editor_text = unobstructed && self.model.surface == Surface::File;
         let terminal_text = unobstructed && self.model.surface == Surface::Terminal;
-        // Match the owners handled before buffer cycling in on_key. A queued
-        // H/L may instead belong to :command, Ctrl+W, a prompt or media.
-        let cycle_allowed = self.model.surface == Surface::Normal
-            && self.model.pending_since.is_none()
-            && self.editor_window_prefix.is_none()
-            && self.terminal_command.is_none()
-            && self.file_prompt.is_none()
-            && self.remote_prompt.is_none()
-            && !self.help
-            && !self.model.notifications
-            && !self.media_active();
-        let copy_pending = self.pending_tmux_copy.keys().any(|token| *token > self.last_delivered_tmux_copy);
+        let copy_pending = self.pending_tmux_copy.keys().any(|token| *token > self.last_delivered_terminal_copy);
         #[cfg(feature = "ghostty")]
         let copy_pending = copy_pending || self.native_selection.as_ref().is_some_and(|selection| {
-            selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+            matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
         });
         let pending = self.pending_terminal_key.as_mut().expect("checked above");
         while let Some(event) = pending.overflow.pop_front() {
@@ -17501,59 +17376,6 @@ impl WorkspaceView {
         {
             pending.gate.not_dispatched(id);
             self.model.message = "Composición conservada para revisar".into();
-            return;
-        }
-        let cycle = if let Event::Key(key) = &event
-            && cycle_allowed
-            && !key.modifiers.control
-            && !key.modifiers.platform
-            && !key.modifiers.alt
-        {
-            match key.key_char.as_deref() {
-                Some("H") => Some(false),
-                Some("L") => Some(true),
-                _ if key.key == "H" => Some(false),
-                _ if key.key == "L" => Some(true),
-                _ if key.modifiers.shift && key.key.eq_ignore_ascii_case("h") => Some(false),
-                _ if key.modifiers.shift && key.key.eq_ignore_ascii_case("l") => Some(true),
-                _ => None,
-            }
-        } else {
-            None
-        };
-        if let Some(forward) = cycle {
-            let token = self.tmux_copy_token.checked_add(1);
-            let source = token.and_then(|token| self.terminal_key_source(token));
-            let sent = source.as_ref().is_some_and(|source| {
-                terminal_backend_for(&self.backends, &self.additional_backends, source.context)
-                    .and_then(|backend| {
-                        backend.send(TmuxAction::InspectSelection {
-                            token: source.token,
-                            window: source.window.clone(),
-                            pane: source.pane.clone(),
-                        })
-                    })
-                    .is_ok()
-            });
-            let pending = self.pending_terminal_key.as_mut().expect("checked above");
-            if sent {
-                let source = source.expect("sent requires source");
-                if pending.gate.reinspect_after(id, source.token) {
-                    self.tmux_copy_token = source.token;
-                    pending.source = source;
-                    pending.destination = None;
-                    pending.open_identity = None;
-                    pending.forward = forward;
-                    pending.count = std::mem::take(&mut self.model.count);
-                    pending.deadline = std::time::Instant::now() + Duration::from_secs(15);
-                } else {
-                    pending.gate.invalidate();
-                    self.model.message = "Entrada conservada: navegación sin confirmar".into();
-                }
-            } else {
-                pending.gate.not_dispatched(id);
-                self.model.message = "Navegación no enviada; entrada conservada".into();
-            }
             return;
         }
         pending.scheduled = true;
@@ -17823,7 +17645,7 @@ impl WorkspaceView {
             });
         });
     }
-    fn terminal_visual_line_done(
+    fn terminal_selection_done(
         &mut self,
         source: workspace_app::terminal_resume::Context,
         token: u64,
@@ -17846,13 +17668,15 @@ impl WorkspaceView {
                 .is_some_and(|action| action.token == token && action.context == source)
         {
             let action = pending.selection_action.take().expect("token checked");
-            if current
-                && result.is_ok()
-                && destination.is_some()
-                && pending.gate.acknowledge(action.event)
-            {
+            if current && destination.is_some() && pending.gate.acknowledge(action.event) {
                 pending.destination = destination;
                 pending.revision = pending.revision.wrapping_add(1);
+                // This selection request has finished, even when tmux could
+                // not confirm its result. Never repeat it or hold later keys
+                // merely because the selection's final state is uncertain.
+                if let Err(error) = result {
+                    self.model.message = format!("No se pudo confirmar la selección: {error}");
+                }
             } else {
                 pending.gate.uncertain(action.event);
                 self.model.message = match result {
@@ -17862,7 +17686,7 @@ impl WorkspaceView {
             }
             let _ = self.terminal_wake.try_send(());
         } else if let Err(error) = result {
-            self.model.message = format!("No se pudo seleccionar la línea: {error}");
+            self.model.message = format!("No se pudo confirmar la selección: {error}");
         }
     }
     fn request_terminal_visual_line(&mut self, count: usize) -> bool {
@@ -17888,8 +17712,8 @@ impl WorkspaceView {
         };
         let action = TmuxAction::VisualLine {
             token,
-            window: source.window,
-            pane: source.pane,
+            window: source.window.clone(),
+            pane: source.pane.clone(),
             count,
         };
         self.invalidate_terminal_jumps();
@@ -17901,6 +17725,8 @@ impl WorkspaceView {
             return false;
         }
         self.tmux_copy_token = token;
+        let source = Arc::new(source);
+        self.terminal_visual_intent = Some(source.clone());
         if let Some(event) = event && let Some(pending) = &mut self.pending_terminal_key {
             pending.selection_action = Some(PendingTerminalSelectionAction {
                 event,
@@ -17910,6 +17736,7 @@ impl WorkspaceView {
                 timed_out: false,
             });
         }
+        self.pending_visual_operations.insert(token, source);
         true
     }
     fn request_terminal_yank(&mut self, count: usize) -> bool {
@@ -18023,6 +17850,7 @@ impl WorkspaceView {
             return false;
         }
         self.tmux_copy_token = token;
+        self.terminal_visual_intent = None;
         self.latest_tmux_copy = token;
         if let Some(count) = first_yank {
             self.pending_yank_first.insert(token, count);
@@ -18131,6 +17959,31 @@ impl WorkspaceView {
                 attachment: t.attachment,
             })
     }
+    /// Resume and its following input share the backend FIFO, not a UI-event
+    /// handshake. Only an attachment that has not been verified retains bytes.
+    fn submit_terminal_resume_input(
+        &mut self,
+        context: workspace_app::terminal_resume::Context,
+        bytes: &[u8],
+        paste: bool,
+    ) -> Result<bool, String> {
+        if self.pending_backend_resume.is_some_and(|(pending, _)| pending == context) {
+            return if paste {
+                self.terminal_resume.push_paste(context, bytes)
+            } else {
+                self.terminal_resume.push(context, bytes)
+            };
+        }
+        let backends = &self.backends;
+        let additional = &self.additional_backends;
+        self.terminal_resume.submit(
+            context, bytes, paste, std::time::Instant::now(),
+            |token, bytes, paste| {
+                terminal_backend_for(backends, additional, context)?
+                    .send(TmuxAction::ResumeStreamInput(token, bytes, paste))
+            },
+        )
+    }
     fn current_tmux_windows(&self) -> Option<&[WindowInfo]> {
         let context = self.terminal_input_context()?;
         terminal_backend_for(&self.backends, &self.additional_backends, context).ok()?;
@@ -18152,6 +18005,7 @@ impl WorkspaceView {
         }
     }
     fn cancel_terminal_resume(&mut self) {
+        self.terminal_visual_intent = None;
         let active = self.terminal_resume.active();
         self.pending_backend_resume = None;
         self.terminal_resume_zoom_owner = None;
@@ -18180,12 +18034,8 @@ impl WorkspaceView {
         }
     }
     fn detach_terminal_input_on_pane_focus(&mut self) -> bool {
-        if self.terminal_resume.active()
-            && self.terminal_resume_zoom_owner.as_ref().map(|owner| owner.context)
-                .or_else(|| self.terminal_input_context())
-                .is_none_or(|context| !self.terminal_resume_zoom_current(context))
-        {
-            self.model.message = "Cambió la terminal ampliada; entrada conservada para revisar".into();
+        if self.pending_backend_resume.is_some() {
+            self.model.message = "Terminal sin verificar; entrada conservada antes de cambiar de panel".into();
             return false;
         }
         if self.terminal_resume.active()
@@ -18200,31 +18050,20 @@ impl WorkspaceView {
             // backend. Transfer it before changing focus instead of waiting
             // for a UI acknowledgement to release the keyboard.
             if let Effect::Pty(bytes) = self.model.expire_prefix() {
-                let result = self.terminal_input_context()
+                let result = self.terminal_resume.context()
                     .ok_or_else(|| "Terminal original no disponible".to_owned())
-                    .and_then(|context| self.terminal_resume.push(context, &bytes));
+                    .and_then(|context| self.submit_terminal_resume_input(context, &bytes, false));
                 if let Err(error) = result {
                     self.retain_rejected_terminal_input(bytes, &error);
                     return false;
                 }
             }
         }
-        let windows = &self.windows;
-        let backends = &self.backends;
-        let additional_backends = &self.additional_backends;
-        let result = workspace_app::terminal_resume::detach_with_delivery(
+        let result = workspace_app::terminal_resume::detach_with_delivery_typed(
             &mut self.terminal_resume,
             &mut self.detached_terminal_input,
             std::time::Instant::now(),
-            |context, token, bytes| {
-                if !windows.iter().any(|terminal| {
-                    terminal.project == context.project && terminal.attachment == context.attachment
-                }) {
-                    return Err("Terminal original no disponible".to_owned());
-                }
-                terminal_backend_for(backends, additional_backends, context)?
-                    .send(TmuxAction::ResumeInput(token, bytes.to_vec()))
-            },
+            |_, _, _, _| Err("La entrada aún no se envió; Cmd+Q permite revisarla".into()),
         );
         if let Err(error) = result {
             self.model.message = format!("Input pendiente conservado; reintentá: {error}");
@@ -18236,10 +18075,14 @@ impl WorkspaceView {
         true
     }
     fn begin_terminal_resume(&mut self) {
+        self.terminal_visual_intent = None;
         if self.terminal_resume.retained_guard().is_some() {
             self.model.focus(Surface::Normal);
             self.model.message =
                 "Entrada pendiente conservada; Cmd+Q permite copiarla o descartarla".into();
+            return;
+        }
+        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
             return;
         }
         self.cancel_terminal_resume();
@@ -18264,7 +18107,10 @@ impl WorkspaceView {
             };
             self.terminal_resume_zoom_owner = Some(owner);
         }
-        self.model.focus(Surface::Terminal);
+        let prefix = match self.model.focus(Surface::Terminal) {
+            Effect::Pty(prefix) => prefix,
+            _ => Vec::new(),
+        };
         let token = self
             .terminal_resume
             .begin(context, std::time::Instant::now());
@@ -18273,6 +18119,9 @@ impl WorkspaceView {
         {
             self.pending_backend_resume = Some((context, token));
             self.model.message = "Esperando verificar la terminal; entrada conservada".into();
+            if let Err(error) = self.submit_terminal_resume_input(context, &prefix, false) {
+                self.retain_rejected_terminal_input(prefix, &error);
+            }
             return;
         }
         let result = terminal_backend_for(&self.backends, &self.additional_backends, context)
@@ -18281,6 +18130,14 @@ impl WorkspaceView {
             self.cancel_terminal_resume();
             self.model.focus(Surface::Normal);
             self.model.message = error;
+            if !prefix.is_empty() {
+                let _ = self.terminal_resume.retain_before_backend(
+                    context, prefix, std::time::Instant::now(),
+                );
+                self.model.message = "Input no iniciado; entrada conservada. Cmd+Q permite revisarla".into();
+            }
+        } else if let Err(error) = self.submit_terminal_resume_input(context, &prefix, false) {
+            self.retain_rejected_terminal_input(prefix, &error);
         }
     }
     fn finish_pending_backend_resume(&mut self, project: usize, attached: bool) {
@@ -18304,7 +18161,23 @@ impl WorkspaceView {
             let result = terminal_backend_for(&self.backends, &self.additional_backends, context)
                 .and_then(|backend| backend.send(TmuxAction::Resume(token)));
             if let Err(error) = result {
-                self.terminal_resume_ack(project, token, true, Err(error));
+                self.terminal_resume_ack(context, token, true, Err(error));
+                return;
+            }
+            let backends = &self.backends;
+            let additional = &self.additional_backends;
+            if let Err(error) = self.terminal_resume.submit_buffered(
+                context, std::time::Instant::now(),
+                |token, bytes, ranges| {
+                    let action = if ranges.is_empty() {
+                        TmuxAction::ResumeStreamInput(token, bytes, false)
+                    } else {
+                        TmuxAction::ResumeStreamMixed(token, bytes, ranges)
+                    };
+                    terminal_backend_for(backends, additional, context)?.send(action)
+                },
+            ) {
+                self.model.message = format!("Entrada no enviada; Cmd+Q permite revisarla: {error}");
             }
             return;
         }
@@ -18324,7 +18197,6 @@ impl WorkspaceView {
             token,
             true,
             false,
-            std::time::Instant::now(),
             || prefix,
         );
         if !self.terminal_resume.active() { self.terminal_resume_zoom_owner = None; }
@@ -18334,65 +18206,33 @@ impl WorkspaceView {
             "No se pudo verificar la terminal; i reintenta".into()
         };
     }
-    fn retry_terminal_input(&mut self) -> bool {
-        let Some((context, token, bytes)) = self.terminal_resume.take_retry() else {
-            return false;
-        };
-        let result = if self.model.surface == Surface::Terminal
-            && self.terminal_input_context() == Some(context)
-            && self.terminal_resume_zoom_current(context)
-        {
-            terminal_backend_for(&self.backends, &self.additional_backends, context)
-                .and_then(|backend| backend.send(TmuxAction::ResumeInput(token, bytes.clone())))
-        } else {
-            Err("El foco o la terminal cambiaron".into())
-        };
-        if result.is_err() {
-            self.terminal_resume.retain_unsent(context, token, bytes);
-            return false;
-        }
-        true
-    }
     fn terminal_resume_ack(
         &mut self,
-        project: usize,
+        context: workspace_app::terminal_resume::Context,
         token: u64,
         ready: bool,
         result: Result<(), String>,
     ) {
-        let Some(context) = self
-            .terminal_input_context()
-            .filter(|c| c.project == project)
-        else {
-            return;
-        };
         let was_waiting_recovery = self.terminal_resume.awaiting_recovery_ack();
-        if (self.model.surface != Surface::Terminal && !was_waiting_recovery)
-            || !self.terminal_resume.expects(context, token, ready)
-        {
+        if !self.terminal_resume.expects(context, token, ready) {
             return;
         }
-        if !was_waiting_recovery && !self.terminal_resume_zoom_current(context) {
-            // The backend may already have processed an in-flight batch.
-            // Never replay it to a different floating window or PTY.
-            self.terminal_resume.ack_with_failure_prefix(
-                context, token, ready, false, std::time::Instant::now(), Vec::new,
-            );
-            self.model.message = "Cambió la terminal ampliada; revisá la entrada pendiente".into();
-            if !self.terminal_resume.active() {
-                self.terminal_resume_zoom_owner = None;
-            }
-            return;
-        }
-        let batch = self.terminal_resume.ack_with_failure_prefix(
+        let focused = self.model.surface == Surface::Terminal
+            && self.terminal_input_context() == Some(context);
+        self.terminal_resume.ack_with_failure_prefix(
             context,
             token,
             ready,
             result.is_ok(),
-            std::time::Instant::now(),
-            || match self.model.focus(Surface::Normal) {
-                Effect::Pty(bytes) => bytes,
-                _ => Vec::new(),
+            || {
+                if focused {
+                    match self.model.focus(Surface::Normal) {
+                        Effect::Pty(bytes) => bytes,
+                        _ => Vec::new(),
+                    }
+                } else {
+                    Vec::new()
+                }
             },
         );
         if was_waiting_recovery {
@@ -18414,18 +18254,6 @@ impl WorkspaceView {
             } else {
                 format!("La entrega no se confirmó: {error}. La entrada anterior pudo ejecutarse")
             };
-        } else if let Some(bytes) = batch {
-            let result = terminal_backend_for(&self.backends, &self.additional_backends, context)
-                .and_then(|b| b.send(TmuxAction::ResumeInput(token, bytes.clone())));
-            if let Err(error) = result {
-                if self.terminal_resume.retain_unsent(context, token, bytes) {
-                    self.model.message =
-                        format!("Input pendiente conservado; reintentando: {error}");
-                } else {
-                    self.model.message =
-                        format!("No se pudo conservar el input pendiente: {error}");
-                }
-            }
         }
         if !self.terminal_resume.active() { self.terminal_resume_zoom_owner = None; }
     }
@@ -20413,7 +20241,7 @@ impl WorkspaceView {
         self.pending_terminal_key = Some(PendingTerminalKey {
             source: terminal.source, transition_tab: None, tab_reconcile: None, transition_activity: None, gate, overflow: VecDeque::new(),
             destination: Some(terminal.destination), open_identity: None, open_switch_event: None,
-            forward: false, count: 0, replaying: false, scheduled: false, replay_error: false, paste_held: None,
+            replaying: false, scheduled: false, replay_error: false, paste_held: None,
             replay_event: None, write: None, target_action: None, selection_action: None,
             split: None, capture_wait: None, mixed_context: false, revision: 0,
             marked_selection: None, navigation_geometry_deadline: None,
@@ -22389,6 +22217,7 @@ impl WorkspaceView {
     /// or cycling had no other eligible target. A failed switch must not send
     /// subsequently queued input to the old buffer.
     fn navigate_listed_buffer_checked(&mut self, action: &str) -> bool {
+        self.terminal_visual_intent = None;
         let was_detached = self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached());
         self.sync_editor_pane();
         if was_detached && !self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached()) {
@@ -23986,7 +23815,7 @@ impl WorkspaceView {
             gate: workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
                 .expect("fixed valid limits"),
             overflow: VecDeque::new(), destination: Some(destination), open_identity: Some(identity),
-            open_switch_event: Some(event), forward: false, count: 0, replaying: false,
+            open_switch_event: Some(event), replaying: false,
             scheduled: false, replay_error: false, paste_held: None, replay_event: None, write: None,
             target_action: None, selection_action: None, split: None, capture_wait: None,
             mixed_context: false, revision: 0, marked_selection: None, navigation_geometry_deadline: None,
@@ -31321,6 +31150,31 @@ impl WorkspaceView {
     }
     /// Paste immediately using the terminal's bracketed-paste mode.
     fn paste_into_terminal(&mut self, text: String) {
+        if self.terminal_resume.active() {
+            let Some(context) = self.terminal_input_context()
+                .filter(|context| self.terminal_resume_zoom_current(*context))
+            else {
+                self.retain_rejected_terminal_input(text.into_bytes(), "Cambió la terminal de pegado");
+                return;
+            };
+            if self.model.pending_since.is_some()
+                && let Effect::Pty(mut prefix) = self.model.expire_prefix()
+                && let Err(error) = self.submit_terminal_resume_input(context, &prefix, false)
+            {
+                prefix.extend_from_slice(text.as_bytes());
+                self.retain_rejected_terminal_input(prefix, &error);
+                return;
+            }
+            let result = self.submit_terminal_resume_input(context, text.as_bytes(), true);
+            match result {
+                Ok(true) => return,
+                Ok(false) => {}
+                Err(error) => {
+                    self.retain_rejected_terminal_input(text.into_bytes(), &error);
+                    return;
+                }
+            }
+        }
         let bracket = self
             .windows
             .get(self.active)
@@ -31330,110 +31184,76 @@ impl WorkspaceView {
             Err(error) => self.model.message = error,
         }
     }
-    fn take_waiting_pastes(
-        &mut self,
-        owner: PendingCopyOwner,
-    ) -> Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)> {
-        let mut matching = Vec::new();
-        let mut remaining = Vec::new();
-        for (candidate, context, destination) in std::mem::take(&mut self.paste_after_copy) {
-            if candidate == owner { matching.push((context, destination)); }
-            else { remaining.push((candidate, context, destination)); }
-        }
-        self.paste_after_copy = remaining;
-        matching
-    }
-    fn deliver_waiting_pastes(
-        &mut self,
-        waiting: Vec<(workspace_app::terminal_resume::Context, TerminalKeyDestination)>,
-        text: &str,
-    ) -> bool {
-        let mut canceled = false;
-        for (context, destination) in waiting {
-            if self.terminal_input_context() != Some(context)
-                || !self.terminal_key_destination_current(&destination)
-            {
-                self.model.message = "Cambió el destino; pegado pendiente cancelado".into();
-                canceled = true;
-                continue;
-            }
-            self.paste_into_terminal(text.to_owned());
-        }
-        canceled
-    }
     fn request_terminal_paste(&mut self, cx: &App) {
-        let owner = self.pending_tmux_copy.keys().copied()
-            .filter(|token| *token > self.last_delivered_tmux_copy)
-            .max().map(PendingCopyOwner::Tmux);
-        #[cfg(feature = "ghostty")]
-        let owner = owner.or_else(|| self.native_selection.as_ref().and_then(|selection| {
-            if selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..))) {
-                Some(PendingCopyOwner::Native(selection.token, selection.serial))
-            } else { None }
-        }));
-        if let Some(owner) = owner {
-            if let (Some(context), Some(destination)) =
-                (self.terminal_input_context(), self.terminal_key_destination())
-            {
-                self.paste_after_copy.push((owner, context, destination));
-            } else {
-                self.model.message = "Destino de pegado no disponible".into();
-            }
-        } else if let Some(text) = self.paste_text(cx) {
-            self.paste_into_terminal(text);
-        }
-    }
-    /// Keys are being replayed from a terminal or open-input queue, or a
-    /// terminal resume is holding input.
-    fn terminal_input_replaying(&self) -> bool {
-        self.pending_terminal_key.as_ref().is_some_and(|p| p.replaying)
-            || self.pending_open_input.as_ref().is_some_and(|i| i.replaying)
-            || self.terminal_resume.active()
-    }
-    fn pending_paste_target_current(&self, pending: &PendingPaste) -> bool {
-        self.model.surface == Surface::Terminal
-            && self.window_active
-            && self.terminal_input_context() == Some(pending.context)
-            && self.windows.get(self.active).is_some_and(|t| {
-                Arc::ptr_eq(&t.terminal.instance_identity(), &pending.identity)
-            })
-    }
-    /// Enter sends the held paste to the same terminal, bracketed if the
-    /// program enabled it meanwhile; anything else sends nothing.
-    fn resolve_pending_paste(&mut self, confirm: bool) {
-        let Some(pending) = self.pending_paste.take() else {
+        let Some(context) = self.terminal_input_context() else {
+            self.model.message = "Destino de pegado no disponible".into();
             return;
         };
-        if !confirm {
-            self.model.message = "Pegado cancelado; no se envió nada".into();
+        let target = self.terminal_key_destination().and_then(|destination| destination.tmux_target);
+        let copy = self.pending_tmux_copy.iter()
+            .filter(|(token, copy)| **token > self.last_delivered_terminal_copy
+                && copy.context == context
+                && target.as_ref().is_none_or(|(window, pane)| {
+                    &copy.window == window && &copy.pane == pane
+                }))
+            .map(|(token, _)| *token).max();
+        #[cfg(feature = "ghostty")]
+        let native = self.native_selection.as_ref().and_then(|selection| {
+            let Some(NativeSelectionReply::Copy(_, request, _)) = &selection.pending else { return None; };
+            (self.native_selection_is_current(selection) && *request > self.last_delivered_terminal_copy)
+                .then_some((selection.token, *request))
+        });
+        #[cfg(not(feature = "ghostty"))]
+        let native: Option<(u64, u64)> = None;
+        let copy = copy.filter(|copy| native.is_none_or(|(_, request)| request < *copy));
+        if copy.is_none() && native.is_none() {
+            if let Some(text) = self.paste_text(cx) { self.paste_into_terminal(text); }
             return;
         }
-        if !self.pending_paste_target_current(&pending) {
-            self.model.message = "Cambió la terminal; pegado cancelado, no se envió nada".into();
+        if !self.terminal_resume.active() { self.begin_terminal_resume(); }
+        if self.pending_backend_resume.is_some() {
+            self.model.message = "Pegado no enviado: la terminal aún no está verificada".into();
             return;
         }
-        // Input queued or held for this terminal goes first; sending the
-        // paste now would put it ahead of that input.
-        if self.pending_terminal_key.is_some()
-            || self.pending_open_input.is_some()
-            || self.terminal_resume.active()
+        let Some((resume, bytes, ranges)) = self.terminal_resume.waiting_input(context) else {
+            self.model.message = "Pegado no enviado: revisá la entrada pendiente".into();
+            return;
+        };
+        // A held router prefix belongs before this paste on the same backend.
+        if self.model.pending_since.is_some()
+            && let Effect::Pty(prefix) = self.model.expire_prefix()
+            && let Err(error) = self.submit_terminal_resume_input(context, &prefix, false)
         {
-            self.model.message =
-                "Hay entrada en espera para la terminal; pegado cancelado, no se envió nada".into();
+            self.retain_rejected_terminal_input(prefix, &error);
             return;
         }
-        let bracket = self
-            .windows
-            .get(self.active)
-            .is_some_and(|t| t.snapshot.bracketed_paste);
-        match terminal_paste_bytes(&pending.text, bracket) {
-            Ok(bytes) => {
-                self.effect(Effect::Pty(bytes));
-                if self.model.message == pending_paste_prompt(pending.lines) {
-                    self.model.message.clear();
+        let action = if let Some(copy) = copy {
+            TmuxAction::ResumeCopied(resume, copy, self.paste_text(cx), bytes, ranges)
+        } else {
+            #[cfg(feature = "ghostty")]
+            {
+                let result = self.windows.get(self.active)
+                    .ok_or_else(|| "Terminal original no disponible".to_owned())
+                    .and_then(|window| window.terminal.selection_copied(native.expect("native copy exists").0));
+                match result {
+                    Ok(delivery) => TmuxAction::ResumeNativeCopied(resume, delivery),
+                    Err(error) => {
+                        self.model.message = format!("Pegado no enviado: {error}");
+                        return;
+                    }
                 }
             }
-            Err(error) => self.model.message = error,
+            #[cfg(not(feature = "ghostty"))]
+            { unreachable!("native copy requires Ghostty") }
+        };
+        match terminal_backend_for(&self.backends, &self.additional_backends, context)
+            .and_then(|backend| backend.send(action))
+        {
+            Ok(()) => {
+                let marked = self.terminal_resume.mark_ordered_paste(context, resume);
+                debug_assert!(marked);
+            }
+            Err(error) => self.model.message = format!("Pegado no enviado: {error}"),
         }
     }
     /// Clipboard text for a direct paste (Cmd+V, Shift+Insert, queued and
@@ -31992,25 +31812,6 @@ impl WorkspaceView {
             });
             cx.notify();
         }
-        if self.pending_paste.is_some() {
-            let k = &event.keystroke;
-            let quit = k.modifiers.platform && k.key.eq_ignore_ascii_case("q");
-            let enter = k.key == "enter"
-                && !k.modifiers.platform
-                && !k.modifiers.control
-                && !k.modifiers.alt
-                && !k.modifiers.shift;
-            // A replayed key never confirms: only a key the user typed
-            // while seeing the prompt does.
-            let replayed = self.terminal_input_replaying();
-            self.resolve_pending_paste(enter && !event.is_held && !replayed);
-            if !quit {
-                window.prevent_default();
-                cx.stop_propagation();
-                cx.notify();
-                return;
-            }
-        }
         if let Some((path, label)) = self.pending_forget.take() {
             let k = &event.keystroke;
             let projects_open = self.model.surface == Surface::Picker
@@ -32057,18 +31858,10 @@ impl WorkspaceView {
                 && !key.modifiers.alt && key.modifiers.shift
                 && key.key.eq_ignore_ascii_case("insert");
             let paste_shortcut = shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Paste));
-            // A paste during resume must be replayed through the attached
-            // tmux client after copy-mode ends. Sending its bracket framing
-            // directly to the pane would leak those escape sequences to an
-            // application that has not enabled bracketed paste.
-            // A queued navigation/copy already owns the ordering of later
-            // input. Let the ledger below capture the shortcut in its proper
-            // position, including resolving a preceding copy on replay.
-            let queued_input = self.pending_terminal_key.as_ref()
+            // Only an existing explicit file/jump replay owns a frontend
+            // ledger. Resume and dependent copies use bounded worker FIFOs.
+            let defer_paste = self.pending_terminal_key.as_ref()
                 .is_some_and(|pending| !pending.replaying);
-            let defer_paste = paste_shortcut && (queued_input
-                || self.terminal_resume.active() && !self.pending_tmux_copy.keys()
-                    .any(|token| *token > self.last_delivered_tmux_copy));
             if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy)) {
                 self.copy_selection(cx);
             } else if paste_shortcut && !defer_paste {
@@ -32114,7 +31907,7 @@ impl WorkspaceView {
                 });
                 #[cfg(feature = "ghostty")]
                 let copy_before_paste = copy_before_paste || self.native_selection.as_ref().is_some_and(|selection| {
-                    selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+                    matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
                 });
                 if copy_before_paste {
                     // Resolve the clipboard only when this key is replayed,
@@ -32157,8 +31950,8 @@ impl WorkspaceView {
             cx.notify();
             return;
         }
-        // A target-changing shortcut must enter the ordered ledger before
-        // tmux receives it, so following keys cannot capture the old pane.
+        // Route target shortcuts immediately; the tmux worker preserves the
+        // order of the target change and the ensuing resume operation.
         let key = &event.keystroke;
         let direct_target = key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
             && ((key.key == "d") || (!key.modifiers.shift && (key.key == "t"
@@ -32166,22 +31959,8 @@ impl WorkspaceView {
             || matches!(workspace_app::terminal_shortcuts::resolve(
                 &key.key, key.modifiers.platform, key.modifiers.control, key.modifiers.alt, key.modifiers.shift),
                 Some(workspace_app::terminal_shortcuts::Shortcut::Cycle(_) | workspace_app::terminal_shortcuts::Shortcut::Direction(_)));
-        if direct_target && matches!(self.model.surface, Surface::Terminal | Surface::Normal)
-            && self.pending_terminal_key.is_none() && self.pending_open_input.is_none()
-            && !self.terminal_resume.recovery_blocked()
-        {
-            // These shortcuts end in terminal input mode. Enter it before
-            // capturing the source so the split cannot outrun its ledger.
-            if self.model.surface == Surface::Normal { self.set_focus(Surface::Terminal); }
-            self.note_activity();
-            if self.begin_terminal_event_replay_on(
-                workspace_app::open_input::Event::Key(event.keystroke.clone()), Surface::Terminal)
-            {
-                window.prevent_default();
-                cx.stop_propagation();
-                cx.notify();
-                return;
-            }
+        if direct_target && self.model.surface == Surface::Normal {
+            self.set_focus(Surface::Terminal);
         }
         self.finish_pending_new_file_before_input();
         self.note_activity();
@@ -32198,46 +31977,6 @@ impl WorkspaceView {
         }
         let key = k.key.as_str();
         self.invalidate_completion();
-        // A direct direction can arrive between a focus change and the next
-        // measured frame, before an input ledger exists. Give that first key
-        // the same ordered, bounded geometry wait as replayed terminal keys.
-        // Prompts, operators, composition and floating views keep ownership of
-        // their input; a failed source guard falls through to normal routing.
-        if matches!(self.model.surface, Surface::Normal | Surface::Terminal)
-            && self.pending_terminal_key.is_none()
-            && self.pending_open_input.is_none()
-            && self.editor_zoom.is_none()
-            && self.editor_panes.as_ref().is_some_and(|panes| {
-                panes.layout.panes().len() > 1
-                    && matches!(panes.content(panes.layout.active()), Some(PaneContent::Terminal(_)))
-            })
-            && self.model.pending_since.is_none()
-            && self.terminal_yank_prefix.is_none()
-            && self.terminal_command.is_none()
-            && self.terminal_search_prompt.is_none()
-            && self.file_prompt.is_none()
-            && self.remote_prompt.is_none()
-            && self.marked.is_empty()
-            && !self.terminal_resume.active()
-            && !self.help
-            && !self.model.notifications
-            && !self.media_active()
-            && !k.modifiers.function
-            // In terminal input mode a Ctrl+W prefix belongs to the PTY;
-            // only the configured direct Ctrl+H/J/K/L mapping is intercepted.
-            && (self.model.surface == Surface::Normal
-                || self.editor_window_prefix.is_none() && k.modifiers.control)
-            && queued_direction_key(k, self.editor_window_prefix.is_some())
-            && !self.directional_focus_geometry_ready()
-            && self.begin_terminal_event_replay_on(
-                workspace_app::open_input::Event::Key(k.clone()), self.model.surface,
-            )
-        {
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
         if self.model.surface == Surface::File
             && self.editor_zoom.is_none()
             && self.editor_panes.as_ref().is_some_and(|panes| panes.layout.panes().len() > 1)
@@ -32267,75 +32006,6 @@ impl WorkspaceView {
             && !self.directional_focus_geometry_ready()
             && self.begin_sidebar_direction_replay(k.clone())
         {
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
-        #[cfg(feature = "ghostty")]
-        if self.terminal_resume.active()
-            && self.model.surface == Surface::Terminal
-            && self.native_selection.as_ref().is_some_and(|selection| {
-                selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
-            })
-            && self.terminal_command.is_none() && self.file_prompt.is_none()
-            && self.remote_prompt.is_none() && !self.help && !self.model.notifications
-            && !self.media_active()
-            && (k.modifiers.platform && key.eq_ignore_ascii_case("v")
-                || !k.modifiers.platform && !k.modifiers.control && !k.modifiers.alt
-                    && k.modifiers.shift && key.eq_ignore_ascii_case("insert"))
-            && self.begin_terminal_event_replay_on(
-                workspace_app::open_input::Event::Key(k.clone()), Surface::Terminal)
-        {
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
-        if self.terminal_resume.active()
-            && self.model.surface == Surface::Terminal
-            && self.terminal_command.is_none()
-            && self.file_prompt.is_none()
-            && self.remote_prompt.is_none()
-            && !self.help
-            && !self.model.notifications
-            && !self.media_active()
-            && (k.modifiers.platform && key.eq_ignore_ascii_case("v")
-                || !k.modifiers.platform && !k.modifiers.control && !k.modifiers.alt
-                    && k.modifiers.shift && key.eq_ignore_ascii_case("insert"))
-            && let Some(text) = self.paste_text(cx)
-            && self.begin_terminal_event_replay(workspace_app::open_input::Event::Paste { text })
-        {
-            // Keep the original paste and subsequent events in order until the
-            // resume acknowledgement; do not feed bracketed-paste bytes to
-            // the transition fence, which deliberately rejects controls.
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
-        if self.terminal_resume.active()
-            && self.model.surface == Surface::Terminal
-            && self.terminal_command.is_none()
-            && self.terminal_search_prompt.is_none()
-            && self.file_prompt.is_none()
-            && self.remote_prompt.is_none()
-            && self.marked.is_empty()
-            && !self.help
-            && !self.model.notifications
-            && !self.media_active()
-            && !k.modifiers.platform
-            && (k.modifiers.control
-                || matches!(key, "escape" | "up" | "down" | "left" | "right"
-                    | "home" | "end" | "pageup" | "pagedown" | "delete"))
-            && self.begin_terminal_event_replay_on(
-                workspace_app::open_input::Event::Key(k.clone()), Surface::Terminal,
-            )
-        {
-            // Preserve the original key, not its encoded bytes: a control can
-            // be a tmux binding, a TWR focus shortcut or an input-router prefix.
-            // The replay gate waits for the resume fence and checks the target
-            // and focus epoch before dispatching this and subsequent events.
             window.prevent_default();
             cx.stop_propagation();
             cx.notify();
@@ -33289,15 +32959,16 @@ impl WorkspaceView {
             } else if chord == "<Esc>" || (chord != "y" && !digit) {
                 self.terminal_yank_prefix = None;
                 self.model.count = 0;
-                self.model.message = if chord == "<Esc>" {
-                    "Yank cancelado"
-                } else {
-                    "Ese movimiento de yank de terminal aún no está disponible"
-                }.into();
-                window.prevent_default();
-                cx.stop_propagation();
-                cx.notify();
-                return;
+                if chord == "<Esc>" {
+                    self.model.message = "Yank cancelado".into();
+                    window.prevent_default();
+                    cx.stop_propagation();
+                    cx.notify();
+                    return;
+                }
+                // A key that is not a yank motion cancels the operator but
+                // still belongs to normal-mode routing (for example, `i`
+                // must enter terminal input before a following paste).
             }
         }
         let terminal_search =
@@ -33670,7 +33341,10 @@ impl WorkspaceView {
                 &mut self.model.count,
             )
         {
-            if !self.begin_terminal_key(forward, terminal_cycle_count) {
+            self.model.message.clear();
+            if !self.navigate_terminal_normal(forward, terminal_cycle_count)
+                && self.model.message.is_empty()
+            {
                 self.model.message = "No se pudo resolver la navegación; reintentá".into();
             }
             window.prevent_default();
@@ -33842,34 +33516,17 @@ impl WorkspaceView {
             }
     }
     #[cfg(feature = "ghostty")]
-    fn retain_paste_after_failed_native_copy(&mut self) {
-        let Some(pending) = self.pending_terminal_key.as_mut() else { return; };
-        let has_paste = pending.gate.events().chain(pending.overflow.iter()).any(|event| {
-            let workspace_app::open_input::Event::Key(key) = event else { return false; };
-            (key.modifiers.platform && key.key.eq_ignore_ascii_case("v"))
-                || (!key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
-                    && key.modifiers.shift && key.key.eq_ignore_ascii_case("insert"))
-        });
-        if has_paste {
-            pending.gate.invalidate();
-            self.model.message = "Copia no confirmada; pegado conservado para revisar".into();
-        }
-    }
-    #[cfg(feature = "ghostty")]
     fn clear_native_selection(&mut self) {
-        if self.native_selection.as_ref().is_some_and(|selection| {
-            selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
-        }) {
-            self.paste_after_copy.clear();
-            self.retain_paste_after_failed_native_copy();
+        let Some(mut selection) = self.native_selection.take() else { return; };
+        if let Some(NativeSelectionReply::Copy(_, request, reply)) = selection.pending.take() {
+            // Clipboard completion belongs to the explicit request, not focus.
+            self.pending_native_clipboards.push_back((request, reply));
         }
-        if let Some(selection) = self.native_selection.take()
-            && let Some(window) = self.windows.iter().find(|window| {
-                window.project == selection.context.project
-                    && window.attachment == selection.context.attachment
-                    && Arc::ptr_eq(&window.terminal.instance_identity(), &selection.instance)
-            })
-        {
+        if let Some(window) = self.windows.iter().find(|window| {
+            window.project == selection.context.project
+                && window.attachment == selection.context.attachment
+                && Arc::ptr_eq(&window.terminal.instance_identity(), &selection.instance)
+        }) {
             // Clear is best-effort; a later begin supersedes an orphaned selection.
             let _ = window.terminal.selection_clear(selection.token);
         }
@@ -33931,7 +33588,6 @@ impl WorkspaceView {
                     endpoint_valid: false,
                     pending: Some(NativeSelectionReply::Begin(reply)),
                     queued: None,
-                    copy_requested: false,
                 });
                 self.selecting = true;
             }
@@ -33958,9 +33614,6 @@ impl WorkspaceView {
             if selection.last_point == (row, col) {
                 return;
             }
-            if selection.copy_requested || matches!(selection.pending, Some(NativeSelectionReply::Copy(..))) {
-                self.paste_after_copy.clear();
-            }
             let Some(serial) = selection.serial.checked_add(1) else {
                 return;
             };
@@ -33968,21 +33621,38 @@ impl WorkspaceView {
             selection.last_point = (row, col);
             selection.endpoint_valid = false;
             selection.queued = Some((generation, row, col));
-            selection.copy_requested = false;
         }
     }
     #[cfg(feature = "ghostty")]
     fn poll_native_selection(&mut self, cx: &mut Context<Self>) -> bool {
-        let Some(mut selection) = self.native_selection.take() else {
-            return false;
-        };
+        let mut changed = false;
+        while let Some((request, reply)) = self.pending_native_clipboards.front() {
+            let result = match reply.try_recv() {
+                Ok(result) => result,
+                Err(mpsc::TryRecvError::Empty) => break,
+                Err(mpsc::TryRecvError::Disconnected) => Err("La terminal cerró la copia".into()),
+            };
+            let request = *request;
+            self.pending_native_clipboards.pop_front();
+            match result {
+                Ok(text) if request > self.last_delivered_terminal_copy => {
+                    self.last_delivered_terminal_copy = request;
+                    if self.validation { self.fixture_clipboard = Some((text, false, None)); }
+                    else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
+                    self.model.message = "Selección copiada explícitamente".into();
+                }
+                Ok(_) => {}
+                Err(error) => self.model.message = error,
+            }
+            changed = true;
+        }
+        let Some(mut selection) = self.native_selection.take() else { return changed; };
         if !self.native_selection_is_current(&selection) {
             self.native_selection = Some(selection);
             self.clear_native_selection();
             self.selecting = false;
             return true;
         }
-        let mut changed = false;
         if let Some(pending) = selection.pending.take() {
             match pending {
                 NativeSelectionReply::Begin(reply) => match reply.try_recv() {
@@ -33991,19 +33661,15 @@ impl WorkspaceView {
                         changed = true;
                     }
                     Ok(Err(error)) => {
-                        self.paste_after_copy.clear();
                         self.model.message = error;
-                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
                     Err(mpsc::TryRecvError::Empty) => {
-                        selection.pending = Some(NativeSelectionReply::Begin(reply))
+                        selection.pending = Some(NativeSelectionReply::Begin(reply));
                     }
                     Err(mpsc::TryRecvError::Disconnected) => {
-                        self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
-                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
@@ -34014,98 +33680,65 @@ impl WorkspaceView {
                         changed = true;
                     }
                     Ok(Err(error)) => {
-                        self.paste_after_copy.clear();
                         self.model.message = error;
-                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         selection.endpoint_valid = false;
-                        selection.copy_requested = false;
                         changed = true;
                     }
                     Err(mpsc::TryRecvError::Empty) => {
-                        selection.pending = Some(NativeSelectionReply::Extend(serial, reply))
+                        selection.pending = Some(NativeSelectionReply::Extend(serial, reply));
                     }
                     Err(mpsc::TryRecvError::Disconnected) => {
-                        self.paste_after_copy.clear();
                         self.model.message = "La terminal cerró la selección".into();
-                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
                         self.selecting = false;
                         return true;
                     }
                 },
-                NativeSelectionReply::Copy(serial, reply) => match reply.try_recv() {
-                    Ok(Ok(text)) if selection.serial == serial => {
-                        let waiting = self.take_waiting_pastes(PendingCopyOwner::Native(selection.token, serial));
-                        let paste_canceled = self.deliver_waiting_pastes(waiting, &text);
-                        if self.validation { self.fixture_clipboard = Some((text, false, None)); }
-                        else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
-                        if !paste_canceled { self.model.message = "Selección copiada explícitamente".into(); }
-                        changed = true;
-                    }
-                    Ok(Ok(_)) => {
-                        self.paste_after_copy.clear();
-                        self.model.message = "La selección cambió antes de copiar".into();
-                        self.retain_paste_after_failed_native_copy();
-                        changed = true;
-                    }
-                    Ok(Err(error)) => {
-                        self.paste_after_copy.clear();
-                        self.model.message = error;
-                        self.retain_paste_after_failed_native_copy();
-                        changed = true;
-                    }
-                    Err(mpsc::TryRecvError::Empty) => {
-                        selection.pending = Some(NativeSelectionReply::Copy(serial, reply))
-                    }
-                    Err(mpsc::TryRecvError::Disconnected) => {
-                        self.paste_after_copy.clear();
-                        self.model.message = "La terminal cerró la selección".into();
-                        self.retain_paste_after_failed_native_copy();
-                        self.selecting = false;
-                        return true;
-                    }
-                },
-            }
-        }
-        if selection.pending.is_none() {
-            let window = &self.windows[self.active];
-            if let Some((generation, row, col)) = selection.queued.take() {
-                match window
-                    .terminal
-                    .selection_extend(selection.token, generation, row, col)
-                {
-                    Ok(reply) => {
-                        selection.pending =
-                            Some(NativeSelectionReply::Extend(selection.serial, reply))
-                    }
-                    Err(error) => {
-                        self.paste_after_copy.clear();
-                        self.model.message = error;
-                        if selection.copy_requested { self.retain_paste_after_failed_native_copy(); }
-                        selection.copy_requested = false;
-                        changed = true;
-                    }
-                }
-            } else if selection.copy_requested {
-                selection.copy_requested = false;
-                if !selection.endpoint_valid {
-                    self.paste_after_copy.clear();
-                    self.model.message =
-                        "La selección no se confirmó; volvé a seleccionarla".into();
-                    self.retain_paste_after_failed_native_copy();
-                    changed = true;
-                } else {
-                    match window.terminal.selection_copy(selection.token) {
-                        Ok(reply) => {
-                            selection.pending =
-                                Some(NativeSelectionReply::Copy(selection.serial, reply))
+                NativeSelectionReply::Copy(serial, request, reply) => {
+                    let result = if self.pending_native_clipboards.is_empty() {
+                        reply.try_recv()
+                    } else {
+                        Err(mpsc::TryRecvError::Empty)
+                    };
+                    match result {
+                        Ok(Ok(text)) => {
+                            selection.endpoint_valid = selection.serial == serial;
+                            if request > self.last_delivered_terminal_copy {
+                                self.last_delivered_terminal_copy = request;
+                                if self.validation { self.fixture_clipboard = Some((text, false, None)); }
+                                else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
+                                self.model.message = "Selección copiada explícitamente".into();
+                            }
+                            changed = true;
                         }
-                        Err(error) => {
-                            self.paste_after_copy.clear();
+                        Ok(Err(error)) => {
                             self.model.message = error;
-                            self.retain_paste_after_failed_native_copy();
+                            selection.endpoint_valid = false;
+                            changed = true;
+                        }
+                        Err(mpsc::TryRecvError::Empty) => {
+                            selection.pending = Some(NativeSelectionReply::Copy(serial, request, reply));
+                        }
+                        Err(mpsc::TryRecvError::Disconnected) => {
+                            self.model.message = "La terminal cerró la copia".into();
+                            selection.endpoint_valid = false;
                             changed = true;
                         }
                     }
+                }
+            }
+        }
+        if selection.pending.is_none()
+            && let Some((generation, row, col)) = selection.queued.take()
+        {
+            match self.windows[self.active].terminal
+                .selection_extend(selection.token, generation, row, col)
+            {
+                Ok(reply) => selection.pending =
+                    Some(NativeSelectionReply::Extend(selection.serial, reply)),
+                Err(error) => {
+                    self.model.message = error;
+                    selection.endpoint_valid = false;
+                    changed = true;
                 }
             }
         }
@@ -34113,6 +33746,7 @@ impl WorkspaceView {
         changed
     }
     fn copy_selection(&mut self, cx: &mut Context<Self>) {
+        self.terminal_visual_intent = None;
         #[cfg(feature = "ghostty")]
         if self.native_selection.is_some() {
             if self
@@ -34120,10 +33754,51 @@ impl WorkspaceView {
                 .as_ref()
                 .is_some_and(|s| self.native_selection_is_current(s))
             {
-                if let Some(selection) = self.native_selection.as_mut() {
-                    selection.copy_requested = true;
+                if self.pending_native_clipboards.len() >= 64 {
+                    self.model.message = "Copia no enviada: hay demasiadas copias pendientes".into();
+                    return;
                 }
+                let Some(request) = self.tmux_copy_token.checked_add(1) else {
+                    self.model.message = "No hay identificadores de copia disponibles".into();
+                    return;
+                };
+                let mut selection = self.native_selection.take().expect("current native selection");
+                let terminal = &self.windows[self.active].terminal;
+                // Both commands are accepted in FIFO order even while the
+                // Begin/Extend acknowledgement is still waiting in the UI.
+                if let Some((frame, row, col)) = selection.queued {
+                    match terminal.selection_extend(selection.token, frame, row, col) {
+                        Ok(reply) => {
+                            if let Some(NativeSelectionReply::Copy(_, previous, copied)) = selection.pending.take() {
+                                self.pending_native_clipboards.push_back((previous, copied));
+                            }
+                            selection.queued = None;
+                            selection.pending = Some(NativeSelectionReply::Extend(selection.serial, reply));
+                        }
+                        Err(error) => {
+                            self.model.message = format!("Copia no enviada: {error}");
+                            self.native_selection = Some(selection);
+                            return;
+                        }
+                    }
+                }
+                match terminal.selection_copy(selection.token) {
+                    Ok(reply) => {
+                        if let Some(NativeSelectionReply::Copy(_, previous, copied)) = selection.pending.take() {
+                            self.pending_native_clipboards.push_back((previous, copied));
+                        }
+                        self.tmux_copy_token = request;
+                        selection.pending = Some(NativeSelectionReply::Copy(selection.serial, request, reply));
+                    }
+                    Err(error) => self.model.message = format!("Copia no enviada: {error}"),
+                }
+                self.native_selection = Some(selection);
                 let _ = self.terminal_wake.try_send(());
+                if self.native_selection.as_ref().is_some_and(|selection| {
+                    matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
+                }) && !self.terminal_resume.active() {
+                    self.begin_terminal_resume();
+                }
             } else {
                 self.clear_native_selection();
                 self.model.message = "La selección pertenece a otra terminal".into();
@@ -34131,7 +33806,15 @@ impl WorkspaceView {
             return;
         }
         let Some((a, b)) = self.selection else {
-            self.tmux_action(TmuxAction::Copy);
+            // Mouse selection uses tmux copy mode even while the UI remains
+            // in Terminal mode. Queue resume immediately after the copy so
+            // paste and typing cannot reach tmux's copy-mode key bindings.
+            if self.submit_tmux_action(TmuxAction::Copy)
+                && self.model.surface == Surface::Terminal
+                && !self.terminal_resume.active()
+            {
+                self.begin_terminal_resume();
+            }
             return;
         };
         let Some(t) = self.windows.get(self.active) else {
@@ -37681,14 +37364,6 @@ impl Render for WorkspaceView {
         {
             self.pending_forget = None;
         }
-        if self
-            .pending_paste
-            .as_ref()
-            .is_some_and(|pending| !self.pending_paste_target_current(pending))
-        {
-            self.pending_paste = None;
-            self.model.message = "Pegado cancelado al cambiar el foco; no se envió nada".into();
-        }
         self.explorer_rendered.set(false);
         self.agents_rendered.set(false);
         self.geometry_render = self.geometry_render.wrapping_add(1);
@@ -38195,7 +37870,7 @@ impl Render for WorkspaceView {
         // Persistent notices are capped so the transient message keeps room.
         // While a confirmation waits for Enter/Esc, the bar shows only it:
         // side notices could otherwise push its instructions out of view.
-        let confirming = self.pending_paste.is_some() || self.pending_forget.is_some();
+        let confirming = self.pending_forget.is_some();
         // GPUI 0.2.2 cannot ellipsize a nowrap text measured before its width
         // is known, so the transient message is shortened here to what its
         // guaranteed share of the bar (30%, 11 px text) can hold.
@@ -38402,12 +38077,6 @@ impl Render for WorkspaceView {
                         } else {
                             prompt.into_any_element()
                         }
-                    } else if let Some(paste) = &self.pending_paste {
-                        div()
-                            .text_color(rgb(p.accent))
-                            .truncate()
-                            .child(pending_paste_prompt(paste.lines))
-                            .into_any_element()
                     } else if self.model.pending_since.is_some() {
                         let message = if self.model.surface == Surface::Terminal {
                             "Esperando Escape · 300 ms"
@@ -38749,9 +38418,6 @@ impl EntityInputHandler for WorkspaceView {
         _: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        // Composed text is not a confirmation: drop the held paste and let
-        // the text go where it would have gone.
-        self.resolve_pending_paste(false);
         if self.pending_measured_splits.is_some() && !self.ensure_measured_input() {
             self.retain_measured_splits();
         }
@@ -38898,9 +38564,6 @@ impl EntityInputHandler for WorkspaceView {
         _: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        // Composed text is not a confirmation: drop the held paste and let
-        // the text go where it would have gone.
-        self.resolve_pending_paste(false);
         if self.pending_measured_splits.is_some() && !self.ensure_measured_input() {
             self.retain_measured_splits();
         }
