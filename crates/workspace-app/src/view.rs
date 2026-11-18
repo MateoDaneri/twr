@@ -1,6 +1,6 @@
 use gpui::{prelude::*, *};
 use std::{
-    collections::{BTreeMap, HashMap, VecDeque},
+    collections::{BTreeMap, HashMap, HashSet, VecDeque},
     ops::Range,
     path::{Path, PathBuf},
     sync::{
@@ -1336,6 +1336,8 @@ pub struct WorkspaceView {
     terminal_textures: HashMap<workspace_app::terminal_image::ImageKey, Arc<RenderImage>>,
     active: usize,
     next_attachment: u64,
+    pending_terminal_termination: Option<TabLayoutKey>,
+    terminated_terminals: HashSet<workspace_app::terminal_resume::Context>,
     pending_terminal_rebind: HashMap<usize, u64>,
     pending_bootstrap_terminal_alternates: HashMap<usize, BootstrapTerminalAlternate>,
     quit_prompt_open: bool,
@@ -1741,6 +1743,8 @@ impl WorkspaceView {
             terminal_textures: HashMap::new(),
             active: 0,
             next_attachment: 0,
+            pending_terminal_termination: None,
+            terminated_terminals: HashSet::new(),
             pending_terminal_rebind: HashMap::new(),
             pending_bootstrap_terminal_alternates: HashMap::new(),
             quit_prompt_open: false,
@@ -2121,6 +2125,7 @@ impl WorkspaceView {
         }
     }
     fn reserve_terminal_attachment(&mut self) -> Result<u64, String> {
+        self.retire_terminated_terminal_placeholders();
         if self
             .windows
             .len()
@@ -2454,6 +2459,9 @@ impl WorkspaceView {
                     // replacement was created. A failed spawn must not make
                     // an unrelated client the apparent active terminal.
                     let old = self.windows.remove(index);
+                    self.terminated_terminals.remove(&workspace_app::terminal_resume::Context {
+                        project, attachment: old.attachment,
+                    });
                     if self.terminal_visual_intent.as_ref().is_some_and(|intent| {
                         intent.context.project == project && intent.context.attachment == old.attachment
                     }) {
@@ -3040,11 +3048,46 @@ impl WorkspaceView {
         self.model.message = "Verificando cliente de terminal…".into();
     }
     fn reconnect_terminal(&mut self) {
+        if self.pending_terminal_termination.is_some() {
+            self.model.message = "Esperá el resultado del cierre antes de reconectar".into();
+            return;
+        }
         if let Some(context) = self.terminal_input_context()
             && self
                 .additional_backends
                 .contains_key(&(context.project, context.attachment))
         {
+            if self.terminated_terminals.contains(&context) {
+                // This was an explicit termination, not a lost connection.
+                // Use the ordinary new-terminal path and a fresh identity;
+                // never attempt to recover the deleted session by its name.
+                let primary = self
+                    .backends
+                    .get(&context.project)
+                    .and_then(|backend| backend.attachment);
+                if let Some(primary) = primary
+                    && self.terminated_terminals.contains(
+                        &workspace_app::terminal_resume::Context {
+                            project: context.project,
+                            attachment: primary,
+                        },
+                    )
+                {
+                    // Both sessions were deliberately ended. Recreate the
+                    // primary through its existing explicit reconnect path;
+                    // additional creation requires a verified live sponsor.
+                    self.show_terminal_buffer(primary, false);
+                    if self
+                        .terminal_input_context()
+                        .is_some_and(|current| current.attachment == primary)
+                    {
+                        self.reconnect_terminal();
+                    }
+                } else {
+                    self.request_additional_terminal();
+                }
+                return;
+            }
             let key = (context.project, context.attachment);
             if self.pending_additional_reconnects.contains_key(&key) {
                 self.model.message = "La reconexión ya está en curso".into();
@@ -6399,6 +6442,65 @@ impl WorkspaceView {
                         self.pending_terminal_key = None;
                     }
                 }
+                TmuxEvent::WindowTerminated(identity, window, result) => {
+                    let Some(context) = source else { continue };
+                    let expected = TabLayoutKey {
+                        context,
+                        session: identity,
+                        window,
+                    };
+                    if self.pending_terminal_termination.as_ref() != Some(&expected) {
+                        continue;
+                    }
+                    self.pending_terminal_termination = None;
+                    self.terminal_visual_intent = None;
+                    self.invalidate_terminal_jumps();
+                    match result {
+                        Ok(Some(snapshot)) => {
+                            let windows = snapshot.windows.clone();
+                            self.observed_tab_windows.insert(context, snapshot);
+                            if let Some(attachment) = additional {
+                                self.additional_tmux_windows
+                                    .insert((project, attachment), windows);
+                            } else {
+                                self.tmux_windows.insert(project, windows);
+                            }
+                            self.reconcile_tab_layout();
+                            self.model.message =
+                                "Terminal finalizada · otras terminales conservadas".into();
+                        }
+                        Ok(None) => {
+                            self.terminated_terminals.insert(context);
+                            if self.terminal_input_context() == Some(context)
+                                && self.model.surface == Surface::Terminal
+                            {
+                                // The last shell is gone. Change only the UI
+                                // mode; do not enter copy-mode on a dead session.
+                                let _ = self.model.focus(Surface::Normal);
+                            }
+                            let buffer = ListedBuffer::Terminal(context.attachment);
+                            if let Some(registry) = self.listed_buffers.get_mut(&project) {
+                                registry.remove(&buffer);
+                            }
+                            self.numbered_buffers.wipe_owned(project, &buffer);
+                            self.pinned_terminals.remove(&context.attachment);
+                            self.observed_tab_windows.remove(&context);
+                            if let Some(attachment) = additional {
+                                self.additional_tmux_windows
+                                    .insert((project, attachment), Vec::new());
+                            } else {
+                                self.tmux_windows.insert(project, Vec::new());
+                            }
+                            if self.visible_tab.as_ref() == Some(&expected) {
+                                self.visible_tab = None;
+                            }
+                            self.model.message =
+                                "Última terminal finalizada · :TmuxReconnect para abrir otra"
+                                    .into();
+                        }
+                        Err(error) => self.model.message = error,
+                    }
+                }
                 TmuxEvent::WindowsObserved(snapshot) => {
                     if let Some(source) = source {
                         self.observed_tab_windows.insert(source, snapshot);
@@ -9656,6 +9758,10 @@ impl WorkspaceView {
         }
     }
     fn close_workspace(&mut self) {
+        if self.pending_terminal_termination.is_some() {
+            self.model.message = "Esperá el resultado del cierre de terminal".into();
+            return;
+        }
         let current = self.model.project;
         if self
             .pending_additional_terminals
@@ -13866,6 +13972,10 @@ impl WorkspaceView {
 
     fn editor_window_counted(&mut self, key: &str, count: usize) {
         use workspace_core::editor_panes::{Bounds as PaneBounds, Direction, Point as PanePoint};
+        if key == "q" && count == 0 && self.model.surface == Surface::Normal {
+            self.terminate_current_terminal();
+            return;
+        }
         if key == "zoom" {
             let result = if self.editor_zoom.is_some() {
                 self.end_floating_zoom()
@@ -15148,6 +15258,15 @@ impl WorkspaceView {
     fn terminal_recovery_records(&self) -> Vec<workspace_app::recovery::Terminal> {
         let mut records = self.terminal_recovery_pending.clone();
         for window in &self.windows {
+            if self
+                .terminated_terminals
+                .contains(&workspace_app::terminal_resume::Context {
+                    project: window.project,
+                    attachment: window.attachment,
+                })
+            {
+                continue;
+            }
             let buffer = ListedBuffer::Terminal(window.attachment);
             if self
                 .additional_backends
@@ -15166,6 +15285,15 @@ impl WorkspaceView {
         }
         for (project, parked) in self.parked_terminals.iter() {
             for window in &parked.windows {
+                if self
+                    .terminated_terminals
+                    .contains(&workspace_app::terminal_resume::Context {
+                        project: *project,
+                        attachment: window.attachment,
+                    })
+                {
+                    continue;
+                }
                 let buffer = ListedBuffer::Terminal(window.attachment);
                 if parked
                     .additional
@@ -15249,6 +15377,10 @@ impl WorkspaceView {
         (state, uncovered)
     }
     fn terminal_quit_ready(&mut self) -> bool {
+        if self.pending_terminal_termination.is_some() {
+            self.model.message = "Esperá el resultado del cierre de terminal".into();
+            return false;
+        }
         if self.pending_terminal_key.is_some() {
             self.model.message = "Hay entrada de terminal pendiente de revisión".into();
             return false;
@@ -15826,6 +15958,10 @@ impl WorkspaceView {
     /// Report whether the backend accepted the action, not whether tmux has
     /// completed it. Callers must not switch panes after a rejected submission.
     fn submit_tmux_action(&mut self, action: TmuxAction) -> bool {
+        if self.pending_terminal_termination.is_some() {
+            self.model.message = "Esperá el resultado del cierre de terminal".into();
+            return false;
+        }
         if matches!(&action, TmuxAction::SelectAll)
             || matches!(&action, TmuxAction::Motion(key, _) if matches!(key.as_str(), "v" | "<C-v>"))
         {
@@ -25179,22 +25315,45 @@ impl WorkspaceView {
     }
 
     fn snacks_operation_blocked(&self) -> bool {
-        self.pending_snacks_root.is_some() || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
-            || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
-            || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
-            || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_detached_terminal_jump_load.is_some() || self.pending_backend_resume.is_some()
-            || self.pending_list_page.is_some() || self.terminal_jump_gate.busy()
-            || self.detached_terminal_input.any_busy() || self.terminal_resume.active()
-            || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
-            || self.current_editor().is_some_and(|editor| editor.composing() || editor.replaying())
-            || self.terminal_command.is_some() || self.file_prompt.is_some() || self.remote_prompt.is_some()
-            || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
-            || self.media_active() || self.help || self.model.notifications
+        self.pending_terminal_termination.is_some()
+            || self.pending_snacks_root.is_some()
+            || self.pending_open_input.is_some()
+            || self.pending_terminal_key.is_some()
+            || self.pending_measured_splits.is_some()
+            || self.pending_file_splits.has_active()
+            || self.pending_file_splits.recovery_revision().is_some()
+            || self.pending_copy_close > 0
+            || self.pending_terminal_capture.is_some()
+            || self.pending_terminal_open.is_some()
+            || self.pending_read_guard.is_some()
+            || self.pending_edit_guard.is_some()
+            || self.pending_sidebar_open.is_some()
+            || self.pending_sidebar_destination.is_some()
+            || self.pending_sidebar_input_transfer.is_some()
+            || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_jump_load.is_some()
+            || self.pending_terminal_jump_load.is_some()
+            || self.pending_detached_terminal_jump_load.is_some()
+            || self.pending_backend_resume.is_some()
+            || self.pending_list_page.is_some()
+            || self.terminal_jump_gate.busy()
+            || self.detached_terminal_input.any_busy()
+            || self.terminal_resume.active()
+            || self.mouse_drag.is_some()
+            || self.selecting
+            || !self.marked.is_empty()
+            || self
+                .current_editor()
+                .is_some_and(|editor| editor.composing() || editor.replaying())
+            || self.terminal_command.is_some()
+            || self.file_prompt.is_some()
+            || self.remote_prompt.is_some()
+            || self.pending_guarded_quit.is_some()
+            || self.delete_after_save.is_some()
+            || self.quit_after_save
+            || self.media_active()
+            || self.help
+            || self.model.notifications
     }
 
     // Root resolution needs a stable pane identity even when the existing
@@ -25646,6 +25805,12 @@ impl WorkspaceView {
             Some(PaneContent::Agents(id)) => Some(ListedBuffer::Agents(*id)),
             _ => None,
         };
+        let old = old.filter(|buffer| {
+            !matches!(buffer, ListedBuffer::Terminal(attachment)
+            if self.terminated_terminals.contains(&workspace_app::terminal_resume::Context {
+                project: self.model.project, attachment: *attachment,
+            }))
+        });
         if let Some(old) = &old {
             self.track_numbered_buffer(self.model.project, old.clone());
         }
@@ -25855,7 +26020,12 @@ impl WorkspaceView {
                         })
                     }
                     ListedBuffer::Terminal(id)
-                        if self.windows.iter().any(|terminal| {
+                        if !self.terminated_terminals.contains(
+                            &workspace_app::terminal_resume::Context {
+                                project: self.model.project,
+                                attachment: *id,
+                            },
+                        ) && self.windows.iter().any(|terminal| {
                             terminal.attachment == *id && terminal.project == self.model.project
                         }) =>
                     {
@@ -28246,7 +28416,137 @@ impl WorkspaceView {
         self.vim_delete_terminal_buffer(attachment, true, Some((instance, window, destination)));
     }
 
+    /// Release only ended additional clients whose output is no longer shown
+    /// by any layout. Referenced output remains available until its view goes.
+    fn retire_terminated_terminal_placeholders(&mut self) {
+        if self.terminated_terminals.is_empty()
+            || self.snacks_operation_blocked()
+            || !self.pending_additional_reconnects.is_empty()
+        {
+            return;
+        }
+        let active = self
+            .windows
+            .get(self.active)
+            .map(|window| window.attachment);
+        let retired: Vec<_> = self
+            .terminated_terminals
+            .iter()
+            .copied()
+            .filter(|context| {
+                let content = PaneContent::Terminal(context.attachment);
+                let shows = |panes: &EditorPanes| {
+                    panes
+                        .layout
+                        .order()
+                        .into_iter()
+                        .any(|pane| panes.content(pane) == Some(&content))
+                };
+                Some(context.attachment) != active
+                    && self
+                        .additional_backends
+                        .contains_key(&(context.project, context.attachment))
+                    && !self.editor_panes.as_ref().is_some_and(shows)
+                    && !self.workspace_panes.values().any(|(panes, _)| shows(panes))
+                    && !self
+                        .editor_zoom
+                        .as_ref()
+                        .is_some_and(|zoom| zoom.content() == &content)
+            })
+            .collect();
+        for context in retired {
+            self.windows
+                .retain(|window| window.attachment != context.attachment);
+            self.additional_backends
+                .remove(&(context.project, context.attachment));
+            self.additional_tmux_windows
+                .remove(&(context.project, context.attachment));
+            self.observed_tab_windows.remove(&context);
+            self.pinned_terminals.remove(&context.attachment);
+            let buffer = ListedBuffer::Terminal(context.attachment);
+            if let Some(registry) = self.listed_buffers.get_mut(&context.project) {
+                registry.remove(&buffer);
+            }
+            self.numbered_buffers.wipe_owned(context.project, &buffer);
+            self.tab_focus.retain(|key, _| key.context != context);
+            self.terminated_terminals.remove(&context);
+        }
+        if let Some(active) = active
+            && let Some(index) = self
+                .windows
+                .iter()
+                .position(|window| window.attachment == active)
+        {
+            self.active = index;
+        }
+    }
+    /// Explicit terminal close ends the selected tmux window and its jobs.
+    /// File buffer deletion and native Ctrl+w c retain their existing rules.
+    fn terminate_current_terminal(&mut self) {
+        if self.pending_terminal_termination.is_some() {
+            self.model.message = "El cierre de terminal ya está en curso".into();
+            return;
+        }
+        if !matches!(self.model.surface, Surface::Terminal | Surface::Normal)
+            || self.snacks_operation_blocked()
+            || self.model.pending_since.is_some()
+            || self.editor_zoom.is_some()
+            || self
+                .pending_terminal_rebind
+                .contains_key(&self.model.project)
+        {
+            self.model.message =
+                "Terminá la operación actual y salí del zoom antes de cerrar la terminal".into();
+            return;
+        }
+        let Some(context) = self.terminal_input_context() else {
+            self.model.message = "No se pudo identificar la terminal; cierre cancelado".into();
+            return;
+        };
+        let target = self
+            .observed_tab_windows
+            .get(&context)
+            .and_then(|snapshot| {
+                let mut active = snapshot.windows.iter().filter(|window| window.active);
+                let window = active.next()?;
+                if active.next().is_some() {
+                    return None;
+                }
+                Some((
+                    TabLayoutKey {
+                        context,
+                        session: snapshot.identity.clone(),
+                        window: window.id.clone(),
+                    },
+                    window.active_pane.clone(),
+                ))
+            });
+        let Some((target, pane)) = target else {
+            self.model.message =
+                "Esperá a que se verifique la ventana de tmux antes de cerrarla".into();
+            return;
+        };
+        if self.visible_tab.as_ref() != Some(&target) {
+            self.model.message = "Cambió la pestaña visible; cierre cancelado".into();
+            return;
+        }
+        let action =
+            TmuxAction::TerminateWindow(target.session.clone(), target.window.clone(), pane);
+        match terminal_backend_for(&self.backends, &self.additional_backends, context)
+            .and_then(|backend| backend.send(action))
+        {
+            Ok(()) => {
+                self.pending_terminal_termination = Some(target);
+                self.model.message = "Terminando la terminal elegida y sus procesos…".into();
+            }
+            Err(error) => self.model.message = format!("No se envió el cierre: {error}"),
+        }
+    }
     fn request_delete_buffer(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.model.surface == Surface::Normal {
+            self.terminate_current_terminal();
+            return;
+        }
         if self.delete_prompt_open || self.delete_after_save.is_some() {
             return;
         }
@@ -31778,6 +32078,15 @@ impl WorkspaceView {
         cx.notify();
     }
     fn on_key(&mut self, event: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
+        if self.pending_terminal_termination.is_some()
+            && !(event.keystroke.modifiers.platform && event.keystroke.key == "q")
+        {
+            self.model.message = "Cierre en curso · tecla no enviada; esperá el resultado".into();
+            window.prevent_default();
+            cx.stop_propagation();
+            cx.notify();
+            return;
+        }
         self.release_idle_terminal_key();
         if self.pending_open_input.is_none() {
             self.pending_direction_replay = None;
@@ -32680,6 +32989,18 @@ impl WorkspaceView {
             return;
         }
         if k.modifiers.platform {
+            if key == "w"
+                && !k.modifiers.control
+                && !k.modifiers.alt
+                && !k.modifiers.shift
+                && matches!(self.model.surface, Surface::Terminal | Surface::Normal)
+            {
+                self.terminate_current_terminal();
+                window.prevent_default();
+                cx.stop_propagation();
+                cx.notify();
+                return;
+            }
             if key == "d" && !k.modifiers.control && !k.modifiers.alt {
                 let action = if k.modifiers.shift {
                     TmuxAction::SplitVertical

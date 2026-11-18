@@ -123,6 +123,8 @@ pub enum Action {
     RestoreCopyMarkInSession(u64, CopyMark),
     Motion(String, usize),
     Select(String),
+    /// End one exact tmux window, never a session or a newly selected target.
+    TerminateWindow(WindowSessionIdentity, String, String),
     Resize(char, u16),
     PaneKey(&'static str),
     Scroll(&'static str),
@@ -160,6 +162,11 @@ pub enum Action {
     Direction(char),
 }
 pub enum Event {
+    WindowTerminated(
+        WindowSessionIdentity,
+        String,
+        Result<Option<WindowSnapshot>, String>,
+    ),
     Resumed(u64, Result<(), String>),
     InputDelivered(u64, Result<(), String>),
     OrderedPasteFinished(u64, Result<(), String>),
@@ -232,6 +239,7 @@ impl Action {
             self,
             Self::Normal(true)
                 | Self::Select(_)
+                | Self::TerminateWindow(..)
                 | Self::Cycle(_)
                 | Self::SelectIndex(_)
                 | Self::New
@@ -2328,6 +2336,94 @@ unbind-key -a -T movepane
         let identity = identity.ok_or("No hay ventanas tmux verificables")?;
         Ok(WindowSnapshot { identity, windows })
     }
+    fn terminate_window(
+        &self,
+        identity: &WindowSessionIdentity,
+        window: &str,
+        pane: &str,
+    ) -> Result<Option<WindowSnapshot>, String> {
+        fn numeric_id(value: &str, prefix: char) -> bool {
+            value.starts_with(prefix)
+                && value.len() > 1
+                && value.len() <= 24
+                && value.as_bytes()[1..].iter().all(u8::is_ascii_digit)
+        }
+        if !numeric_id(window, '@')
+            || !numeric_id(pane, '%')
+            || !numeric_id(&identity.session_id, '$')
+        {
+            return Err("Identidad de ventana inválida; cierre cancelado".into());
+        }
+        let before = self.window_snapshot()?;
+        if before.identity != *identity
+            || before.windows.iter().filter(|entry| entry.active).count() != 1
+            || !before
+                .windows
+                .iter()
+                .any(|entry| entry.active && entry.id == window && entry.active_pane == pane)
+        {
+            return Err("Cambió la terminal elegida; cierre cancelado".into());
+        }
+        // Recheck on tmux's command queue, not only in the earlier sample.
+        // Only numeric IDs enter command text. A linked window would also
+        // terminate processes visible in another session, so refuse it.
+        let checks = [
+            format!("#{{==:#{{pid}},{}}}", identity.server_pid),
+            format!("#{{==:#{{session_id}},{}}}", identity.session_id),
+            format!("#{{==:#{{window_id}},{window}}}"),
+            format!("#{{==:#{{pane_id}},{pane}}}"),
+            "#{==:#{window_linked},0}".into(),
+        ];
+        let condition = checks
+            .into_iter()
+            .reduce(|left, right| format!("#{{&&:{left},{right}}}"))
+            .ok_or("No se pudo preparar la comprobación de cierre")?;
+        let result = self.run(&[
+            "-N",
+            "if-shell",
+            "-F",
+            "-t",
+            &format!("{}:", identity.session_id),
+            &condition,
+            &format!("kill-window -t {window}"),
+            "display-message -p TWR_TERMINATE_REJECTED",
+        ])?;
+        if !result.trim().is_empty() {
+            return Err(
+                "La terminal cambió o está enlazada a otra sesión; cierre cancelado".into(),
+            );
+        }
+        // Ending the last window intentionally removes this session. Never
+        // create a replacement shell or restart a server as a side effect.
+        match self.run(&["-N", "list-sessions", "-F", "#{session_id}"]) {
+            Ok(sessions)
+                if !sessions
+                    .lines()
+                    .any(|session| session == identity.session_id) =>
+            {
+                return Ok(None);
+            }
+            Err(_) if matches!(fs::symlink_metadata(&self.socket), Err(error) if error.kind() == std::io::ErrorKind::NotFound) =>
+            {
+                return Ok(None);
+            }
+            Err(error) => {
+                return Err(format!(
+                    "Cierre enviado sin confirmación: {error}. No se reintentó"
+                ));
+            }
+            _ => {}
+        }
+        let after = self.window_snapshot().map_err(|error| {
+            format!(
+                "Cierre enviado, pero no se pudo verificar el resultado: {error}. No se reintentó"
+            )
+        })?;
+        if after.identity != *identity || after.windows.iter().any(|entry| entry.id == window) {
+            return Err("No se pudo confirmar el cierre; no se reintentó".into());
+        }
+        Ok(Some(after))
+    }
     fn copy_selection(&self) -> Result<String, String> {
         self.copy_selection_with_mode(false)
     }
@@ -3663,6 +3759,9 @@ unbind-key -a -T movepane
                     self.root.display().to_string(),
                 ]
             }
+            Action::TerminateWindow(..) => {
+                return Err("El cierre requiere respuesta verificada".into());
+            }
             Action::Select(id) => vec!["select-window".into(), "-t".into(), id],
             Action::SelectIndex(index) => {
                 if !(1..=9).contains(&index) {
@@ -3948,6 +4047,7 @@ impl Backend {
             let mut poll_alive = true;
             let mut poll_worker_failure_reported = false;
             let mut poll_epoch = 0_u64;
+            let mut session_ended = false;
             loop {
                 if poll_in_flight {
                     let response = match poll_result.try_recv() {
@@ -3961,7 +4061,7 @@ impl Backend {
                     };
                     if let Some((epoch, result)) = response {
                         poll_in_flight = false;
-                        if epoch != poll_epoch {
+                        if epoch != poll_epoch || session_ended {
                             next_windows_poll = Instant::now();
                         } else {
                             match result {
@@ -4001,7 +4101,11 @@ impl Backend {
                         }
                     }
                 }
-                if poll_alive && !poll_in_flight && Instant::now() >= next_windows_poll {
+                if !session_ended
+                    && poll_alive
+                    && !poll_in_flight
+                    && Instant::now() >= next_windows_poll
+                {
                     match poll_request.try_send(poll_epoch) {
                         Ok(()) => poll_in_flight = true,
                         Err(mpsc::TrySendError::Full(_)) => {
@@ -4027,7 +4131,7 @@ impl Backend {
                 // repeatedly failing poll backs off.
                 let wait = if poll_in_flight {
                     Duration::from_millis(25)
-                } else if !poll_alive {
+                } else if !poll_alive || session_ended {
                     poll_interval
                 } else {
                     next_windows_poll.saturating_duration_since(Instant::now()).min(poll_interval)
@@ -4041,14 +4145,22 @@ impl Backend {
                     next_windows_poll = Instant::now();
                 }
                 if let (Some(expected), Ok(action)) = (&guard, &request)
+                    && !(session_ended && matches!(action, Action::Barrier(_)))
                     && let Err(error) = session.verify_additional_terminal(expected)
                 {
                     let event = match action {
                         Action::Resume(token) => Event::Resumed(*token, Err(error)),
                         Action::ResumeStreamInput(token, _, _)
                         | Action::ResumeStreamMixed(token, _, _)
-                        | Action::ResumeNativeCopied(token, _) => Event::InputDelivered(*token, Err(error)),
-                        Action::ResumeCopied(token, _, _, _, _) => Event::OrderedPasteFinished(*token, Err(error)),
+                        | Action::ResumeNativeCopied(token, _) => {
+                            Event::InputDelivered(*token, Err(error))
+                        }
+                        Action::ResumeCopied(token, _, _, _, _) => {
+                            Event::OrderedPasteFinished(*token, Err(error))
+                        }
+                        Action::TerminateWindow(identity, window, _) => {
+                            Event::WindowTerminated(identity.clone(), window.clone(), Err(error))
+                        }
                         Action::TrackedTarget(token, _, _, _) => {
                             Event::TargetActionDone(*token, Err(error))
                         }
@@ -4078,6 +4190,18 @@ impl Backend {
                     break;
                 }
                 match request {
+                    Ok(Action::TerminateWindow(identity, window, pane)) => {
+                        resume = None;
+                        yank_anchor = None;
+                        visual_lines.clear();
+                        let result = session.terminate_window(&identity, &window, &pane);
+                        session_ended = matches!(result, Ok(None));
+                        if let Ok(snapshot) = &result {
+                            previous = snapshot.clone();
+                        }
+                        next_windows_poll = Instant::now();
+                        let _ = tx.send(Event::WindowTerminated(identity, window, result));
+                    }
                     Ok(Action::Barrier(token)) => {
                         let _ = tx.send(Event::Barrier(token));
                     }
