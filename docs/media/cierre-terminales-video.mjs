@@ -5,19 +5,17 @@ export function renderFrame(t) {
   const last = t >= 13;
   const local = second ? t - 7 : t;
   const closed = !last && local >= 4.7;
-  const reopened = last && t >= 16.5;
-  const count = local < 2.2 ? 0 : local < 3 ? 1 : local < 3.8 ? 2 : 3;
-  const chord = ['Space', second ? 'w' : 'b', second ? 'q' : 'd'];
-  const keys = last ? (reopened ? ':TmuxReconnect ↵' : 'Space w q') : chord.slice(0, count).join('  ');
-  const tabs = last && !reopened ? '' : closed || reopened
+  const chord = ['Cmd+W'];
+  const keys = last ? 'Cmd+W' : local < 3 ? '' : chord[0];
+  const tabs = last ? '' : closed
     ? '<rect x="45" y="147" width="190" height="48" rx="8" fill="#244a59"/><text x="65" y="178">1  terminal</text>'
     : '<text x="65" y="178">1  vecina</text><rect x="292" y="147" width="250" height="48" rx="8" fill="#244a59"/><text x="314" y="178">2  elegida</text>';
-  const title = last ? 'Cerrar la última ventana' : second ? 'Space w q: terminar la elegida' : 'Space b d: terminar la elegida';
+  const title = last ? 'Cmd+W: cerrar la última ventana' : second ? 'Cmd+W desde Terminal Normal' : 'Cmd+W desde Terminal Input';
   const lines = last
-    ? reopened ? ['$ sh', 'sh-3.2$ ▍'] : ['[exited]', 'No se inicia otro shell automáticamente.']
+    ? ['[exited]', 'La app sigue abierta. No se crea otro shell.']
     : closed ? ['VECINA VIVA', '', 'Su proceso y su contenido se conservan.']
-    : ['TERMINAL DESCARTABLE', '', '$ /bin/sleep 600', '', 'La otra ventana permanece abierta.'];
-  const status = last ? reopened ? 'Sesión principal nueva, solicitada explícitamente' : 'Última terminal finalizada' : closed ? 'Terminal finalizada · otras terminales conservadas' : 'NORMAL';
+    : ['TERMINAL DESCARTABLE', '', 'sh-3.2$ ▍', '', 'La otra ventana permanece abierta.'];
+  const status = last ? 'Última terminal finalizada' : closed ? 'Terminal finalizada · otras terminales conservadas' : second ? 'NORMAL' : 'INPUT';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
   <rect width="1280" height="720" fill="#eef2f5"/>
   <g font-family="Arial,sans-serif" fill="#172b38">

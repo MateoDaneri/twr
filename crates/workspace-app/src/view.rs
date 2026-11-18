@@ -6471,6 +6471,13 @@ impl WorkspaceView {
                         }
                         Ok(None) => {
                             self.terminated_terminals.insert(context);
+                            if self.terminal_input_context() == Some(context)
+                                && self.model.surface == Surface::Terminal
+                            {
+                                // The last shell is gone. Change only the UI
+                                // mode; do not enter copy-mode on a dead session.
+                                let _ = self.model.focus(Surface::Normal);
+                            }
                             let buffer = ListedBuffer::Terminal(context.attachment);
                             if let Some(registry) = self.listed_buffers.get_mut(&project) {
                                 registry.remove(&buffer);
@@ -28480,8 +28487,9 @@ impl WorkspaceView {
             self.model.message = "El cierre de terminal ya está en curso".into();
             return;
         }
-        if self.model.surface != Surface::Normal
+        if !matches!(self.model.surface, Surface::Terminal | Surface::Normal)
             || self.snacks_operation_blocked()
+            || self.model.pending_since.is_some()
             || self.editor_zoom.is_some()
             || self
                 .pending_terminal_rebind
@@ -32981,6 +32989,18 @@ impl WorkspaceView {
             return;
         }
         if k.modifiers.platform {
+            if key == "w"
+                && !k.modifiers.control
+                && !k.modifiers.alt
+                && !k.modifiers.shift
+                && matches!(self.model.surface, Surface::Terminal | Surface::Normal)
+            {
+                self.terminate_current_terminal();
+                window.prevent_default();
+                cx.stop_propagation();
+                cx.notify();
+                return;
+            }
             if key == "d" && !k.modifiers.control && !k.modifiers.alt {
                 let action = if k.modifiers.shift {
                     TmuxAction::SplitVertical
