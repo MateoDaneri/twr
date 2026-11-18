@@ -6471,6 +6471,12 @@ impl WorkspaceView {
                         }
                         Ok(None) => {
                             self.terminated_terminals.insert(context);
+                            let buffer = ListedBuffer::Terminal(context.attachment);
+                            if let Some(registry) = self.listed_buffers.get_mut(&project) {
+                                registry.remove(&buffer);
+                            }
+                            self.numbered_buffers.wipe_owned(project, &buffer);
+                            self.pinned_terminals.remove(&context.attachment);
                             self.observed_tab_windows.remove(&context);
                             if let Some(attachment) = additional {
                                 self.additional_tmux_windows
@@ -25792,6 +25798,12 @@ impl WorkspaceView {
             Some(PaneContent::Agents(id)) => Some(ListedBuffer::Agents(*id)),
             _ => None,
         };
+        let old = old.filter(|buffer| {
+            !matches!(buffer, ListedBuffer::Terminal(attachment)
+            if self.terminated_terminals.contains(&workspace_app::terminal_resume::Context {
+                project: self.model.project, attachment: *attachment,
+            }))
+        });
         if let Some(old) = &old {
             self.track_numbered_buffer(self.model.project, old.clone());
         }
@@ -26001,7 +26013,12 @@ impl WorkspaceView {
                         })
                     }
                     ListedBuffer::Terminal(id)
-                        if self.windows.iter().any(|terminal| {
+                        if !self.terminated_terminals.contains(
+                            &workspace_app::terminal_resume::Context {
+                                project: self.model.project,
+                                attachment: *id,
+                            },
+                        ) && self.windows.iter().any(|terminal| {
                             terminal.attachment == *id && terminal.project == self.model.project
                         }) =>
                     {
