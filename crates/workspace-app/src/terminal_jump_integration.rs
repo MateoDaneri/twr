@@ -9,7 +9,7 @@ use crate::{
         record_terminal_origin_after_open, stage_listed_buffer_switch,
         stage_terminal_origin_file_jump,
     },
-    terminal_jump_gate::{Completion, Context, DeferredJump, Gate, PendingFileCapture},
+    terminal_jump::{Completion, Context, DeferredJump, PendingRestore, PendingFileCapture},
     terminal_jump_marks::MarkBank,
     tmux::{Action, Backend, CopyMark, Event, RestoreCopyMark, Session},
 };
@@ -205,7 +205,7 @@ fn synthetic_terminal_file_terminal_file_round_trip_preserves_panel_and_marks() 
         pane: pane.0,
         attachment: 77,
     };
-    let mut gate = Gate::default();
+    let mut gate = PendingRestore::default();
     let token = gate
         .try_dispatch(context, request, |token| {
             backend
@@ -309,26 +309,6 @@ fn synthetic_terminal_file_terminal_file_round_trip_preserves_panel_and_marks() 
     .unwrap()
     .unwrap();
     assert_eq!(pending.path(), file_path);
-    let input_context = crate::open_input::Context {
-        workspace: 1,
-        pane: pane.0,
-        attachment: 77,
-        generation: 8,
-        path: file_path.clone(),
-    };
-    let mut input = crate::open_input::Queue::new(input_context.clone(), 8, 128);
-    assert!(input.push(crate::open_input::Event::Key("i"), 1).is_ok());
-    assert!(
-        input
-            .push(
-                crate::open_input::Event::Commit {
-                    range: None,
-                    text: "ñ".into()
-                },
-                0
-            )
-            .is_ok()
-    );
     let mut restored = Editor::new("file contents".into());
     assert!(tracking.resume(file_id, &mut restored));
     let staged = pending
@@ -342,21 +322,5 @@ fn synthetic_terminal_file_terminal_file_round_trip_preserves_panel_and_marks() 
         Some(&Content::File(file_path.clone()))
     );
     assert_eq!(panes.content(pane), Some(&Content::Terminal(77)));
-    assert!(input.ready(&input_context, true));
-    while let Some((id, event)) = input
-        .begin(&input_context, true)
-        .map(|(id, event)| (id, event.clone()))
-    {
-        match event {
-            crate::open_input::Event::Key(key) => {
-                restored.key(key);
-            }
-            crate::open_input::Event::Commit { range, text } => {
-                restored.commit_input(range, &text).unwrap()
-            }
-            _ => panic!("unexpected synthetic input"),
-        }
-        assert!(input.acknowledge(id));
-    }
-    assert_eq!(restored.contents(), "ñfile contents");
+
 }

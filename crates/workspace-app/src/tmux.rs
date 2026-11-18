@@ -81,18 +81,18 @@ pub fn observed_active_target_changed(before: &[WindowInfo], after: &[WindowInfo
 pub enum Action {
     Normal(bool),
     Resume(u64),
-    /// Input submitted immediately to this worker, with shared recovery bytes.
+    /// Resume only the terminal target observed by the caller.
+    ResumeOn(u64, String, String),
+    /// Select a clicked cell and resume in backend order before subsequent input.
+    ResumeCell(u64, String, u16, u16),
+    /// Input submitted immediately to this worker for its selected route.
     ResumeStreamInput(u64, Arc<Vec<u8>>, bool),
-    /// A FIFO batch whose paste spans are raw clipboard bytes, not preframed.
-    ResumeStreamMixed(u64, Arc<Vec<u8>>, Vec<(usize, usize)>),
     /// Consume the native selection reply once, in the same input FIFO.
     ResumeNativeCopied(u64, crate::terminal::SelectionCopyDelivery),
     /// Paste an earlier copy in backend order after resuming.
-    ResumeCopied(u64, u64, Option<String>, Vec<u8>, Vec<(usize, usize)>),
+    ResumeCopied(u64, u64, Option<String>),
     Barrier(u64),
-    /// An input-replay action whose destination must be observed before the
-    /// next event is released. The wrapped action cannot itself be tracked.
-    TrackedTarget(u64, String, String, Box<Action>),
+
     CaptureCopyMark(u64),
     InspectSelection {
         token: u64,
@@ -171,7 +171,7 @@ pub enum Event {
     InputDelivered(u64, Result<(), String>),
     OrderedPasteFinished(u64, Result<(), String>),
     Barrier(u64),
-    TargetActionDone(u64, Result<Vec<WindowInfo>, String>),
+
     CopyMarkCaptured(u64, Result<CopyMark, String>),
     SelectionInspected(u64, Result<bool, String>),
     VisualSelectionDone(u64, Result<(), String>),
@@ -247,6 +247,7 @@ impl Action {
                 | Self::Split
                 | Self::SplitVertical
                 | Self::Direction(_)
+                | Self::ResumeCell(..)
         )
     }
     /// Entering normal/copy mode is itself the desired destination. Resuming
@@ -1668,7 +1669,42 @@ impl Session {
         ResumeTarget::parse(&text)
     }
     fn resume(&self) -> Result<ResumeTarget, String> {
+        self.resume_at(None)
+    }
+    fn resume_cell(&self, window: &str, row: u16, column: u16) -> Result<ResumeTarget, String> {
+        if self.resume_target()?.window != window {
+            return Err("Cambió la ventana del clic; evento no enviado".into());
+        }
+        let panes = self.run(&["list-panes", "-t", window, "-F",
+            "#{pane_id}\t#{pane_left}\t#{pane_top}\t#{pane_width}\t#{pane_height}\t#{pane_active}\t#{window_zoomed_flag}"])?;
+        let mut selected = None;
+        for line in panes.lines() {
+            let fields: Vec<_> = line.split('\t').collect();
+            if fields.len() != 7 { return Err("Geometría de terminal inválida".into()); }
+            let coordinates: Vec<u32> = fields[1..5].iter().map(|value| value.parse::<u32>())
+                .collect::<Result<_, _>>().map_err(|_| "Geometría de terminal inválida")?;
+            let visible = fields[6] != "1" || fields[5] == "1";
+            if visible && u32::from(column) >= coordinates[0]
+                && u32::from(column) < coordinates[0].saturating_add(coordinates[2])
+                && u32::from(row) >= coordinates[1]
+                && u32::from(row) < coordinates[1].saturating_add(coordinates[3])
+            {
+                if selected.is_some() { return Err("Destino del clic ambiguo".into()); }
+                selected = Some(ResumeTarget::parse(&format!("{window}\t{}", fields[0]))?);
+            }
+        }
+        let target = selected.ok_or("El clic no corresponde a un panel de terminal")?;
+        if self.resume_target()?.window != window {
+            return Err("Cambió la ventana del clic; evento no enviado".into());
+        }
+        self.run(&["select-pane", "-t", &target.pane])?;
+        self.resume_at(Some((&target.window, &target.pane)))
+    }
+    fn resume_at(&self, expected: Option<(&str, &str)>) -> Result<ResumeTarget, String> {
         let target = self.resume_target()?;
+        if expected.is_some_and(|(window, pane)| target.window != window || target.pane != pane) {
+            return Err("La terminal visible cambio; evento no enviado".into());
+        }
         if self
             .run(&[
                 "display-message",
@@ -1777,22 +1813,7 @@ impl Session {
         }
         delivered
     }
-    fn resume_mixed(&self, target: &ResumeTarget, bytes: &[u8], ranges: &[(usize, usize)]) -> Result<(), String> {
-        let mut cursor = 0;
-        for &(start, end) in ranges {
-            if start < cursor || end < start || end > bytes.len() {
-                return Err("Delimitación de pegado inválida; entrada no enviada".into());
-            }
-            cursor = end;
-        }
-        cursor = 0;
-        for &(start, end) in ranges {
-            self.resume_buffer(target, &bytes[cursor..start], false)?;
-            self.resume_buffer(target, &bytes[start..end], true)?;
-            cursor = end;
-        }
-        self.resume_buffer(target, &bytes[cursor..], false)
-    }
+
     fn command(&self) -> Command {
         let mut c = Command::new(&self.binary);
         // Control replies must retain UTF-8 and literal tab separators even when
@@ -3432,20 +3453,19 @@ unbind-key -a -T movepane
     fn action(&self, a: Action) -> Result<(), String> {
         self.action_with_target(a, None)
     }
-    /// For a replayed target change, bind pane-relative actions to the pane
-    /// that was inspected rather than resolving the session's current pane a
-    /// second time after the check. Other clients can still race the action.
+    /// Bind a selection action to its inspected pane. Other clients can still
+    /// change the target, so the caller validates it before and after dispatch.
     fn action_with_target(&self, a: Action, expected: Option<&ResumeTarget>) -> Result<(), String> {
         let target = format!("{}:", self.name);
         let pane_target = expected.map_or_else(|| target.clone(), |target| target.pane.clone());
         let args = match a {
             Action::Resume(_)
+            | Action::ResumeOn(..)
+            | Action::ResumeCell(..)
             | Action::ResumeStreamInput(_, _, _)
-            | Action::ResumeStreamMixed(_, _, _)
             | Action::ResumeNativeCopied(_, _)
-            | Action::ResumeCopied(_, _, _, _, _)
+            | Action::ResumeCopied(_, _, _)
             | Action::Barrier(_)
-            | Action::TrackedTarget(_, _, _, _)
             | Action::CaptureCopyMark(_)
             | Action::InspectSelection { .. }
             | Action::VisualSelection { .. }
@@ -3455,7 +3475,7 @@ unbind-key -a -T movepane
             | Action::CopyNormalMotion { .. }
             | Action::RestoreCopyMark(_, _)
             | Action::RestoreCopyMarkInSession(_, _) => {
-                return Err("Resume requires explicit acknowledgement".into());
+                return Err("Operación exclusiva del worker de terminal".into());
             }
             Action::Normal(enter) => {
                 if enter {
@@ -4138,7 +4158,7 @@ impl Backend {
                 };
                 let request = rx.recv_timeout(wait);
                 if request.as_ref().is_ok_and(|action: &Action| {
-                    action.changes_input_target() || matches!(action, Action::TrackedTarget(..))
+                    action.changes_input_target()
                 }) {
                     let Some(next) = poll_epoch.checked_add(1) else { break };
                     poll_epoch = next;
@@ -4149,21 +4169,18 @@ impl Backend {
                     && let Err(error) = session.verify_additional_terminal(expected)
                 {
                     let event = match action {
-                        Action::Resume(token) => Event::Resumed(*token, Err(error)),
+                        Action::Resume(token) | Action::ResumeOn(token, _, _) | Action::ResumeCell(token, _, _, _) => Event::Resumed(*token, Err(error)),
                         Action::ResumeStreamInput(token, _, _)
-                        | Action::ResumeStreamMixed(token, _, _)
                         | Action::ResumeNativeCopied(token, _) => {
                             Event::InputDelivered(*token, Err(error))
                         }
-                        Action::ResumeCopied(token, _, _, _, _) => {
+                        Action::ResumeCopied(token, _, _) => {
                             Event::OrderedPasteFinished(*token, Err(error))
                         }
                         Action::TerminateWindow(identity, window, _) => {
                             Event::WindowTerminated(identity.clone(), window.clone(), Err(error))
                         }
-                        Action::TrackedTarget(token, _, _, _) => {
-                            Event::TargetActionDone(*token, Err(error))
-                        }
+
                         Action::CaptureCopyMark(token) => {
                             Event::CopyMarkCaptured(*token, Err(error))
                         }
@@ -4205,120 +4222,7 @@ impl Backend {
                     Ok(Action::Barrier(token)) => {
                         let _ = tx.send(Event::Barrier(token));
                     }
-                    Ok(Action::TrackedTarget(token, expected_window, expected_pane, action)) => {
-                        resume = None;
-                        let result = (|| -> Result<Vec<WindowInfo>, String> {
-                            if !action.changes_input_target()
-                                || matches!(*action, Action::Normal(_))
-                            {
-                                return Err("Acción de destino inválida".into());
-                            }
-                            let socket =
-                                fs::metadata(&session.socket).map_err(|e| e.to_string())?;
-                            let session_id = session.session_id()?;
-                            let before = session.resume_target()?;
-                            if before.window != expected_window || before.pane != expected_pane {
-                                return Err("Cambió el destino antes de la acción".into());
-                            }
-                            let server = session.server_pid(&before)?;
-                            let same_window = matches!(
-                                *action,
-                                Action::Direction(_) | Action::Split | Action::SplitVertical
-                            );
-                            let new_pane = matches!(*action, Action::Split | Action::SplitVertical);
-                            let requested_window = match action.as_ref() {
-                                Action::Select(id) => Some(id.clone()),
-                                _ => None,
-                            };
-                            let requested_index = match action.as_ref() {
-                                Action::SelectIndex(index) => Some(*index),
-                                _ => None,
-                            };
-                            let cycle_target = if let Action::Cycle(forward) = action.as_ref() {
-                                let mut windows = session.windows()?;
-                                windows.sort_by_key(|window| window.index);
-                                if windows.is_empty()
-                                    || windows
-                                        .windows(2)
-                                        .any(|pair| pair[0].index == pair[1].index)
-                                {
-                                    return Err("Lista de ventanas ambigua".into());
-                                }
-                                let mut active = windows
-                                    .iter()
-                                    .enumerate()
-                                    .filter(|(_, window)| window.active);
-                                let (index, current) =
-                                    active.next().ok_or("Ventana activa no disponible")?;
-                                if active.next().is_some()
-                                    || current.id != before.window
-                                    || current.active_pane != before.pane
-                                    || session.resume_target()? != before
-                                {
-                                    return Err(
-                                        "Cambió el destino antes de recorrer ventanas".into()
-                                    );
-                                }
-                                let next = if *forward {
-                                    (index + 1) % windows.len()
-                                } else {
-                                    (index + windows.len() - 1) % windows.len()
-                                };
-                                Some((windows[next].id.clone(), windows[next].index))
-                            } else {
-                                None
-                            };
-                            let created = if matches!(*action, Action::New) {
-                                let target = format!("{}:", session.name);
-                                let directory = session.root.display().to_string();
-                                let output = session.run(&[
-                                    "new-window",
-                                    "-P",
-                                    "-F",
-                                    "#{window_id}\t#{pane_id}",
-                                    "-t",
-                                    &target,
-                                    "-c",
-                                    &directory,
-                                ])?;
-                                Some(ResumeTarget::parse(&output)?)
-                            } else {
-                                session.action_with_target(*action, Some(&before))?;
-                                None
-                            };
-                            let target = session.resume_target()?;
-                            if (same_window && target.window != before.window)
-                                || (new_pane && target.pane == before.pane)
-                                || created.as_ref().is_some_and(|created| created != &target)
-                            {
-                                return Err("La acción no confirmó el panel esperado".into());
-                            }
-                            let windows = session.windows()?;
-                            let mut active = windows.iter().filter(|window| window.active);
-                            if !active.next().is_some_and(|window| {
-                                window.id == target.window
-                                    && window.active_pane == target.pane
-                                    && requested_window.as_ref().is_none_or(|id| &window.id == id)
-                                    && requested_index.is_none_or(|index| window.index == index)
-                                    && cycle_target.as_ref().is_none_or(|(id, index)| {
-                                        &window.id == id && window.index == *index
-                                    })
-                            }) || active.next().is_some()
-                                || session.resume_target()? != target
-                                || session.session_id()? != session_id
-                                || session.server_pid(&target)? != server
-                            {
-                                return Err("Destino tmux no confirmado".into());
-                            }
-                            let after = fs::metadata(&session.socket).map_err(|e| e.to_string())?;
-                            if socket.dev() != after.dev() || socket.ino() != after.ino() {
-                                return Err("Servidor tmux cambió durante la acción".into());
-                            }
-                            Ok(windows)
-                        })();
-                        resume_error = result.as_ref().err().cloned();
-                        let _ = tx.send(Event::TargetActionDone(token, result));
-                    }
+
                     Ok(Action::Resume(token)) => {
                         session.forget_visual_line(&mut visual_lines);
                         let result = match resume_error.take() {
@@ -4328,48 +4232,58 @@ impl Backend {
                         resume = result.as_ref().ok().cloned().map(|target| (token, target));
                         let _ = tx.send(Event::Resumed(token, result.map(|_| ())));
                     }
+                    Ok(Action::ResumeOn(token, window, pane)) => {
+                        session.forget_visual_line(&mut visual_lines);
+                        let result = match resume_error.take() {
+                            Some(error) => Err(error),
+                            None => session.resume_at(Some((&window, &pane))),
+                        };
+                        resume = result.as_ref().ok().cloned().map(|target| (token, target));
+                        let _ = tx.send(Event::Resumed(token, result.map(|_| ())));
+                    }
+                    Ok(Action::ResumeCell(token, window, row, column)) => {
+                        session.forget_visual_line(&mut visual_lines);
+                        let result = match resume_error.take() {
+                            Some(error) => Err(error),
+                            None => session.resume_cell(&window, row, column),
+                        };
+                        resume = result.as_ref().ok().cloned().map(|target| (token, target));
+                        let _ = tx.send(Event::Resumed(token, result.map(|_| ())));
+                    }
                     Ok(Action::ResumeStreamInput(token, bytes, paste)) => {
                         let result = match &resume {
                             Some((id, target)) if *id == token => session.resume_buffer(target, &bytes, paste),
                             _ => Err("Transición obsoleta; entrada no enviada".into()),
                         };
-                        if result.is_err() { resume = None; }
+
                         let _ = tx.send(Event::InputDelivered(token, result));
                     }
-                    Ok(Action::ResumeStreamMixed(token, bytes, ranges)) => {
-                        let result = match &resume {
-                            Some((id, target)) if *id == token => session.resume_mixed(target, &bytes, &ranges),
-                            _ => Err("Transición obsoleta; entrada no enviada".into()),
-                        };
-                        if result.is_err() { resume = None; }
-                        let _ = tx.send(Event::InputDelivered(token, result));
-                    }
+
                     Ok(Action::ResumeNativeCopied(token, delivery)) => {
                         let result = match &resume {
                             Some((id, target)) if *id == token => delivery.receive(Duration::from_secs(3))
                                 .and_then(|bytes| session.resume_buffer(target, &bytes, true)),
                             _ => Err("Transición obsoleta; entrada no enviada".into()),
                         };
-                        if result.is_err() { resume = None; }
+
                         let _ = tx.send(Event::InputDelivered(token, result));
                     }
-                    Ok(Action::ResumeCopied(token, copy_token, fallback, bytes, ranges)) => {
+                    Ok(Action::ResumeCopied(token, copy_token, fallback)) => {
                         let copy = copied.as_ref().filter(|(id, _)| *id == copy_token).map(|(_, value)| value);
                         let result = match &resume {
-                            Some((id, target)) if *id == token => session.resume_mixed(target, &bytes, &ranges)
-                                .and_then(|()| match copy {
+                            Some((id, target)) if *id == token => match copy {
                                     Some(Ok(text)) => match text.as_ref().or(fallback.as_ref()) {
                                         Some(text) => session.resume_buffer(target, text.as_bytes(), true),
                                         None => Err("No hay texto para pegar".into()),
                                     },
                                     Some(Err(error)) => Err(error.clone()),
                                     None => Err("No se pudo completar el pegado de la copia".into()),
-                                }),
+                                },
                             _ => Err("Transición obsoleta; entrada no enviada".into()),
                         };
-                        // Earlier bytes may already have run. A failed copy
-                        // or paste invalidates every later dependent batch.
-                        if result.is_err() { resume = None; }
+                        // Report this paste's result without retaining or
+                        // blocking subsequent physical input.
+
                         let _ = tx.send(Event::OrderedPasteFinished(token, result));
                     }
                     Ok(Action::CaptureCopyMark(token)) => {
@@ -5377,72 +5291,7 @@ mod tests {
         assert_eq!(terminal.process_id(), Some(client_pid));
         assert!(session.client_pids().unwrap().contains(&client_pid));
     }
-    #[test]
-    fn full_backend_queue_does_not_consume_detached_input() {
-        use crate::editor_panes::{Content, Panes};
-        use crate::terminal_resume::{Context, Deliveries, Fence, detach_with_delivery_typed};
-        use workspace_core::editor_panes::Axis;
-        let (commands, rx) = mpsc::sync_channel(1);
-        let (_event_tx, events) = mpsc::channel();
-        let backend = Backend {
-            events,
-            commands,
-            accepting: Mutex::new(true),
-        };
-        backend.send(Action::New).unwrap();
-        let mut fence = Fence::default();
-        let mut deliveries = Deliveries::default();
-        let now = Instant::now();
-        let context = Context {
-            project: 1,
-            attachment: 4,
-        };
-        let token = fence.begin(context, now);
-        fence.push(context, b"synthetic").unwrap();
-        let mut panes = Panes::terminal(context.attachment);
-        let terminal_pane = panes.layout.active();
-        let file_pane = panes.layout.split(Axis::Row, true).unwrap();
-        panes
-            .set_content(Content::File("/synthetic/example".into()))
-            .unwrap();
-        panes.layout.focus(terminal_pane).unwrap();
-        assert!(
-            detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, id, bytes, ranges| {
-                assert!(ranges.is_empty());
-                backend.send(Action::ResumeStreamInput(id, Arc::new(bytes.to_vec()), false))
-            })
-            .is_err()
-        );
-        assert!(fence.active());
-        assert_eq!(panes.layout.active(), terminal_pane);
-        assert_eq!(
-            panes.content(terminal_pane),
-            Some(&Content::Terminal(context.attachment))
-        );
-        assert!(!deliveries.busy(1));
-        assert!(matches!(rx.recv().unwrap(), Action::New));
-        assert_eq!(
-            detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, id, bytes, ranges| {
-                assert!(ranges.is_empty());
-                backend.send(Action::ResumeStreamInput(id, Arc::new(bytes.to_vec()), false))
-            }),
-            Ok(true)
-        );
-        assert!(
-            matches!(rx.recv().unwrap(), Action::ResumeStreamInput(id, bytes, false) if id == token && bytes.as_slice() == b"synthetic")
-        );
-        panes.layout.focus(file_pane).unwrap();
-        assert_eq!(
-            panes.content(file_pane),
-            Some(&Content::File("/synthetic/example".into()))
-        );
-        assert_eq!(
-            panes.content(terminal_pane),
-            Some(&Content::Terminal(context.attachment))
-        );
-        assert!(!fence.active());
-        assert!(deliveries.busy(1));
-    }
+
     #[test]
     fn external_window_change_is_reported_by_private_tmux_backend() {
         let root = std::env::temp_dir().canonicalize().unwrap();
@@ -5690,352 +5539,7 @@ mod tests {
         std::fs::write(dir.join("target.txt"), &target).unwrap();
         assert_eq!(target, "@0\t%0\n", "{}", dir.display());
     }
-    #[test]
-    fn held_control_and_earlier_text_are_not_replayed_after_real_resume_ack() {
-        use crate::terminal_resume::{Context, Fence};
-        let root = std::env::temp_dir().canonicalize().unwrap();
-        let dir = root.join(format!(
-            "tw-held-{}-{}",
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
-        ));
-        let backend = Backend::start(root, dir, false);
-        let session = loop {
-            match backend.events.recv_timeout(Duration::from_secs(5)).unwrap() {
-                Event::Ready(session, _) => break session,
-                Event::Error(error) => panic!("{error}"),
-                _ => {}
-            }
-        };
-        struct Cleanup(Session);
-        impl Drop for Cleanup {
-            fn drop(&mut self) {
-                let _ = self.0.run(&["kill-server"]);
-            }
-        }
-        let _cleanup = Cleanup(session.clone());
-        let now = Instant::now();
-        let context = Context {
-            project: 0,
-            attachment: 1,
-        };
-        let mut fence = Fence::default();
-        backend.send(Action::Normal(true)).unwrap();
-        let token = fence.begin(context, now);
-        backend.send(Action::Resume(token)).unwrap();
-        fence.push(context, b"SYNTHETIC_NOT_SENT\r").unwrap();
-        assert!(fence.push(context, b"\x02%").is_err());
-        fence.retain_rejected(b"\x02%".to_vec()).unwrap();
-        let deadline = Instant::now() + Duration::from_secs(10);
-        loop {
-            assert!(Instant::now() < deadline);
-            match backend.events.recv_timeout(Duration::from_millis(500)) {
-                Ok(Event::Resumed(id, result)) if id == token => {
-                    result.unwrap();
-                    assert!(
-                        fence
-                            .ack(context, token, true, true, Instant::now())
-                            .is_none()
-                    );
-                    break;
-                }
-                Ok(Event::Error(error)) => panic!("{error}"),
-                Ok(_) | Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
-                Err(error) => panic!("{error}"),
-            }
-        }
-        let guard = fence.retained_guard().unwrap();
-        assert_eq!(fence.text_if_guarded(&guard), Some("SYNTHETIC_NOT_SENT\r"));
-        assert_eq!(fence.prefix_hex_if_guarded(&guard).as_deref(), Some("0225"));
-        let target = session.resume_target().unwrap();
-        let capture = session
-            .run(&["capture-pane", "-p", "-t", &target.pane])
-            .unwrap();
-        assert!(!capture.contains("SYNTHETIC_NOT_SENT"));
-        let panes = session
-            .run(&["list-panes", "-t", &target.window, "-F", "#{pane_id}"])
-            .unwrap();
-        assert_eq!(panes.lines().count(), 1);
-    }
-    #[test]
-    fn resume_ack_orders_immediate_text_and_rejects_changed_pane_or_window() {
-        let dir = std::env::temp_dir().join(format!("tw-resume-{}", std::process::id()));
-        let root = std::env::temp_dir().canonicalize().unwrap();
-        let backend = Backend::start(root, dir.clone(), false);
-        let session = loop {
-            match backend.events.recv_timeout(Duration::from_secs(5)).unwrap() {
-                Event::Ready(s, _) => break s,
-                Event::Error(e) => panic!("{e}"),
-                _ => {}
-            }
-        };
-        struct Cleanup(Session, PathBuf);
-        impl Drop for Cleanup {
-            fn drop(&mut self) {
-                let _ = self.0.run(&["kill-server"]);
-                let _ = std::fs::remove_dir_all(&self.1);
-            }
-        }
-        let _cleanup = Cleanup(session.clone(), dir);
-        backend.send(Action::Normal(true)).unwrap();
-        let mut fence = crate::terminal_resume::Fence::default();
-        let context = crate::terminal_resume::Context {
-            project: 0,
-            attachment: 1,
-        };
-        let token = fence.begin(context, Instant::now());
-        backend.send(Action::Resume(token)).unwrap();
-        // Queue text directly behind Resume without consuming a UI reply.
-        fence.submit(context, b"printf 'SYNTHETIC-RESUME-FAST\\n'\r", false, Instant::now(),
-            |id, bytes, paste| backend.send(Action::ResumeStreamInput(id, bytes, paste)),
-        ).unwrap();
-        let deadline = Instant::now() + Duration::from_secs(10);
-        let mut delivered = false;
-        while fence.active() {
-            assert!(Instant::now() < deadline);
-            let (id, ready, result) =
-                match backend.events.recv_timeout(Duration::from_secs(5)).unwrap() {
-                    Event::Resumed(id, r) => (id, true, r),
-                    Event::InputDelivered(id, r) => {
-                        delivered = true;
-                        (id, false, r)
-                    }
-                    Event::Error(e) => panic!("{e}"),
-                    _ => continue,
-                };
-            result.unwrap();
-            assert!(fence.ack_with_failure_prefix(context, id, ready, true, Vec::new));
-        }
-        assert!(delivered);
-        let target = session.resume_target().unwrap();
-        let deadline = Instant::now() + Duration::from_secs(3);
-        loop {
-            let captured = session
-                .run(&["capture-pane", "-p", "-t", &target.pane])
-                .unwrap();
-            if captured
-                .lines()
-                .any(|line| line.trim() == "SYNTHETIC-RESUME-FAST")
-            {
-                break;
-            }
-            assert!(Instant::now() < deadline, "{captured}");
-            std::thread::sleep(Duration::from_millis(10));
-        }
-        // A focus departure can queue the remaining batch immediately after
-        // Resume; the backend must process it against the resolved pane in FIFO
-        // order even before the UI receives the ready event.
-        let blur_token = fence.begin(context, Instant::now());
-        backend.send(Action::Normal(true)).unwrap();
-        backend.send(Action::Resume(blur_token)).unwrap();
-        fence.submit(context, b"printf 'BLUR-FIFO-OK\\n'\r", false, Instant::now(),
-            |id, bytes, paste| backend.send(Action::ResumeStreamInput(id, bytes, paste)),
-        ).unwrap();
-        let mut deliveries = crate::terminal_resume::Deliveries::default();
-        assert!(crate::terminal_resume::detach_with_delivery_typed(
-            &mut fence, &mut deliveries, Instant::now(), |_, _, _, _| panic!("already submitted"),
-        ).unwrap());
-        // A window switch requested immediately afterward must be queued
-        // behind the input, even before the UI has received either ack.
-        backend.send(Action::New).unwrap();
-        let mut resumed = false;
-        loop {
-            match backend.events.recv_timeout(Duration::from_secs(5)).unwrap() {
-                Event::Resumed(id, result) if id == blur_token => {
-                    result.unwrap();
-                    resumed = true;
-                    assert_eq!(deliveries.ack_ready_for_context(context, id, true),
-                        crate::terminal_resume::DeliveryAck::Pending);
-                }
-                Event::InputDelivered(id, result) if id == blur_token => {
-                    assert!(resumed);
-                    result.unwrap();
-                    assert_eq!(deliveries.ack_for_context(context, id, true),
-                        crate::terminal_resume::DeliveryAck::Finished(None));
-                    break;
-                }
-                Event::Error(error) => panic!("{error}"),
-                _ => {}
-            }
-        }
-        let deadline = Instant::now() + Duration::from_secs(3);
-        loop {
-            let captured = session
-                .run(&["capture-pane", "-p", "-t", &target.pane])
-                .unwrap();
-            if captured.lines().any(|line| line.trim() == "BLUR-FIFO-OK") {
-                break;
-            }
-            assert!(Instant::now() < deadline, "{captured}");
-            std::thread::sleep(Duration::from_millis(10));
-        }
-        let deadline = Instant::now() + Duration::from_secs(3);
-        while session.resume_target().unwrap().window == target.window {
-            assert!(Instant::now() < deadline, "window change was not processed");
-            std::thread::sleep(Duration::from_millis(10));
-        }
-        session.action(Action::Split).unwrap();
-        assert_ne!(session.resume_target().unwrap().pane, target.pane);
-        assert!(
-            session
-                .resume_buffer(&target, b"SHOULD-NOT-ENTER\r", false)
-                .is_err()
-        );
-        let target = session.resume().unwrap();
-        assert!(session.resume_buffer(&target, b"\x01", false).is_ok());
-        assert!(session.resume_buffer(&target, b"\x1b[200~paste", false).is_ok());
-        session.action(Action::New).unwrap();
-        assert!(
-            session
-                .resume_buffer(&target, b"SHOULD-NOT-ENTER\r", false)
-                .is_err()
-        );
-        // Target-changing backend actions invalidate even a previously acked token.
-        backend.send(Action::New).unwrap();
-        backend
-            .send(Action::ResumeStreamInput(token, Arc::new(b"SHOULD-NOT-ENTER\r".to_vec()), false))
-            .unwrap();
-        loop {
-            if let Event::InputDelivered(id, result) =
-                backend.events.recv_timeout(Duration::from_secs(5)).unwrap()
-            {
-                assert_eq!(id, token);
-                assert!(result.is_err());
-                break;
-            }
-        }
-        backend.send(Action::Select("@9999999999".into())).unwrap();
-        let failed_token = fence.begin(context, Instant::now());
-        fence.push(context, b"RETAINED-NOT-SENT").unwrap();
-        backend.send(Action::Resume(failed_token)).unwrap();
-        loop {
-            if let Event::Resumed(id, result) =
-                backend.events.recv_timeout(Duration::from_secs(5)).unwrap()
-            {
-                assert_eq!(id, failed_token);
-                assert!(result.is_err(), "failed selection must not resume old pane");
-                assert!(fence.ack_with_failure_prefix(context, id, true, false, Vec::new));
-                let guard = fence
-                    .retained_guard()
-                    .expect("queued text must survive a failed ready ack");
-                assert_eq!(fence.text_if_guarded(&guard), Some("RETAINED-NOT-SENT"));
-                break;
-            }
-        }
-        backend
-            .send(Action::ResumeStreamInput(
-                failed_token,
-                Arc::new(b"SHOULD-NOT-ENTER\r".to_vec()),
-                false,
-            ))
-            .unwrap();
-        loop {
-            if let Event::InputDelivered(id, result) =
-                backend.events.recv_timeout(Duration::from_secs(5)).unwrap()
-            {
-                assert_eq!(id, failed_token);
-                assert!(result.is_err());
-                break;
-            }
-        }
-        let guard = fence.retained_guard().unwrap();
-        assert_eq!(fence.text_if_guarded(&guard), Some("RETAINED-NOT-SENT"));
-        assert!(fence.cancel_guarded(&guard));
 
-        // The UI may leave the pane before the ready acknowledgement. The
-        // backend then rejects the queued batch; keep it for manual review.
-        let mut deliveries = crate::terminal_resume::Deliveries::default();
-        let detached_token = fence.begin(context, Instant::now());
-        backend.send(Action::Select("@9999999999".into())).unwrap();
-        backend.send(Action::Resume(detached_token)).unwrap();
-        fence.submit(context, b"DETACHED-RECOVERY-ONLY", false, Instant::now(),
-            |id, bytes, paste| backend.send(Action::ResumeStreamInput(id, bytes, paste)),
-        ).unwrap();
-        assert_eq!(
-            crate::terminal_resume::detach_with_delivery_typed(
-                &mut fence,
-                &mut deliveries,
-                Instant::now(),
-                |_, _, _, _| panic!("already submitted"),
-            ),
-            Ok(true)
-        );
-        loop {
-            match backend.events.recv_timeout(Duration::from_secs(5)).unwrap() {
-                Event::Resumed(id, result) => {
-                    assert_eq!(id, detached_token);
-                    assert!(result.is_err());
-                    assert_eq!(
-                        deliveries.ack_ready_for_context(context, id, false),
-                        crate::terminal_resume::DeliveryAck::Failed
-                    );
-                }
-                Event::InputDelivered(id, result) => {
-                    assert_eq!(id, detached_token);
-                    assert!(result.is_err());
-                    assert_eq!(
-                        deliveries.ack_for_context(context, id, false),
-                        crate::terminal_resume::DeliveryAck::Failed
-                    );
-                    break;
-                }
-                _ => {}
-            }
-        }
-        let guard = deliveries
-            .failed_guard()
-            .expect("rejected detached batch must remain recoverable");
-        assert_eq!(
-            deliveries.failed_text_if_guarded(guard),
-            Some("DETACHED-RECOVERY-ONLY")
-        );
-        let captured = session
-            .run(&[
-                "capture-pane",
-                "-p",
-                "-t",
-                &session.resume_target().unwrap().pane,
-            ])
-            .unwrap();
-        assert!(!captured.contains("DETACHED-RECOVERY-ONLY"));
-        assert!(deliveries.discard_failed_guarded(guard));
-
-        // Hold a real backend ready reply until after a simulated deadline.
-        // The synthetic text must stay in the fence, not be sent on late ack.
-        let started = Instant::now();
-        let delayed_token = fence.begin(context, started);
-        fence.push(context, b"TIMEOUT-MUST-NOT-SEND").unwrap();
-        backend.send(Action::Resume(delayed_token)).unwrap();
-        let reply = loop {
-            if let Event::Resumed(id, result) =
-                backend.events.recv_timeout(Duration::from_secs(5)).unwrap()
-            {
-                assert_eq!(id, delayed_token);
-                break result;
-            }
-        };
-        assert!(reply.is_ok());
-        assert_eq!(
-            fence.mark_expired(started + Duration::from_secs(16)),
-            crate::terminal_resume::ResumeTimeout::Retained
-        );
-        assert!(fence.ack_with_failure_prefix(context, delayed_token, true, true, Vec::new));
-        let guard = fence.retained_guard().unwrap();
-        assert_eq!(fence.text_if_guarded(&guard), Some("TIMEOUT-MUST-NOT-SEND"));
-        let captured = session
-            .run(&[
-                "capture-pane",
-                "-p",
-                "-t",
-                &session.resume_target().unwrap().pane,
-            ])
-            .unwrap();
-        assert!(!captured.contains("TIMEOUT-MUST-NOT-SEND"));
-        assert!(fence.cancel_guarded(&guard));
-    }
     #[test]
     fn frozen_copy_rows_preserve_spaces_and_reject_tabs_without_moving_cursor() {
         let root = std::env::temp_dir();

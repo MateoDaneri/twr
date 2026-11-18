@@ -375,94 +375,17 @@ impl OpenGuard {
             && normal
     }
 }
-/// Split commands issued from a sidebar during a file read belong to the
-/// resulting editor, provided the originating pane and project are unchanged.
+/// Origin of an asynchronous sidebar file read. It never queues split keys.
 #[derive(Default)]
-pub struct PendingFileSplits {
+pub struct SidebarReadGuard {
     context: Option<(u64, usize, PaneId)>,
     origin: Option<Content>,
-    commands: Vec<(String, usize)>,
-    recovery: Vec<(usize, PaneId, bool, Vec<(String, usize)>)>,
-    recovery_revision: u64,
 }
-impl PendingFileSplits {
-    /// A read can still own this pane even before split keys are queued.
-    pub fn has_active(&self) -> bool {
-        self.context.is_some()
-    }
+impl SidebarReadGuard {
     pub fn begin(&mut self, generation: u64, project: usize, pane: PaneId, origin: Content) {
-        self.retain_active();
         self.context = Some((generation, project, pane));
         self.origin = Some(origin);
     }
-    pub fn retain_active(&mut self) {
-        if let Some((_, project, pane)) = self.context {
-            let commands = std::mem::take(&mut self.commands);
-            self.retain(project, pane, false, commands);
-        }
-    }
-    /// Retain commands only for explicit review; never dispatch them in a
-    /// later pane merely because it reused the original numeric identity.
-    pub fn retain(
-        &mut self,
-        project: usize,
-        pane: PaneId,
-        uncertain: bool,
-        commands: Vec<(String, usize)>,
-    ) {
-        if !commands.is_empty() {
-            self.recovery.push((project, pane, uncertain, commands));
-            self.recovery_revision = self.recovery_revision.wrapping_add(1);
-        }
-    }
-    pub fn recovery_revision(&self) -> Option<u64> {
-        (!self.recovery.is_empty()).then_some(self.recovery_revision)
-    }
-    pub fn recovery_text(&self) -> String {
-        let mut text = String::from(
-            "Acciones de panel retenidas; revisá el contexto antes de volver a ejecutarlas.\n",
-        );
-        for (project, pane, uncertain, commands) in &self.recovery {
-            text.push_str(&format!(
-                "Workspace {project}, panel {}{}:\n",
-                pane.0,
-                if *uncertain {
-                    " (la primera acción pudo ejecutarse)"
-                } else {
-                    ""
-                }
-            ));
-            for (key, count) in commands {
-                let (operation, path) = key
-                    .split_once(':')
-                    .map_or((key.as_str(), None), |(operation, path)| {
-                        (operation, Some(path))
-                    });
-                let command = match operation {
-                    "s" => "split horizontal",
-                    "v" => "split vertical",
-                    "n" => "nuevo panel horizontal",
-                    "N" => "nuevo panel vertical",
-                    _ => "acción desconocida",
-                };
-                if let Some(path) = path {
-                    text.push_str(&format!("  {command}, cuenta {count}, ruta {path:?}\n"));
-                } else {
-                    text.push_str(&format!("  {command}, cuenta {count}\n"));
-                }
-            }
-        }
-        text
-    }
-    pub fn discard_recovery(&mut self, revision: u64) -> bool {
-        if self.recovery_revision() != Some(revision) {
-            return false;
-        }
-        self.recovery.clear();
-        self.recovery_revision = self.recovery_revision.wrapping_add(1);
-        true
-    }
-    /// None means this read was not started under the sidebar guard.
     pub fn is_current(
         &self,
         generation: u64,
@@ -478,51 +401,8 @@ impl PendingFileSplits {
                 && Some(original_pane) == pane,
         )
     }
-    pub fn queue(
-        &mut self,
-        generation: u64,
-        project: usize,
-        pane: PaneId,
-        key: &str,
-        count: usize,
-    ) -> Option<bool> {
-        if self.context != Some((generation, project, pane))
-            || !matches!(key, "s" | "v" | "n" | "N")
-        {
-            return None;
-        }
-        if self.commands.len() >= 32 || self.recovery.len() >= 32 {
-            return Some(false);
-        }
-        self.commands.push((key.to_owned(), count));
-        Some(true)
-    }
-    pub fn finish(
-        &mut self,
-        generation: u64,
-        project: usize,
-        pane: Option<PaneId>,
-        success: bool,
-    ) -> Vec<(String, usize)> {
-        if self.context.is_none_or(|(g, _, _)| g != generation) {
-            return Vec::new();
-        }
-        let matches = self.context == pane.map(|id| (generation, project, id));
-        let (_, original_project, original_pane) = self.context.expect("generation checked");
-        self.context = None;
-        self.origin = None;
-        let commands = std::mem::take(&mut self.commands);
-        if success && matches {
-            commands
-        } else {
-            self.retain(original_project, original_pane, false, commands);
-            Vec::new()
-        }
-    }
-
-    fn cancel(&mut self, generation: u64) {
-        if self.context.is_some_and(|(g, _, _)| g == generation) {
-            self.retain_active();
+    pub fn finish(&mut self, generation: u64) {
+        if self.context.is_some_and(|(current, _, _)| current == generation) {
             self.context = None;
             self.origin = None;
         }
@@ -546,7 +426,7 @@ pub struct PendingOpens<'a> {
     pub read: &'a mut Option<OpenGuard>,
     pub edit: &'a mut Option<OpenGuard>,
     pub terminal: &'a mut Option<TerminalOpenGuard>,
-    pub sidebar: &'a mut PendingFileSplits,
+    pub sidebar: &'a mut SidebarReadGuard,
 }
 impl PendingOpens<'_> {
     pub fn activate(&mut self, project: usize, pane: PaneId, content: &Content) -> bool {
@@ -576,7 +456,7 @@ impl PendingOpens<'_> {
         self.edit.take_if(|guard| guard.generation == generation);
         self.terminal
             .take_if(|guard| guard.generation == generation);
-        self.sidebar.cancel(generation);
+        self.sidebar.finish(generation);
         *self.generation = generation.wrapping_add(1);
         true
     }
@@ -4328,43 +4208,7 @@ mod tests {
         assert_eq!(absolute_resize_delta(8, 10, 400, 360), -280);
         assert!(absolute_resize_delta(0, 10, 400, 360) > 1000);
     }
-    #[test]
-    fn pending_file_splits_replay_only_for_the_original_open_context() {
-        let pane = Panes::terminal(42).layout.active();
-        let mut pending = PendingFileSplits::default();
-        pending.begin(1, 3, pane, Content::Explorer(3));
-        assert_eq!(pending.queue(1, 3, pane, "s", 0), Some(true));
-        assert_eq!(pending.queue(1, 3, pane, "v", 2), Some(true));
-        assert_eq!(pending.queue(2, 3, pane, "s", 0), None);
-        assert!(pending.finish(2, 3, Some(pane), true).is_empty());
-        assert_eq!(
-            pending.finish(1, 3, Some(pane), true),
-            vec![("s".into(), 0), ("v".into(), 2)]
-        );
-        pending.begin(3, 3, pane, Content::Explorer(3));
-        assert_eq!(pending.queue(3, 3, pane, "s", 0), Some(true));
-        assert_eq!(
-            pending.is_current(3, 3, Some(pane), Some(&Content::Explorer(3))),
-            Some(true)
-        );
-        assert_eq!(pending.is_current(3, 3, Some(pane), None), Some(false));
-        assert_eq!(
-            pending.is_current(3, 3, Some(pane), Some(&Content::Agents(3))),
-            Some(false)
-        );
-        assert_eq!(
-            pending.is_current(3, 4, Some(pane), Some(&Content::Explorer(3))),
-            Some(false)
-        );
-        assert_eq!(
-            pending.is_current(2, 3, Some(pane), Some(&Content::Explorer(3))),
-            None
-        );
-        assert!(pending.finish(3, 4, Some(pane), true).is_empty());
-        pending.begin(4, 3, pane, Content::Explorer(3));
-        assert_eq!(pending.queue(4, 3, pane, "v", 0), Some(true));
-        assert!(pending.finish(4, 3, Some(pane), false).is_empty());
-    }
+
     #[test]
     fn asynchronous_open_guard_rejects_edited_or_replaced_context() {
         let pane = Panes::terminal(42).layout.active();
@@ -4382,129 +4226,7 @@ mod tests {
         assert!(!guard.valid(1, None, Some(Path::new("old.txt")), Some(4), true));
         assert!(!guard.valid(1, Some(pane), Some(Path::new("other.txt")), Some(4), true));
     }
-    #[test]
-    fn navigation_invalidates_delayed_open_even_when_returning_to_original_buffer() {
-        let pane = PaneId(1);
-        let original = Content::File("a.txt".into());
-        let other = Content::File("b.txt".into());
-        let guard = OpenGuard {
-            generation: 7,
-            project: 1,
-            pane: Some(pane),
-            path: "a.txt".into(),
-            version: 4,
-        };
-        // The old completion-only check accepts a return to exactly A.
-        assert!(guard.valid(1, Some(pane), Some(Path::new("a.txt")), Some(4), true));
-        let mut generation = 7;
-        let mut read = Some(guard);
-        let mut edit = None;
-        let mut terminal = None;
-        let mut sidebar = PendingFileSplits::default();
-        {
-            let mut pending = PendingOpens {
-                generation: &mut generation,
-                read: &mut read,
-                edit: &mut edit,
-                terminal: &mut terminal,
-                sidebar: &mut sidebar,
-            };
-            assert!(!pending.activate(1, pane, &original));
-            assert!(pending.activate(1, pane, &other));
-            assert!(!pending.activate(1, pane, &original));
-        }
-        assert_eq!(generation, 8);
-        assert!(read.is_none());
-    }
-    #[test]
-    fn pending_open_guards_track_panes_terminals_and_sidebar_queues() {
-        let mut generation = 9;
-        let mut read = None;
-        let mut edit = Some(OpenGuard {
-            generation: 9,
-            project: 2,
-            pane: Some(PaneId(1)),
-            path: "a".into(),
-            version: 1,
-        });
-        let mut terminal = None;
-        let mut sidebar = PendingFileSplits::default();
-        {
-            let mut pending = PendingOpens {
-                generation: &mut generation,
-                read: &mut read,
-                edit: &mut edit,
-                terminal: &mut terminal,
-                sidebar: &mut sidebar,
-            };
-            assert!(pending.activate(2, PaneId(2), &Content::File("a".into())));
-        }
-        assert_eq!(generation, 10);
-        assert!(edit.is_none());
-        terminal = Some(TerminalOpenGuard {
-            generation,
-            project: 2,
-            pane: Some(PaneId(1)),
-            attachment: Some(20),
-        });
-        {
-            let mut pending = PendingOpens {
-                generation: &mut generation,
-                read: &mut read,
-                edit: &mut edit,
-                terminal: &mut terminal,
-                sidebar: &mut sidebar,
-            };
-            assert!(!pending.activate(2, PaneId(1), &Content::Terminal(20)));
-            assert!(pending.activate(2, PaneId(1), &Content::Terminal(21)));
-        }
-        assert_eq!(generation, 11);
-        assert!(terminal.is_none());
-        sidebar.begin(generation, 2, PaneId(3), Content::Explorer(2));
-        assert_eq!(sidebar.queue(generation, 2, PaneId(3), "v", 1), Some(true));
-        {
-            let mut pending = PendingOpens {
-                generation: &mut generation,
-                read: &mut read,
-                edit: &mut edit,
-                terminal: &mut terminal,
-                sidebar: &mut sidebar,
-            };
-            assert!(!pending.activate(2, PaneId(3), &Content::Explorer(2)));
-            assert!(pending.activate(2, PaneId(4), &Content::Explorer(2)));
-        }
-        assert_eq!(generation, 12);
-        assert!(sidebar.finish(11, 2, Some(PaneId(3)), true).is_empty());
-        sidebar.begin(generation, 2, PaneId(3), Content::Explorer(2));
-        {
-            let mut pending = PendingOpens {
-                generation: &mut generation,
-                read: &mut read,
-                edit: &mut edit,
-                terminal: &mut terminal,
-                sidebar: &mut sidebar,
-            };
-            assert!(pending.activate(2, PaneId(3), &Content::Agents(2)));
-        }
-        assert_eq!(generation, 13);
-        // An old guard from an earlier generation must not cancel a new one.
-        read = Some(OpenGuard {
-            generation: 3,
-            project: 2,
-            pane: Some(PaneId(1)),
-            path: "old".into(),
-            version: 1,
-        });
-        let mut pending = PendingOpens {
-            generation: &mut generation,
-            read: &mut read,
-            edit: &mut edit,
-            terminal: &mut terminal,
-            sidebar: &mut sidebar,
-        };
-        assert!(!pending.activate(2, PaneId(8), &Content::File("new".into())));
-        assert_eq!(generation, 13);
-    }
+
     #[test]
     fn resize_keeps_a_text_line_and_respects_nested_sibling_minima() {
         use workspace_core::editor_panes::Bounds;

@@ -37,9 +37,6 @@ use workspace_core::{
     input::Binding,
 };
 
-const TERMINAL_NAVIGATION_HOLD_MESSAGE: &str =
-    "Entrada retenida mientras se resuelve la navegación";
-
 /// A workspace's Explorer as it was when another workspace was shown. It
 /// is reused only while the workspace's Explorer root is unchanged.
 struct SavedExplorer {
@@ -51,7 +48,7 @@ struct SavedExplorer {
 
 #[derive(Clone)]
 struct TmuxControlTarget {
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
     instance: Arc<()>,
 }
 #[derive(Clone)]
@@ -80,10 +77,7 @@ enum Ui {
     OpenProject,
     SelectProject(usize),
     ReconnectTerminal,
-    RetryOpenInput,
-    ReviewOpenInput,
-    ReviewTerminalKey,
-    ReviewPendingSplits,
+
     Tmux(TmuxAction, Option<TmuxControlTarget>),
     Save,
     Action(&'static str),
@@ -168,7 +162,7 @@ struct TerminalWindow {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 struct TabLayoutKey {
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
     session: workspace_app::tmux::WindowSessionIdentity,
     window: String,
 }
@@ -264,7 +258,7 @@ enum TerminalMouseDragOwner {
     Zoom(workspace_app::editor_zoom::ZoomRenderGuard),
 }
 struct TerminalMouseDrag {
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
     instance: Arc<()>,
     owner: TerminalMouseDragOwner,
     focus_revision: u64,
@@ -279,7 +273,7 @@ enum NativeSelectionReply {
 }
 #[cfg(feature = "ghostty")]
 struct NativeSelection {
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
     instance: Arc<()>,
     pane: Option<PaneId>,
     focus_revision: u64,
@@ -294,7 +288,7 @@ struct NativeSelection {
 }
 #[cfg(feature = "ghostty")]
 struct TerminalFrameOwner {
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
     instance: Arc<()>,
     pane: Option<PaneId>,
     zoom: Option<workspace_app::editor_zoom::ZoomRenderGuard>,
@@ -310,7 +304,7 @@ struct TerminalBackend {
 #[derive(Clone)]
 struct PendingTmuxCopy {
     token: u64,
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
     surface: Surface,
     focus_revision: u64,
     focus: Option<workspace_core::editor_panes::FocusGuard>,
@@ -319,19 +313,14 @@ struct PendingTmuxCopy {
     window: String,
     pane: String,
 }
-struct TerminalResumeZoomOwner {
-    context: workspace_app::terminal_resume::Context,
-    instance: Arc<()>,
-    focus: workspace_core::editor_panes::FocusGuard,
-    zoom: workspace_app::editor_zoom::ZoomRenderGuard,
-}
+
 struct TerminalSearchPrompt {
     source: Option<PendingTmuxCopy>,
     forward: bool,
     count: usize,
     error: Option<String>,
 }
-struct TerminalKeyDestination {
+struct FocusedInputTarget {
     project: usize,
     pane: PaneId,
     focus: workspace_core::editor_panes::FocusGuard,
@@ -351,59 +340,7 @@ struct TerminalKeyDestination {
     notifications: bool,
     media: bool,
 }
-struct PendingTerminalKeyWrite {
-    event: u64,
-    reply: mpsc::Receiver<Result<(), String>>,
-    deadline: std::time::Instant,
-    timed_out: bool,
-}
-struct PendingTerminalTargetAction {
-    event: u64,
-    token: u64,
-    context: workspace_app::terminal_resume::Context,
-    deadline: std::time::Instant,
-    timed_out: bool,
-}
-struct PendingTerminalSelectionAction {
-    event: u64,
-    token: u64,
-    context: workspace_app::terminal_resume::Context,
-    deadline: std::time::Instant,
-    timed_out: bool,
-}
-struct PendingTerminalSplit {
-    event: u64,
-    pane: PaneId,
-    deadline: std::time::Instant,
-}
-struct PendingTerminalKey {
-    source: PendingTmuxCopy,
-    transition_tab: Option<TabLayoutKey>,
-    tab_reconcile: Option<TabLayoutKey>,
-    transition_activity: Option<std::time::Instant>,
-    gate: workspace_app::terminal_key_gate::Gate<Keystroke>,
-    overflow: VecDeque<workspace_app::open_input::Event<Keystroke>>,
-    destination: Option<TerminalKeyDestination>,
-    open_identity: Option<Arc<()>>,
-    open_switch_event: Option<u64>,
-    replaying: bool,
-    scheduled: bool,
-    replay_error: bool,
-    /// Line count of a multi-line paste held during this replay; it never
-    /// reached the PTY, so the queue is not uncertain because of it.
-    paste_held: Option<usize>,
-    replay_event: Option<u64>,
-    write: Option<PendingTerminalKeyWrite>,
-    target_action: Option<PendingTerminalTargetAction>,
-    selection_action: Option<PendingTerminalSelectionAction>,
-    split: Option<PendingTerminalSplit>,
-    capture_wait: Option<u64>,
-    mixed_context: bool,
-    revision: u64,
-    marked_selection: Option<Range<usize>>,
-    navigation_geometry_deadline: Option<std::time::Instant>,
-    deadline: std::time::Instant,
-}
+
 struct ParkedWorkspaceTerminals {
     windows: Vec<TerminalWindow>,
     primary: Option<TerminalBackend>,
@@ -501,17 +438,8 @@ fn fit_status_text(text: &str, max_chars: usize) -> String {
     out
 }
 
-/// A multi-line paste replayed from a queue is held, never prompted: a
-/// queued Enter would confirm it unseen. Nothing reached the PTY. When input
-/// typed after it is still held, the queue must be discarded first.
-fn held_paste_message(lines: usize, input_follows: bool) -> String {
-    let what = if lines == 1 { "1 línea".to_string() } else { format!("{lines} líneas") };
-    if input_follows {
-        format!("Pegado de {what} retenido; no se envió nada · la entrada siguiente quedó en espera: Revisar → Descartar y seguir, y pegá de nuevo")
-    } else {
-        format!("Pegado de {what} retenido; no se envió nada · pegá de nuevo para confirmar")
-    }
-}
+
+
 /// Spanish message for a storage::remember error.
 fn remember_failure_message(error: &str) -> String {
     match error {
@@ -609,7 +537,7 @@ impl TerminalBackend {
 fn terminal_backend_binding<'a>(
     primary: &'a HashMap<usize, TerminalBackend>,
     additional: &'a HashMap<(usize, u64), TerminalBackend>,
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
 ) -> Result<&'a TerminalBackend, String> {
     let other = additional.get(&(context.project, context.attachment));
     let main = primary.get(&context.project);
@@ -622,7 +550,7 @@ fn terminal_backend_binding<'a>(
 fn terminal_backend_for<'a>(
     primary: &'a HashMap<usize, TerminalBackend>,
     additional: &'a HashMap<(usize, u64), TerminalBackend>,
-    context: workspace_app::terminal_resume::Context,
+    context: workspace_app::terminal_input::Context,
 ) -> Result<&'a Backend, String> {
     terminal_backend_binding(primary, additional, context)?.for_attachment(context.attachment)
 }
@@ -803,20 +731,7 @@ struct PendingJumpLoad {
     path: PathBuf,
     origin: workspace_core::editor_jumplist::Location,
     request: JumpRequest,
-    owner: FileJumpOwner,
-    started: std::time::Instant,
-    timed_out: bool,
-}
-#[derive(Clone)]
-enum FileJumpOwner {
-    Terminal {
-        token: u64,
-        event: Option<u64>,
-    },
-    Open {
-        identity: Arc<()>,
-        event: Option<u64>,
-    },
+
 }
 struct PendingTerminalJumpLoad {
     generation: u64,
@@ -834,12 +749,9 @@ struct PendingDetachedTerminalJumpLoad {
     origin: workspace_core::editor_jumplist::Location,
     anchor: workspace_core::editor_jumplist::AnchorId,
     plan: workspace_core::editor_panes::PaneJump,
-    owner: u64,
-    capture: u64,
-    event: Option<u64>,
+
     instance: Arc<()>,
-    started: std::time::Instant,
-    timed_out: bool,
+
     invalid: bool,
 }
 struct PendingTerminalCapture {
@@ -848,11 +760,8 @@ struct PendingTerminalCapture {
     focus: workspace_core::editor_panes::FocusGuard,
     valid: bool,
     kind: TerminalCaptureKind,
-    deferred_jump: Option<workspace_app::terminal_jump_gate::DeferredJump>,
-    deferred_open: Option<Arc<()>>,
-    deferred_terminal: Option<(u64, u64)>,
-    navigate_input: Option<u64>,
-    navigate_event: Option<u64>,
+    deferred_jump: Option<workspace_app::terminal_jump::DeferredJump>,
+
     detached_origin: Option<(workspace_app::editor_zoom::ZoomRenderGuard, Arc<()>)>,
     started: std::time::Instant,
 }
@@ -860,7 +769,7 @@ enum TerminalCaptureKind {
     NewFile,
     ExistingFile,
     ReadingFile(
-        workspace_app::terminal_jump_gate::PendingFileCapture<
+        workspace_app::terminal_jump::PendingFileCapture<
             Result<workspace_app::tmux::CopyMark, String>,
         >,
     ),
@@ -878,9 +787,7 @@ struct PendingTerminalRestore {
     origin: workspace_core::editor_jumplist::Location,
     project: usize,
     generation: u64,
-    input_token: u64,
-    open_input: Option<Arc<()>>,
-    replay_event: Option<u64>,
+
 }
 enum TerminalRestoreRequest {
     Ordinary(JumpRequest),
@@ -893,51 +800,27 @@ enum TerminalRestoreRequest {
         source_attachment: u64,
         source_instance: Arc<()>,
         target_instance: Arc<()>,
-        target_window: String,
-        target_pane: String,
-        capture: u64,
+
         plan: workspace_core::editor_panes::PaneJump,
     },
 }
-struct PendingOpenInput {
-    context: workspace_app::open_input::Context,
+struct PendingFileRead {
+    context: workspace_app::file_read::Context,
     focus: workspace_core::editor_panes::FocusGuard,
-    queue: workspace_app::open_input::Queue<Keystroke>,
-    overflow: VecDeque<workspace_app::open_input::Event<Keystroke>>,
-    replaying: bool,
-    scheduled: bool,
-    revision: u64,
-    marked_selection: Option<Range<usize>>,
-    replay_error: bool,
-    /// Line count of a multi-line paste held during this replay; it never
-    /// reached the PTY, so the queue is not uncertain because of it.
-    paste_held: Option<usize>,
+    identity: Arc<()>,
+    state: workspace_app::file_read::State,
+
+
+
     edit_resolution: bool,
     edit_force: bool,
     edit_reload_current: bool,
     awaiting_edit_read: bool,
     terminal_jump: bool,
-    deferred_capture: Option<(u64, u64)>,
-    wait_for_geometry: bool,
-    geometry_deadline: Option<std::time::Instant>,
+
     post_split_line: Option<workspace_app::editor::SplitPosition>,
 }
-enum DirectionReplaySelection {
-    Explorer { root: PathBuf, selected: Option<PathBuf> },
-    Agents { surface: Surface, selected: AgentRow },
-    File { path: PathBuf, editor: workspace_app::editor::EditorIdentity },
-}
-struct DirectionReplaySource {
-    owner: Arc<()>,
-    selection: DirectionReplaySelection,
-}
-struct PendingDirectionTerminal {
-    owner: Arc<()>,
-    source: PendingTmuxCopy,
-    destination: TerminalKeyDestination,
-    deadline: std::time::Instant,
-    timed_out: bool,
-}
+
 #[derive(Clone)]
 enum DetachedPosition {
     Scalar(usize, usize),
@@ -987,7 +870,7 @@ impl DetachedReadSource {
 }
 /// Input belongs to this exact floating source while an unloaded file reads.
 struct PendingDetachedOpen {
-    queue: Arc<()>,
+    identity: Arc<()>,
     source: DetachedReadSource,
     destination_guard: Option<workspace_app::editor_zoom::ZoomCloseGuard>,
     destination_explorer: Option<(workspace_app::editor_zoom::ZoomRenderGuard, u64, PathBuf)>,
@@ -1030,7 +913,7 @@ enum DetachedCloseLoadDestination {
 }
 /// Exact ordinary file editor that initiated a queued buffer read.
 struct PendingPaneFileSource {
-    queue: Arc<()>,
+    identity: Arc<()>,
     path: PathBuf,
     editor: workspace_app::editor::EditorIdentity,
     version: u64,
@@ -1061,7 +944,7 @@ struct EmptySidebarFileDestination {
     navigation_generation: u64,
     interacted: bool,
 }
-struct SidebarInputTransfer {
+struct SidebarFileTarget {
     owner: Arc<()>,
     generation: u64,
     workspace: usize,
@@ -1102,8 +985,7 @@ struct PaneMeasurement {
 }
 struct PendingMeasuredSplits {
     identity: Arc<()>,
-    input_owner: Option<Arc<()>>,
-    input_event: Option<u64>,
+
     path_after_split: Option<PendingSplitPath>,
     workspace: usize,
     origin: PaneId,
@@ -1195,112 +1077,13 @@ fn rebase_view_top(mut row: usize, changes: &[workspace_app::editor::JumpChange]
     }
     Some(row)
 }
-impl PendingOpenInput {
+impl PendingFileRead {
     fn set_post_split_line(&mut self, line: Option<workspace_app::editor::SplitPosition>) {
-        if self.post_split_line != line {
-            self.post_split_line = line;
-            self.revision = self.revision.wrapping_add(1);
-        }
+        self.post_split_line = line;
     }
-    fn take_post_split_line(&mut self) -> Option<workspace_app::editor::SplitPosition> {
-        let line = self.post_split_line.take();
-        if line.is_some() {
-            self.revision = self.revision.wrapping_add(1);
-        }
-        line
-    }
-    fn event_bytes(event: &workspace_app::open_input::Event<Keystroke>) -> usize {
-        match event {
-            workspace_app::open_input::Event::Key(key) => {
-                key.key.len() + key.key_char.as_ref().map_or(0, String::len)
-            }
-            _ => 0,
-        }
-    }
-    fn enqueue(&mut self, event: workspace_app::open_input::Event<Keystroke>) -> bool {
-        if self.replaying {
-            return false;
-        }
-        if !self.overflow.is_empty() {
-            self.overflow.push_back(event);
-        } else {
-            let bytes = Self::event_bytes(&event);
-            if let Err(event) = self.queue.push(event, bytes) {
-                self.overflow.push_back(event);
-            }
-        }
-        self.revision = self.revision.wrapping_add(1);
-        true
-    }
-    fn refill(&mut self) {
-        while let Some(event) = self.overflow.pop_front() {
-            let bytes = Self::event_bytes(&event);
-            if let Err(event) = self.queue.push(event, bytes) {
-                self.overflow.push_front(event);
-                break;
-            }
-        }
-    }
-    /// This is shown only after an explicit copy action. It is an event log,
-    /// not a claim that any uncertain event did or did not execute.
-    fn recovery_text(&self) -> String {
-        self.recovery_text_with_boundary(None)
-    }
-    fn recovery_text_with_boundary(&self, boundary: Option<usize>) -> String {
-        use workspace_app::open_input::{Event, State};
-        let mut out = if self.queue.state() == State::Uncertain
-            && self.queue.in_flight_id().is_none()
-        {
-            "La operación anterior no se confirmó; la entrada siguiente no se envió:\n".to_owned()
-        } else if self.queue.state() == State::Uncertain {
-            "Entrada pendiente; la primera acción podría haberse ejecutado:\n".to_owned()
-        } else {
-            "Entrada pendiente:\n".to_owned()
-        };
-        if let Some(line) = self.post_split_line {
-            match line {
-                workspace_app::editor::SplitPosition::Line(line) =>
-                    out.push_str(&format!("Salto pendiente a la línea {line}; aún no se aplicó.\n")),
-                workspace_app::editor::SplitPosition::Last =>
-                    out.push_str("Salto pendiente a la última línea; aún no se aplicó.\n"),
-            }
-        }
-        for (index, event) in self.queue.events().chain(self.overflow.iter()).enumerate() {
-            if boundary == Some(index) {
-                out.push_str("--- Desde aquí se detectó un cambio de contexto; puede haber otros cambios ---\n");
-            }
-            match event {
-                Event::Key(key) => {
-                    out.push_str(&format!(
-                        "Tecla: {key} (key={:?}, texto={:?})\n",
-                        key.key, key.key_char
-                    ));
-                }
-                Event::Commit { range, text } => {
-                    out.push_str(&format!("Texto {range:?}: "));
-                    out.push_str(text);
-                    out.push('\n');
-                }
-                Event::Paste { text } => {
-                    out.push_str("Pegar: ");
-                    out.push_str(text);
-                    out.push('\n');
-                }
-                Event::Mark {
-                    range,
-                    text,
-                    selected,
-                } => {
-                    out.push_str(&format!("Composición {range:?} selección {selected:?}: "));
-                    out.push_str(text);
-                    out.push('\n');
-                }
-                Event::Unmark => out.push_str("Fin de composición\n"),
-            }
-        }
-        out
-    }
+
 }
+
 pub struct WorkspaceView {
     model: Workspace,
     theme: Theme,
@@ -1337,16 +1120,15 @@ pub struct WorkspaceView {
     active: usize,
     next_attachment: u64,
     pending_terminal_termination: Option<TabLayoutKey>,
-    terminated_terminals: HashSet<workspace_app::terminal_resume::Context>,
+    terminated_terminals: HashSet<workspace_app::terminal_input::Context>,
     pending_terminal_rebind: HashMap<usize, u64>,
     pending_bootstrap_terminal_alternates: HashMap<usize, BootstrapTerminalAlternate>,
     quit_prompt_open: bool,
     quit_after_save: bool,
     quit_approved: bool,
-    quit_input_override: Option<u64>,
-    quit_input_prompt_open: bool,
+
     quit_window: gpui::AnyWindowHandle,
-    quit_intent: workspace_app::terminal_resume::QuitIntent,
+    quit_intent: workspace_app::terminal_input::QuitIntent,
     pending_guarded_quit: Option<workspace_app::editor_panes::OpenGuard>,
     pending_forced_quit: Option<ForcedQuitGuard>,
     pending_nonfile_window_quit: Option<PendingNonFileWindowQuit>,
@@ -1354,11 +1136,11 @@ pub struct WorkspaceView {
     delete_prompt_open: bool,
     delete_after_save: Option<DeleteAfterSave>,
     delete_after_save_zoom_guard: Option<workspace_app::editor_zoom::ZoomCloseGuard>,
-    terminal_resume: workspace_app::terminal_resume::Fence,
-    terminal_resume_zoom_owner: Option<TerminalResumeZoomOwner>,
-    pending_backend_resume: Option<(workspace_app::terminal_resume::Context, u64)>,
+    terminal_input_route: Option<workspace_app::terminal_input::Route>,
+    terminal_input_sequence: u64,
+
     pending_copy_close: usize,
-    detached_terminal_input: workspace_app::terminal_resume::Deliveries,
+
     terminal_wake: async_channel::Sender<()>,
     // PTY sizes that could not be queued, scoped to the exact live instance.
     terminal_resize_pending: HashMap<(usize, u64), PendingTerminalResize>,
@@ -1374,8 +1156,8 @@ pub struct WorkspaceView {
     jump_load_in_flight: Option<u64>,
     terminal_mark_next: Option<std::num::NonZeroU64>,
     pending_terminal_capture: Option<PendingTerminalCapture>,
-    pending_terminal_key: Option<PendingTerminalKey>,
-    pending_open_input: Option<PendingOpenInput>,
+
+    pending_file_read: Option<PendingFileRead>,
     pending_detached_open: Option<PendingDetachedOpen>,
     pending_detached_close_load: Option<PendingDetachedCloseLoad>,
     detached_close_read_in_flight: Option<Arc<()>>,
@@ -1383,21 +1165,19 @@ pub struct WorkspaceView {
     /// Distinguishes a reconnected terminal from the original input source.
     pending_open_terminal_instance: Option<Arc<()>>,
     /// Input collected after leaving the original destination requires review.
-    pending_open_input_mixed_context: bool,
+
     /// Index of the first event observed outside the original context.
-    pending_open_input_context_boundary: Option<usize>,
+
     pending_sidebar_open: Option<PaneCommandGuard>,
-    pending_direction_replay: Option<DirectionReplaySource>,
-    pending_direction_terminal: Option<PendingDirectionTerminal>,
+
     pending_sidebar_destination: Option<SidebarFileDestination>,
-    pending_sidebar_input_transfer: Option<SidebarInputTransfer>,
+    pending_sidebar_file_target: Option<SidebarFileTarget>,
     pending_empty_sidebar_destination: Option<EmptySidebarFileDestination>,
-    /// Some records :buffer's relist policy while its input is retained.
-    pending_sidebar_buffer_relist: Option<bool>,
+        pending_sidebar_buffer_relist: Option<bool>,
     terminal_jump_marks:
         workspace_app::terminal_jump_marks::MarkBank<workspace_app::tmux::CopyMark>,
-    terminal_jump_gate: workspace_app::terminal_jump_gate::Gate<PendingTerminalRestore>,
-    pending_file_splits: workspace_app::editor_panes::PendingFileSplits,
+    terminal_jump: workspace_app::terminal_jump::PendingRestore<PendingTerminalRestore>,
+    sidebar_read_guard: workspace_app::editor_panes::SidebarReadGuard,
     pending_measured_splits: Option<PendingMeasuredSplits>,
     pending_edit_guard: Option<workspace_app::editor_panes::OpenGuard>,
     pending_read_guard: Option<workspace_app::editor_panes::OpenGuard>,
@@ -1450,14 +1230,14 @@ pub struct WorkspaceView {
     tmux_windows: HashMap<usize, Vec<WindowInfo>>,
     additional_tmux_windows: HashMap<(usize, u64), Vec<WindowInfo>>,
     /// Windows paired with the verified lifetime of their tmux session.
-    observed_tab_windows: HashMap<workspace_app::terminal_resume::Context, workspace_app::tmux::WindowSnapshot>,
+    observed_tab_windows: HashMap<workspace_app::terminal_input::Context, workspace_app::tmux::WindowSnapshot>,
     tmux_windows_poll_error: Option<(usize, Option<u64>, String)>,
     /// Primary tmux control worker ended (its event stream closed) per
     /// project, with the last error it reported. Cleared when a primary
     /// Ready attaches again; drives the persistent status indicator.
     primary_tmux_lost: HashMap<usize, String>,
     primary_tmux_last_error: HashMap<usize, String>,
-    pending_terminal_search: std::collections::HashSet<workspace_app::terminal_resume::Context>,
+    pending_terminal_search: std::collections::HashSet<workspace_app::terminal_input::Context>,
     pending_tmux_copy: HashMap<u64, PendingTmuxCopy>,
     terminal_visual_intent: Option<Arc<PendingTmuxCopy>>,
     pending_visual_operations: HashMap<u64, Arc<PendingTmuxCopy>>,
@@ -1750,8 +1530,7 @@ impl WorkspaceView {
             quit_prompt_open: false,
             quit_after_save: false,
             quit_approved: false,
-            quit_input_override: None,
-            quit_input_prompt_open: false,
+
             quit_window: window.window_handle(),
             quit_intent: Default::default(),
             pending_guarded_quit: None,
@@ -1761,11 +1540,11 @@ impl WorkspaceView {
             delete_prompt_open: false,
             delete_after_save: None,
             delete_after_save_zoom_guard: None,
-            terminal_resume: Default::default(),
-            terminal_resume_zoom_owner: None,
-            pending_backend_resume: None,
+            terminal_input_route: None,
+            terminal_input_sequence: 0,
+
             pending_copy_close: 0,
-            detached_terminal_input: Default::default(),
+
             terminal_wake: wake_tx.clone(),
             terminal_resize_pending: HashMap::new(),
             pending_yank_first: HashMap::new(),
@@ -1780,25 +1559,23 @@ impl WorkspaceView {
             jump_load_in_flight: None,
             terminal_mark_next: std::num::NonZeroU64::new(1),
             pending_terminal_capture: None,
-            pending_terminal_key: None,
-            pending_open_input: None,
+
+            pending_file_read: None,
             pending_detached_open: None,
             pending_detached_close_load: None,
             detached_close_read_in_flight: None,
             pending_pane_file_source: None,
             pending_open_terminal_instance: None,
-            pending_open_input_mixed_context: false,
-            pending_open_input_context_boundary: None,
+
             pending_sidebar_open: None,
-            pending_direction_replay: None,
-            pending_direction_terminal: None,
+
             pending_sidebar_destination: None,
-            pending_sidebar_input_transfer: None,
+            pending_sidebar_file_target: None,
             pending_empty_sidebar_destination: None,
             pending_sidebar_buffer_relist: None,
             terminal_jump_marks: Default::default(),
-            terminal_jump_gate: Default::default(),
-            pending_file_splits: Default::default(),
+            terminal_jump: Default::default(),
+            sidebar_read_guard: Default::default(),
             pending_measured_splits: None,
             pending_edit_guard: None,
             pending_read_guard: None,
@@ -2438,7 +2215,7 @@ impl WorkspaceView {
                 if self.primary_may_take_focus(project, self.windows[index].attachment) {
                     self.active = index;
                     self.ensure_terminal_layout(project, self.windows[index].attachment);
-                    self.model.message = "tmux actualizado · cliente y entrada conservados".into();
+                    self.model.message = "tmux actualizado · cliente conectado".into();
                 }
                 self.apply_bootstrap_terminal_alternate(project);
                 return true;
@@ -2459,7 +2236,7 @@ impl WorkspaceView {
                     // replacement was created. A failed spawn must not make
                     // an unrelated client the apparent active terminal.
                     let old = self.windows.remove(index);
-                    self.terminated_terminals.remove(&workspace_app::terminal_resume::Context {
+                    self.terminated_terminals.remove(&workspace_app::terminal_input::Context {
                         project, attachment: old.attachment,
                     });
                     if self.terminal_visual_intent.as_ref().is_some_and(|intent| {
@@ -2603,27 +2380,12 @@ impl WorkspaceView {
             return;
         }
         if previous == target { return; }
-        let follow_queued_tab = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            pending.tab_reconcile.as_ref() == Some(&target)
-                && pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && pending.gate.in_flight_id().is_none() && !pending.replaying && !pending.scheduled
-                && !pending.mixed_context && pending.write.is_none() && pending.target_action.is_none()
-                && pending.selection_action.is_none() && pending.split.is_none()
-                && pending.capture_wait.is_none() && pending.marked_selection.is_none()
-                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
-                && pending.destination.as_ref().is_some_and(|destination| {
-                    destination.tmux_target.as_ref().is_some_and(|(window, _)| window == &target.window)
-                        && self.terminal_key_destination_current(destination)
-                })
-        });
+
         let previous_closed = previous.session == snapshot.identity
             && !snapshot.windows.iter().any(|window| window.id == previous.window);
         if self.editor_zoom.is_some()
             || matches!(self.model.surface, Surface::Picker | Surface::Details)
             || !self.marked.is_empty()
-            || self.pending_open_input.is_some()
-            || (self.pending_terminal_key.is_some() && !follow_queued_tab)
-            || self.pending_file_splits.has_active()
             || self.pending_measured_splits.is_some()
             || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some()
@@ -2793,16 +2555,7 @@ impl WorkspaceView {
         {
             self.set_focus(Surface::Terminal);
         }
-        if follow_queued_tab {
-            let destination = self.terminal_key_destination();
-            if let Some(pending) = &mut self.pending_terminal_key {
-                pending.tab_reconcile = None;
-                pending.destination = destination;
-                if pending.destination.is_none() { pending.gate.invalidate(); }
-                pending.revision = pending.revision.wrapping_add(1);
-            }
-            let _ = self.terminal_wake.try_send(());
-        }
+
     }
 
     fn tab_transition_pending(&self) -> bool {
@@ -2840,8 +2593,7 @@ impl WorkspaceView {
         self.ensure_terminal_layout(self.model.project, attachment);
     }
     /// A sidebar may be usable before its terminal connects. Give the file
-    /// read a real, empty editor destination so the ordinary pane-bound input
-    /// ledger can retain keys and composition while the disk read is pending.
+    /// read a real, empty editor destination to validate the loaded result.
     fn prepare_sidebar_open_destination(&mut self) -> Result<Option<PathBuf>, ()> {
         self.materialize_sidebar_for_open();
         if self.editor_panes.is_some()
@@ -2856,7 +2608,6 @@ impl WorkspaceView {
             || self.model.file.is_some()
             || (matches!(self.model.surface, Surface::Agents | Surface::Backlog)
                 && !self.model.agents_visible)
-            || self.pending_open_input.is_some()
             || !self.marked.is_empty()
         {
             self.model.message = "No se pudo preparar el panel de destino; reintentá".into();
@@ -2978,18 +2729,14 @@ impl WorkspaceView {
         }
     }
     fn additional_reconnect_busy(&self, project: usize, attachment: u64) -> bool {
-        self.terminal_resume.active()
-            || self.detached_terminal_input.busy(project)
-            || self.pending_backend_resume.is_some()
-            || self.pending_terminal_capture.is_some()
-            || self.pending_terminal_key.is_some()
-            || self.terminal_jump_gate.busy()
+        self.pending_terminal_capture.is_some()
+
             || self.pending_terminal_open.is_some()
-            || self.pending_open_input.is_some()
+            || self.pending_file_read.is_some()
             || self.pending_terminal_jump_load.is_some()
             || self
                 .pending_terminal_search
-                .contains(&workspace_app::terminal_resume::Context {
+                .contains(&workspace_app::terminal_input::Context {
                     project,
                     attachment,
                 })
@@ -3067,7 +2814,7 @@ impl WorkspaceView {
                     .and_then(|backend| backend.attachment);
                 if let Some(primary) = primary
                     && self.terminated_terminals.contains(
-                        &workspace_app::terminal_resume::Context {
+                        &workspace_app::terminal_input::Context {
                             project: context.project,
                             attachment: primary,
                         },
@@ -3153,9 +2900,7 @@ impl WorkspaceView {
             };
             return;
         }
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            return;
-        }
+
         let project = self.model.project;
         if let Some(root) = self
             .model
@@ -3166,14 +2911,8 @@ impl WorkspaceView {
             self.terminal_recovery_attempted
                 .retain(|record| &record.root != root);
         }
-        if self.detached_terminal_input.defer(
-            project,
-            workspace_app::terminal_resume::DeferredAction::Reconnect,
-        ) {
-            self.model.message = "Esperando confirmación de input; si demora, revisá la terminal antes de reintentar".into();
-            return;
-        }
-        self.cancel_terminal_resume();
+
+        self.cancel_terminal_input();
         // Restart metadata while keeping the attach client alive. The Ready
         // event will verify its PID before reusing it or replacing a dead one.
         self.backends.remove(&project);
@@ -3644,16 +3383,12 @@ impl WorkspaceView {
         self.cancel_terminal_jump_load();
         if let Some(load) = &mut self.pending_detached_terminal_jump_load {
             load.invalid = true;
-            if let Some(input) = &mut self.pending_terminal_key
-                && input.source.token == load.owner
-            {
-                input.gate.invalidate();
-            }
+
         }
         if let Some(pending) = &mut self.pending_terminal_capture {
             pending.valid = false;
         }
-        self.terminal_jump_gate.invalidate();
+        self.terminal_jump.invalidate();
     }
     fn terminal_capture_is_current(&self, pending: &PendingTerminalCapture) -> bool {
         if !pending.valid || pending.guard.project != self.model.project {
@@ -3729,7 +3464,7 @@ impl WorkspaceView {
             self.file_generation = self.file_generation.wrapping_add(1);
         }
     }
-    fn begin_open_input(&mut self, generation: u64, path: &Path) -> bool {
+    fn prepare_terminal_file_read(&mut self, generation: u64, path: &Path) -> bool {
         let Some(terminal) = self
             .windows
             .get(self.active)
@@ -3738,19 +3473,6 @@ impl WorkspaceView {
             return false;
         };
         let terminal_instance = terminal.terminal.instance_identity();
-        if self.pending_open_input.is_some()
-            && self
-                .pending_open_terminal_instance
-                .as_ref()
-                .is_none_or(|original| !Arc::ptr_eq(original, &terminal_instance))
-        {
-            if let Some(pending) = &mut self.pending_open_input {
-                pending.queue.invalidate();
-            }
-            self.model.message =
-                "La terminal cambió; la entrada quedó conservada para revisar".into();
-            return false;
-        }
         workspace_app::editor_panes::prepare_terminal_for_file(
             &mut self.editor_panes,
             Some(terminal.attachment),
@@ -3764,7 +3486,7 @@ impl WorkspaceView {
         {
             return false;
         }
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: self.model.project,
             pane: pane.0,
             attachment: terminal.attachment,
@@ -3772,71 +3494,35 @@ impl WorkspaceView {
             path: path.to_owned(),
         };
         let focus = panes.layout.focus_guard();
-        let focus_current = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| panes.layout.focus_guard_is_current(&pending.focus));
-        let same_window = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| panes.layout.focus_guard_same_window(&pending.focus));
-        if let Some(pending) = &mut self.pending_open_input {
-            if pending.awaiting_edit_read
-                && pending
-                    .queue
-                    .advance_read(&pending.context, context.clone(), focus_current)
-            {
-                pending.context = context;
-                pending.focus = focus;
-                pending.awaiting_edit_read = false;
-                return true;
-            }
-            if pending.queue.retry(context.clone(), same_window) {
-                pending.context = context;
-                pending.focus = focus;
-                pending.geometry_deadline = None;
-                if pending.post_split_line.is_some() { pending.wait_for_geometry = true; }
-                return true;
-            }
-            return false;
-        }
         self.pending_open_terminal_instance = Some(terminal_instance);
-        self.pending_open_input = Some(PendingOpenInput {
-            queue: workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024),
+        self.pending_file_read = Some(PendingFileRead {
+            identity: Arc::new(()), state: workspace_app::file_read::State::Reading,
             context,
             focus,
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
+
             edit_resolution: false,
             edit_force: false,
             edit_reload_current: false,
             awaiting_edit_read: false,
             terminal_jump: false,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
+
+             post_split_line: None,
         });
         true
     }
-    fn resolve_edit_open_input(&mut self, generation: u64, path: &Path) -> bool {
-        let current = self.pending_open_input.as_ref().is_some_and(|pending| {
+    fn resolve_file_read(&mut self, generation: u64, path: &Path) -> bool {
+        let current = self.pending_file_read.as_ref().is_some_and(|pending| {
             pending.edit_resolution
                 && pending.context.generation == generation
                 // An explicit retry must retain its original destination even
                 // if a symlink or other path component changed meanwhile.
                 && (!pending.awaiting_edit_read || pending.context.path == path)
-                && self.open_input_context_current(pending, false)
+                && self.file_read_context_current(pending, false)
         });
-        let Some(pending) = &mut self.pending_open_input else {
+        let Some(pending) = &mut self.pending_file_read else {
             return false;
         };
-        if !pending
-            .queue
-            .resolved_path(&pending.context, path.to_owned(), current)
+        if !current
         {
             return false;
         }
@@ -3846,12 +3532,12 @@ impl WorkspaceView {
         true
     }
     fn finish_resolved_edit_open(&mut self, original_generation: u64, path: &Path) {
-        let focus_current = self.pending_open_input.as_ref().is_some_and(|pending| {
+        let focus_current = self.pending_file_read.as_ref().is_some_and(|pending| {
             self.editor_panes
                 .as_ref()
                 .is_some_and(|panes| panes.layout.focus_guard_is_current(&pending.focus))
         });
-        let Some(pending) = &mut self.pending_open_input else {
+        let Some(pending) = &mut self.pending_file_read else {
             return;
         };
         if !pending.awaiting_edit_read
@@ -3864,21 +3550,19 @@ impl WorkspaceView {
         let mut next = pending.context.clone();
         next.generation = self.file_generation;
         if next.generation != original_generation {
-            if !pending
-                .queue
-                .advance_read(&pending.context, next.clone(), focus_current)
+            if !focus_current
             {
-                pending.queue.invalidate();
+                pending.state = workspace_app::file_read::State::Cancelled;
                 return;
             }
             pending.context = next;
         }
         pending.awaiting_edit_read = false;
-        self.finish_open_input_read(self.file_generation, path, true);
+        self.finish_file_read(self.file_generation, path, true);
     }
-    fn pane_file_source_current(&self, pending: &PendingOpenInput) -> bool {
+    fn pane_file_source_current(&self, pending: &PendingFileRead) -> bool {
         let Some(source) = self.pending_pane_file_source.as_ref()
-            .filter(|source| Arc::ptr_eq(&source.queue, &pending.queue.identity()))
+            .filter(|source| Arc::ptr_eq(&source.identity, &pending.identity.clone()))
         else { return true; };
         self.model.file.as_ref().is_some_and(|(path, _)| path == &source.path)
             && self.editors.get(&source.path).is_some_and(|editor| {
@@ -3888,12 +3572,12 @@ impl WorkspaceView {
             })
     }
 
-    fn open_input_context_current(&self, pending: &PendingOpenInput, opened: bool) -> bool {
-        self.open_input_context_current_at(pending, opened, pending.context.generation)
+    fn file_read_context_current(&self, pending: &PendingFileRead, opened: bool) -> bool {
+        self.file_read_context_current_at(pending, opened, pending.context.generation)
     }
-    fn open_input_context_current_at(
+    fn file_read_context_current_at(
         &self,
-        pending: &PendingOpenInput,
+        pending: &PendingFileRead,
         opened: bool,
         generation: u64,
     ) -> bool {
@@ -3901,40 +3585,9 @@ impl WorkspaceView {
         if !opened && !self.pane_file_source_current(pending) {
             return false;
         }
-        if let Some(source) = self.pending_direction_replay.as_ref()
-            .filter(|source| Arc::ptr_eq(&source.owner, &pending.queue.identity()))
-        {
-            return self.model.project == context.workspace
-                && self.file_generation == generation
-                && self.file_prompt.is_none() && self.remote_prompt.is_none()
-                && self.terminal_command.is_none() && self.terminal_search_prompt.is_none()
-                && !self.help && !self.model.notifications && !self.media_active()
-                && self.editor_zoom.is_none()
-                && self.pending_sidebar_open.as_ref().is_some_and(|guard| self.pane_command_guard_valid(guard))
-                && self.editor_panes.as_ref().is_some_and(|panes| {
-                    panes.layout.active().0 == context.pane
-                        && panes.layout.focus_guard_is_current(&pending.focus)
-                })
-                && match &source.selection {
-                    DirectionReplaySelection::Explorer { root, selected } => {
-                        context.path.as_os_str().is_empty() && self.model.surface == Surface::Tree
-                            && self.model.explorer_root() == root.as_path()
-                            && self.model.tree_rows().get(self.model.tree_selected)
-                                .map(|row| &row.path) == selected.as_ref()
-                    }
-                    DirectionReplaySelection::Agents { surface, selected } => {
-                        context.path.as_os_str().is_empty()
-                            && self.model.surface == *surface && self.model.selected == *selected
-                    }
-                    DirectionReplaySelection::File { path, editor } => {
-                        context.path == *path && self.model.surface == Surface::File
-                            && self.model.file.as_ref().is_some_and(|(active, _)| active == path)
-                            && self.editors.get(path).is_some_and(|current| editor.matches(current))
-                    }
-                };
-        }
+
         if let Some(owner) = self.pending_detached_open.as_ref()
-            .filter(|owner| Arc::ptr_eq(&owner.queue, &pending.queue.identity()))
+            .filter(|owner| Arc::ptr_eq(&owner.identity, &pending.identity.clone()))
         {
             return owner.opened == opened
                 && self.model.project == context.workspace
@@ -3987,7 +3640,7 @@ impl WorkspaceView {
                                         && zoom.owns_terminal(context.workspace, panes, instance)
                                         && !self.pending_additional_reconnects.contains_key(&(context.workspace, *attachment))
                                         && terminal_backend_for(&self.backends, &self.additional_backends,
-                                            workspace_app::terminal_resume::Context {
+                                            workspace_app::terminal_input::Context {
                                                 project: context.workspace, attachment: *attachment,
                                             }).is_ok()
                                         && self.windows.get(self.active).is_some_and(|window| {
@@ -4047,117 +3700,21 @@ impl WorkspaceView {
                     }
             })
     }
-    fn reject_stale_open_replay(&mut self) -> bool {
-        let stale = self.pending_open_input.as_ref().is_some_and(|pending| {
-            pending.replaying && !self.open_input_context_current(pending, true)
-        });
-        if stale && let Some(pending) = &mut self.pending_open_input {
-            pending.replay_error = true;
-        }
-        let stale_terminal = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            pending.replaying
-                && pending
-                    .destination
-                    .as_ref()
-                    .is_none_or(|destination| !self.terminal_key_destination_current(destination))
-        });
-        if stale_terminal && let Some(pending) = &mut self.pending_terminal_key {
-            pending.replay_error = true;
-        }
-        stale || stale_terminal
-    }
-    fn enqueue_open_input(&mut self, event: workspace_app::open_input::Event<Keystroke>) -> bool {
-        let sidebar_direction = self.pending_open_input.as_ref().is_some_and(|pending| {
-            self.pending_direction_replay.as_ref().is_some_and(|source| {
-                Arc::ptr_eq(&source.owner, &pending.queue.identity())
-            })
-        });
-        let changed_context = self.pending_open_input.as_ref().is_some_and(|pending| {
-            !pending.replaying
-                && !self.pending_direction_terminal.as_ref().is_some_and(|terminal| {
-                    Arc::ptr_eq(&terminal.owner, &pending.queue.identity())
-                        && !terminal.timed_out
-                        && self.terminal_key_source_current(&terminal.source)
-                        && self.terminal_key_destination_current(&terminal.destination)
-                })
-                && !self.open_input_context_current(pending, false)
-                && !self.open_input_context_current(pending, true)
-                && !self.pending_jump_load.as_ref().is_some_and(|load| {
-                    matches!(&load.owner, FileJumpOwner::Open { identity, .. } if Arc::ptr_eq(identity, &pending.queue.identity()))
-                        && self.open_input_context_current_at(pending, true, load.generation)
-                })
-        });
-        let Some(pending) = self.pending_open_input.as_mut() else {
-            return false;
-        };
-        if changed_context {
-            if !self.pending_open_input_mixed_context {
-                self.pending_open_input_context_boundary =
-                    Some(pending.queue.len().saturating_add(pending.overflow.len()));
-            }
-            self.pending_open_input_mixed_context = true;
-            pending.queue.invalidate();
-        }
-        if !pending.enqueue(event) {
-            return false;
-        }
-        self.quit_intent.activity();
-        self.model.message = if self.pending_open_input_mixed_context {
-            "Entrada de distintos contextos conservada; usá Revisar"
-        } else {
-            match pending.queue.state() {
-                workspace_app::open_input::State::Recover => {
-                    "Entrada conservada; usá Reintentar o Revisar"
-                }
-                workspace_app::open_input::State::Uncertain => {
-                    "Entrada conservada; una acción pudo ejecutarse, revisala antes de repetir"
-                }
-                _ if sidebar_direction => "Entrada retenida mientras se mide el panel",
-                _ => "Entrada retenida mientras abre el archivo",
-            }
-        }
-        .into();
-        true
-    }
-    fn cancel_empty_open_input(&mut self) -> bool {
-        if self
-            .pending_open_input
-            .as_ref()
-            .is_none_or(|pending| !pending.queue.is_empty() || !pending.overflow.is_empty()
-                || pending.post_split_line.is_some())
-        {
-            return false;
-        }
-        self.discard_open_input();
-        true
-    }
-    /// Called only for an empty queue or after the user explicitly discards it.
-    fn discard_open_input(&mut self) {
-        let Some(pending) = self.pending_open_input.take() else {
+
+    /// Called only for an empty identity or after the user explicitly discards it.
+    fn cancel_file_read_request(&mut self) {
+        let Some(pending) = self.pending_file_read.take() else {
             return;
         };
-        let sidebar_direction = self.pending_direction_replay.as_ref().is_some_and(|source| {
-            Arc::ptr_eq(&source.owner, &pending.queue.identity())
-        });
-        if sidebar_direction {
-            self.pending_direction_terminal
-                .take_if(|terminal| Arc::ptr_eq(&terminal.owner, &pending.queue.identity()));
-            self.pending_direction_replay = None;
-            self.pending_sidebar_open = None;
-            self.pending_sidebar_buffer_relist = None;
-            self.pending_open_input_mixed_context = false;
-            self.pending_open_input_context_boundary = None;
-            return;
-        }
+
         self.pending_detached_open = None;
         self.pending_pane_file_source = None;
-        self.pending_sidebar_input_transfer
-            .take_if(|transfer| Arc::ptr_eq(&transfer.owner, &pending.queue.identity()));
+        self.pending_sidebar_file_target
+            .take_if(|transfer| Arc::ptr_eq(&transfer.owner, &pending.identity.clone()));
         self.pending_open_terminal_instance = None;
         self.pending_sidebar_open = None;
         self.pending_sidebar_buffer_relist = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
+
         let generation = pending.context.generation;
         self.pending_terminal_jump_load
             .take_if(|load| load.generation == generation && load.path == pending.context.path);
@@ -4172,50 +3729,23 @@ impl WorkspaceView {
             self.file_generation = self.file_generation.wrapping_add(1);
         }
     }
-    fn retain_unresolved_edit_input(&mut self, generation: u64) {
-        let path = self.pending_open_input.as_ref().and_then(|pending| {
+    fn fail_edit_resolution(&mut self, generation: u64) {
+        let path = self.pending_file_read.as_ref().and_then(|pending| {
             (pending.edit_resolution && pending.context.generation == generation)
                 .then(|| pending.context.path.clone())
         });
         if let Some(path) = path {
-            self.finish_open_input_read(generation, &path, false);
+            self.finish_file_read(generation, &path, false);
         }
     }
-    fn finish_open_input_read(&mut self, generation: u64, path: &Path, opened: bool) {
-        let failed_sidebar_transfer = !opened
-            && self
-                .pending_sidebar_input_transfer
-                .as_ref()
-                .is_some_and(|transfer| {
-                    transfer.generation == generation
-                        && transfer.path == path
-                        && self.pending_open_input.as_ref().is_some_and(|input| {
-                            Arc::ptr_eq(&transfer.owner, &input.queue.identity())
-                        })
-                });
-        if failed_sidebar_transfer {
-            self.pending_sidebar_input_transfer = None;
-        }
-        let current = self.pending_open_input.as_ref().is_some_and(|pending| {
-            pending.context.generation == generation
-                && pending.context.path == path
-                && opened
-                && self.open_input_context_current(pending, true)
-                && (pending.post_split_line.is_none() || self.editors.contains_key(path))
-        });
-        let Some(pending) = self.pending_open_input.as_mut().filter(|pending| {
+    fn finish_file_read(&mut self, generation: u64, path: &Path, opened: bool) {
+        let Some(pending) = self.pending_file_read.take_if(|pending| {
             pending.context.generation == generation && pending.context.path == path
-        }) else {
-            return;
-        };
-        let delivered = current
-            && pending.queue.ready(&pending.context, true)
-            && pending.queue.acknowledge_edit();
-        let positioned = delivered && pending.post_split_line.is_some();
-        if delivered && let Some(line) = pending.take_post_split_line()
+        }) else { return; };
+        if opened && self.model.file.as_ref().is_some_and(|(active, _)| active == path)
+            && let Some(line) = pending.post_split_line
             && let Some(editor) = self.editors.get_mut(path)
         {
-            // Apply the Ex destination before later queued keystrokes.
             let row = match line {
                 workspace_app::editor::SplitPosition::Line(line) => line.saturating_sub(1),
                 workspace_app::editor::SplitPosition::Last => usize::MAX - 1,
@@ -4223,51 +3753,27 @@ impl WorkspaceView {
             editor.goto(row, 0);
             self.editor_top = editor.followed_top(self.editor_top, self.editor_rows);
             self.editor_left = 0;
-        }
-        if !delivered {
-            pending.wait_for_geometry = false;
-            pending.geometry_deadline = None;
-            if failed_sidebar_transfer {
-                pending.queue.block_after_predecessor();
-            } else {
-                pending.queue.invalidate();
-            }
-        }
-        if pending.queue.is_empty() && pending.overflow.is_empty() && !pending.wait_for_geometry
-            && pending.post_split_line.is_none()
-        {
-            self.pending_open_input = None;
-            self.pending_detached_open = None;
-            self.pending_pane_file_source = None;
-            self.pending_open_terminal_instance = None;
-            self.pending_sidebar_open = None;
-            self.pending_sidebar_buffer_relist = None;
-            self.pending_open_input_mixed_context = false;
-            self.pending_open_input_context_boundary = None;
-        } else if !delivered {
-            self.model.message = if self.pending_open_input_mixed_context {
-                "Entrada de distintos contextos conservada; usá Revisar"
-            } else {
-                "Entrada conservada; usá Reintentar o Revisar"
-            }
-            .into();
-        }
-        if positioned {
             self.sync_editor_pane();
             self.sync_active_jump_tracking();
         }
+        self.pending_detached_open = None;
+        self.pending_pane_file_source = None;
+        self.pending_open_terminal_instance = None;
+        self.pending_sidebar_open = None;
+        self.pending_sidebar_buffer_relist = None;
+        self.pending_sidebar_file_target = None;
     }
-    fn retain_failed_file_open_input(&mut self, path: &Path) {
-        let generation = self.pending_open_input.as_ref().and_then(|pending| {
+    fn fail_file_read(&mut self, path: &Path) {
+        let generation = self.pending_file_read.as_ref().and_then(|pending| {
             (pending.context.workspace == self.model.project && pending.context.path == path)
                 .then_some(pending.context.generation)
         });
         if let Some(generation) = generation {
-            self.finish_open_input_read(generation, path, false);
+            self.finish_file_read(generation, path, false);
         }
     }
     fn advance_sidebar_open_generation(&mut self, path: &Path, read_started: bool) -> bool {
-        let Some(pending) = self.pending_open_input.as_ref() else {
+        let Some(pending) = self.pending_file_read.as_ref() else {
             return true;
         };
         if pending.context.attachment != 0 || self.pending_sidebar_open.is_none() {
@@ -4293,8 +3799,8 @@ impl WorkspaceView {
                 .as_ref()
                 .is_some_and(|panes| panes.layout.focus_guard_is_current(&pending.focus));
         if !same {
-            if let Some(pending) = &mut self.pending_open_input {
-                pending.queue.invalidate();
+            if let Some(pending) = &mut self.pending_file_read {
+                pending.state = workspace_app::file_read::State::Cancelled;
             }
             return false;
         }
@@ -4304,799 +3810,24 @@ impl WorkspaceView {
         };
         *generation = self.file_generation;
         if read_started {
-            let pending = self.pending_open_input.as_mut().expect("checked above");
+            let pending = self.pending_file_read.as_mut().expect("checked above");
             let mut next = pending.context.clone();
             next.generation = self.file_generation;
-            if !pending
-                .queue
-                .advance_read(&pending.context, next.clone(), true)
-            {
-                pending.queue.invalidate();
-                return false;
-            }
+
             pending.context = next;
             pending.awaiting_edit_read = false;
         }
         true
     }
-    fn retry_open_input(&mut self) {
-        use workspace_app::open_input::State;
-        if self.pending_open_input_mixed_context {
-            self.model.message = "Entrada de distintos contextos conservada; usá Revisar".into();
-            return;
-        }
-        let Some(pending) = &self.pending_open_input else {
-            return;
-        };
-        if pending.queue.state() != State::Recover {
-            return;
-        }
-        if self.pending_direction_replay.as_ref().is_some_and(|source| {
-            Arc::ptr_eq(&source.owner, &pending.queue.identity())
-        }) {
-            // This queue has no file destination. Retry only in the original
-            // focus epoch and on the same selected row; never call file open.
-            let current = self.open_input_context_current(pending, true)
-                && !pending.scheduled && !pending.replaying;
-            let Some(pending) = self.pending_open_input.as_mut() else { return; };
-            if current && pending.queue.retry_current(&pending.context, true) {
-                pending.geometry_deadline = None;
-                self.model.message = "Reintentando dirección del panel".into();
-                let _ = self.terminal_wake.try_send(());
-            } else {
-                self.model.message = "Dirección conservada; usá Revisar".into();
-            }
-            return;
-        }
-        if pending.post_split_line.is_some() {
-            // Retrying an already visible destination could move a different
-            // incarnation of that buffer. Only restart an unresolved open;
-            // the specialized retry paths revalidate the exact source pane.
-            let destination_visible = self.model.surface == Surface::File
-                && self.model.file.as_ref().is_some_and(|(path, _)| path == &pending.context.path);
-            let sidebar_source = pending.context.attachment == 0
-                && self.pending_sidebar_open.is_some()
-                && self.pending_detached_open.is_none();
-            let terminal_source = pending.context.attachment != 0
-                && pending.edit_resolution && self.model.surface == Surface::Normal
-                && self.model.file.is_none();
-            if destination_visible || !(sidebar_source || terminal_source) {
-                self.model.message = "Posición y entrada conservadas; usá Revisar".into();
-                return;
-            }
-        }
-        if pending.terminal_jump {
-            self.model.message = "El salto cambió; revisá la entrada antes de continuar".into();
-            return;
-        }
-        let original = pending.context.clone();
-        if self.pending_detached_open.as_ref().is_some_and(|owner| {
-            Arc::ptr_eq(&owner.queue, &pending.queue.identity())
-        }) {
-            self.retry_detached_open_input();
-            return;
-        }
-        if original.attachment == 0 && self.pending_sidebar_open.is_some() {
-            self.retry_sidebar_open_input();
-            return;
-        }
-        if self.windows.get(self.active).is_some_and(|w| {
-            w.project == original.workspace
-                && w.attachment == original.attachment
-                && self
-                    .pending_open_terminal_instance
-                    .as_ref()
-                    .is_none_or(|identity| !Arc::ptr_eq(identity, &w.terminal.instance_identity()))
-        }) {
-            self.model.message = "La terminal se reconectó; revisá la entrada conservada".into();
-            return;
-        }
-        let same_pane = self.model.project == original.workspace
-            && self.windows.get(self.active).is_some_and(|w| {
-                w.project == original.workspace
-                    && w.attachment == original.attachment
-                    && self
-                        .pending_open_terminal_instance
-                        .as_ref()
-                        .is_some_and(|identity| {
-                            Arc::ptr_eq(identity, &w.terminal.instance_identity())
-                        })
-            })
-            && self.editor_panes.as_ref().is_some_and(|panes| {
-                panes.layout.active().0 == original.pane
-                    && panes.layout.focus_guard_same_window(&pending.focus)
-            });
-        if !same_pane {
-            self.model.message = "Volvé al panel original para reintentar la entrada".into();
-            return;
-        }
-        if pending.edit_resolution
-            && self.model.surface == Surface::Normal
-            && self.model.file.is_none()
-        {
-            let Some(name) = original.path.to_str() else {
-                self.model.message = "No se puede reintentar la ruta; revisá la entrada".into();
-                return;
-            };
-            self.begin_edit_path(name.to_owned(), true);
-            return;
-        }
-        if self.model.surface == Surface::Normal && self.model.file.is_none() {
-            self.effect(Effect::ExplicitFile(original.path.clone()));
-        } else if self.model.surface == Surface::File
-            && self
-                .model
-                .file
-                .as_ref()
-                .is_some_and(|(path, _)| path == &original.path)
-        {
-            self.file_generation = self.file_generation.wrapping_add(1);
-        } else {
-            self.model.message = "Volvé al archivo original para reintentar la entrada".into();
-            return;
-        }
-        if self.model.surface != Surface::File
-            || self
-                .model
-                .file
-                .as_ref()
-                .is_none_or(|(path, _)| path != &original.path)
-        {
-            return;
-        }
-        let Some(panes) = &self.editor_panes else {
-            return;
-        };
-        let mut context = original;
-        context.generation = self.file_generation;
-        let focus = panes.layout.focus_guard();
-        if let Some(pending) = &mut self.pending_open_input
-            && pending.queue.retry(context.clone(), true)
-        {
-            pending.context = context;
-            pending.focus = focus;
-            pending.geometry_deadline = None;
-            pending.queue.ready(&pending.context, true);
-            let _ = self.terminal_wake.try_send(());
-        }
-    }
-    /// Retry only the same float and editor. A focus round trip, mixed input,
-    /// or an uncertain dispatch must be reviewed rather than replayed.
-    fn retry_detached_open_input(&mut self) {
-        let Some(pending) = self.pending_open_input.as_ref() else { return; };
-        let Some(owner) = self.pending_detached_open.as_ref().filter(|owner| {
-            Arc::ptr_eq(&owner.queue, &pending.queue.identity())
-        }) else { return; };
-        let opened = owner.opened;
-        let relist = owner.relist;
-        let explicit = owner.explicit;
-        let resolving = owner.resolving;
-        let expected_loaded = owner.expected_loaded;
-        let terminal_source = matches!(&owner.source, DetachedReadSource::Terminal { .. });
-        let original = pending.context.clone();
-        if !self.open_input_context_current(pending, opened) {
-            self.model.message = "Cambió el zoom original; revisá la entrada conservada".into();
-            return;
-        }
-        if !opened && !explicit {
-            let target = ListedBuffer::File(original.path.clone());
-            if self.editors.contains_key(&original.path)
-                || !self.listed_buffers.get(&original.workspace).is_some_and(|registry| {
-                    registry.knows(&target) && registry.is_unloaded(&original.path)
-                })
-                || self.numbered_buffers.number_for(original.workspace, &target).is_err()
-                || self.pending_new_files.contains(&original.path)
-            {
-                self.model.message = "Cambió el buffer alternativo; revisá la entrada conservada".into();
-                return;
-            }
-        }
-        if !opened && explicit && !resolving
-            && self.editors.contains_key(&original.path) != expected_loaded
-        {
-            self.model.message = "Cambió el buffer de destino; revisá la entrada conservada".into();
-            return;
-        }
-        let Some(generation) = self.file_generation.checked_add(1)
-            .filter(|generation| *generation > original.generation) else {
-                self.model.message = "No se pudo reintentar; revisá la entrada conservada".into();
-                return;
-            };
-        let mut next = original.clone();
-        next.generation = generation;
-        let Some(pending) = &mut self.pending_open_input else { return; };
-        if !pending.queue.retry(next.clone(), true) {
-            self.model.message = "No se pudo reintentar; revisá la entrada conservada".into();
-            return;
-        }
-        pending.context = next;
-        pending.geometry_deadline = None;
-        self.file_generation = generation;
-        if opened {
-            if !pending.queue.ready(&pending.context, true) {
-                self.model.message = "Entrada conservada; revisala antes de continuar".into();
-                return;
-            }
-            let _ = self.terminal_wake.try_send(());
-        } else {
-            self.model.message = "Reintentando apertura; entrada retenida".into();
-            if terminal_source {
-                if let Some(owner) = &mut self.pending_detached_open {
-                    owner.resolving = true;
-                }
-                self.spawn_detached_terminal_file_read(generation, original.path, relist);
-            } else if resolving {
-                self.spawn_detached_edit_target(generation, original.path);
-            } else if self.model.unnamed.contains(&original.path) || explicit && expected_loaded {
-                // An unloaded unnamed buffer has a synthetic identity, not a
-                // path to resolve on disk. The registry was checked above.
-                self.complete_detached_listed_read(generation, original.path, relist, Ok(Some(String::new())));
-            } else {
-                self.spawn_detached_listed_read(generation, original.path, relist);
-            }
-        }
-    }
 
-    fn retry_sidebar_open_input(&mut self) {
-        let Some(pending) = self.pending_open_input.as_ref() else {
-            return;
-        };
-        let original = pending.context.clone();
-        let Some(panes) = self.editor_panes.as_ref() else {
-            return;
-        };
-        if self.model.project != original.workspace
-            || panes.layout.active().0 != original.pane
-            || !panes.layout.focus_guard_same_window(&pending.focus)
-        {
-            self.model.message = "Volvé al panel original para reintentar la entrada".into();
-            return;
-        }
-        let Some(next_generation) = self.file_generation.checked_add(1) else {
-            self.model.message = "Entrada conservada; revisala antes de continuar".into();
-            return;
-        };
-        if next_generation <= original.generation {
-            self.model.message = "Entrada conservada; revisala antes de continuar".into();
-            return;
-        }
-        let focus = panes.layout.focus_guard();
-        let opened = self.model.surface == Surface::File
-            && self
-                .model
-                .file
-                .as_ref()
-                .is_some_and(|(path, _)| path == &original.path)
-            && matches!(panes.content(panes.layout.active()), Some(PaneContent::File(path)) if path == &original.path);
-        if !opened && !self.pane_file_source_current(pending) {
-            self.model.message = "Cambió el editor original; revisá la entrada conservada".into();
-            return;
-        }
-        let sidebar_guard = if opened {
-            None
-        } else {
-            let Some(PaneCommandGuard::Sidebar {
-                project,
-                surface,
-                content,
-                ..
-            }) = self.pending_sidebar_open.as_ref()
-            else {
-                return;
-            };
-            if *project != self.model.project
-                || *surface != self.model.surface
-                || panes.content(panes.layout.active()) != Some(content)
-            {
-                self.model.message = "Volvé al panel original para reintentar la entrada".into();
-                return;
-            }
-            Some(PaneCommandGuard::Sidebar {
-                project: *project,
-                surface: *surface,
-                generation: next_generation,
-                focus_revision: self.model.focus_revision,
-                content: content.clone(),
-                focus: focus.clone(),
-            })
-        };
-        let Some(name) = original.path.to_str().map(str::to_owned) else {
-            self.model.message = "No se puede reintentar la ruta; revisá la entrada".into();
-            return;
-        };
-        let mut next = original;
-        next.generation = next_generation;
-        let buffer_relist = self.pending_sidebar_buffer_relist;
-        let Some(pending) = self.pending_open_input.as_mut() else {
-            return;
-        };
-        if !pending.queue.retry(next.clone(), true) {
-            self.model.message = "Entrada conservada; revisala antes de continuar".into();
-            return;
-        }
-        pending.context = next.clone();
-        pending.focus = focus;
-        pending.geometry_deadline = None;
-        if pending.post_split_line.is_some() { pending.wait_for_geometry = true; }
-        if opened {
-            self.file_generation = next_generation;
-            pending.queue.ready(&pending.context, true);
-            let _ = self.terminal_wake.try_send(());
-        } else {
-            pending.edit_resolution = buffer_relist.is_none();
-            // A retry must remain bound to the same destination.
-            pending.awaiting_edit_read = true;
-            self.pending_sidebar_open = sidebar_guard;
-            if let Some(relist) = buffer_relist {
-                self.file_generation = next_generation;
-                let path = next.path.clone();
-                self.load_listed_file(path.clone(), relist);
-                if self.pending_open_input.as_ref().is_some_and(|pending| {
-                    pending.context.generation == next_generation && pending.awaiting_edit_read
-                }) {
-                    self.finish_open_input_read(next_generation, &path, false);
-                }
-            } else {
-                self.begin_edit_path(name, false);
-                if self.file_generation != next_generation {
-                    if let Some(pending) = &mut self.pending_open_input {
-                        pending.queue.invalidate();
-                    }
-                    self.model.message = "No se pudo reintentar; entrada conservada".into();
-                }
-            }
-        }
-    }
-    fn replay_open_paste(&mut self, text: &str, cx: &mut Context<Self>) {
-        let failed = if let Some(editor) = self.current_editor_mut() {
-            let previous = std::mem::take(&mut editor.message);
-            let too_large = text.len() > 2 * 1024 * 1024
-                || (editor.mode == EditMode::Insert
-                    && editor.text.len().saturating_add(text.chars().count()) > 2_000_000);
-            if too_large {
-                editor.message = previous;
-                true
-            } else {
-                editor.cancel_replay();
-                editor.paste(text);
-                let failed = !editor.message.is_empty();
-                if !failed {
-                    editor.message = previous;
-                }
-                failed
-            }
-        } else {
-            true
-        };
-        if failed && let Some(pending) = &mut self.pending_open_input {
-            pending.replay_error = true;
-        }
-        if failed && let Some(pending) = &mut self.pending_terminal_key {
-            pending.replay_error = true;
-        }
-        self.sync_active_jump_tracking();
-        self.invalidate_completion();
-        cx.notify();
-    }
-    /// Keep the currently replayed jump at the head of its original queue
-    /// while the read-only terminal mark is still being captured.
-    fn hold_open_jump_for_capture(&mut self, event: u64) -> bool {
-        let Some(token) = self.pending_terminal_capture.as_ref().and_then(|capture| {
-            (capture.deferred_jump.is_some() && self.terminal_capture_is_current(capture))
-                .then_some(capture.token.get())
-        }) else {
-            return false;
-        };
-        let identity = self.pending_open_input.as_ref().and_then(|input| {
-            (input.replaying
-                && !input.replay_error
-                && input.deferred_capture.is_none()
-                && input.queue.in_flight_id() == Some(event)
-                && self.open_input_context_current(input, true))
-            .then(|| input.queue.identity())
-        });
-        if let Some(identity) = identity
-            && let Some(input) = &mut self.pending_open_input
-            && let Some(capture) = &mut self.pending_terminal_capture
-        {
-            input.deferred_capture = Some((token, event));
-            capture.deferred_open = Some(identity);
-            return true;
-        }
-        false
-    }
 
-    fn hold_terminal_jump_for_capture(&mut self, event: u64) -> bool {
-        let Some(token) = self.pending_terminal_capture.as_ref().and_then(|capture| {
-            (capture.deferred_jump.is_some() && self.terminal_capture_is_current(capture))
-                .then_some(capture.token.get())
-        }) else {
-            return false;
-        };
-        let owner = self.pending_terminal_key.as_ref().and_then(|input| {
-            (input.replaying
-                && !input.replay_error
-                && !input.mixed_context
-                && input.capture_wait.is_none()
-                && input.replay_event == Some(event)
-                && input.gate.in_flight_id() == Some(event)
-                && input
-                    .destination
-                    .as_ref()
-                    .is_some_and(|destination| self.terminal_key_destination_current(destination)))
-            .then_some(input.source.token)
-        });
-        if let Some(owner) = owner
-            && let Some(input) = &mut self.pending_terminal_key
-            && let Some(capture) = &mut self.pending_terminal_capture
-        {
-            input.capture_wait = Some(token);
-            capture.deferred_terminal = Some((owner, event));
-            return true;
-        }
-        false
-    }
 
-    /// A cancelled, failed or expired capture did not dispatch the jump.
-    /// Keep its event and later input in the original queue for review.
-    fn recover_abandoned_open_jump(&mut self) -> bool {
-        let Some((token, event, identity)) = self.pending_open_input.as_ref().and_then(|input| {
-            input
-                .deferred_capture
-                .map(|(token, event)| (token, event, input.queue.identity()))
-        }) else {
-            return false;
-        };
-        let active = self
-            .pending_terminal_capture
-            .as_ref()
-            .is_some_and(|capture| {
-                capture.token.get() == token
-                    && capture.deferred_jump.is_some()
-                    && capture
-                        .deferred_open
-                        .as_ref()
-                        .is_some_and(|owner| Arc::ptr_eq(owner, &identity))
-                    && self.terminal_capture_is_current(capture)
-            });
-        if !active && let Some(input) = &mut self.pending_open_input {
-            input.deferred_capture = None;
-            if !input.queue.not_dispatched(event) {
-                input.queue.invalidate();
-            }
-            self.model.message =
-                "Captura cancelada; salto y entrada conservados para revisar".into();
-            return true;
-        }
-        false
-    }
-
-    fn pump_open_input(&mut self, cx: &mut Context<Self>) {
-        use workspace_app::open_input::{Event, State};
-        if let Some(terminal) = &mut self.pending_direction_terminal {
-            if !terminal.timed_out && std::time::Instant::now() >= terminal.deadline {
-                terminal.timed_out = true;
-                if let Some(input) = &mut self.pending_open_input
-                    && Arc::ptr_eq(&terminal.owner, &input.queue.identity())
-                {
-                    input.queue.invalidate();
-                }
-                self.model.message = "Terminal sin confirmar; entrada conservada para revisar".into();
-                cx.notify();
-            }
-            return;
-        }
-        if self.pending_measured_splits.is_some() {
-            return;
-        }
-        self.expire_file_jump_input(cx);
-        if self.terminal_jump_gate.busy()
-            || self.pending_jump_load.is_some()
-            || self.pending_terminal_jump_load.is_some()
-            || self
-                .pending_open_input
-                .as_ref()
-                .is_some_and(|input| input.deferred_capture.is_some())
-            || self
-                .pending_terminal_capture
-                .as_ref()
-                .is_some_and(|pending| pending.deferred_jump.is_some())
-        {
-            return;
-        }
-        let editor_mode = self.current_editor().map(|editor| editor.mode);
-        let list_destination = self.pending_open_input.as_ref().is_some_and(|pending| {
-            self.pending_direction_replay.as_ref().is_some_and(|source| {
-                Arc::ptr_eq(&source.owner, &pending.queue.identity())
-                    && matches!(source.selection,
-                        DirectionReplaySelection::Explorer { .. } | DirectionReplaySelection::Agents { .. })
-            })
-        }) || self.pending_detached_open.as_ref().is_some_and(|owner| {
-            owner.opened && (owner.destination_explorer.is_some() || owner.destination_agents.is_some())
-        });
-        let current = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| self.open_input_context_current(pending, true));
-        let needs_geometry = self.pending_open_input.as_ref().is_some_and(|pending| {
-            pending.wait_for_geometry
-                && !pending.scheduled
-                && !pending.replaying
-                && pending.queue.state() == State::Ready
-        });
-        let geometry_ready = !needs_geometry || self.geometry_ready_for_counted_split();
-        let direction_eligible = self.terminal_command.is_none()
-            && self.file_prompt.is_none() && self.remote_prompt.is_none()
-            && !self.help && !self.model.notifications && !self.media_active()
-            && self.editor_zoom.is_none()
-            && self.editor_panes.as_ref().is_some_and(|panes| panes.layout.panes().len() > 1);
-        let window_prefix = self.editor_window_prefix.is_some();
-        let Some(pending) = self.pending_open_input.as_mut() else {
-            return;
-        };
-        if pending.scheduled || pending.replaying || pending.queue.state() != State::Ready {
-            return;
-        }
-        if pending.post_split_line.is_some() {
-            pending.queue.invalidate();
-            self.model.message = "Salto y entrada conservados; usá Revisar".into();
-            return;
-        }
-        // A successfully dispatched focus key may have moved to another
-        // pane. If it was the last event, there is no input left to bind to
-        // the old file; release the ledger before checking that old focus.
-        if pending.queue.is_empty() && pending.overflow.is_empty()
-            && !pending.wait_for_geometry && !self.pending_open_input_mixed_context
-        {
-            self.pending_open_input = None;
-            self.pending_detached_open = None;
-            self.pending_pane_file_source = None;
-            self.pending_open_terminal_instance = None;
-            self.pending_sidebar_open = None;
-            self.pending_sidebar_buffer_relist = None;
-            self.pending_open_input_mixed_context = false;
-            self.pending_open_input_context_boundary = None;
-            return;
-        }
-        if !current {
-            pending.queue.invalidate();
-            self.model.message = if self.validation {
-                format!(
-                    "Entrada retenida (proyecto={} generación={} panel={} foco={} mixto={}); Reintentar",
-                    pending.context.workspace == self.model.project,
-                    pending.context.generation == self.file_generation,
-                    self.editor_panes.as_ref().is_some_and(|panes| panes.layout.active().0 == pending.context.pane),
-                    self.editor_panes.as_ref().is_some_and(|panes| panes.layout.focus_guard_is_current(&pending.focus)),
-                    self.pending_open_input_mixed_context,
-                )
-            } else {
-                "Entrada conservada: cambió el panel; usá Reintentar".into()
-            };
-            return;
-        }
-        if pending.wait_for_geometry {
-            if geometry_ready {
-                pending.wait_for_geometry = false;
-                pending.geometry_deadline = None;
-            } else if let Some(deadline) = pending.geometry_deadline {
-                if std::time::Instant::now() >= deadline {
-                    pending.queue.invalidate();
-                    self.model.message = "No se pudo medir el panel; entrada conservada".into();
-                    cx.notify();
-                }
-                return;
-            } else {
-                pending.geometry_deadline =
-                    Some(std::time::Instant::now() + Duration::from_secs(15));
-                cx.notify();
-                return;
-            }
-        }
-        pending.refill();
-        if pending.queue.is_empty() {
-            if pending.overflow.is_empty() {
-                self.pending_open_input = None;
-                self.pending_detached_open = None;
-                self.pending_pane_file_source = None;
-                self.pending_open_terminal_instance = None;
-                self.pending_sidebar_open = None;
-                self.pending_sidebar_buffer_relist = None;
-                self.pending_open_input_mixed_context = false;
-                self.pending_open_input_context_boundary = None;
-            } else {
-                pending.queue.invalidate();
-                self.model.message =
-                    "Entrada demasiado grande conservada; requiere revisión".into();
-            }
-            return;
-        }
-        let direction_pending = direction_eligible && pending.queue.events().next().is_some_and(|event| {
-                matches!(event, Event::Key(key) if queued_direction_key(key, window_prefix))
-            });
-        let geometry_ready = !direction_pending || self.directional_focus_geometry_ready();
-        let pending = self.pending_open_input.as_mut().expect("checked above");
-        if !geometry_ready {
-            if let Some(deadline) = pending.geometry_deadline {
-                if std::time::Instant::now() >= deadline {
-                    pending.queue.invalidate();
-                    self.model.message = "No se pudo medir el panel; entrada conservada".into();
-                    cx.notify();
-                }
-            } else {
-                pending.geometry_deadline = Some(std::time::Instant::now() + Duration::from_secs(3));
-                cx.notify();
-            }
-            return;
-        }
-        if !direction_pending { pending.geometry_deadline = None; }
-        let Some((id, event)) = pending
-            .queue
-            .begin(&pending.context, true)
-            .map(|(id, event)| (id, event.clone()))
-        else {
-            return;
-        };
-        let identity = pending.queue.identity();
-        // Ranges supplied while the destination text was not loaded use an
-        // unknown text context. Never apply them speculatively.
-        if workspace_app::open_input::requires_loaded_context(&event)
-            || list_destination && !matches!(&event, Event::Key(_))
-        {
-            pending.queue.not_dispatched(id);
-            self.model.message = "Composición conservada: requiere revisar su contexto".into();
-            return;
-        }
-        if matches!(&event, Event::Key(key) if pending_key_may_need_native_composition(key, editor_mode))
-        {
-            pending.queue.not_dispatched(id);
-            self.model.message = "Tecla conservada: la composición nativa requiere revisión".into();
-            return;
-        }
-        let sidebar_selection_key = matches!(&event, Event::Key(key) if queued_sidebar_selection_key(key));
-        pending.scheduled = true;
-        let handle = self.quit_window;
-        let weak = cx.weak_entity();
-        cx.defer(move |app| {
-            let ready = weak.update(app, |view, cx| {
-                let current = view.pending_open_input.as_ref().is_some_and(|pending| Arc::ptr_eq(&identity, &pending.queue.identity()) && view.open_input_context_current(pending, true));
-                let geometry_current = !direction_pending || view.directional_focus_geometry_ready();
-                if let Some(pending) = view.pending_open_input.as_mut().filter(|pending| Arc::ptr_eq(&identity, &pending.queue.identity())) {
-                    if current && geometry_current { pending.geometry_deadline = None; pending.replaying = true; pending.replay_error = false; pending.paste_held = None; }
-                    else if current {
-                        let expired = pending.geometry_deadline.is_some_and(|deadline| std::time::Instant::now() >= deadline);
-                        if expired || !pending.queue.defer_undispatched(id) {
-                            if !pending.queue.not_dispatched(id) { pending.queue.invalidate(); }
-                            view.model.message = "No se pudo medir el panel; entrada conservada".into();
-                        } else {
-                            pending.geometry_deadline.get_or_insert(std::time::Instant::now() + Duration::from_secs(3));
-                        }
-                        pending.scheduled = false;
-                        cx.notify();
-                    }
-                    else {
-                        pending.queue.not_dispatched(id);
-                        pending.scheduled = false;
-                        view.model.message = if view.validation {
-                            format!("Entrada diferida retenida (contexto={} geometría={})", current, geometry_current)
-                        } else {
-                            "Entrada conservada: cambió el panel; usá Reintentar".into()
-                        };
-                        cx.notify();
-                    }
-                }
-                current && geometry_current
-            }).unwrap_or(false);
-            if !ready { return; }
-            let result = handle.update(app, |_, window, app| -> Result<(), ()> {
-                match event {
-                    Event::Key(key) => { if window.dispatch_keystroke(key, app) { Ok(()) } else { Err(()) } }
-                    Event::Commit { range, text } => weak.update(app, |view, cx| view.replace_text_in_range(range, &text, window, cx)).map_err(|_| ()),
-                    Event::Paste { text } => weak.update(app, |view, cx| view.replay_open_paste(&text, cx)).map_err(|_| ()),
-                    Event::Mark { range, text, selected } => weak.update(app, |view, cx| view.replace_and_mark_text_in_range(range, &text, selected, window, cx)).map_err(|_| ()),
-                    Event::Unmark => weak.update(app, |view, cx| view.unmark_text(window, cx)).map_err(|_| ()),
-                }
-            }).map_err(|_| ()).and_then(|result| result);
-            let _ = weak.update(app, |view, cx| {
-                if !view.pending_open_input.as_ref().is_some_and(|pending| Arc::ptr_eq(&identity, &pending.queue.identity())) {
-                    return;
-                }
-                let deferred = view.pending_terminal_capture.as_ref().is_some_and(|capture| capture.deferred_jump.is_some());
-                let held = result.is_ok() && deferred && view.hold_open_jump_for_capture(id);
-                let held_file_jump = result.is_ok() && view.pending_jump_load.as_ref().is_some_and(|load| {
-                    matches!(&load.owner, FileJumpOwner::Open { identity, event } if *event == Some(id)
-                        && view.pending_open_input.as_ref().is_some_and(|input| Arc::ptr_eq(identity, &input.queue.identity()) && !input.replay_error))
-                });
-                let held_edit = result.is_ok() && view.pending_open_input.as_ref().is_some_and(|pending| {
-                    Arc::ptr_eq(&identity, &pending.queue.identity()) && !pending.replay_error && pending.queue.edit_in_flight(id)
-                });
-                let measured_for_event = view.pending_measured_splits.as_ref().is_some_and(|pending| {
-                    pending.input_event == Some(id) && pending.input_owner.as_ref().is_some_and(|owner| Arc::ptr_eq(owner, &identity))
-                });
-                let held_measured = result.is_ok() && measured_for_event && view.pending_open_input.as_ref().is_some_and(|pending| !pending.replay_error);
-                if measured_for_event && !held_measured {
-                    view.retain_measured_splits();
-                }
-                if deferred && !held {
-                    view.retain_replayed_jump();
-                    if let Some(capture) = &mut view.pending_terminal_capture {
-                        capture.deferred_jump = None;
-                    }
-                }
-                let mut acknowledged = false;
-                let mut dropped_paste = false;
-                if let Some(pending) = &mut view.pending_open_input {
-                    pending.replaying = false;
-                    pending.scheduled = false;
-                    if held || held_file_jump || held_edit || held_measured { pending.revision = pending.revision.wrapping_add(1); }
-                    else if result.is_ok() && !pending.replay_error && pending.queue.acknowledge(id) { pending.revision = pending.revision.wrapping_add(1); acknowledged = true; }
-                    else if let Some(lines) = pending.paste_held.filter(|_| result.is_ok()) {
-                        // The paste was held before any byte reached the PTY:
-                        // a known hold, not an uncertain action. Alone, it is
-                        // dropped and the empty queue released below, so the
-                        // next paste raises the prompt; input typed after it
-                        // stays held for review instead of running without it.
-                        let alone = pending.queue.len() == 1 && pending.overflow.is_empty() && pending.post_split_line.is_none();
-                        if alone && pending.queue.acknowledge(id) {
-                            pending.paste_held = None;
-                            pending.revision = pending.revision.wrapping_add(1);
-                            acknowledged = true;
-                            dropped_paste = true;
-                            view.model.message = held_paste_message(lines, false);
-                        } else if pending.queue.not_dispatched(id) {
-                            pending.revision = pending.revision.wrapping_add(1);
-                            view.model.message = held_paste_message(lines, true);
-                        } else {
-                            pending.paste_held = None;
-                            pending.queue.uncertain(id);
-                            view.model.message = "Entrada conservada: una acción pudo ejecutarse; revisala antes de repetir".into();
-                        }
-                    }
-                    else { pending.paste_held = None; pending.queue.uncertain(id); view.model.message = "Entrada conservada: una acción pudo ejecutarse; revisala antes de repetir".into(); }
-                }
-                if !held && !held_file_jump && !held_edit && !held_measured {
-                    if sidebar_selection_key && acknowledged {
-                        view.refresh_direction_replay_selection(&identity);
-                    }
-                    if direction_pending && acknowledged {
-                        view.handoff_direction_replay(&identity);
-                        view.begin_direction_terminal_confirmation(&identity);
-                    }
-                    view.handoff_open_input_to_terminal_jump(acknowledged);
-                    view.handoff_open_input_to_switched_terminal(id, acknowledged);
-                }
-                // Release the emptied queue now, as the drain would, so a
-                // paste typed next is not queued again behind it.
-                if dropped_paste
-                    && !view.pending_open_input_mixed_context
-                    && view.pending_open_input.as_ref().is_some_and(|pending| {
-                        Arc::ptr_eq(&identity, &pending.queue.identity())
-                            && pending.queue.state() == workspace_app::open_input::State::Ready
-                            && pending.queue.is_empty()
-                            && pending.overflow.is_empty()
-                            && pending.post_split_line.is_none()
-                            && !pending.wait_for_geometry
-                    })
-                {
-                    view.pending_open_input = None;
-                    view.pending_detached_open = None;
-                    view.pending_pane_file_source = None;
-                    view.pending_open_terminal_instance = None;
-                    view.pending_sidebar_open = None;
-                    view.pending_sidebar_buffer_relist = None;
-                    view.pending_open_input_mixed_context = false;
-                    view.pending_open_input_context_boundary = None;
-                }
-                let _ = view.terminal_wake.try_send(());
-                cx.notify();
-            });
-        });
-    }
     fn begin_terminal_file_read_capture(&mut self, path: &Path) -> bool {
         self.model.surface == Surface::Normal
             && self.model.file.is_none()
             && self
                 .start_terminal_capture(TerminalCaptureKind::ReadingFile(
-                    workspace_app::terminal_jump_gate::PendingFileCapture::new(path.to_owned()),
+                    workspace_app::terminal_jump::PendingFileCapture::new(path.to_owned()),
                 ))
                 .is_ok()
     }
@@ -5213,7 +3944,8 @@ impl WorkspaceView {
         // or mode later returns to the same value. Keep the read in flight
         // until its reply so repeated attempts cannot spawn unbounded reads.
         self.cancel_pending_detached_close_load();
-        self.retain_measured_splits();
+        if self.pending_file_read.is_some() { self.cancel_file_read_request(); }
+        self.cancel_measured_splits();
         let keep_capture = self
             .pending_terminal_capture
             .as_ref()
@@ -5224,10 +3956,9 @@ impl WorkspaceView {
         if keep_capture {
             if let Some(pending) = &mut self.pending_terminal_capture {
                 pending.deferred_jump = None;
-                pending.deferred_open = None;
-                pending.deferred_terminal = None;
+
             }
-            self.terminal_jump_gate.invalidate();
+            self.terminal_jump.invalidate();
         } else {
             // CaptureCopyMark is read-only and its token is never reused. If
             // input has cancelled a file-read capture, release its slot now;
@@ -5274,19 +4005,7 @@ impl WorkspaceView {
             || syntax_busy
             || completion_debounce
             || replay
-            || self.pending_direction_terminal.as_ref().is_some_and(|pending| !pending.timed_out)
-            || self.pending_open_input.as_ref().is_some_and(|pending| {
-                pending.geometry_deadline.is_some()
-                    && pending.queue.state() == workspace_app::open_input::State::Ready
-            })
-            || self.pending_terminal_key.as_ref().is_some_and(|pending| {
-                matches!(
-                    pending.gate.state(),
-                    workspace_app::terminal_key_gate::State::Inspecting
-                        | workspace_app::terminal_key_gate::State::DecisionInFlight
-                        | workspace_app::terminal_key_gate::State::Replaying
-                )
-            })
+
         {
             Duration::from_millis(16)
         } else {
@@ -5298,39 +4017,14 @@ impl WorkspaceView {
         let selection_changed = self.poll_native_selection(cx);
         #[cfg(not(feature = "ghostty"))]
         let selection_changed = false;
-        let timeout =
-            self.terminal_resume
-                .mark_expired_with_prefix(std::time::Instant::now(), || {
-                    match self.model.focus(Surface::Normal) {
-                        Effect::Pty(bytes) => bytes,
-                        _ => Vec::new(),
-                    }
-                });
-        let resume_expired = timeout != workspace_app::terminal_resume::ResumeTimeout::NotExpired;
-        if resume_expired {
-            self.pending_backend_resume = None;
-            self.model.message = match timeout {
-                workspace_app::terminal_resume::ResumeTimeout::Retained => {
-                    "La terminal no confirmó a tiempo; entrada conservada. Cmd+Q permite revisarla"
-                        .into()
-                }
-                _ => "Regreso a input vencido; i reintenta".into(),
-            };
-        }
+
         self.metrics.poll();
-        let slow_deliveries = self
-            .detached_terminal_input
-            .warn_slow(std::time::Instant::now());
-        if !slow_deliveries.is_empty() {
-            self.quit_intent.cancel();
-            self.model.message = "La terminal no confirmó la entrada; pudo haberse ejecutado. Revisala antes de repetir".into();
-        }
+
         let cancelled_root = self.cancel_closed_picker_root();
         let mut changed = self.model.poll_picker()
             || cancelled_root
             || selection_changed
-            || resume_expired
-            || !slow_deliveries.is_empty();
+;
         let now = std::time::Instant::now();
         // A queued resize may be stuck behind a stalled PTY worker. Flag it
         // without consuming its acknowledgement or sending another resize.
@@ -5399,16 +4093,8 @@ impl WorkspaceView {
             self.model.message = "La lectura del alternativo venció; buffer conservado".into();
             changed = true;
         }
-        if self.terminal_jump_gate.expire(now, Duration::from_secs(15)) {
-            let owner = self
-                .terminal_jump_gate
-                .pending_payload()
-                .map(|p| p.input_token);
-            if let Some(input) = &mut self.pending_terminal_key
-                && Some(input.source.token) == owner
-            {
-                input.gate.invalidate();
-            }
+        if self.terminal_jump.expire(now, Duration::from_secs(15)) {
+
             self.model.message = "El salto de terminal no confirmó; pudo haberse movido. No se reintentará automáticamente".into();
             changed = true;
         }
@@ -5943,7 +4629,7 @@ impl WorkspaceView {
                         .position(|window| window.project == project && window.attachment == id)
                         .expect("verified terminal exists");
                     let window = &mut self.windows[index];
-                    let context = workspace_app::terminal_resume::Context { project, attachment: id };
+                    let context = workspace_app::terminal_input::Context { project, attachment: id };
                     if self.terminal_visual_intent.as_ref().is_some_and(|intent| intent.context == context) {
                         self.terminal_visual_intent = None;
                     }
@@ -6012,7 +4698,7 @@ impl WorkspaceView {
                 }
             }
         }
-        let mut deferred_terminal_actions = Vec::new();
+
         let mut rejected_tmux_backends = std::collections::HashSet::new();
         for (project, additional, event) in events {
             if rejected_tmux_backends.contains(&(project, additional)) {
@@ -6029,7 +4715,7 @@ impl WorkspaceView {
                     .and_then(|backend| backend.attachment),
             };
             let source = attachment
-                .map(|attachment| workspace_app::terminal_resume::Context {
+                .map(|attachment| workspace_app::terminal_input::Context {
                     project,
                     attachment,
                 })
@@ -6060,22 +4746,7 @@ impl WorkspaceView {
                     self.model.message =
                         "Respuesta de reconexión inesperada; cliente conservado".into();
                 }
-                TmuxEvent::Resumed(token, result) => {
-                    let Some(source) = source else { continue; };
-                    match self.detached_terminal_input.ack_ready_for_context(source, token, result.is_ok()) {
-                        workspace_app::terminal_resume::DeliveryAck::Unknown => {
-                            self.terminal_resume_ack(source, token, true, result);
-                        }
-                        workspace_app::terminal_resume::DeliveryAck::Failed => {
-                            self.quit_intent.cancel();
-                            self.model.message = "No se confirmó la vuelta a input; entrada conservada. Cmd+Q permite revisarla".into();
-                        }
-                        workspace_app::terminal_resume::DeliveryAck::Finished(Some(action)) => {
-                            deferred_terminal_actions.push((project, action));
-                        }
-                        _ => {}
-                    }
-                }
+                TmuxEvent::Resumed(token, result) => { if let Some(source) = source { self.terminal_input_result(source, token, result); } }
                 TmuxEvent::CopyMarkCaptured(token, result) => {
                     if source.is_some_and(|source| {
                         self.pending_terminal_capture
@@ -6089,13 +4760,7 @@ impl WorkspaceView {
                     }
                 }
                 TmuxEvent::SelectionInspected(token, result) => {
-                    if self.pending_direction_terminal.as_ref()
-                        .is_some_and(|pending| pending.source.token == token)
-                    {
-                        if let Some(source) = source {
-                            self.direction_terminal_confirmed(source, token, result);
-                        }
-                    } else if self.pending_workspace_normal_check.as_ref()
+                    if self.pending_workspace_normal_check.as_ref()
                         .is_some_and(|pending| pending.token == token)
                     {
                         self.workspace_normal_checked(source, token, result);
@@ -6105,7 +4770,7 @@ impl WorkspaceView {
                     if let Some(source) = source {
                         let ok = matches!(result, workspace_app::tmux::RestoreCopyMark::Restored);
                         self.finish_terminal_visual_operation(source, token, ok);
-                        self.terminal_selection_done(source, token, if ok {
+                        self.report_terminal_selection(if ok {
                             Ok(())
                         } else {
                             Err("No se pudo mover la selección visual".into())
@@ -6115,24 +4780,20 @@ impl WorkspaceView {
                 TmuxEvent::VisualSelectionDone(token, result) => {
                     if let Some(source) = source {
                         self.finish_terminal_visual_operation(source, token, result.is_ok());
-                        self.terminal_selection_done(source, token, result);
+                        self.report_terminal_selection(result);
                     }
                 }
                 TmuxEvent::VisualLineDone(token, result) => {
                     if let Some(source) = source {
                         self.finish_terminal_visual_operation(source, token, result.is_ok());
-                        self.terminal_selection_done(source, token, result);
+                        self.report_terminal_selection(result);
                     }
                 }
-                TmuxEvent::TargetActionDone(token, result) => {
-                    if let Some(source) = source {
-                        self.terminal_key_target_action_done(source, token, result);
-                    }
-                }
+
                 TmuxEvent::CopyMarkRestored(token, result) => {
                     if source.is_some_and(|source| {
                         std::num::NonZeroU64::new(token)
-                            .and_then(|token| self.terminal_jump_gate.context(token))
+                            .and_then(|token| self.terminal_jump.context(token))
                             .is_some_and(|ctx| {
                                 ctx.workspace == project && ctx.attachment == source.attachment
                             })
@@ -6140,47 +4801,8 @@ impl WorkspaceView {
                         self.terminal_jump_restored(project, token, result);
                     }
                 }
-                TmuxEvent::InputDelivered(token, result) => {
-                    let Some(source) = source else {
-                        continue;
-                    };
-                    match self.detached_terminal_input.ack_for_context(
-                        source,
-                        token,
-                        result.is_ok(),
-                    ) {
-                        workspace_app::terminal_resume::DeliveryAck::Unknown => {
-                            self.terminal_resume_ack(source, token, false, result);
-                        }
-                        workspace_app::terminal_resume::DeliveryAck::Failed => {
-                            self.quit_intent.cancel();
-                            self.model.message = "La entrada no se confirmó y pudo ejecutarse. Cmd+Q permite copiarla o descartarla".into();
-                        }
-                        workspace_app::terminal_resume::DeliveryAck::Finished(Some(action)) => {
-                            deferred_terminal_actions.push((project, action))
-                        }
-                        workspace_app::terminal_resume::DeliveryAck::Pending
-                        | workspace_app::terminal_resume::DeliveryAck::Finished(None) => {}
-                    }
-                }
-                TmuxEvent::OrderedPasteFinished(token, result) => {
-                    let Some(source) = source else { continue; };
-                    match self.detached_terminal_input.ack_for_context(source, token, result.is_ok()) {
-                        workspace_app::terminal_resume::DeliveryAck::Unknown => {
-                            self.terminal_resume_ack(source, token, false, result.clone());
-                        }
-                        workspace_app::terminal_resume::DeliveryAck::Finished(Some(action)) => {
-                            deferred_terminal_actions.push((project, action));
-                        }
-                        workspace_app::terminal_resume::DeliveryAck::Failed => {
-                            self.quit_intent.cancel();
-                        }
-                        _ => {}
-                    }
-                    if let Err(error) = result {
-                        self.model.message = format!("No se confirmó el pegado: {error}");
-                    }
-                }
+                TmuxEvent::InputDelivered(token, result) => { if let Some(source) = source { self.terminal_input_result(source, token, result); } }
+                TmuxEvent::OrderedPasteFinished(token, result) => { if let Some(source) = source { self.terminal_input_result(source, token, result); } }
                 TmuxEvent::ReadyAdditional(session, _identity, terminal) => {
                     let Some(id) = additional else {
                         continue;
@@ -6284,13 +4906,10 @@ impl WorkspaceView {
                         self.model.message = "La terminal adicional aún no está verificada".into();
                         continue;
                     }
-                    let primary_wait = !self.pending_backend_resume.is_some_and(|(context, _)| {
-                        self.additional_backends
-                            .contains_key(&(context.project, context.attachment))
-                    });
+
                     if !self.attach_terminal(project, s, clients) {
-                        if primary_wait {
-                            self.finish_pending_backend_resume(project, false);
+                        {
+
                         }
                         // Do not route subsequent window or command metadata to
                         // a client whose server identity could not be verified.
@@ -6299,8 +4918,8 @@ impl WorkspaceView {
                     } else {
                         self.primary_tmux_lost.remove(&project);
                         self.primary_tmux_last_error.remove(&project);
-                        if primary_wait {
-                            self.finish_pending_backend_resume(project, true);
+                        {
+
                         }
                         // Shown once per process when launchd could not
                         // start the server and the direct start was used.
@@ -6320,7 +4939,7 @@ impl WorkspaceView {
                             .any(|w| w.project == project && w.attachment == source.attachment)
                     {
                         // Use the same guarded path as other terminal input so
-                        // a full or closed PTY queue does not discard this key.
+                        // a full or closed PTY identity does not discard this key.
                         self.effect(Effect::Pty(b"/".to_vec()));
                     }
                 }
@@ -6342,7 +4961,7 @@ impl WorkspaceView {
                                 && terminal.attachment == pending.context.attachment
                                 && Arc::ptr_eq(&terminal.terminal.instance_identity(), &pending.instance)
                         });
-                    let mut completed = false;
+
                     if current {
                         match result {
                             Ok(Some(copy)) => {
@@ -6370,7 +4989,7 @@ impl WorkspaceView {
                                     Some(Err(_)) => "Copiado al portapapeles; registro no disponible".into(),
                                     None => "Selección tmux copiada explícitamente".into(),
                                 }; }
-                                completed = true;
+
                             }
                             Ok(None) => {
                                 if token == self.latest_tmux_copy {
@@ -6381,66 +5000,13 @@ impl WorkspaceView {
                                         self.model.message = "No hay texto para copiar".into();
                                     }
                                 }
-                                completed = true;
+
                             }
                             Err(error) => self.model.message = error,
                         }
                     }
-                    let destination = self.terminal_key_destination();
-                    let destination_current = destination.as_ref().is_some_and(|target| {
-                        self.terminal_key_destination_current(target)
-                    });
-                    let mut release_failed_copy = false;
-                    if let Some(key) = &mut self.pending_terminal_key
-                        && key.selection_action.as_ref().is_some_and(|copy| {
-                            copy.token == token && copy.context == pending.context
-                        })
-                    {
-                        let copy = key.selection_action.take().expect("token checked");
-                        if completed
-                            && !copy.timed_out
-                            && destination_current
-                            && key.gate.acknowledge(copy.event)
-                        {
-                            key.destination = destination;
-                            key.revision = key.revision.wrapping_add(1);
-                        } else if current
-                            && !copy.timed_out
-                            && destination_current
-                            && key.gate.acknowledge(copy.event)
-                        {
-                            // A failed copy is never replayed. When its exact
-                            // destination is still current, later queued input
-                            // can continue through the normal guarded replay.
-                            key.destination = destination;
-                            key.revision = key.revision.wrapping_add(1);
-                            self.model.message = "Copia no confirmada; intentá copiar de nuevo".into();
-                        } else if key.gate.events().count() == 1
-                            && key.gate.in_flight_id() == Some(copy.event)
-                            && key.overflow.is_empty()
-                            && key.marked_selection.is_none()
-                            && key.open_identity.is_none()
-                            && key.open_switch_event.is_none()
-                            && key.write.is_none()
-                            && key.target_action.is_none()
-                            && key.split.is_none()
-                            && key.capture_wait.is_none()
-                            && key.gate.acknowledge(copy.event)
-                        {
-                            // The only retained event was this copy request.
-                            // It must never be replayed, but it contains no
-                            // subsequent input that needs a recovery prompt.
-                            release_failed_copy = true;
-                            self.model.message = "Copia no confirmada; intentá copiar de nuevo".into();
-                        } else {
-                            key.gate.uncertain(copy.event);
-                            self.model.message = "Copia sin confirmar; entrada conservada".into();
-                        }
-                        let _ = self.terminal_wake.try_send(());
-                    }
-                    if release_failed_copy {
-                        self.pending_terminal_key = None;
-                    }
+
+
                 }
                 TmuxEvent::WindowTerminated(identity, window, result) => {
                     let Some(context) = source else { continue };
@@ -6596,7 +5162,7 @@ impl WorkspaceView {
                 changed = true;
             }
         }
-        // Wait for the old event sender to close as well as draining its queue:
+        // Wait for the old event sender to close as well as draining its identity:
         // command receiver disconnection alone does not prove events are final.
         let disconnected: Vec<_> = self
             .pending_additional_reconnects
@@ -6612,24 +5178,9 @@ impl WorkspaceView {
             self.begin_additional_reconnect_verification(project, id, token);
             changed = true;
         }
-        for (project, action) in deferred_terminal_actions {
-            if project != self.model.project {
-                self.model.message =
-                    "Entrada confirmada; cambió el workspace. Reintentá la acción".into();
-                continue;
-            }
-            match action {
-                workspace_app::terminal_resume::DeferredAction::Reconnect => {
-                    self.reconnect_terminal()
-                }
-                workspace_app::terminal_resume::DeferredAction::CloseWorkspace => {
-                    self.close_workspace()
-                }
-            }
-        }
+
         if let Some(generation) = self.quit_intent.take_ready(
-            self.detached_terminal_input.any_busy()
-                || !self.pending_additional_reconnects.is_empty(),
+            !self.pending_additional_reconnects.is_empty(),
         ) {
             let handle = self.quit_window;
             let weak = cx.weak_entity();
@@ -6649,7 +5200,7 @@ impl WorkspaceView {
                 && Snapshot::is_new_frame(&snapshot, &window.snapshot)
             {
                 if snapshot.exited {
-                    let context = workspace_app::terminal_resume::Context {
+                    let context = workspace_app::terminal_input::Context {
                         project: window.project, attachment: window.attachment,
                     };
                     if self.terminal_visual_intent.as_ref().is_some_and(|intent| intent.context == context) {
@@ -7261,7 +5812,7 @@ impl WorkspaceView {
                     if generation == self.file_generation && project == self.model.project =>
                 {
                     if self.cancel_stale_open_focus(generation) {
-                        self.retain_unresolved_edit_input(generation);
+                        self.fail_edit_resolution(generation);
                         changed = true;
                         continue;
                     }
@@ -7272,7 +5823,7 @@ impl WorkspaceView {
                     {
                         self.model.message =
                             "Apertura cancelada: cambió el panel de terminal".into();
-                        self.retain_unresolved_edit_input(generation);
+                        self.fail_edit_resolution(generation);
                         changed = true;
                         continue;
                     }
@@ -7282,7 +5833,7 @@ impl WorkspaceView {
                         && !self.open_guard_valid(&guard)
                     {
                         self.model.message = "Apertura cancelada: cambió el editor".into();
-                        self.retain_unresolved_edit_input(generation);
+                        self.fail_edit_resolution(generation);
                         changed = true;
                         continue;
                     }
@@ -7291,16 +5842,16 @@ impl WorkspaceView {
                             if !self.validation
                                 || path.starts_with(self.state_dir.join("demo")) =>
                         {
-                            let pending_edit = self.pending_open_input.as_ref().is_some_and(|p| {
+                            let pending_edit = self.pending_file_read.as_ref().is_some_and(|p| {
                                 p.edit_resolution && p.context.generation == generation
                             });
-                            if pending_edit && !self.resolve_edit_open_input(generation, &path) {
+                            if pending_edit && !self.resolve_file_read(generation, &path) {
                                 if let Some(original) = self
-                                    .pending_open_input
+                                    .pending_file_read
                                     .as_ref()
                                     .map(|p| p.context.path.clone())
                                 {
-                                    self.finish_open_input_read(generation, &original, false);
+                                    self.finish_file_read(generation, &original, false);
                                 }
                                 self.model.message = "Apertura cancelada: cambió el panel".into();
                                 changed = true;
@@ -7309,7 +5860,7 @@ impl WorkspaceView {
                             if pending_edit && self.model.surface == Surface::File
                                 && self.editor_zoom.as_ref().is_none_or(|zoom| !zoom.is_detached())
                                 && self.model.file.as_ref().is_some_and(|(active, _)| active == &path)
-                                && self.pending_open_input.as_ref().is_some_and(|input| {
+                                && self.pending_file_read.as_ref().is_some_and(|input| {
                                     input.context.attachment == 0 && input.edit_reload_current
                                 })
                             {
@@ -7352,7 +5903,7 @@ impl WorkspaceView {
                                     if matches!(&capture, Some(Ok(()))) {
                                         self.pending_terminal_capture = None;
                                     }
-                                    self.retain_failed_file_open_input(&path);
+                                    self.fail_file_read(&path);
                                     changed = true;
                                     continue;
                                 }
@@ -7384,12 +5935,12 @@ impl WorkspaceView {
                             }
                             if pending_edit {
                                 self.finish_resolved_edit_open(generation, &path);
-                                if self.pending_open_input.as_ref().is_some_and(|pending| {
+                                if self.pending_file_read.as_ref().is_some_and(|pending| {
                                     pending.context.attachment == 0
                                         && pending.context.generation == generation
                                         && pending.awaiting_edit_read
                                 }) {
-                                    self.finish_open_input_read(generation, &path, false);
+                                    self.finish_file_read(generation, &path, false);
                                 }
                             }
                         }
@@ -7398,12 +5949,12 @@ impl WorkspaceView {
                         }
                         Err(error) => self.model.message = error,
                     }
-                    let unresolved = self.pending_open_input.as_ref().and_then(|pending| {
+                    let unresolved = self.pending_file_read.as_ref().and_then(|pending| {
                         (pending.edit_resolution && pending.context.generation == generation)
                             .then(|| pending.context.path.clone())
                     });
                     if let Some(path) = unresolved {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                     }
                     changed = true;
                 }
@@ -7438,37 +5989,28 @@ impl WorkspaceView {
                 DiskResult::ListedMissing(generation, project, path, relist)
                     if generation == self.file_generation && project == self.model.project =>
                 {
-                    if self.pending_open_input.as_ref().is_some_and(|pending| {
+                    if self.pending_file_read.as_ref().is_some_and(|pending| {
                         pending.context.generation == generation && pending.context.path == path
                             && !self.pane_file_source_current(pending)
                     }) {
                         self.pending_read_guard.take_if(|guard| guard.generation == generation);
                         self.pending_focus_guard.take_if(|(value, _)| *value == generation);
                         self.cancel_terminal_read_capture(generation, &path);
-                        self.finish_open_input_read(generation, &path, false);
-                        self.model.message = "Cambió el editor original; entrada conservada".into();
+                        self.finish_file_read(generation, &path, false);
+                        self.model.message = "Cambió el editor original".into();
                         changed = true;
                         continue;
                     }
                     if self.cancel_stale_open_focus(generation) {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         changed = true;
                         continue;
                     }
                     if !self.take_sidebar_file_destination_valid(generation, &path) {
                         self.materialize_sidebar_for_open();
-                        let pane = self
-                            .editor_panes
-                            .as_ref()
-                            .map(|panes| panes.layout.active());
-                        self.pending_file_splits.finish(
-                            generation,
-                            self.model.project,
-                            pane,
-                            false,
-                        );
-                        self.finish_open_input_read(generation, &path, false);
+                        self.sidebar_read_guard.finish(generation);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message =
                             "Apertura cancelada: cambió el panel de destino".into();
@@ -7484,7 +6026,7 @@ impl WorkspaceView {
                         .take_if(|g| g.generation == generation)
                         && !self.terminal_open_guard_valid(&guard)
                     {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message =
                             "Apertura cancelada: cambió el panel de terminal".into();
@@ -7496,7 +6038,7 @@ impl WorkspaceView {
                         .take_if(|g| g.generation == generation)
                         && !self.open_guard_valid(&guard)
                     {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message = "Apertura cancelada: cambió el editor".into();
                         changed = true;
@@ -7507,7 +6049,7 @@ impl WorkspaceView {
                         .get(&project)
                         .is_some_and(|r| r.is_unloaded(&path))
                     {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message = "El buffer alternativo ya no está disponible".into();
                         changed = true;
@@ -7533,7 +6075,7 @@ impl WorkspaceView {
                             }
                         }
                         self.cancel_terminal_read_capture(generation, &path);
-                        self.retain_failed_file_open_input(&path);
+                        self.fail_file_read(&path);
                         changed = true;
                         continue;
                     }
@@ -7547,66 +6089,57 @@ impl WorkspaceView {
                     }
                     self.set_focus(Surface::File);
                     if !self.apply_pending_file_position(generation, &path, false) {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
-                        self.model.message = "Resultado de búsqueda no disponible; entrada conservada".into();
+                        self.model.message = "Resultado de búsqueda no disponible".into();
                         changed = true;
                         continue;
                     }
                     if !self.apply_pending_lsp_destination(generation, &path, false) {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
-                        self.model.message = "Destino LSP no disponible; entrada conservada".into();
+                        self.model.message = "Destino LSP no disponible".into();
                         changed = true;
                         continue;
                     }
-                    if !self.complete_sidebar_file_input(generation, &path) {
-                        self.finish_open_input_read(generation, &path, false);
+                    if !self.finish_sidebar_file_read_target(generation, &path) {
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message =
-                            "Archivo abierto; entrada conservada para revisar".into();
+                            "Archivo abierto; no se pudo completar su posicionamiento".into();
                         changed = true;
                         continue;
                     }
                     self.model.message = "Archivo nuevo · :w para crear".into();
                     self.complete_terminal_file_read_capture(generation, &path, capture);
-                    self.finish_open_input_read(generation, &path, true);
+                    self.finish_file_read(generation, &path, true);
                     changed = true;
                 }
                 DiskResult::File(generation, path, result, relist)
                     if generation == self.file_generation =>
                 {
-                    if self.pending_open_input.as_ref().is_some_and(|pending| {
+                    if self.pending_file_read.as_ref().is_some_and(|pending| {
                         pending.context.generation == generation && pending.context.path == path
                             && !self.pane_file_source_current(pending)
                     }) {
                         self.pending_read_guard.take_if(|guard| guard.generation == generation);
                         self.pending_focus_guard.take_if(|(value, _)| *value == generation);
                         self.cancel_terminal_read_capture(generation, &path);
-                        self.finish_open_input_read(generation, &path, false);
-                        self.model.message = "Cambió el editor original; entrada conservada".into();
+                        self.finish_file_read(generation, &path, false);
+                        self.model.message = "Cambió el editor original".into();
                         changed = true;
                         continue;
                     }
                     if self.cancel_stale_open_focus(generation) {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         changed = true;
                         continue;
                     }
                     if !self.take_sidebar_file_destination_valid(generation, &path) {
                         self.materialize_sidebar_for_open();
-                        let pane = self
-                            .editor_panes
-                            .as_ref()
-                            .map(|panes| panes.layout.active());
-                        self.pending_file_splits.finish(
-                            generation,
-                            self.model.project,
-                            pane,
-                            false,
-                        );
-                        self.finish_open_input_read(generation, &path, false);
+                        self.sidebar_read_guard.finish(generation);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message =
                             "Apertura cancelada: cambió el panel de destino".into();
@@ -7621,7 +6154,7 @@ impl WorkspaceView {
                         .take_if(|g| g.generation == generation)
                         && !self.terminal_open_guard_valid(&guard)
                     {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message =
                             "Apertura cancelada: cambió el panel de terminal".into();
@@ -7633,19 +6166,18 @@ impl WorkspaceView {
                         .take_if(|g| g.generation == generation)
                         && !self.open_guard_valid(&guard)
                     {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message = "Apertura cancelada: cambió el editor".into();
                         changed = true;
                         continue;
                     }
                     let current_pane = self.editor_panes.as_ref().map(|p| p.layout.active());
-                    let queued_project = self.model.project;
                     let sidebar = matches!(
                         self.model.surface,
                         Surface::Tree | Surface::Agents | Surface::Backlog
                     );
-                    let stale = self.pending_file_splits.is_current(
+                    let stale = self.sidebar_read_guard.is_current(
                         generation,
                         self.model.project,
                         current_pane,
@@ -7657,14 +6189,9 @@ impl WorkspaceView {
                             })
                             .flatten(),
                     ) == Some(false);
-                    let queued_splits = self.pending_file_splits.finish(
-                        generation,
-                        self.model.project,
-                        current_pane,
-                        result.is_ok() && sidebar && !stale,
-                    );
+                    self.sidebar_read_guard.finish(generation);
                     if stale {
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.cancel_terminal_read_capture(generation, &path);
                         self.model.message = "Apertura cancelada: cambió el panel activo".into();
                         changed = true;
@@ -7689,16 +6216,8 @@ impl WorkspaceView {
                                 if created_editor {
                                     self.editors.remove(&path);
                                 }
-                                if let Some(pane) = current_pane {
-                                    self.pending_file_splits.retain(
-                                        queued_project,
-                                        pane,
-                                        false,
-                                        queued_splits,
-                                    );
-                                }
                                 self.cancel_terminal_read_capture(generation, &path);
-                                self.retain_failed_file_open_input(&path);
+                                self.fail_file_read(&path);
                                 self.file_position.take_if(|(g, _, _, _)| *g == generation);
                                 self.lsp_destination.take_if(|(g, _, _)| *g == generation);
                                 changed = true;
@@ -7712,156 +6231,30 @@ impl WorkspaceView {
                             }
                             let _ = self.model.focus(Surface::File);
                             if !self.apply_pending_file_position(generation, &path, true) {
-                                if let Some(pane) = current_pane {
-                                    self.pending_file_splits.retain(
-                                        queued_project, pane, false, queued_splits,
-                                    );
-                                }
-                                self.finish_open_input_read(generation, &path, false);
+                                self.finish_file_read(generation, &path, false);
                                 self.cancel_terminal_read_capture(generation, &path);
-                                self.model.message = "Destino de búsqueda inválido; entrada conservada".into();
+                                self.model.message = "Destino de búsqueda inválido".into();
                                 changed = true;
                                 continue;
                             }
                             if !self.apply_pending_lsp_destination(generation, &path, true) {
-                                if let Some(pane) = current_pane {
-                                    self.pending_file_splits.retain(
-                                        queued_project, pane, false, queued_splits,
-                                    );
-                                }
-                                self.finish_open_input_read(generation, &path, false);
+                                self.finish_file_read(generation, &path, false);
                                 self.cancel_terminal_read_capture(generation, &path);
-                                self.model.message = "Destino LSP inválido; entrada conservada".into();
+                                self.model.message = "Destino LSP inválido".into();
                                 changed = true;
                                 continue;
                             }
-                            if !self.complete_sidebar_file_input(generation, &path) {
-                                if let Some(pane) = current_pane {
-                                    self.pending_file_splits.retain(
-                                        queued_project,
-                                        pane,
-                                        false,
-                                        queued_splits,
-                                    );
-                                }
-                                self.finish_open_input_read(generation, &path, false);
+                            if !self.finish_sidebar_file_read_target(generation, &path) {
+                                self.finish_file_read(generation, &path, false);
                                 self.cancel_terminal_read_capture(generation, &path);
                                 self.model.message =
-                                    "Archivo abierto; entrada conservada para revisar".into();
+                                    "Archivo abierto; no se pudo completar su posicionamiento".into();
                                 changed = true;
                                 continue;
                             }
                             self.complete_terminal_file_read_capture(generation, &path, capture);
-                            self.finish_open_input_read(generation, &path, true);
-                            let mut queued_splits = queued_splits.into_iter();
-                            while let Some((key, count)) = queued_splits.next() {
-                                // The new editor may not have painted yet, so
-                                // a count cannot safely use the old canvas
-                                // measurements. Retain rather than resize an
-                                // unrelated/stale frame.
-                                if count > 0 || self.pending_open_input.is_some() {
-                                    if let Some(pane) = current_pane {
-                                        let mut commands = VecDeque::from([(key, count)]);
-                                        commands.extend(queued_splits);
-                                        if self.pending_measured_splits.is_none() {
-                                            // Splits recorded during an asynchronous file open
-                                            // precede the remaining input. Transfer that exact
-                                            // ledger to the created pane instead of leaving it
-                                            // bound to the pane the split will replace.
-                                            let input_owner = self.pending_open_input.as_ref().and_then(|input| {
-                                                (input.context.workspace == queued_project
-                                                    && input.context.pane == pane.0
-                                                    && input.context.generation == generation
-                                                    && input.context.path == path
-                                                    && input.queue.state() == workspace_app::open_input::State::Ready
-                                                    && input.queue.in_flight_id().is_none()
-                                                    && !input.replaying && !input.scheduled
-                                                    && self.open_input_context_current(input, true))
-                                                    .then(|| input.queue.identity())
-                                            });
-                                            if self.pending_open_input.is_some() && input_owner.is_none() {
-                                                self.pending_file_splits.retain(
-                                                    queued_project, pane, false, commands.into_iter().collect(),
-                                                );
-                                                if let Some(input) = &mut self.pending_open_input {
-                                                    input.queue.block_after_predecessor();
-                                                }
-                                                self.model.message = "Split e entrada conservados; revisá el contexto".into();
-                                                break;
-                                            }
-                                            let recovery_owner = input_owner.clone();
-                                            match self.prepare_measured_splits(
-                                                queued_project,
-                                                pane,
-                                                commands,
-                                                input_owner,
-                                                None,
-                                            ) {
-                                                Ok(pending) => {
-                                                    self.pending_measured_splits = Some(pending)
-                                                }
-                                                Err(commands) => {
-                                                    self.block_measured_input(recovery_owner.as_ref());
-                                                    self.pending_file_splits.retain(
-                                                        queued_project,
-                                                        pane,
-                                                        false,
-                                                        commands.into_iter().collect(),
-                                                    );
-                                                }
-                                            }
-                                        } else {
-                                            if let Some(input) = &mut self.pending_open_input {
-                                                input.queue.block_after_predecessor();
-                                            }
-                                            self.pending_file_splits.retain(
-                                                queued_project,
-                                                pane,
-                                                false,
-                                                commands.into_iter().collect(),
-                                            );
-                                        }
-                                    }
-                                    self.model.message = if self.pending_measured_splits.is_some() {
-                                        "Esperando medidas del editor".into()
-                                    } else {
-                                        "Acciones de panel conservadas para revisar".into()
-                                    };
-                                    break;
-                                }
-                                let before = self
-                                    .editor_panes
-                                    .as_ref()
-                                    .map_or(0, |panes| panes.layout.panes().len());
-                                let previous_file =
-                                    self.model.file.as_ref().map(|(path, _)| path.clone());
-                                self.editor_window_counted(&key, count);
-                                let split_created = self
-                                    .editor_panes
-                                    .as_ref()
-                                    .is_some_and(|panes| panes.layout.panes().len() == before + 1);
-                                let new_file_created = !matches!(key.as_str(), "n" | "N")
-                                    || self.model.file.as_ref().is_some_and(|(path, _)| {
-                                        Some(path) != previous_file.as_ref()
-                                            && self.model.unnamed.contains(path)
-                                    });
-                                if !split_created || !new_file_created {
-                                    if let Some(pane) = current_pane {
-                                        let mut retained = vec![(key, count)];
-                                        retained.extend(queued_splits);
-                                        self.pending_file_splits.retain(
-                                            queued_project,
-                                            pane,
-                                            true,
-                                            retained,
-                                        );
-                                    }
-                                    self.model.message =
-                                        "Acciones de panel conservadas; revisalas antes de repetir"
-                                            .into();
-                                    break;
-                                }
-                            }
+                            self.finish_file_read(generation, &path, true);
+
                         }
                         Err(e) => {
                             self.cancel_terminal_read_capture(generation, &path);
@@ -7869,7 +6262,7 @@ impl WorkspaceView {
                             self.lsp_destination.take_if(|(g, _, _)| *g == generation);
                             self.materialize_sidebar_for_open();
                             self.model.message = e;
-                            self.finish_open_input_read(generation, &path, false);
+                            self.finish_file_read(generation, &path, false);
                         }
                     }
                     changed = true;
@@ -8411,7 +6804,6 @@ impl WorkspaceView {
             }
         }
         if self.model.surface == Surface::Terminal
-            && !self.terminal_resume.active()
             && self
                 .model
                 .pending_since
@@ -8421,42 +6813,25 @@ impl WorkspaceView {
             self.effect(effect);
             changed = true;
         }
-        let stale_open = self.pending_open_input.as_ref().and_then(|pending| {
-            (pending.queue.state() == workspace_app::open_input::State::Recording
-                && !self.open_input_context_current(pending, false))
+        let stale_open = self.pending_file_read.as_ref().and_then(|pending| {
+            (pending.state == workspace_app::file_read::State::Reading
+                && !self.file_read_context_current(pending, false))
             .then(|| (pending.context.generation, pending.context.path.clone()))
         });
         if let Some((generation, path)) = stale_open {
-            self.finish_open_input_read(generation, &path, false);
+            self.finish_file_read(generation, &path, false);
             changed = true;
         }
-        changed |= self.recover_abandoned_open_jump();
-        self.pump_terminal_key(cx);
-        self.pump_open_input(cx);
-        if self.pending_open_input.as_ref().is_some_and(|pending| {
-            pending.queue.state() == workspace_app::open_input::State::Recover
-        }) && !self.pending_open_input_mixed_context
-            && !self.model.message.contains("Entrada conservada")
-        {
-            self.model
-                .message
-                .push_str(" · Entrada conservada; usá Reintentar o Revisar");
-            changed = true;
-        }
+
+        if self.pending_file_read.as_ref().is_some_and(|request| {
+            request.state == workspace_app::file_read::State::Cancelled
+        }) { self.cancel_file_read_request(); changed = true; }
         changed |= self.begin_terminal_recovery();
         self.retry_workspace_normal_check();
         // Clear only this transient notice after every owner of the queued
         // input has finished. Do not erase a newer warning or an input that
         // was handed off to a pending file open or terminal delivery.
-        if self.model.message == TERMINAL_NAVIGATION_HOLD_MESSAGE
-            && self.pending_terminal_key.is_none()
-            && self.pending_open_input.is_none()
-            && !self.terminal_resume.active()
-            && !self.detached_terminal_input.any_busy()
-        {
-            self.model.message.clear();
-            changed = true;
-        }
+
         changed
     }
     fn current_normal_terminal(&self) -> Option<WorkspaceNormalTerminal> {
@@ -8555,7 +6930,7 @@ impl WorkspaceView {
             return;
         }
         let Some(token) = self.tmux_copy_token.checked_add(1) else { return; };
-        let context = workspace_app::terminal_resume::Context {
+        let context = workspace_app::terminal_input::Context {
             project: owner.project,
             attachment: owner.attachment,
         };
@@ -8578,7 +6953,7 @@ impl WorkspaceView {
 
     fn workspace_normal_checked(
         &mut self,
-        source: Option<workspace_app::terminal_resume::Context>,
+        source: Option<workspace_app::terminal_input::Context>,
         token: u64,
         result: Result<bool, String>,
     ) -> bool {
@@ -8586,7 +6961,7 @@ impl WorkspaceView {
             return false;
         }
         let Some(pending) = self.pending_workspace_normal_check.take() else { return true; };
-        let context = workspace_app::terminal_resume::Context {
+        let context = workspace_app::terminal_input::Context {
             project: pending.owner.project,
             attachment: pending.owner.attachment,
         };
@@ -8646,49 +7021,16 @@ impl WorkspaceView {
         } else {
             None
         };
-        if self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|pending| pending.replaying)
-            && let Effect::Pty(bytes) = &effect
-        {
-            if self.replay_terminal_key_bytes(bytes, true).is_err()
-                && let Some(pending) = &mut self.pending_terminal_key
-            {
-                pending.replay_error = true;
-            }
-            return;
-        }
-        if self.model.surface == Surface::Terminal
-            && self.terminal_resume.active()
-            && !matches!(effect, Effect::Pty(_) | Effect::None)
-            && !self.detach_terminal_input_on_pane_focus()
-        {
-            return;
-        }
-        if self.model.surface != Surface::Terminal && self.terminal_resume.active() {
-            // Workspace::focus may already have changed the surface. Preserve
-            // the original destination before carrying out its returned effect.
+
+        if self.model.surface != Surface::Terminal && self.terminal_input_route.is_some() {
             if let Effect::Pty(bytes) = effect {
-                let result = self
-                    .terminal_resume.context()
-                    .ok_or_else(|| "Terminal original no disponible".to_owned())
-                    .and_then(|context| self.submit_terminal_resume_input(context, &bytes, false));
-                if let Err(error) = result {
-                    self.retain_rejected_terminal_input(bytes, &error);
-                    return;
-                }
-                if !self.detach_terminal_input_on_pane_focus() {
-                    let _ = self.model.focus(Surface::Terminal);
-                }
+                if let Some(route) = self.terminal_input_route
+                    && let Err(error) = self.send_terminal_input(route.context, &bytes, false)
+                { self.model.message = format!("Prefijo no enviado: {error}"); }
+                self.terminal_input_route = None;
                 return;
             }
-            if !self.detach_terminal_input_on_pane_focus() {
-                // Keep the existing fence; beginning a new resume here would
-                // replace it. The previous focus request did not complete.
-                let _ = self.model.focus(Surface::Terminal);
-                return;
-            }
+            self.flush_terminal_prefix();
         }
         let sidebar_surface = self.editor_panes.as_ref().and_then(|panes| {
             match panes.content(panes.layout.active()) {
@@ -8760,7 +7102,7 @@ impl WorkspaceView {
             Effect::PickerFilesCwd => {
                 self.cancel_closed_picker_root();
                 if self.snacks_operation_blocked() {
-                    self.retain_replayed_jump();
+
                     self.model.message = "Terminá la operación pendiente antes de buscar".into();
                     return;
                 }
@@ -8795,7 +7137,7 @@ impl WorkspaceView {
             Effect::NewFile => self.new_file(),
             Effect::TerminalJump(older, count) => {
                 if let Err(error) = self.begin_terminal_navigation_input(older, count) {
-                    self.retain_replayed_jump();
+
                     self.model.message = format!("No se pudo preparar el salto: {error}");
                 }
             }
@@ -8859,32 +7201,23 @@ impl WorkspaceView {
                 .into();
             }
             Effect::EditorWindow(key) if matches!(key, "v" | "s") => {
-                self.editor_window_from_open_input(key, 0)
+                self.editor_window_counted(key, 0)
             }
             Effect::EditorWindow(key) => self.editor_window(key),
             Effect::CountedEditorWindow(key, count) if matches!(key, "v" | "s") => {
-                self.editor_window_from_open_input(key, count)
+                self.editor_window_counted(key, count)
             }
             Effect::CountedEditorWindow(key, count) => self.editor_window_counted(key, count),
             Effect::SnacksTerminal { root, focus, count } => {
                 self.toggle_snacks_terminal(root, focus, count);
             }
             Effect::TerminalNormal(true) => self.tmux_action(TmuxAction::Normal(true)),
-            Effect::TerminalNormal(false) => self.begin_terminal_resume(),
+            Effect::TerminalNormal(false) => self.begin_terminal_input(),
             Effect::TerminalMotion(key, count) => {
                 if key == "y" {
-                    if !self.request_terminal_yank(count)
-                        && let Some(pending) = &mut self.pending_terminal_key
-                        && pending.replaying
-                    { pending.replay_error = true; }
+                    self.request_terminal_yank(count);
                 } else if key == "V" {
-                    if !self.request_terminal_visual_line(count) {
-                        if let Some(pending) = &mut self.pending_terminal_key
-                            && pending.replaying
-                        {
-                            pending.replay_error = true;
-                        }
-                    }
+                    self.request_terminal_visual_line(count);
                 } else {
                     self.tmux_action(TmuxAction::Motion(key, count));
                 }
@@ -8995,25 +7328,23 @@ impl WorkspaceView {
                 let detached = self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached());
                 if detached {
                     if self.editor_zoom.as_ref().is_some_and(|zoom| matches!(zoom.content(), PaneContent::Explorer(_))) {
-                        if !self.begin_detached_explorer_file_read(
+                        self.begin_detached_explorer_file_read(
                             path, Some(DetachedPosition::Scalar(line, column)), false, true,
-                        ) { self.retain_replayed_jump(); }
+                        );
                         return;
                     }
                     if let Some(PaneContent::Agents(id)) = self.editor_zoom.as_ref().map(|zoom| zoom.content().clone()) {
-                        if !self.begin_detached_agents_file_read(
+                        self.begin_detached_agents_file_read(
                             id, path, Some(DetachedPosition::Scalar(line, column)), false, true, true,
-                        ) { self.retain_replayed_jump(); }
+                        );
                         return;
                     }
                     if let Some(PaneContent::Terminal(attachment)) = self.editor_zoom.as_ref()
                         .map(|zoom| zoom.content().clone())
                     {
-                        if !self.begin_detached_terminal_file_read(
+                        self.begin_detached_terminal_file_read(
                             attachment, path, true, Some(DetachedPosition::Scalar(line, column)), None, false,
-                        ) {
-                            self.retain_replayed_jump();
-                        }
+                        );
                         return;
                     }
                     let source = self.editor_zoom.as_ref().and_then(|zoom| match zoom.content() {
@@ -9021,28 +7352,26 @@ impl WorkspaceView {
                         _ => None,
                     });
                     let Some(source) = source else {
-                        self.retain_replayed_jump();
+
                         self.model.message = "Apertura en zoom pendiente; contenido conservado".into();
                         return;
                     };
                     self.file_position = None;
                     if source == path {
                         if !self.position_detached_file(&path, Some(&DetachedPosition::Scalar(line, column))) {
-                            self.retain_replayed_jump();
+
                             self.model.message = "Cambió el zoom; salto conservado".into();
                         }
                     } else if self.model.unnamed.contains(&path) {
-                        if !self.activate_detached_listed_target(
+                        let _ = !self.activate_detached_listed_target(
                             ListedBuffer::File(source), ListedBuffer::File(path.clone()), true,
-                        ) || !self.position_detached_file(&path, Some(&DetachedPosition::Scalar(line, column))) {
-                            self.retain_replayed_jump();
-                        }
+                        ) || !self.position_detached_file(&path, Some(&DetachedPosition::Scalar(line, column)));
                     } else if self.begin_detached_file_read(source, path, true, true, false, None) {
                         if let Some(owner) = &mut self.pending_detached_open {
                             owner.position = Some(DetachedPosition::Scalar(line, column));
                         }
                     } else {
-                        self.retain_replayed_jump();
+
                     }
                     return;
                 }
@@ -9066,108 +7395,24 @@ impl WorkspaceView {
                 }
             }
             Effect::Pty(mut bytes) => {
-                // The key router may still hold a first Escape (or another
-                // prefix byte) for the double-Escape window. Text, Cmd+V,
-                // shortcut bytes and Cmd+W write here directly, so release
-                // the held bytes first to keep the PTY order. The router's own
-                // Route::Pty already took its held bytes, so nothing repeats;
-                // a second Escape is an Action and never reaches this arm.
-                if self.model.surface == Surface::Terminal
-                    && self.model.pending_since.is_some()
-                    && let Effect::Pty(mut held) = self.model.expire_prefix()
-                {
-                    held.extend_from_slice(&bytes);
-                    bytes = held;
+                if self.model.surface == Surface::Terminal && self.model.pending_since.is_some()
+                    && let Effect::Pty(mut prefix) = self.model.expire_prefix()
+                { prefix.extend_from_slice(&bytes); bytes = prefix; }
+                if self.tab_transition_pending() { self.reconcile_tab_layout(); }
+                if self.terminal_input_route.is_some_and(|route| self.terminal_input_context() != Some(route.context)) {
+                    self.terminal_input_route = None;
                 }
-                if self.tab_transition_pending() {
-                    self.reconcile_tab_layout();
-                }
-                let stale_resume_zoom = self.terminal_resume.active()
-                    && self.terminal_resume_zoom_owner.as_ref().map(|owner| owner.context)
-                        .or_else(|| self.terminal_input_context())
-                        .is_none_or(|context| !self.terminal_resume_zoom_current(context));
-                if stale_resume_zoom {
-                    self.model.message = if self.terminal_resume.retain_rejected(bytes).is_ok() {
-                        "Cambió la terminal ampliada; entrada conservada para revisar".into()
-                    } else {
-                        "Cambió la terminal ampliada; este evento no se envió".into()
-                    };
-                    return;
-                }
-                if self.terminal_resume.active() {
-                    let result = self
-                        .terminal_input_context()
-                        .ok_or_else(|| "Terminal original no disponible".to_owned())
-                        .and_then(|context| self.submit_terminal_resume_input(context, &bytes, false));
-                    match result {
-                        Ok(true) => return,
-                        Ok(false) => {}
-                        Err(error) => {
-                            self.retain_rejected_terminal_input(bytes, &error);
-                            return;
-                        }
+                if self.terminal_input_route.is_none() {
+                    if self.model.surface != Surface::Terminal {
+                        self.model.message = "Prefijo no enviado: cambio el destino".into(); return;
                     }
-                }
-                if let Some(context) = self.terminal_input_context()
-                    && self
-                        .pending_additional_reconnects
-                        .get(&(context.project, context.attachment))
-                        .is_some_and(|pending| pending.reattach)
-                {
-                    let mut retained = match self.model.focus(Surface::Normal) {
-                        Effect::Pty(prefix) => prefix,
-                        _ => Vec::new(),
-                    };
-                    retained.extend(bytes);
-                    if self
-                        .terminal_resume
-                        .retain_before_backend(context, retained, std::time::Instant::now())
-                        .is_ok()
-                    {
-                        self.model.message = "Entrada conservada; Cmd+Q permite revisarla".into();
-                    } else {
-                        self.model.message = "No se pudo conservar la entrada de terminal".into();
-                    }
-                    return;
+                    self.start_terminal_input(false);
                 }
                 let Some(context) = self.terminal_input_context() else {
-                    if !bytes.is_empty() {
-                        self.model.message = "Input no enviado: terminal no disponible".into();
-                    }
-                    return;
+                    self.model.message = "Input no enviado: terminal no disponible".into(); return;
                 };
-                if self.editor_zoom.is_some() {
-                    let valid = self.windows.get(self.active).is_some_and(|terminal| {
-                        let instance = terminal.terminal.instance_identity();
-                        matches!(self.terminal_focus_zoom_guard(context, &instance), Some(Some(_)))
-                    });
-                    if !valid {
-                        self.model.message = if self.terminal_resume.retain_before_backend(
-                            context, bytes, std::time::Instant::now(),
-                        ).is_ok() {
-                            "Cambió la terminal ampliada; entrada conservada para revisar".into()
-                        } else {
-                            "Cambió la terminal ampliada; este evento no se envió".into()
-                        };
-                        return;
-                    }
-                }
-                let result = self.windows[self.active].terminal.input(&bytes);
-                if let Err(error) = result {
-                    let mut retained = match self.model.focus(Surface::Normal) {
-                        Effect::Pty(prefix) => prefix,
-                        _ => Vec::new(),
-                    };
-                    retained.extend(bytes);
-                    if self
-                        .terminal_resume
-                        .retain_before_backend(context, retained, std::time::Instant::now())
-                        .is_ok()
-                    {
-                        self.model.message = "Input no enviado; Cmd+Q permite revisarlo".into();
-                    } else {
-                        self.model.message = format!("Input no enviado: {error}");
-                    }
+                if let Err(error) = self.send_terminal_input(context, &bytes, false) {
+                    self.model.message = format!("Input no enviado: {error}");
                 }
             }
             Effect::Open(FocusTarget::OwnedTerminal { id }) => {
@@ -9203,7 +7448,7 @@ impl WorkspaceView {
             }
             Effect::MarkedFiles(paths, explicit) => {
                 if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached()) {
-                    self.retain_replayed_jump();
+
                     self.model.message = "Apertura múltiple en zoom pendiente; contenido conservado".into();
                     return;
                 }
@@ -9264,33 +7509,25 @@ impl WorkspaceView {
                     let current = self.editor_zoom.as_ref()
                         .map(|zoom| workspace_app::editor_zoom::ZoomSession::buffer_for_content(zoom.content()));
                     if matches!(&current, Some(ListedBuffer::Explorer(_))) {
-                        if !self.begin_detached_explorer_file_read(path, None, explicit, true) {
-                            self.retain_replayed_jump();
-                        }
+                        self.begin_detached_explorer_file_read(path, None, explicit, true);
                         return;
                     }
                     if let Some(ListedBuffer::Agents(id)) = current.as_ref() {
-                        if !self.begin_detached_agents_file_read(*id, path, None, explicit, true, true) {
-                            self.retain_replayed_jump();
-                        }
+                        self.begin_detached_agents_file_read(*id, path, None, explicit, true, true);
                         return;
                     }
                     if let Some(ListedBuffer::Terminal(attachment)) = current.as_ref() {
                         if self.model.unnamed.contains(&path) && !self.editors.contains_key(&path) {
-                            if !self.activate_detached_listed_target(
+                            self.activate_detached_listed_target(
                                 ListedBuffer::Terminal(*attachment), ListedBuffer::File(path), true,
-                            ) {
-                                self.retain_replayed_jump();
-                            }
-                        } else if !self.begin_detached_terminal_file_read(
+                            );
+                        } else { self.begin_detached_terminal_file_read(
                             *attachment, path, true, None, None, explicit,
-                        ) {
-                            self.retain_replayed_jump();
-                        }
+                        ); }
                         return;
                     }
                     let Some(ListedBuffer::File(source)) = current else {
-                        self.retain_replayed_jump();
+
                         self.model.message = "Apertura en zoom pendiente; contenido conservado".into();
                         return;
                     };
@@ -9302,17 +7539,15 @@ impl WorkspaceView {
                         if explicit && self.listed_buffers.get(&self.model.project).is_some_and(|registry| {
                             registry.knows(&target) && registry.is_unloaded(&path)
                         }) {
-                            if !self.activate_detached_listed_target(
+                            self.activate_detached_listed_target(
                                 ListedBuffer::File(source), target, true,
-                            ) {
-                                self.retain_replayed_jump();
-                            }
+                            );
                             return;
                         }
                         if path.extension().and_then(|extension| extension.to_str()).is_some_and(|extension| {
                             matches!(extension.to_ascii_lowercase().as_str(), "mp4" | "mov" | "webm" | "png" | "jpg" | "jpeg" | "gif" | "webp")
                         }) {
-                            self.retain_replayed_jump();
+
                             self.model.message = "Vista multimedia en zoom pendiente; contenido conservado".into();
                             return;
                         }
@@ -9321,9 +7556,7 @@ impl WorkspaceView {
                             .max_by_key(|project| project.path.components().count())
                             .map(|project| project.path.clone())
                             .unwrap_or_else(|| self.model.explorer_root().to_path_buf()));
-                        if !self.begin_detached_file_read(source, path, true, true, false, allowed_root) {
-                            self.retain_replayed_jump();
-                        }
+                        self.begin_detached_file_read(source, path, true, true, false, allowed_root);
                         return;
                     }
                     let target = ListedBuffer::File(path.clone());
@@ -9333,7 +7566,7 @@ impl WorkspaceView {
                         self.sync_editor_pane();
                         self.model.message.clear();
                     } else {
-                        self.retain_replayed_jump();
+
                     }
                     return;
                 }
@@ -9343,16 +7576,14 @@ impl WorkspaceView {
                         .get(&self.model.project)
                         .is_some_and(|registry| registry.is_unloaded(&path))
                 {
-                    // An :e from a file pane already owns the zero-attachment
-                    // ledger for this exact path; reuse it like an unlisted
-                    // read instead of refusing it as "previous input".
-                    let own_edit_ledger = self.pending_open_input.as_ref().is_some_and(|input| {
+                    // Reuse an :edit read already resolving this exact path.
+                    let own_edit_read = self.pending_file_read.as_ref().is_some_and(|input| {
                         input.context.attachment == 0
                             && input.awaiting_edit_read
                             && input.context.path == path
                     });
                     if self.model.surface == Surface::File && self.editor_zoom.is_none()
-                        && !own_edit_ledger
+                        && !own_edit_read
                     {
                         self.begin_sidebar_listed_read(path, true);
                     } else {
@@ -9372,25 +7603,17 @@ impl WorkspaceView {
                     )
                 });
                 if video || image {
-                    let pending_generation = self.pending_open_input.as_ref().and_then(|input| {
+                    let pending_generation = self.pending_file_read.as_ref().and_then(|input| {
                         (input.awaiting_edit_read && input.context.path == path)
                             .then_some(input.context.generation)
                     });
                     if let Some(generation) = pending_generation {
                         // A media preview is not an editor destination. Never
                         // replay keys queued for an edit into its controls.
-                        self.finish_open_input_read(generation, &path, false);
+                        self.finish_file_read(generation, &path, false);
                         self.pending_terminal_open
                             .take_if(|guard| guard.generation == generation);
-                        if let Some(input) = &mut self.pending_terminal_key {
-                            input.gate.invalidate();
-                        }
-                        if self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-                        {
-                            self.model.message =
-                                "Preview pendiente; revisá la entrada conservada".into();
-                            return;
-                        }
+
                     }
                     if video {
                         self.request_video(path);
@@ -9405,15 +7628,15 @@ impl WorkspaceView {
                     .then(|| self.start_terminal_capture(TerminalCaptureKind::ExistingFile));
                     self.file_generation += 1;
                     if !self.advance_sidebar_open_generation(&path, false) {
-                        self.retain_failed_file_open_input(&path);
-                        self.model.message = "Entrada conservada: cambió el panel".into();
+                        self.fail_file_read(&path);
+                        self.model.message = "Apertura cancelada: cambió el panel".into();
                         return;
                     }
                     if !self.activate_editor_file(path.clone(), String::new()) {
                         if matches!(&capture, Some(Ok(()))) {
                             self.pending_terminal_capture = None;
                         }
-                        self.retain_failed_file_open_input(&path);
+                        self.fail_file_read(&path);
                         return;
                     }
                     self.listed_buffers
@@ -9444,8 +7667,8 @@ impl WorkspaceView {
                 self.file_generation += 1;
                 let generation = self.file_generation;
                 if !self.advance_sidebar_open_generation(&path, true) {
-                    self.retain_failed_file_open_input(&path);
-                    self.model.message = "Entrada conservada: cambió el panel".into();
+                    self.fail_file_read(&path);
+                    self.model.message = "Apertura cancelada: cambió el panel".into();
                     return;
                 }
                 if capture && let Some(pending) = &mut self.pending_terminal_capture {
@@ -9456,11 +7679,11 @@ impl WorkspaceView {
                 self.pending_terminal_open = (self.model.surface == Surface::Normal)
                     .then(|| self.terminal_open_guard(generation));
                 if self.model.surface == Surface::Normal
-                    && !self.begin_open_input(generation, &path)
+                    && !self.prepare_terminal_file_read(generation, &path)
                 {
                     self.cancel_unstarted_file_read(generation, &path);
                     self.model.message =
-                        "Entrada anterior conservada; reintentá su apertura".into();
+                        "No se pudo iniciar la apertura".into();
                     return;
                 }
                 if self.model.surface == Surface::Normal {
@@ -9481,16 +7704,11 @@ impl WorkspaceView {
                         self.model.message = "Apertura cancelada: el panel lateral cambió".into();
                         return;
                     }
-                    self.pending_file_splits
+                    self.sidebar_read_guard
                         .begin(generation, self.model.project, pane, origin);
                 }
-                if !self.begin_sidebar_file_input(generation, &path) {
-                    let pane = self
-                        .editor_panes
-                        .as_ref()
-                        .map(|panes| panes.layout.active());
-                    self.pending_file_splits
-                        .finish(generation, self.model.project, pane, false);
+                if !self.prepare_sidebar_file_read(generation, &path) {
+                    self.sidebar_read_guard.finish(generation);
                     self.cancel_unstarted_file_read(generation, &path);
                     return;
                 }
@@ -9536,7 +7754,7 @@ impl WorkspaceView {
                     && let Err(message) = self.end_floating_zoom()
                 {
                     self.model.message = message.into();
-                    self.retain_replayed_jump();
+
                     return;
                 }
                 self.pending_workspace_normal_check = None;
@@ -9557,7 +7775,7 @@ impl WorkspaceView {
                 self.pane_bounds.clear();
                 self.pane_outer_bounds.clear();
                 self.editor_window_prefix = None;
-                self.cancel_terminal_resume();
+                self.cancel_terminal_input();
                 self.preview = None;
                 self.markdown = None;
                 self.file_generation += 1;
@@ -9846,7 +8064,7 @@ impl WorkspaceView {
             terminal_backend_for(
                 &self.backends,
                 &self.additional_backends,
-                workspace_app::terminal_resume::Context {
+                workspace_app::terminal_input::Context {
                     project: current,
                     attachment,
                 },
@@ -9856,17 +8074,8 @@ impl WorkspaceView {
             self.model.message = "No se pudo verificar cada terminal; workspace conservado".into();
             return;
         }
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            return;
-        }
-        if self.detached_terminal_input.defer(
-            current,
-            workspace_app::terminal_resume::DeferredAction::CloseWorkspace,
-        ) {
-            self.model.message = "Esperando confirmación de input; si demora, revisá la terminal antes de reintentar".into();
-            return;
-        }
-        self.cancel_terminal_resume();
+
+        self.cancel_terminal_input();
         if !terminal_indices.is_empty() {
             let mut windows = Vec::with_capacity(terminal_indices.len());
             for index in terminal_indices.iter().rev() {
@@ -10045,22 +8254,13 @@ impl WorkspaceView {
             // A Ctrl+W prefix belongs to the window it was typed in.
             self.editor_window_prefix = None;
         }
-        if surface != Surface::Terminal
-            && self.terminal_resume.active()
-            && !self.detach_terminal_input_on_pane_focus()
-        {
-            return;
-        }
+
         if surface != self.model.surface && self.terminal_command.take().is_some() {
             self.terminal_command_guard = None;
             self.terminal_search_prompt = None;
             self.marked.clear();
         }
-        let sidebar_focus_from_terminal = self.model.surface == Surface::Terminal
-            && matches!(surface, Surface::Tree | Surface::Agents | Surface::Backlog);
-        if surface != Surface::Terminal && !sidebar_focus_from_terminal {
-            self.cancel_terminal_resume();
-        }
+        if surface != Surface::Terminal { self.cancel_terminal_input(); }
         if surface != Surface::File {
             self.sync_active_jump_tracking();
         }
@@ -10530,7 +8730,7 @@ impl WorkspaceView {
         let Some(pending) = self.pending_terminal_jump_load.take() else {
             return;
         };
-        self.finish_open_input_read(pending.generation, &pending.path, false);
+        self.finish_file_read(pending.generation, &pending.path, false);
         if self.file_generation == pending.generation {
             self.file_generation = self.file_generation.wrapping_add(1);
         }
@@ -10595,10 +8795,7 @@ impl WorkspaceView {
     }
 
     fn navigate_jump(&mut self, older: bool, count: usize) {
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            self.retain_replayed_jump();
-            return;
-        }
+
         let started_detached = self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached());
         self.sync_editor_pane();
         self.sync_inactive_jump_tracking();
@@ -10606,13 +8803,13 @@ impl WorkspaceView {
             if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached()) {
                 self.navigate_detached_zoom_jump(older, count);
             } else {
-                self.retain_replayed_jump();
+
                 self.model.message = "Cambió el zoom; salto conservado".into();
             }
             return;
         }
         let Some(origin) = self.current_jump_location() else {
-            self.retain_replayed_jump();
+
             return;
         };
         let defer = self
@@ -10623,15 +8820,9 @@ impl WorkspaceView {
                     && self.terminal_capture_is_current(pending)
             });
         if defer {
-            if self.pending_open_input.is_none()
-                && self.pending_terminal_key.is_none()
-                && !self.begin_direct_deferred_jump_input()
-            {
-                self.model.message = "No se pudo conservar la entrada del salto".into();
-                return;
-            }
+
             if let Some(pending) = &mut self.pending_terminal_capture {
-                pending.deferred_jump = Some(workspace_app::terminal_jump_gate::DeferredJump::new(
+                pending.deferred_jump = Some(workspace_app::terminal_jump::DeferredJump::new(
                     origin, older, count,
                 ));
             }
@@ -10640,14 +8831,14 @@ impl WorkspaceView {
         }
         let project = self.model.project;
         self.pending_jump_load = None;
-        // A no-op jump must not invalidate input held for the current file.
+        // Keep the generation until an actual destination change is accepted.
         let mut generation = self.file_generation;
         let Some(panes) = self.editor_panes.as_ref() else {
-            self.retain_replayed_jump();
+
             return;
         };
         let Some(registry) = self.listed_buffers.get(&project) else {
-            self.retain_replayed_jump();
+
             return;
         };
         let terminals = self
@@ -10675,7 +8866,7 @@ impl WorkspaceView {
                 return;
             }
             Err(error) => {
-                self.retain_replayed_jump();
+
                 self.model.message = format!("No se pudo preparar el salto: {error:?}");
                 return;
             }
@@ -10683,7 +8874,7 @@ impl WorkspaceView {
         if request.target().is_some() {
             generation = generation.wrapping_add(1);
             if !request.advance_context_generation(generation) {
-                self.retain_replayed_jump();
+
                 self.model.message = "No se pudo preparar la generación del salto".into();
                 return;
             }
@@ -10704,17 +8895,13 @@ impl WorkspaceView {
     /// loading and terminal marks need their own guarded restore transaction.
     fn navigate_detached_zoom_jump(&mut self, older: bool, count: usize) {
         use workspace_core::editor_jumplist::{Location, View};
-        let open_replay = self.detached_open_jump_replay().is_some();
-        // Until a terminal restore is accepted, do not acknowledge this
-        // replayed key if any validation or other destination path fails.
-        if open_replay { self.retain_replayed_jump(); }
-        if self.pending_open_input.is_some() && !open_replay || self.pending_terminal_key.is_some()
-            || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
-            || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.terminal_resume.active() || !self.marked.is_empty()
+
+
+        if self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
+            || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some() || !self.marked.is_empty()
         {
-            self.retain_replayed_jump();
-            self.model.message = "Hay entrada pendiente; salto conservado".into();
+
+            self.model.message = "Hay una operación de archivo pendiente; salto cancelado".into();
             return;
         }
         if self.model.surface != Surface::File {
@@ -10781,16 +8968,11 @@ impl WorkspaceView {
                     self.model.message = "Historial del buffer no disponible; salto conservado".into();
                     return;
                 }
-                if open_replay {
-                    self.replay_detached_unloaded_file_jump(path, destination_path.clone(), plan, origin);
-                    return;
-                }
+
                 if self.model.unnamed.contains(destination_path) {
-                    if !self.activate_detached_unnamed_jump(
+                    self.activate_detached_unnamed_jump(
                         path, destination_path.clone(), plan, origin,
-                    ) {
-                        self.retain_replayed_jump();
-                    }
+                    );
                     return;
                 }
                 if self.begin_detached_listed_read(path, destination_path.clone(), true) {
@@ -10798,14 +8980,11 @@ impl WorkspaceView {
                         owner.jump = Some((plan, origin));
                     }
                 } else {
-                    self.retain_replayed_jump();
+
                 }
                 return;
             }
-            if open_replay {
-                self.replay_detached_loaded_file_jump(path, destination, plan, origin);
-                return;
-            }
+
             if self.activate_detached_loaded_file(
                 ListedBuffer::File(path), destination, true, Some((plan, origin)),
             ) {
@@ -10822,7 +9001,7 @@ impl WorkspaceView {
         let Some(zoom) = self.editor_zoom.as_mut() else { return; };
         *zoom.jump_layout_mut() = staged;
         let Some(location) = target else {
-            if open_replay && let Some(input) = &mut self.pending_open_input { input.replay_error = false; }
+
             self.model.message = "No hay más saltos".into();
             return;
         };
@@ -10839,232 +9018,22 @@ impl WorkspaceView {
             self.editor_left = origin.view.left;
         }
         self.sync_editor_pane();
-        if open_replay && let Some(input) = &mut self.pending_open_input { input.replay_error = false; }
-        self.model.message.clear();
-    }
 
-    fn replay_detached_loaded_file_jump(
-        &mut self, source: PathBuf, target: ListedBuffer,
-        plan: workspace_core::editor_panes::PaneJump,
-        origin: workspace_core::editor_jumplist::Location,
-    ) {
-        let _ = self.replay_detached_loaded_file(ListedBuffer::File(source), target, true, Some((plan, origin)));
+        self.model.message.clear();
     }
 
     /// Transfer the in-flight buffer switch, and its subsequent input, to
     /// the loaded file now owned by the same detached zoom.
-    fn replay_detached_loaded_file(
-        &mut self, source: ListedBuffer, target: ListedBuffer, relist: bool,
-        jump: Option<(workspace_core::editor_panes::PaneJump, workspace_core::editor_jumplist::Location)>,
-    ) -> bool {
-        let Some(identity) = self.detached_open_jump_replay() else { return false; };
-        let ListedBuffer::File(path) = &target else { return false; };
-        let path = path.clone();
-        let Some(mut input) = self.pending_open_input.take() else { return false; };
-        let Some(event) = input.queue.in_flight_id() else {
-            self.pending_open_input = Some(input);
-            return false;
-        };
-        if !self.activate_detached_loaded_file(
-            source, target, relist, jump,
-        ) {
-            self.pending_open_input = Some(input);
-            return false;
-        }
-        self.sync_editor_pane();
-        let guard = self.editor_zoom.as_ref().zip(self.editor_panes.as_ref())
-            .zip(self.editors.get(&path)).and_then(|((zoom, panes), editor)| {
-                zoom.close_guard(self.model.project, panes, editor)
-            });
-        let mut next = input.context.clone();
-        next.path = path;
-        next.generation = self.file_generation;
-        let owner = self.pending_detached_open.as_mut().filter(|owner| {
-            owner.opened && Arc::ptr_eq(&owner.queue, &identity)
-        });
-        let success = if let (Some(guard), Some(owner)) = (guard, owner)
-            && input.queue.retarget_in_flight_jump(event, &input.context, next.clone())
-        {
-            owner.destination_guard = Some(guard);
-            owner.destination_explorer = None;
-            owner.destination_agents = None;
-            owner.focus_revision = self.model.focus_revision;
-            input.context = next;
-            input.replay_error = false;
-            self.model.message.clear();
-            true
-        } else {
-            input.queue.invalidate();
-            input.replay_error = true;
-            self.model.message = "Cambio aplicado; entrada conservada para revisar".into();
-            false
-        };
-        self.pending_open_input = Some(input);
-        success
-    }
 
     /// Keep the replayed jump itself in flight while the target is loaded;
     /// the existing read completion acknowledges it only after activation.
-    fn replay_detached_unloaded_file_jump(
-        &mut self, source: PathBuf, path: PathBuf,
-        plan: workspace_core::editor_panes::PaneJump,
-        origin: workspace_core::editor_jumplist::Location,
-    ) {
-        let _ = self.replay_detached_unloaded_file(source, path, true, Some((plan, origin)));
-    }
 
     /// A buffer switch may itself be queued behind an asynchronous open.
     /// Keep that event in flight while the registered target is reloaded.
-    fn replay_detached_unloaded_file(
-        &mut self, source: PathBuf, path: PathBuf, relist: bool,
-        jump: Option<(workspace_core::editor_panes::PaneJump, workspace_core::editor_jumplist::Location)>,
-    ) -> bool {
-        let Some(identity) = self.detached_open_jump_replay() else { return false; };
-        if self.validation && (!path.starts_with(self.state_dir.join("demo"))
-            || path.components().any(|part| matches!(part, std::path::Component::ParentDir)))
-        {
-            self.model.message = "Validación: archivos limitados a fixtures".into();
-            return false;
-        }
-        let project = self.model.project;
-        let target = ListedBuffer::File(path.clone());
-        if self.editors.contains_key(&path) || self.editors.len() >= 128
-            || self.pending_new_files.contains(&path)
-            || !self.listed_buffers.get(&project).is_some_and(|registry| {
-                registry.knows(&target) && registry.is_unloaded(&path)
-            })
-            || self.numbered_buffers.number_for(project, &target).is_err()
-        {
-            self.model.message = "El buffer ya no está disponible; entrada conservada".into();
-            return false;
-        }
-        let Some((guard, version, cursor)) = self.editor_zoom.as_ref()
-            .zip(self.editor_panes.as_ref()).zip(self.editors.get(&source))
-            .and_then(|((zoom, panes), editor)| {
-                if !zoom.is_detached() || zoom.content() != &PaneContent::File(source.clone())
-                    || editor.mode != EditMode::Normal || editor.composing() || editor.replaying()
-                { return None; }
-                Some((zoom.close_guard(project, panes, editor)?, editor.version, editor.cursor))
-            }) else { self.model.message = "Cambió el editor ampliado; entrada conservada".into(); return false; };
-        let Some(generation) = self.file_generation.checked_add(1) else { return false; };
-        let Some(input) = &mut self.pending_open_input else { return false; };
-        let Some(event) = input.queue.in_flight_id() else { return false; };
-        let mut next = input.context.clone();
-        next.path = path.clone();
-        next.generation = generation;
-        if !input.queue.retarget_edit(event, &input.context, next.clone()) {
-            self.model.message = "No se pudo conservar el salto en cola".into();
-            return false;
-        }
-        input.context = next;
-        input.replay_error = false;
-        let Some(owner) = self.pending_detached_open.as_mut()
-            .filter(|owner| Arc::ptr_eq(&owner.queue, &identity)) else {
-                input.queue.invalidate();
-                input.replay_error = true;
-                self.model.message = "Cambió el origen; entrada conservada".into();
-                return false;
-            };
-        owner.source = DetachedReadSource::File { path: source, guard, version, cursor };
-        owner.destination_guard = None;
-        owner.destination_explorer = None;
-        owner.destination_agents = None;
-        owner.focus_revision = self.model.focus_revision;
-        owner.relist = relist;
-        owner.explicit = false;
-        owner.resolving = false;
-        owner.expected_loaded = false;
-        owner.opened = false;
-        owner.position = None;
-        owner.jump = jump;
-        owner.terminal_mark = None;
-        owner.loaded_target = None;
-        owner.unnamed_target = None;
-        owner.allowed_root = None;
-        owner.allow_missing = true;
-        self.file_generation = generation;
-        if self.model.unnamed.contains(&path) {
-            if self.disk_tx.send(DiskResult::DetachedListedFile(
-                generation, path.clone(), relist, Ok(Some(String::new())),
-            )).is_err() {
-                self.retain_replayed_jump();
-                self.finish_open_input_read(generation, &path, false);
-                self.model.message = "No se pudo cargar el buffer; entrada conservada".into();
-                return false;
-            }
-        } else {
-            self.spawn_detached_listed_read(generation, path, relist);
-        }
-        self.model.message = "Cargando buffer; entrada retenida".into();
-        true
-    }
 
     /// Direct Ctrl+O during mark capture has no replayed event to own its
-    /// following keys. Establish the same guarded input queue used by file
+    /// following keys. Establish the same guarded input identity used by file
     /// opening; event id zero denotes the already-received direct command.
-    fn begin_direct_deferred_jump_input(&mut self) -> bool {
-        let Some(capture) = self.pending_terminal_capture.as_ref() else {
-            return false;
-        };
-        let TerminalCaptureKind::FileOpened { path, .. } = &capture.kind else {
-            return false;
-        };
-        if !self.terminal_capture_is_current(capture) {
-            return false;
-        }
-        let Some(attachment) = capture.guard.attachment else {
-            return false;
-        };
-        let Some(terminal) = self.windows.get(self.active).filter(|terminal| {
-            terminal.project == self.model.project && terminal.attachment == attachment
-        }) else {
-            return false;
-        };
-        let Some(panes) = &self.editor_panes else {
-            return false;
-        };
-        let context = workspace_app::open_input::Context {
-            workspace: self.model.project,
-            pane: panes.layout.active().0,
-            attachment,
-            generation: self.file_generation,
-            path: path.clone(),
-        };
-        let focus = panes.layout.focus_guard();
-        let instance = terminal.terminal.instance_identity();
-        let token = capture.token.get();
-        let mut queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
-        if !queue.ready(&context, true) {
-            return false;
-        }
-        let identity = queue.identity();
-        self.pending_open_terminal_instance = Some(instance);
-        self.pending_open_input = Some(PendingOpenInput {
-            context,
-            focus,
-            queue,
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
-            edit_resolution: false,
-            edit_force: false,
-            edit_reload_current: false,
-            awaiting_edit_read: false,
-            terminal_jump: true,
-            deferred_capture: Some((token, 0)),
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
-        });
-        if let Some(capture) = &mut self.pending_terminal_capture {
-            capture.deferred_open = Some(identity);
-            true
-        } else {
-            false
-        }
-    }
 
     fn apply_jump(
         &mut self,
@@ -11077,7 +9046,6 @@ impl WorkspaceView {
         if self.model.project != project
             || self.file_generation != generation
             || self.current_jump_location() != Some(origin)
-            || self.terminal_resume.active()
         {
             self.model.message = "Salto cancelado: cambió el panel".into();
             return false;
@@ -11183,23 +9151,19 @@ impl WorkspaceView {
         project: usize,
         generation: u64,
     ) {
-        use workspace_app::terminal_jump_gate::Context;
-        if self.terminal_jump_gate.busy() {
-            self.retain_replayed_jump();
-            self.model.message = "Esperá la confirmación del salto de terminal".into();
-            return;
-        }
+        use workspace_app::terminal_jump::Context;
+
         let Some(ListedBuffer::Terminal(attachment)) = request.target() else {
             return;
         };
         let attachment = *attachment;
         let Some(anchor) = request.target_anchor() else {
-            self.retain_replayed_jump();
+
             self.model.message = "La posición de esa terminal ya no está disponible".into();
             return;
         };
         let Some(location) = request.target_location() else {
-            self.retain_replayed_jump();
+
             return;
         };
         let Some(mark) = self
@@ -11207,90 +9171,35 @@ impl WorkspaceView {
             .get(anchor, project, location)
             .cloned()
         else {
-            self.retain_replayed_jump();
+
             self.model.message = "La marca de terminal ya no está disponible".into();
             return;
         };
-        let open_input = self.pending_open_input.as_ref().and_then(|input| {
-            (input.replaying
-                && input.queue.state() == workspace_app::open_input::State::Ready
-                && !self.pending_open_input_mixed_context
-                && input.marked_selection.is_none()
-                && generation == input.context.generation.wrapping_add(1)
-                && self.open_input_context_current_at(input, true, generation))
-            .then(|| input.queue.identity())
-        });
-        let terminal_replay = self.pending_terminal_key.as_ref().and_then(|input| {
-            (input.replaying
-                && !input.replay_error
-                && !input.mixed_context
-                && input.marked_selection.is_none()
-                && input.capture_wait.is_none()
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && input.destination.as_ref().is_some_and(|destination| {
-                    destination.generation.wrapping_add(1) == generation
-                        && self.terminal_key_destination_current_at(destination, generation)
-                }))
-            .then_some((input.source.token, input.replay_event?))
-        });
-        if (self.pending_terminal_key.is_some() && terminal_replay.is_none())
-            || (self.pending_open_input.is_some() && open_input.is_none())
-        {
-            // The command may itself be a replayed event. Rejecting it must
-            // not let its owning queue acknowledge and silently discard it.
-            self.retain_replayed_jump();
-            self.model.message = "Hay otra entrada pendiente de resolver".into();
-            return;
-        }
-        let Some(input_token) = terminal_replay
-            .map(|(owner, _)| owner)
-            .or_else(|| self.tmux_copy_token.checked_add(1))
-        else {
-            self.retain_replayed_jump();
-            self.model.message = "No se pudo conservar la entrada del salto".into();
-            return;
-        };
-        let Some(destination) = self.terminal_key_destination() else {
-            self.retain_replayed_jump();
+
+        let Some(_) = self.focused_input_target() else {
+
             self.model.message = "No se pudo identificar el panel de origen".into();
             return;
         };
-        let Some(terminal) = self
+        let Some(_) = self
             .windows
             .iter()
             .find(|window| window.project == project && window.attachment == attachment)
         else {
-            self.retain_replayed_jump();
+
             self.model.message = "La terminal ya no está disponible".into();
             return;
         };
-        let (window_id, pane_id) = mark.target_ids();
-        let source = PendingTmuxCopy {
-            token: input_token,
-            context: workspace_app::terminal_resume::Context {
-                project,
-                attachment,
-            },
-            surface: self.model.surface,
-            focus_revision: self.model.focus_revision,
-            focus: self
-                .editor_panes
-                .as_ref()
-                .map(|panes| panes.layout.focus_guard()),
-            zoom: None,
-            instance: terminal.terminal.instance_identity(),
-            window: window_id.to_owned(),
-            pane: pane_id.to_owned(),
-        };
+
         let Some(pane) = self
             .editor_panes
             .as_ref()
             .map(|panes| panes.layout.active())
         else {
-            self.retain_replayed_jump();
+
             return;
         };
-        let backend_context = workspace_app::terminal_resume::Context {
+        let backend_context = workspace_app::terminal_input::Context {
             project,
             attachment,
         };
@@ -11301,7 +9210,7 @@ impl WorkspaceView {
         ) {
             Ok(backend) => backend,
             Err(error) => {
-                self.retain_replayed_jump();
+
                 self.model.message = error;
                 return;
             }
@@ -11316,12 +9225,10 @@ impl WorkspaceView {
             origin,
             project,
             generation,
-            input_token,
-            open_input,
-            replay_event: terminal_replay.map(|(_, event)| event),
+
         };
         if self
-            .terminal_jump_gate
+            .terminal_jump
             .try_dispatch(context, payload, |token| {
                 backend
                     .send(TmuxAction::RestoreCopyMark(token.get(), mark))
@@ -11329,103 +9236,26 @@ impl WorkspaceView {
             })
             .is_err()
         {
-            self.retain_replayed_jump();
+
             self.model.message = "No se pudo enviar el salto de terminal".into();
             return;
         }
-        if terminal_replay.is_some() {
-            let input = self
-                .pending_terminal_key
-                .as_mut()
-                .expect("replay owner checked");
-            input.source = source;
-            input.destination = Some(destination);
-            return;
-        }
-        self.tmux_copy_token = input_token;
-        self.pending_terminal_key = Some(PendingTerminalKey {
-            source,
-            transition_tab: None, tab_reconcile: None,
-            transition_activity: None,
-            gate: workspace_app::terminal_key_gate::Gate::for_replay(
-                input_token,
-                4096,
-                1024 * 1024,
-            )
-            .expect("fixed valid limits"),
-            overflow: VecDeque::new(),
-            destination: Some(destination),
-            open_identity: None,
-            open_switch_event: None,
-            replaying: false,
-            scheduled: false,
-            replay_error: false, paste_held: None,
-            replay_event: None,
-            write: None,
-            target_action: None,
-            selection_action: None,
-            split: None,
-            capture_wait: None,
-            mixed_context: false,
-            revision: 0,
-            marked_selection: None,
-            navigation_geometry_deadline: None,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-        });
+
     }
 
-    fn detached_open_jump_replay(&self) -> Option<Arc<()>> {
-        let input = self.pending_open_input.as_ref()?;
-        let identity = input.queue.identity();
-        (input.replaying && input.queue.in_flight_id().is_some()
-            && input.queue.state() == workspace_app::open_input::State::Ready
-            && input.marked_selection.is_none() && input.deferred_capture.is_none()
-            && !self.pending_open_input_mixed_context
-            && self.pending_detached_open.as_ref().is_some_and(|owner| {
-                owner.opened && Arc::ptr_eq(&owner.queue, &identity)
-            })
-            && self.open_input_context_current(input, true)).then_some(identity)
-    }
-
-    /// Restore a terminal mark while keeping later input in the existing
-    /// terminal-key ledger until this exact floating jump has committed.
-    fn begin_detached_terminal_jump(
+        fn begin_detached_terminal_jump(
         &mut self, source: PathBuf, attachment: u64,
         plan: workspace_core::editor_panes::PaneJump,
         origin: workspace_core::editor_jumplist::Location,
     ) {
         let project = self.model.project;
-        let context = workspace_app::terminal_resume::Context { project, attachment };
-        let open_replay = self.detached_open_jump_replay();
-        if self.pending_open_input.is_some() && open_replay.is_none() || self.pending_terminal_key.is_some()
-            || self.terminal_jump_gate.busy() || self.pending_terminal_capture.is_some()
-            || self.pending_terminal_open.is_some() || self.pending_read_guard.is_some()
-            || self.pending_edit_guard.is_some() || self.pending_backend_resume.is_some()
-            || self.pending_terminal_rebind.contains_key(&project)
-            || self.pending_additional_reconnects.contains_key(&(project, attachment))
-            || self.detached_terminal_input.any_busy() || self.pending_terminal_search.contains(&context)
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
-            || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_list_page.is_some() || self.terminal_resume.active()
-            || self.terminal_resume_zoom_owner.is_some() || self.mouse_drag.is_some()
-            || self.selecting || !self.marked.is_empty() || self.model.pending_since.is_some()
-            || self.terminal_command.is_some() || self.terminal_search_prompt.is_some()
-            || self.file_prompt.is_some() || self.remote_prompt.is_some() || self.media_active()
-            || self.markdown.is_some() || self.preview.is_some() || !self.pending_saves.is_empty()
-            || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
-            || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
-        {
-            self.model.message = "Entrada o navegación pendiente; salto conservado".into();
-            return;
-        }
-        #[cfg(feature = "ghostty")]
-        if self.native_selection.is_some() {
-            self.model.message = "Terminá la selección; salto conservado".into();
-            return;
-        }
+        let context = workspace_app::terminal_input::Context { project, attachment };
+
+        // New navigation supersedes older navigation. Result callbacks still
+        // validate source, destination, generation and terminal instance.
+        self.invalidate_terminal_jumps();
+        self.pending_jump_load = None;
+        self.pending_terminal_jump_load = None;
         let Some(location) = plan.target() else { return; };
         let Some(anchor) = plan.target_anchor() else {
             self.model.message = "La posición de esa terminal ya no está disponible".into();
@@ -11443,341 +9273,36 @@ impl WorkspaceView {
             window.project == project && window.attachment == attachment
         }) else { self.model.message = "Terminal original no disponible".into(); return; };
         let instance = terminal.terminal.instance_identity();
-        let Some(mut destination) = self.terminal_key_destination().filter(|destination| {
+        let Some(mut destination) = self.focused_input_target().filter(|destination| {
             destination.content == PaneContent::File(source.clone()) && destination.zoom.is_some()
-                && self.terminal_key_destination_current(destination)
+                && self.focused_input_target_current(destination)
         }) else { self.model.message = "Cambió el editor ampliado; salto conservado".into(); return; };
-        let Some(input_token) = self.tmux_copy_token.checked_add(1) else { return; };
+
         let previous_generation = self.file_generation;
-        let Some(generation) = (if open_replay.is_some() { previous_generation.checked_add(1) }
-            else { Some(previous_generation) }) else { return; };
+        let generation = previous_generation;
         destination.generation = generation;
-        let (window, pane) = mark.target_ids();
-        let source_input = PendingTmuxCopy {
-            token: input_token, context, surface: Surface::File,
-            focus_revision: self.model.focus_revision, focus: Some(destination.focus.clone()),
-            zoom: None, instance: instance.clone(), window: window.to_owned(), pane: pane.to_owned(),
-        };
-        let gate_context = workspace_app::terminal_jump_gate::Context {
+        let gate_context = workspace_app::terminal_jump::Context {
             workspace: project, pane: destination.pane.0, attachment,
         };
         let payload = PendingTerminalRestore {
             request: TerminalRestoreRequest::Detached { source, plan, instance },
-            origin, project, generation, input_token,
-            open_input: open_replay.clone(), replay_event: None,
+            origin, project, generation,
+
         };
         let backend = match terminal_backend_for(&self.backends, &self.additional_backends, context) {
             Ok(backend) => backend,
             Err(error) => { self.model.message = error; return; }
         };
         self.file_generation = generation;
-        if self.terminal_jump_gate.try_dispatch(gate_context, payload, |token| {
+        if self.terminal_jump.try_dispatch(gate_context, payload, |token| {
             backend.send(TmuxAction::RestoreCopyMark(token.get(), mark)).map_err(|_| ())
         }).is_err() {
             self.file_generation = previous_generation;
             self.model.message = "No se pudo enviar el salto de terminal".into();
             return;
         }
-        if let Some(identity) = &open_replay
-            && let Some(input) = &mut self.pending_open_input
-            && Arc::ptr_eq(identity, &input.queue.identity())
-        {
-            input.replay_error = false;
-        }
-        self.tmux_copy_token = input_token;
-        self.pending_terminal_key = Some(PendingTerminalKey {
-            source: source_input,
-            transition_tab: None, tab_reconcile: None,
-            transition_activity: None,
-            gate: workspace_app::terminal_key_gate::Gate::for_replay(input_token, 4096, 1024 * 1024)
-                .expect("fixed valid limits"),
-            overflow: VecDeque::new(), destination: Some(destination), open_identity: None, open_switch_event: None,
-            replaying: false, scheduled: false, replay_error: false, paste_held: None,
-            replay_event: None, write: None, target_action: None, selection_action: None,
-            split: None, capture_wait: None, mixed_context: false, revision: 0,
-            marked_selection: None, navigation_geometry_deadline: None,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-        });
-        self.model.message = "Restaurando salto de terminal; entrada retenida".into();
-    }
 
-    fn retain_replayed_jump(&mut self) {
-        if let Some(input) = &mut self.pending_terminal_key
-            && input.replaying
-        {
-            input.replay_error = true;
-        }
-        if let Some(input) = &mut self.pending_open_input
-            && input.replaying
-        {
-            input.replay_error = true;
-        }
-    }
-
-    /// Transfer the rest of a file-open queue only after its buffer-switch
-    /// event was acknowledged and the exact terminal is still focused.
-    fn handoff_open_input_to_switched_terminal(&mut self, event: u64, acknowledged: bool) {
-        let Some((token, identity)) = self.pending_terminal_key.as_ref().and_then(|input| {
-            (input.open_switch_event == Some(event))
-                .then_some(input.open_identity.as_ref())
-                .flatten()
-                .map(|identity| (input.source.token, identity.clone()))
-        }) else { return; };
-        let valid_open = self.pending_open_input.as_ref().is_some_and(|open| {
-            Arc::ptr_eq(&identity, &open.queue.identity())
-                && !open.replaying && !open.scheduled && !open.replay_error
-                && open.marked_selection.is_none() && open.deferred_capture.is_none()
-                && open.queue.state() == workspace_app::open_input::State::Ready
-                && open.queue.in_flight_id().is_none()
-                && open.context.workspace == self.model.project
-                && open.context.generation.checked_add(1) == Some(self.file_generation)
-                && self.pending_detached_open.as_ref().is_some_and(|owner| {
-                    owner.opened && Arc::ptr_eq(&owner.queue, &identity)
-                })
-        });
-        let valid_terminal = self.pending_terminal_key.as_ref().is_some_and(|input| {
-            input.source.token == token && input.open_switch_event == Some(event)
-                && !input.replaying && !input.scheduled && !input.mixed_context
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && input.gate.is_empty() && input.overflow.is_empty()
-                && self.terminal_key_source_current(&input.source)
-                && input.destination.as_ref().is_some_and(|destination| {
-                    destination.content == PaneContent::Terminal(input.source.context.attachment)
-                        && self.pending_open_input.as_ref().is_some_and(|open| {
-                            destination.pane.0 == open.context.pane
-                        })
-                        && destination.tmux_target.as_ref().is_some_and(|(window, pane)| {
-                            window == &input.source.window && pane == &input.source.pane
-                        })
-                        && self.terminal_key_destination_current(destination)
-                })
-        });
-        if !acknowledged || !valid_open || !valid_terminal || self.pending_open_input_mixed_context {
-            if let Some(input) = &mut self.pending_terminal_key
-                && input.source.token == token
-            { input.gate.invalidate(); }
-            if let Some(input) = &mut self.pending_open_input
-                && Arc::ptr_eq(&identity, &input.queue.identity())
-            { input.queue.invalidate(); }
-            self.model.message = if self.validation {
-                format!(
-                    "Terminal: entrada retenida (ack={} apertura={} destino={} contexto_mixto={})",
-                    acknowledged, valid_open, valid_terminal, self.pending_open_input_mixed_context
-                )
-            } else {
-                "Terminal abierta; entrada conservada para revisar".into()
-            };
-            return;
-        }
-        let open = self.pending_open_input.take().expect("identity checked");
-        let (_, events) = open.queue.into_recovery();
-        self.pending_detached_open.take_if(|owner| Arc::ptr_eq(&owner.queue, &identity));
-        self.pending_pane_file_source.take_if(|owner| Arc::ptr_eq(&owner.queue, &identity));
-        self.pending_open_terminal_instance = None;
-        self.pending_sidebar_open = None;
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        if let Some(input) = &mut self.pending_terminal_key {
-            input.open_identity = None;
-            input.open_switch_event = None;
-        }
-        for event in events.into_iter().map(|(_, event)| event).chain(open.overflow) {
-            self.enqueue_terminal_key(event);
-        }
-    }
-
-    /// Complete a replayed file-open key before handing the remaining events
-    /// to the jump. Both queue identities and the original file context must
-    /// still match; never merge two independently created input streams.
-    fn handoff_open_input_to_terminal_jump(&mut self, acknowledged: bool) {
-        let Some((token, generation, identity)) =
-            self.terminal_jump_gate.pending_payload().and_then(|jump| {
-                jump.open_input
-                    .as_ref()
-                    .map(|identity| (jump.input_token, jump.generation, identity.clone()))
-            })
-        else {
-            return;
-        };
-        let open_matches = self.pending_open_input.as_ref().is_some_and(|input| {
-            Arc::ptr_eq(&identity, &input.queue.identity())
-                && !input.replaying
-                && !input.scheduled
-                && input.queue.state() == workspace_app::open_input::State::Ready
-                && input.marked_selection.is_none()
-                && generation == input.context.generation.wrapping_add(1)
-                && self.open_input_context_current_at(input, true, generation)
-        });
-        let terminal_matches = self.pending_terminal_key.as_ref().is_some_and(|input| {
-            input.source.token == token
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && input.gate.is_empty()
-                && input.overflow.is_empty()
-                && input
-                    .destination
-                    .as_ref()
-                    .is_some_and(|destination| self.terminal_key_destination_current(destination))
-        });
-        if !acknowledged
-            || !open_matches
-            || !terminal_matches
-            || self.pending_open_input_mixed_context
-        {
-            self.terminal_jump_gate.invalidate();
-            if let Some(input) = &mut self.pending_terminal_key
-                && input.source.token == token
-            {
-                input.gate.invalidate();
-            }
-            if let Some(input) = &mut self.pending_open_input
-                && Arc::ptr_eq(&identity, &input.queue.identity())
-            {
-                input.queue.invalidate();
-            }
-            self.model.message = "Salto incierto; entrada conservada para revisar".into();
-            return;
-        }
-        let open = self.pending_open_input.take().expect("identity checked");
-        // acknowledge() above removed the sole in-flight event. Remaining
-        // entries and overflow are never dispatched until the jump commits.
-        let (_, events) = open.queue.into_recovery();
-        self.pending_detached_open.take_if(|owner| Arc::ptr_eq(&owner.queue, &identity));
-        self.pending_pane_file_source.take_if(|owner| Arc::ptr_eq(&owner.queue, &identity));
-        self.pending_open_terminal_instance = None;
-        self.pending_sidebar_open = None;
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        for event in events
-            .into_iter()
-            .map(|(_, event)| event)
-            .chain(open.overflow)
-        {
-            self.enqueue_terminal_key(event);
-        }
-    }
-
-    /// Resume the exact file-open event held while its terminal mark was
-    /// captured; the event is acknowledged only after jump dispatch.
-    fn resume_open_jump_after_capture(
-        &mut self,
-        token: u64,
-        owner: &Arc<()>,
-        older: bool,
-        count: usize,
-    ) -> bool {
-        let Some((capture, event, identity)) = self.pending_open_input.as_ref().and_then(|input| {
-            input
-                .deferred_capture
-                .map(|(capture, event)| (capture, event, input.queue.identity()))
-        }) else {
-            return false;
-        };
-        if capture != token || !Arc::ptr_eq(owner, &identity) {
-            return false;
-        }
-        let current = self.pending_open_input.as_ref().is_some_and(|input| {
-            (if event == 0 {
-                input.terminal_jump && input.queue.in_flight_id().is_none()
-            } else {
-                input.queue.in_flight_id() == Some(event)
-            }) && input.queue.state() == workspace_app::open_input::State::Ready
-                && !input.replaying
-                && !input.scheduled
-                && !input.replay_error
-                && input.marked_selection.is_none()
-                && !self.pending_open_input_mixed_context
-                && self.open_input_context_current(input, true)
-        });
-        if !current {
-            self.recover_abandoned_open_jump();
-            return true;
-        }
-        if let Some(input) = &mut self.pending_open_input {
-            input.replaying = true;
-        }
-        self.navigate_jump(older, count);
-        let dispatched = self
-            .terminal_jump_gate
-            .pending_payload()
-            .is_some_and(|jump| {
-                jump.open_input
-                    .as_ref()
-                    .is_some_and(|owner| Arc::ptr_eq(owner, &identity))
-            });
-        let mut acknowledged = false;
-        if let Some(input) = &mut self.pending_open_input
-            && Arc::ptr_eq(&input.queue.identity(), &identity)
-        {
-            input.replaying = false;
-            input.deferred_capture = None;
-            if dispatched && !input.replay_error && (event == 0 || input.queue.acknowledge(event)) {
-                input.revision = input.revision.wrapping_add(1);
-                acknowledged = true;
-            } else {
-                if event == 0 || !input.queue.uncertain(event) {
-                    input.queue.invalidate();
-                }
-            }
-        }
-        if dispatched {
-            self.handoff_open_input_to_terminal_jump(acknowledged);
-        } else {
-            self.model.message = "Salto no confirmado; entrada conservada para revisar".into();
-        }
-        let _ = self.terminal_wake.try_send(());
-        true
-    }
-
-    /// Resume a jump that arrived while a file-open mark was being captured.
-    /// The same terminal-input ledger and its in-flight event remain owners.
-    fn resume_terminal_jump_after_capture(
-        &mut self,
-        token: u64,
-        owner: u64,
-        event: u64,
-        older: bool,
-        count: usize,
-    ) {
-        let current = self.pending_terminal_key.as_ref().is_some_and(|input| {
-            input.source.token == owner
-                && input.capture_wait == Some(token)
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && input.gate.in_flight_id() == Some(event)
-                && !input.replaying
-                && !input.scheduled
-                && !input.mixed_context
-                && input
-                    .destination
-                    .as_ref()
-                    .is_some_and(|destination| self.terminal_key_destination_current(destination))
-        });
-        if !current {
-            return;
-        }
-        if let Some(input) = &mut self.pending_terminal_key {
-            input.capture_wait = None;
-            input.replaying = true;
-            input.replay_event = Some(event);
-            input.replay_error = false;
-        }
-        self.navigate_jump(older, count);
-        let dispatched = self
-            .terminal_jump_gate
-            .pending_payload()
-            .is_some_and(|jump| jump.input_token == owner && jump.replay_event == Some(event));
-        if let Some(input) = &mut self.pending_terminal_key
-            && input.source.token == owner
-        {
-            input.replaying = false;
-            input.replay_event = None;
-            if !dispatched || input.replay_error {
-                input.gate.uncertain(event);
-                self.model.message = "Salto conservado para revisar".into();
-            }
-        }
-        let _ = self.terminal_wake.try_send(());
+        self.model.message = "Restaurando salto de terminal".into();
     }
 
     fn terminal_jump_restored(
@@ -11786,68 +9311,38 @@ impl WorkspaceView {
         token: u64,
         result: workspace_app::tmux::RestoreCopyMark,
     ) {
-        use workspace_app::terminal_jump_gate::Completion;
+        use workspace_app::terminal_jump::Completion;
         let Some(token) = std::num::NonZeroU64::new(token) else {
             return;
         };
-        let Some(context) = self.terminal_jump_gate.context(token) else {
+        let Some(context) = self.terminal_jump.context(token) else {
             return;
         };
         if context.workspace != project {
             return;
         }
-        if self.terminal_jump_gate.pending_payload().is_some_and(|pending| {
+        if self.terminal_jump.pending_payload().is_some_and(|pending| {
             matches!(&pending.request, TerminalRestoreRequest::DetachedTerminal { .. })
         }) {
             self.detached_terminal_jump_restored(project, token, context, result);
             return;
         }
-        let Some((input_token, open_input, replay_event)) =
-            self.terminal_jump_gate.pending_payload().map(|pending| {
-                (
-                    pending.input_token,
-                    pending.open_input.is_some(),
-                    pending.replay_event,
-                )
-            })
-        else {
-            return;
-        };
         let current = self.model.project == project
             && self.model.surface == Surface::File
-            && (!open_input || self.pending_open_input.is_none())
-            && self.pending_terminal_key.as_ref().is_some_and(|input| {
-                input.source.token == input_token
-                    && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                    && input.destination.as_ref().is_some_and(|destination| {
-                        self.terminal_key_destination_current(destination)
-                    })
-            })
-            && self
-                .editor_panes
-                .as_ref()
-                .is_some_and(|panes| panes.layout.active().0 == context.pane)
-            && self
-                .windows
-                .iter()
-                .any(|window| window.project == project && window.attachment == context.attachment
-                    && self.terminal_jump_gate.pending_payload().is_some_and(|pending| match &pending.request {
-                        TerminalRestoreRequest::Ordinary(_) => true,
-                        TerminalRestoreRequest::Detached { instance, .. } => {
-                            Arc::ptr_eq(instance, &window.terminal.instance_identity())
-                        }
-                        TerminalRestoreRequest::DetachedTerminal { .. } => false,
-                    }));
+            && self.editor_panes.as_ref().is_some_and(|panes| panes.layout.active().0 == context.pane)
+            && self.terminal_jump.pending_payload().is_some_and(|pending| {
+                pending.generation == self.file_generation
+                    && self.current_jump_location() == Some(pending.origin)
+            });
         let Some(completion) = self
-            .terminal_jump_gate
+            .terminal_jump
             .finish(token, context, result, current)
         else {
             return;
         };
-        let mut jump_applied = false;
         match completion {
             Completion::Ready(pending) => {
-                jump_applied = match pending.request {
+                let jump_applied = match pending.request {
                     TerminalRestoreRequest::Ordinary(request) => self.apply_jump(
                         request, pending.origin, pending.project, pending.generation, true,
                     ),
@@ -11855,7 +9350,7 @@ impl WorkspaceView {
                         pending.project == self.model.project && pending.generation == self.file_generation
                             && self.activate_detached_file_terminal_guarded(
                                 source, context.attachment, true, Some((plan, pending.origin)),
-                                Some((pending.input_token, instance)),
+                                Some(instance),
                             )
                     }
                     TerminalRestoreRequest::DetachedTerminal { .. } => false,
@@ -11877,143 +9372,10 @@ impl WorkspaceView {
                     "El salto pudo mover la terminal; revisá su posición antes de reintentar".into()
             }
         }
-        // Input received after Ctrl+O belongs to the destination only if the
-        // same jump really committed. Otherwise keep it for explicit review.
-        let next_source = jump_applied
-            .then(|| self.terminal_key_source(input_token))
-            .flatten()
-            .filter(|source| {
-                self.pending_terminal_key.as_ref().is_some_and(|input| {
-                    source.context == input.source.context
-                        && Arc::ptr_eq(&source.instance, &input.source.instance)
-                        && source.window == input.source.window
-                        && source.pane == input.source.pane
-                })
-            });
-        let next_destination = jump_applied
-            .then(|| self.terminal_key_destination())
-            .flatten();
-        if let Some(mut input) = self
-            .pending_terminal_key
-            .take_if(|input| input.source.token == input_token)
-        {
-            if jump_applied
-                && let (Some(source), Some(destination)) = (next_source, next_destination)
-                && replay_event.is_none_or(|event| input.gate.acknowledge(event))
-            {
-                input.source = source;
-                input.destination = Some(destination);
-                self.pending_terminal_key = Some(input);
-                let _ = self.terminal_wake.try_send(());
-            } else if !input.gate.is_empty() || !input.overflow.is_empty() {
-                input.gate.invalidate();
-                self.pending_terminal_key = Some(input);
-                self.model
-                    .message
-                    .push_str("; entrada conservada para revisar");
-            }
-        }
+
     }
 
-    /// Bind input to a file-origin jump until its unloaded destination is
-    /// actually activated. A replayed event stays in its existing ledger.
-    fn begin_file_jump_input(&mut self, generation: u64) -> Option<FileJumpOwner> {
-        if let Some(input) = self.pending_open_input.as_ref() {
-            let event = input.queue.in_flight_id()?;
-            let valid = self.pending_terminal_key.is_none()
-                && input.replaying
-                && !input.replay_error
-                && !self.pending_open_input_mixed_context
-                && input.marked_selection.is_none()
-                && input.deferred_capture.is_none()
-                && input.queue.state() == workspace_app::open_input::State::Ready
-                && input.context.generation.wrapping_add(1) == generation
-                && self.open_input_context_current_at(input, true, generation);
-            return valid.then(|| FileJumpOwner::Open {
-                identity: input.queue.identity(),
-                event: Some(event),
-            });
-        }
-        let destination = self.terminal_key_destination()?;
-        if destination.generation != generation
-            || !matches!(destination.content, PaneContent::File(_))
-        {
-            return None;
-        }
-        if let Some(input) = self.pending_terminal_key.as_ref() {
-            let event = input.replay_event?;
-            let valid = input.replaying
-                && !input.replay_error
-                && !input.mixed_context
-                && input.marked_selection.is_none()
-                && input.gate.in_flight_id() == Some(event)
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && input.destination.as_ref().is_some_and(|previous| {
-                    previous.generation.wrapping_add(1) == generation
-                        && self.terminal_key_destination_current_at(previous, generation)
-                });
-            if !valid {
-                return None;
-            }
-            let owner = input.source.token;
-            self.pending_terminal_key.as_mut()?.destination = Some(destination);
-            return Some(FileJumpOwner::Terminal {
-                token: owner,
-                event: Some(event),
-            });
-        }
-        // A file-origin jump does not depend on a running terminal. Reuse the
-        // zero-attachment ledger bound to this exact file and window.
-        let PaneContent::File(path) = &destination.content else {
-            return None;
-        };
-        let context = workspace_app::open_input::Context {
-            workspace: destination.project,
-            pane: destination.pane.0,
-            attachment: 0,
-            generation: generation.wrapping_sub(1),
-            path: path.clone(),
-        };
-        let mut queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
-        if !queue.ready(&context, true) {
-            return None;
-        }
-        let identity = queue.identity();
-        let focus = destination.focus.clone();
-        self.pending_sidebar_open = Some(PaneCommandGuard::Sidebar {
-            project: destination.project,
-            surface: destination.surface,
-            generation,
-            focus_revision: destination.focus_revision,
-            content: destination.content,
-            focus: focus.clone(),
-        });
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_terminal_instance = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context,
-            focus,
-            queue,
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
-            edit_resolution: false,
-            edit_force: false,
-            edit_reload_current: false,
-            awaiting_edit_read: false,
-            terminal_jump: true,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
-        });
-        Some(FileJumpOwner::Open {
-            identity,
-            event: None,
-        })
-    }
+
 
     fn begin_jump_load(
         &mut self,
@@ -12023,40 +9385,34 @@ impl WorkspaceView {
         generation: u64,
     ) {
         let Some(ListedBuffer::File(path)) = request.target() else {
-            self.retain_replayed_jump();
+
             return;
         };
         let path = path.clone();
         if self.validation && !path.starts_with(self.state_dir.join("demo")) {
-            self.retain_replayed_jump();
+
             self.model.message = "Validación: archivos limitados a fixtures".into();
             return;
         }
         if self.editors.len() >= 128 {
-            self.retain_replayed_jump();
+
             self.model.message = "Límite de 128 buffers; se conserva el actual".into();
             return;
         }
         let unnamed = self.model.unnamed.contains(&path);
         if !unnamed && self.jump_load_in_flight.is_some() {
-            self.retain_replayed_jump();
+
             self.model.message = "Esperá a que termine la lectura anterior".into();
             return;
         }
-        let Some(owner) = self.begin_file_jump_input(generation) else {
-            self.retain_replayed_jump();
-            self.model.message = "No se pudo conservar la entrada del salto".into();
-            return;
-        };
+
         self.pending_jump_load = Some(PendingJumpLoad {
             generation,
             project,
             path: path.clone(),
             origin,
             request,
-            owner,
-            started: std::time::Instant::now(),
-            timed_out: false,
+
         });
         if unnamed {
             // Complete after the current replay callback returns; acknowledging
@@ -12067,11 +9423,9 @@ impl WorkspaceView {
                 .is_err()
             {
                 self.pending_jump_load = None;
-                if let Some(input) = &mut self.pending_terminal_key {
-                    input.gate.invalidate();
-                }
-                if let Some(input) = &mut self.pending_open_input {
-                    input.queue.invalidate();
+
+                if let Some(input) = &mut self.pending_file_read {
+                    input.state = workspace_app::file_read::State::Cancelled;
                 }
             }
             return;
@@ -12107,104 +9461,11 @@ impl WorkspaceView {
         path: PathBuf,
         result: Result<Option<String>, String>,
     ) {
-        if self.jump_load_in_flight == Some(generation) {
-            self.jump_load_in_flight = None;
-        }
+        if self.jump_load_in_flight == Some(generation) { self.jump_load_in_flight = None; }
         let Some(pending) = self.pending_jump_load.take_if(|pending| {
             pending.generation == generation && pending.project == project && pending.path == path
-        }) else {
-            return;
-        };
-        let owner = pending.owner.clone();
-        let current_owner = !pending.timed_out
-            && match &owner {
-                FileJumpOwner::Terminal { token, event } => {
-                    self.pending_terminal_key.as_ref().is_some_and(|input| {
-                        input.source.token == *token
-                            && input.gate.state()
-                                == workspace_app::terminal_key_gate::State::Replaying
-                            && event.is_none_or(|event| input.gate.in_flight_id() == Some(event))
-                            && input.destination.as_ref().is_some_and(|destination| {
-                                self.terminal_key_destination_current(destination)
-                            })
-                    })
-                }
-                FileJumpOwner::Open { identity, event } => {
-                    self.pending_open_input.as_ref().is_some_and(|input| {
-                        Arc::ptr_eq(identity, &input.queue.identity())
-                            && input.queue.state() == workspace_app::open_input::State::Ready
-                            && input.queue.in_flight_id() == *event
-                            && !input.replaying
-                            && !input.scheduled
-                            && !input.replay_error
-                            && !self.pending_open_input_mixed_context
-                            && self.open_input_context_current_at(input, true, generation)
-                    })
-                }
-            };
-        let applied = current_owner && self.apply_loaded_file_jump(pending, result);
-        let target = self.terminal_key_destination();
-        match owner {
-            FileJumpOwner::Terminal { token, event } => {
-                let target_ok = target.as_ref().is_some_and(|target| {
-                    target.project == project
-                        && matches!(&target.content, PaneContent::File(file) if file == &path)
-                        && self
-                            .pending_terminal_key
-                            .as_ref()
-                            .and_then(|input| input.destination.as_ref())
-                            .is_some_and(|origin| origin.pane == target.pane)
-                });
-                if let Some(input) = &mut self.pending_terminal_key
-                    && input.source.token == token
-                {
-                    if applied
-                        && target_ok
-                        && event.is_none_or(|event| input.gate.acknowledge(event))
-                    {
-                        input.destination = target;
-                    } else {
-                        input.gate.invalidate();
-                        self.model.message =
-                            "Salto no confirmado; entrada conservada para revisar".into();
-                    }
-                }
-            }
-            FileJumpOwner::Open { identity, event } => {
-                let focus = self.editor_panes.as_ref().and_then(|panes| {
-                    let input = self.pending_open_input.as_ref()?;
-                    let target = target.as_ref()?;
-                    (Arc::ptr_eq(&identity, &input.queue.identity())
-                        && target.project == project
-                        && target.pane.0 == input.context.pane
-                        && matches!(&target.content, PaneContent::File(file) if file == &path)
-                        && panes.layout.focus_guard_same_window(&input.focus))
-                    .then(|| panes.layout.focus_guard())
-                });
-                if let Some(input) = &mut self.pending_open_input
-                    && Arc::ptr_eq(&identity, &input.queue.identity())
-                {
-                    let mut next = input.context.clone();
-                    next.generation = generation;
-                    next.path = path;
-                    if applied
-                        && let Some(focus) = focus
-                        && input
-                            .queue
-                            .acknowledge_jump(event, &input.context, next.clone())
-                    {
-                        input.context = next;
-                        input.focus = focus;
-                        input.revision = input.revision.wrapping_add(1);
-                    } else {
-                        input.queue.invalidate();
-                        self.model.message =
-                            "Salto no confirmado; entrada conservada para revisar".into();
-                    }
-                }
-            }
-        }
-        let _ = self.terminal_wake.try_send(());
+        }) else { return; };
+        self.apply_loaded_file_jump(pending, result);
     }
 
     fn apply_loaded_file_jump(
@@ -12227,7 +9488,6 @@ impl WorkspaceView {
         if project != self.model.project
             || generation != self.file_generation
             || current != pending.origin
-            || self.terminal_resume.active()
             || self.editors.len() >= 128
         {
             self.model.message = "Salto cancelado: cambió el panel o el buffer".into();
@@ -12620,12 +9880,10 @@ impl WorkspaceView {
             && let Err(message) = self.end_floating_zoom()
         {
             self.model.message = message.into();
-            self.retain_replayed_jump();
+
             return;
         }
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            return;
-        }
+
         if self
             .editor_panes
             .as_ref()
@@ -12676,7 +9934,7 @@ impl WorkspaceView {
             read: &mut self.pending_read_guard,
             edit: &mut self.pending_edit_guard,
             terminal: &mut self.pending_terminal_open,
-            sidebar: &mut self.pending_file_splits,
+            sidebar: &mut self.sidebar_read_guard,
         })
         .activate(self.model.project, id, &content)
         {
@@ -12707,13 +9965,8 @@ impl WorkspaceView {
             self.active = index;
             self.model.file = None;
             self.set_focus(Surface::Normal);
-            if entering_normal && self.model.surface == Surface::Normal
-                && !self.submit_tmux_action(TmuxAction::Normal(true))
-            {
-                // A queued focus move must not acknowledge its destination
-                // when entering tmux copy mode was not even accepted.
-                self.retain_replayed_jump();
-            }
+            let _ = entering_normal && self.model.surface == Surface::Normal
+                && !self.submit_tmux_action(TmuxAction::Normal(true));
             return;
         }
         if matches!(content, PaneContent::Explorer(_) | PaneContent::Agents(_)) {
@@ -12744,7 +9997,7 @@ impl WorkspaceView {
             return;
         };
         if self.model.surface == Surface::Terminal {
-            self.detach_terminal_input_on_pane_focus();
+            self.flush_terminal_prefix();
             self.tmux_action(TmuxAction::Normal(true));
         }
         self.model.activate_file(path.clone(), String::new());
@@ -12791,19 +10044,15 @@ impl WorkspaceView {
             return Err("Zoom ya activo");
         }
         if self.pending_measured_splits.is_some()
-            || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some()
             || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some()
             || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
+            || self.pending_sidebar_file_target.is_some()
             || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some()
             || self.pending_terminal_jump_load.is_some()
-            || self.pending_backend_resume.is_some()
             || self.pending_list_page.is_some()
-            || self.terminal_resume.active()
             || !self.marked.is_empty()
             || self.file_prompt.is_some()
             || self.remote_prompt.is_some()
@@ -12818,7 +10067,7 @@ impl WorkspaceView {
             || self.quit_after_save
             || self.pending_copy_close > 0
         {
-            return Err("Hay entrada o navegación pendiente; conservada");
+            return Err("Hay otra operación pendiente; cambio cancelado");
         }
         if !matches!(
             self.model.surface,
@@ -12948,7 +10197,7 @@ impl WorkspaceView {
                     window.project == project && window.attachment == *attachment
                 });
                 let unique = matches.next().is_some() && matches.next().is_none();
-                let context = workspace_app::terminal_resume::Context { project, attachment: *attachment };
+                let context = workspace_app::terminal_input::Context { project, attachment: *attachment };
                 unique && !self.pending_additional_reconnects.contains_key(&(project, *attachment))
                     && !self.pending_terminal_search.contains(&context)
                     && terminal_backend_for(&self.backends, &self.additional_backends, context).is_ok()
@@ -12962,28 +10211,20 @@ impl WorkspaceView {
     /// and floating session as one validated transaction.
     fn close_zoom_origin(&mut self, expected_origin: PaneId) -> Result<(), &'static str> {
         if self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
             || self.pending_copy_close > 0
-            || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some()
             || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some()
             || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
+            || self.pending_sidebar_file_target.is_some()
             || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some()
             || self.pending_terminal_jump_load.is_some()
             || self.pending_terminal_capture.is_some()
             || self.pending_terminal_open.is_some()
             || self.pending_terminal_rebind.contains_key(&self.model.project)
-            || self.terminal_jump_gate.busy()
-            || self.pending_backend_resume.is_some()
+
             || self.pending_list_page.is_some()
-            || self.terminal_resume.active()
-            || self.terminal_resume_zoom_owner.is_some()
-            || self.detached_terminal_input.any_busy()
             || self.mouse_drag.is_some()
             || self.selecting
             || !self.marked.is_empty()
@@ -13001,7 +10242,7 @@ impl WorkspaceView {
             || self.delete_after_save.is_some()
             || self.quit_after_save
         {
-            return Err("Hay entrada o navegación pendiente; zoom conservado");
+            return Err("Hay otra operación pendiente; ampliación cancelada");
         }
         #[cfg(feature = "ghostty")]
         if self.native_selection.is_some() {
@@ -13038,7 +10279,7 @@ impl WorkspaceView {
                 let terminal = self.windows.get(self.active).filter(|terminal| {
                     terminal.project == project && terminal.attachment == *attachment
                 }).ok_or("Terminal no disponible; zoom conservado")?;
-                let context = workspace_app::terminal_resume::Context { project, attachment: *attachment };
+                let context = workspace_app::terminal_input::Context { project, attachment: *attachment };
                 let instance = terminal.terminal.instance_identity();
                 if self.model.surface != Surface::Normal || self.model.file.is_some()
                     || self.pending_terminal_search.contains(&context)
@@ -13098,22 +10339,18 @@ impl WorkspaceView {
     fn end_floating_zoom(&mut self) -> Result<(), &'static str> {
         if self.pending_measured_splits.is_some()
             || self.pending_copy_close > 0
-            || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some()
             || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some()
             || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
+            || self.pending_sidebar_file_target.is_some()
             || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some()
             || self.pending_terminal_jump_load.is_some()
-            || self.pending_backend_resume.is_some()
             || self.pending_list_page.is_some()
-            || self.terminal_resume.active()
             || !self.marked.is_empty()
         {
-            return Err("Hay entrada o navegación pendiente; conservada");
+            return Err("Hay otra operación pendiente; cambio cancelado");
         }
         // A detached float returns to the surviving focused layout window.
         // Validate its content before dropping the independent zoom session.
@@ -13226,9 +10463,7 @@ impl WorkspaceView {
             if self.try_rebind_floating_content() {
                 return;
             }
-            // Do not abandon a retained input sequence merely to tear down
-            // the view. A stale layer cannot paint or receive guarded input;
-            // cleanup is retried after the pending operation is resolved.
+
             let _ = self.end_floating_zoom();
         }
     }
@@ -13238,19 +10473,15 @@ impl WorkspaceView {
     fn try_rebind_floating_content(&mut self) -> bool {
         if self.pending_measured_splits.is_some()
             || self.pending_copy_close > 0
-            || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some()
             || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some()
             || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
+            || self.pending_sidebar_file_target.is_some()
             || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some()
             || self.pending_terminal_jump_load.is_some()
-            || self.pending_backend_resume.is_some()
             || self.pending_list_page.is_some()
-            || self.terminal_resume.active()
             || !self.marked.is_empty()
             || self.file_prompt.is_some()
             || self.remote_prompt.is_some()
@@ -13366,15 +10597,7 @@ impl WorkspaceView {
         {
             self.editor_window_prefix = None;
         }
-        if self.terminal_resume.active()
-            && self
-                .editor_panes
-                .as_ref()
-                .is_some_and(|panes| panes.layout.active() != id)
-            && !self.detach_terminal_input_on_pane_focus()
-        {
-            return;
-        }
+
         if self
             .editor_panes
             .as_ref()
@@ -13417,7 +10640,7 @@ impl WorkspaceView {
         });
         if count > regular.saturating_add(floating) {
             self.model.message = "E16: Invalid range".into();
-            self.retain_replayed_jump();
+
         } else {
             self.editor_window_counted(key, count);
         }
@@ -13443,24 +10666,21 @@ impl WorkspaceView {
         // a numbered destructive close to its unrelated underlying layout.
         if self.editor_zoom.is_some() {
             self.model.message = "Cierre forzado por número con zoom pendiente; buffers conservados".into();
-            self.retain_replayed_jump();
+
             return;
         }
         let busy = self.pending_copy_close > 0 || self.pending_measured_splits.is_some()
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
+            || self.pending_file_read.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.terminal_resume.active() || !self.marked.is_empty()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some() || self.pending_list_page.is_some() || !self.marked.is_empty()
             || self.pending_guarded_quit.is_some() || self.pending_forced_quit.is_some()
             || self.pending_nonfile_window_quit.is_some() || self.quit_after_save
-            || self.delete_after_save.is_some() || self.quit_prompt_open
-            || self.quit_input_prompt_open || self.delete_prompt_open || self.quit_approved;
+            || self.delete_after_save.is_some() || self.quit_prompt_open || self.delete_prompt_open || self.quit_approved;
         if busy {
             self.model.message = "Hay operaciones pendientes; cierre cancelado".into();
-            self.retain_replayed_jump();
+
             return;
         }
         let Some(panes) = self.editor_panes.as_ref() else {
@@ -13484,18 +10704,18 @@ impl WorkspaceView {
             } else {
                 self.model.message = "No se pudo identificar el panel; buffers conservados".into();
             }
-            self.retain_replayed_jump();
+
             return;
         };
         let order = panes.layout.order();
         let Some(target) = count.checked_sub(1).and_then(|index| order.get(index)).copied() else {
             self.model.message = "E16: Invalid range".into();
-            self.retain_replayed_jump();
+
             return;
         };
         let Some(content) = panes.content(target).cloned() else {
             self.model.message = "No se pudo identificar el buffer; cierre cancelado".into();
-            self.retain_replayed_jump();
+
             return;
         };
         if target == panes.layout.active() {
@@ -13509,13 +10729,13 @@ impl WorkspaceView {
             };
             if !current {
                 self.model.message = "El panel activo cambió; cierre cancelado".into();
-                self.retain_replayed_jump();
+
                 return;
             }
             if let PaneContent::File(path) = &content {
                 if self.editors.get(path).is_some_and(|editor| editor.input_marked().is_some() || editor.replaying()) {
                     self.model.message = "Hay entrada pendiente en el buffer; cierre cancelado".into();
-                    self.retain_replayed_jump();
+
                     return;
                 }
                 self.editor_effect(EditEffect::Close(true));
@@ -13532,7 +10752,7 @@ impl WorkspaceView {
                     || editor.input_marked().is_some() || editor.replaying())
             {
                 self.model.message = "El buffer no está disponible o se está guardando; cierre cancelado".into();
-                self.retain_replayed_jump();
+
                 return;
             }
             let views_here = order.iter().filter(|id| **id != target && panes.path(**id) == Some(path)).count();
@@ -13552,178 +10772,16 @@ impl WorkspaceView {
             self.unload_forced_closed_file(&path);
         }
     }
-    /// A split dispatched from the ordered open-input ledger owns its final
-    /// keystroke until the newly measured pane is confirmed.
-    fn editor_window_from_open_input(&mut self, key: &str, count: usize) {
-        let terminal_event = self.pending_terminal_key.as_ref().and_then(|input| {
-            (input.replaying && !input.replay_error && input.split.is_none())
-                .then_some(input.replay_event)
-                .flatten()
-                .map(|event| (input.source.token, event))
-        });
-        let before = self
-            .editor_panes
-            .as_ref()
-            .map(|panes| panes.layout.order())
-            .unwrap_or_default();
-        let before_count = before.len().max(1);
-        let previous_file = self.model.file.as_ref().map(|(path, _)| path.clone());
-        let deferred = self.defer_replayed_split(key, count, None);
-        if !deferred {
-            self.editor_window_counted(key, count);
-        }
-        if let Some((owner, event)) = terminal_event {
-            let created = (!deferred)
-                .then(|| self.editor_panes.as_ref())
-                .flatten()
-                .and_then(|panes| {
-                    let pane = panes.layout.active();
-                    let new_file_ready = !matches!(key, "n" | "N")
-                        || self.model.file.as_ref().is_some_and(|(path, _)| {
-                            Some(path) != previous_file.as_ref()
-                                && self.model.unnamed.contains(path)
-                                && self.editors.contains_key(path)
-                                && panes.content(pane) == Some(&PaneContent::File(path.clone()))
-                        });
-                    (panes.layout.panes().len() == before_count + 1
-                        && !before.contains(&pane)
-                        && new_file_ready)
-                        .then_some(pane)
-                });
-            if let Some(input) = self
-                .pending_terminal_key
-                .as_mut()
-                .filter(|input| input.source.token == owner && input.replay_event == Some(event))
-            {
-                if let Some(pane) = created {
-                    input.split = Some(PendingTerminalSplit {
-                        event,
-                        pane,
-                        deadline: std::time::Instant::now() + Duration::from_secs(15),
-                    });
-                } else {
-                    input.replay_error = true;
-                }
-            }
-        }
-    }
-    /// Returns true when this was a replayed event, including failure, so the
-    /// caller never runs a second copy of a partially handled composite.
-    fn defer_replayed_split(&mut self, key: &str, count: usize, name: Option<String>) -> bool {
-        let replay = self.pending_open_input.as_ref().and_then(|input| {
-            input.replaying.then(|| {
-                (
-                    input.queue.identity(),
-                    input.queue.in_flight_id(),
-                    input.terminal_jump,
-                    input.deferred_capture.is_some(),
-                )
-            })
-        });
-        let Some((owner, event, terminal_jump, deferred_capture)) = replay else {
-            return false;
-        };
-        let Some(event) = event else {
-            if let Some(input) = &mut self.pending_open_input {
-                input.replay_error = true;
-            }
-            return true;
-        };
-        let origin = self
-            .editor_panes
-            .as_ref()
-            .map(|panes| panes.layout.active());
-        if self.pending_measured_splits.is_some()
-            || terminal_jump
-            || deferred_capture
-            || origin.is_none()
-        {
-            if let Some(pane) = origin {
-                self.pending_file_splits.retain(
-                    self.model.project,
-                    pane,
-                    false,
-                    vec![(Self::split_recovery_key(key, name.as_deref()), count)],
-                );
-            }
-            if let Some(input) = &mut self.pending_open_input {
-                input.replay_error = true;
-            }
-            return true;
-        }
-        let path_after_split = if let Some(name) = name {
-            let resolved = workspace_app::editor::split_path_position(&name)
-                .map_err(str::to_owned)
-                .and_then(|(path, _)| self.resolve_active_edit_path(path));
-            match resolved {
-                Ok(resolved) => Some(PendingSplitPath { name, resolved }),
-                Err(error) => {
-                    self.pending_file_splits.retain(
-                        self.model.project,
-                        origin.expect("checked"),
-                        false,
-                        vec![(Self::split_recovery_key(key, Some(&name)), count)],
-                    );
-                    if let Some(input) = &mut self.pending_open_input {
-                        input.replay_error = true;
-                    }
-                    self.model.message = error;
-                    return true;
-                }
-            }
-        } else {
-            None
-        };
-        let commands = VecDeque::from([(key.to_owned(), count)]);
-        match self.prepare_measured_splits(
-            self.model.project,
-            origin.expect("checked"),
-            commands,
-            Some(owner),
-            Some(event),
-        ) {
-            Ok(mut pending) => {
-                pending.path_after_split = path_after_split;
-                self.pending_measured_splits = Some(pending);
-                self.model.message = "Esperando medidas del editor".into();
-            }
-            Err(commands) => {
-                let mut commands: Vec<_> = commands.into_iter().collect();
-                if let Some(path) = &path_after_split
-                    && let Some((key, _)) = commands.first_mut()
-                {
-                    *key = Self::split_recovery_key(key, Some(&path.name));
-                }
-                self.pending_file_splits.retain(
-                    self.model.project,
-                    origin.expect("checked"),
-                    false,
-                    commands,
-                );
-                if let Some(input) = &mut self.pending_open_input {
-                    input.replay_error = true;
-                }
-                self.model.message = "Split conservado; revisá el contexto".into();
-            }
-        }
-        true
-    }
-    fn split_recovery_key(key: &str, path: Option<&str>) -> String {
-        path.map_or_else(|| key.to_owned(), |name| format!("{key}:{name}"))
-    }
-
-    /// Materialize a detached floating buffer as a new ordinary split without
-    /// replacing the surviving anchor or dropping the float on failure.
-    fn split_detached_zoom_content(&mut self, key: &str, count: usize) -> Result<(), &'static str> {
+        fn split_detached_zoom_content(&mut self, key: &str, count: usize) -> Result<(), &'static str> {
         use workspace_core::editor_panes::{Axis, Bounds as PaneBounds};
         if self.snacks_operation_blocked() || self.pending_editor_reload.is_some()
             || self.pending_detached_close_load.is_some() || self.detached_close_read_in_flight.is_some()
             || self.pending_forced_quit.is_some() || self.pending_nonfile_window_quit.is_some()
-            || self.quit_prompt_open || self.quit_input_prompt_open || self.delete_prompt_open
+            || self.quit_prompt_open || self.delete_prompt_open
             || self.quit_approved || !self.pending_saves.is_empty() || !self.formatting.is_empty()
             || self.editors.values().any(|editor| editor.saving)
         {
-            return Err("Hay entrada o navegación pendiente; zoom conservado");
+            return Err("Hay otra operación pendiente; ampliación cancelada");
         }
         let source_current = self.editor_zoom.as_ref().zip(self.editor_panes.as_ref())
             .and_then(|(zoom, panes)| {
@@ -13737,7 +10795,7 @@ impl WorkspaceView {
                     }
                     PaneContent::Terminal(id) => {
                         let terminal = self.windows.get(self.active)?;
-                        let context = workspace_app::terminal_resume::Context {
+                        let context = workspace_app::terminal_input::Context {
                             project: self.model.project, attachment: *id,
                         };
                         Some(matches!(self.model.surface, Surface::Normal | Surface::Terminal)
@@ -13780,7 +10838,7 @@ impl WorkspaceView {
             }
             PaneContent::Terminal(id) => {
                 let terminal = self.windows.get(self.active).ok_or("Terminal no disponible; zoom conservado")?;
-                let context = workspace_app::terminal_resume::Context { project, attachment: *id };
+                let context = workspace_app::terminal_input::Context { project, attachment: *id };
                 if !zoom.is_detached() || terminal.project != project || terminal.attachment != *id
                     || !zoom.owns_terminal(project, panes, &terminal.terminal.instance_identity())
                     || terminal_backend_for(&self.backends, &self.additional_backends, context).is_err()
@@ -13984,7 +11042,7 @@ impl WorkspaceView {
             };
             if let Err(message) = result {
                 self.model.message = message.into();
-                self.retain_replayed_jump();
+
             }
             return;
         }
@@ -13996,7 +11054,7 @@ impl WorkspaceView {
         {
             if let Err(message) = self.split_detached_zoom_content(key, count) {
                 self.model.message = message.into();
-                self.retain_replayed_jump();
+
             }
             return;
         }
@@ -14007,7 +11065,7 @@ impl WorkspaceView {
                     && self.editor_panes.as_ref().is_none_or(|panes| count <= panes.layout.panes().len()))
         {
             self.model.message = "Acción de layout con zoom separado pendiente; contenido conservado".into();
-            self.retain_replayed_jump();
+
             return;
         }
         // In the observed detached float, previous-window leaves the float
@@ -14023,7 +11081,7 @@ impl WorkspaceView {
         {
             if let Err(message) = self.end_floating_zoom() {
                 self.model.message = message.into();
-                self.retain_replayed_jump();
+
             }
             return;
         }
@@ -14042,7 +11100,7 @@ impl WorkspaceView {
             } else if count == zoom_number || key == "q" && count > zoom_number {
                 if let Err(message) = self.end_floating_zoom() {
                     self.model.message = message.into();
-                    self.retain_replayed_jump();
+
                 }
             } else {
                 self.model.message = "E16: Invalid range".into();
@@ -14055,7 +11113,7 @@ impl WorkspaceView {
                 .map(|(zoom, panes)| (zoom.parent(), panes.layout.order()))
             else {
                 self.model.message = "Cambió el panel ampliado; reintentá".into();
-                self.retain_replayed_jump();
+
                 return;
             };
             // The float follows the ordinary windows in Neovim's window
@@ -14070,7 +11128,7 @@ impl WorkspaceView {
             };
             if let Err(message) = self.end_floating_zoom() {
                 self.model.message = message.into();
-                self.retain_replayed_jump();
+
                 return;
             }
             self.focus_editor_pane(target);
@@ -14078,7 +11136,7 @@ impl WorkspaceView {
         }
         if self.editor_zoom.is_some() && key == "o" && count == 0 {
             self.model.message = "E5601: Cannot close window, only floating window would remain".into();
-            self.retain_replayed_jump();
+
             return;
         }
         if key == "o" && count > 0 && self.editor_zoom.is_some() {
@@ -14103,7 +11161,7 @@ impl WorkspaceView {
             if let Some(target) = target.filter(|_| !busy) {
                 if let Err(message) = self.end_floating_zoom() {
                     self.model.message = message.into();
-                    self.retain_replayed_jump();
+
                     return;
                 }
                 self.focus_editor_pane(target);
@@ -14111,7 +11169,7 @@ impl WorkspaceView {
                     .is_some_and(|panes| panes.layout.active() == target)
                 {
                     self.model.message = "El panel de destino ya no está disponible".into();
-                    self.retain_replayed_jump();
+
                     return;
                 }
                 self.editor_window_counted("o", 0);
@@ -14120,13 +11178,13 @@ impl WorkspaceView {
         }
         if self.editor_zoom.is_some() && matches!(key, "x" | "r" | "R") {
             self.model.message = "E5602: Cannot exchange or rotate float".into();
-            self.retain_replayed_jump();
+
             return;
         }
         if self.editor_zoom.is_some() && matches!(key, ">" | "<" | "+" | "-" | "|" | "_") {
             if self.mouse_drag.is_some() {
                 self.model.message = "Terminá el arrastre antes de redimensionar el zoom".into();
-                self.retain_replayed_jump();
+
                 return;
             }
             let current = self.editor_zoom.as_ref().zip(self.editor_panes.as_ref())
@@ -14139,7 +11197,7 @@ impl WorkspaceView {
                 });
             if !resized {
                 self.model.message = "Esperando medidas del zoom o cambió el panel".into();
-                self.retain_replayed_jump();
+
             }
             return;
         }
@@ -14177,7 +11235,7 @@ impl WorkspaceView {
             && let Err(message) = self.end_floating_zoom()
         {
             self.model.message = message.into();
-            self.retain_replayed_jump();
+
             return;
         }
         let zoom_origin_to_close = if matches!(key, "c" | "q") && count > 0 {
@@ -14193,26 +11251,23 @@ impl WorkspaceView {
         if let Some(origin) = zoom_origin_to_close {
             if let Err(message) = self.close_zoom_origin(origin) {
                 self.model.message = message.into();
-                self.retain_replayed_jump();
+
             }
             return;
         }
         let zoom_background_close = if matches!(key, "c" | "q") && count > 0
             && self.pending_measured_splits.is_none()
             && self.pending_copy_close == 0
-            && self.pending_open_input.is_none()
-            && self.pending_terminal_key.is_none()
+            && self.pending_file_read.is_none()
             && self.pending_read_guard.is_none()
             && self.pending_edit_guard.is_none()
             && self.pending_sidebar_open.is_none()
             && self.pending_sidebar_destination.is_none()
-            && self.pending_sidebar_input_transfer.is_none()
+            && self.pending_sidebar_file_target.is_none()
             && self.pending_empty_sidebar_destination.is_none()
             && self.pending_jump_load.is_none()
             && self.pending_terminal_jump_load.is_none()
-            && self.pending_backend_resume.is_none()
             && self.pending_list_page.is_none()
-            && !self.terminal_resume.active()
             && self.marked.is_empty()
             && !self.editors.values().any(|editor| editor.saving)
             && self.pending_saves.is_empty()
@@ -14242,38 +11297,10 @@ impl WorkspaceView {
                 || matches!(key, "v" | "s" | "n" | "N" | "o" | "x" | "r" | "R" | "H" | "J" | "K" | "L"))
         {
             self.model.message = "Cerrá el zoom antes de cambiar el layout".into();
-            self.retain_replayed_jump();
+
             return;
         }
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            self.retain_replayed_jump();
-            return;
-        }
-        if matches!(
-            self.model.surface,
-            Surface::Tree | Surface::Agents | Surface::Backlog
-        ) && let Some(pane) = self.editor_panes.as_ref().map(|p| p.layout.active())
-            && let Some(queued) = self.pending_file_splits.queue(
-                self.file_generation,
-                self.model.project,
-                pane,
-                key,
-                count,
-            )
-        {
-            self.model.message = if queued {
-                "Abriendo archivo; split pendiente"
-            } else if self.pending_file_splits.recovery_revision().is_some() {
-                "Revisá las acciones de panel conservadas antes de agregar más"
-            } else {
-                "Demasiados splits pendientes; esperá a que abra el archivo"
-            }
-            .into();
-            if !queued {
-                self.retain_replayed_jump();
-            }
-            return;
-        }
+
         if matches!(key, "n" | "N") {
             let before = self.editor_panes.as_ref().map(|panes| panes.layout.order());
             self.split_new_window(key == "N", count);
@@ -14292,12 +11319,12 @@ impl WorkspaceView {
         if self.editor_panes.is_none() && self.model.file.is_none() {
             if !matches!(self.model.surface, Surface::Terminal | Surface::Normal) {
                 self.model.message = "Abrí un archivo o enfocá la terminal para dividir".into();
-                self.retain_replayed_jump();
+
                 return;
             }
             let Some(terminal) = self.windows.get(self.active) else {
                 self.model.message = "La terminal todavía se está conectando".into();
-                self.retain_replayed_jump();
+
                 return;
             };
             self.editor_panes = Some(EditorPanes::terminal(terminal.attachment));
@@ -14310,7 +11337,7 @@ impl WorkspaceView {
                 != Some(&PaneContent::Terminal(terminal.attachment))
         {
             self.model.message = "El foco de terminal no coincide con el panel activo".into();
-            self.retain_replayed_jump();
+
             return;
         }
         self.sync_editor_pane();
@@ -14323,7 +11350,7 @@ impl WorkspaceView {
             }
             if key == "c" {
                 self.model.message = "E444: no se puede cerrar la última ventana".into();
-                self.retain_replayed_jump();
+
                 return;
             }
         }
@@ -14354,11 +11381,11 @@ impl WorkspaceView {
         {
             if self.snacks_operation_blocked() || self.pending_editor_reload.is_some()
                 || self.pending_forced_quit.is_some() || self.pending_nonfile_window_quit.is_some()
-                || self.quit_prompt_open || self.quit_input_prompt_open || self.delete_prompt_open
+                || self.quit_prompt_open || self.delete_prompt_open
                 || self.quit_approved
             {
                 self.model.message = "Hay operaciones pendientes; workspace conservado".into();
-                self.retain_replayed_jump();
+
             } else {
                 self.close_workspace();
             }
@@ -14407,12 +11434,11 @@ impl WorkspaceView {
             // current window. Switch through the normal activation path before
             // closing anything so PTY, buffer and sidebar ownership are kept.
             let busy = self.pending_copy_close > 0 || self.pending_measured_splits.is_some()
-                || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
+                || self.pending_file_read.is_some()
                 || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
                 || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-                || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-                || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-                || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
+                || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+                || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some() || self.pending_list_page.is_some()
                 || !self.marked.is_empty() || !self.pending_saves.is_empty() || !self.formatting.is_empty()
                 || self.pending_guarded_quit.is_some() || self.pending_forced_quit.is_some()
                 || self.delete_after_save.is_some() || self.quit_after_save
@@ -14448,7 +11474,7 @@ impl WorkspaceView {
                 }
             }
             self.model.message = "No se pudo confirmar el panel de destino; ventanas conservadas".into();
-            self.retain_replayed_jump();
+
             return;
         }
         if self.model.file.is_some()
@@ -14607,7 +11633,7 @@ impl WorkspaceView {
             })
             .collect();
         let Some(panes) = &mut self.editor_panes else {
-            self.retain_replayed_jump();
+
             return;
         };
         let source = panes.layout.active();
@@ -14768,16 +11794,7 @@ impl WorkspaceView {
             }
             "c" | "q" => {
                 self.model.message = "E444: no se puede cerrar la última ventana".into();
-                if let Some(pending) = &mut self.pending_open_input
-                    && pending.replaying
-                {
-                    pending.replay_error = true;
-                }
-                if let Some(pending) = &mut self.pending_terminal_key
-                    && pending.replaying
-                {
-                    pending.replay_error = true;
-                }
+
                 return;
             }
             "o" => {
@@ -14835,16 +11852,7 @@ impl WorkspaceView {
                         PaneAxis::Column
                     };
                     let Some(current) = bounds.iter().find(|bound| bound.pane == source) else {
-                        if let Some(pending) = &mut self.pending_open_input
-                            && pending.replaying
-                        {
-                            pending.replay_error = true;
-                        }
-                        if let Some(pending) = &mut self.pending_terminal_key
-                            && pending.replaying
-                        {
-                            pending.replay_error = true;
-                        }
+
                         self.model.message = "No se pudo medir el panel".into();
                         return;
                     };
@@ -15013,16 +12021,7 @@ impl WorkspaceView {
             _ => return,
         };
         if let Err(error) = result {
-            if let Some(pending) = &mut self.pending_open_input
-                && pending.replaying
-            {
-                pending.replay_error = true;
-            }
-            if let Some(pending) = &mut self.pending_terminal_key
-                && pending.replaying
-            {
-                pending.replay_error = true;
-            }
+
             self.model.message = match geometry_diagnostics {
                 Some(bounds) => format!("No se pudo cambiar el split: {error:?} {bounds}"),
                 None => format!("No se pudo cambiar el split: {error:?}"),
@@ -15036,7 +12035,7 @@ impl WorkspaceView {
                 });
             if !restored {
                 self.model.message = "El panel cambió; zoom conservado para revisión".into();
-                self.retain_replayed_jump();
+
                 return;
             }
         }
@@ -15052,16 +12051,7 @@ impl WorkspaceView {
             };
             if !available {
                 panes.layout = previous_layout;
-                if let Some(pending) = &mut self.pending_open_input
-                    && pending.replaying
-                {
-                    pending.replay_error = true;
-                }
-                if let Some(pending) = &mut self.pending_terminal_key
-                    && pending.replaying
-                {
-                    pending.replay_error = true;
-                }
+
                 self.model.message = "El panel de destino ya no está disponible".into();
                 return;
             }
@@ -15215,9 +12205,7 @@ impl WorkspaceView {
             .take_if(|guard| guard.generation == generation);
         self.pending_empty_sidebar_destination
             .take_if(|guard| guard.generation == generation);
-        let pane = self.editor_panes.as_ref().map(|p| p.layout.active());
-        self.pending_file_splits
-            .finish(generation, self.model.project, pane, false);
+        self.sidebar_read_guard.finish(generation);
         self.file_generation = self.file_generation.wrapping_add(1);
         self.materialize_sidebar_for_open();
         self.model.message = "Apertura cancelada: cambió el foco".into();
@@ -15260,7 +12248,7 @@ impl WorkspaceView {
         for window in &self.windows {
             if self
                 .terminated_terminals
-                .contains(&workspace_app::terminal_resume::Context {
+                .contains(&workspace_app::terminal_input::Context {
                     project: window.project,
                     attachment: window.attachment,
                 })
@@ -15287,7 +12275,7 @@ impl WorkspaceView {
             for window in &parked.windows {
                 if self
                     .terminated_terminals
-                    .contains(&workspace_app::terminal_resume::Context {
+                    .contains(&workspace_app::terminal_input::Context {
                         project: *project,
                         attachment: window.attachment,
                     })
@@ -15377,44 +12365,7 @@ impl WorkspaceView {
         (state, uncovered)
     }
     fn terminal_quit_ready(&mut self) -> bool {
-        if self.pending_terminal_termination.is_some() {
-            self.model.message = "Esperá el resultado del cierre de terminal".into();
-            return false;
-        }
-        if self.pending_terminal_key.is_some() {
-            self.model.message = "Hay entrada de terminal pendiente de revisión".into();
-            return false;
-        }
-        // A reconnect or workspace close requested earlier must not fire
-        // later after an attempt to quit the application.
-        self.detached_terminal_input.cancel_deferred();
-        if !self.pending_additional_reconnects.is_empty() {
-            self.quit_intent.request();
-            self.model.message = "Esperando reconexión de terminal para cerrar".into();
-            return false;
-        }
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            self.quit_intent.cancel();
-            return false;
-        }
-        if !self.detached_terminal_input.any_busy() {
-            self.quit_input_override = None;
-            return true;
-        }
-        if self
-            .detached_terminal_input
-            .quit_ready(self.quit_input_override)
-        {
-            return true;
-        }
-        if !self.detached_terminal_input.any_warned() {
-            self.quit_intent.request();
-            self.model.message = "Esperando confirmación de la terminal para cerrar".into();
-        } else {
-            self.model.message =
-                "La terminal no confirmó la entrada. Reintentá cerrar para revisar el aviso".into();
-        }
-        false
+        self.pending_terminal_termination.is_none() && self.pending_additional_reconnects.is_empty()
     }
 
     fn finish_approved_quit(&mut self, cx: &mut Context<Self>) -> bool {
@@ -15427,52 +12378,6 @@ impl WorkspaceView {
         true
     }
 
-    fn review_pending_splits(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(revision) = self.pending_file_splits.recovery_revision() else {
-            return;
-        };
-        if self.quit_input_prompt_open {
-            return;
-        }
-        self.quit_input_prompt_open = true;
-        let details = self.pending_file_splits.recovery_text();
-        let preview: String = details.chars().take(1800).collect();
-        let answer = window.prompt(
-            PromptLevel::Warning,
-            "Hay acciones de panel pendientes",
-            Some(&preview),
-            &[
-                PromptButton::cancel("Conservar"),
-                PromptButton::new("Copiar acciones"),
-                PromptButton::new("Descartar acciones"),
-            ],
-            cx,
-        );
-        let weak = cx.weak_entity();
-        cx.spawn(async move |_, cx| {
-            let answer = answer.await.ok();
-            let _ = weak.update(cx, |view, cx| {
-                view.quit_input_prompt_open = false;
-                if view.pending_file_splits.recovery_revision() != Some(revision) {
-                    view.model.message = "Las acciones cambiaron; revisalas de nuevo".into();
-                } else if answer == Some(1) {
-                    let text = view.pending_file_splits.recovery_text();
-                    if view.validation {
-                        view.fixture_clipboard = Some((text, false, None));
-                    } else {
-                        cx.write_to_clipboard(ClipboardItem::new_string(text));
-                    }
-                    view.model.message = "Acciones copiadas; siguen conservadas".into();
-                } else if answer == Some(2) {
-                    view.pending_file_splits.discard_recovery(revision);
-                    view.model.message = "Acciones pendientes descartadas".into();
-                }
-                cx.notify();
-            });
-        })
-        .detach();
-    }
-
     /// Side-effect-free: true unless `can_quit()` would return true at once
     /// without asking or waiting. Conservative where can_quit() first prunes
     /// or detaches state (split recovery, terminal resume): those count as
@@ -15483,14 +12388,8 @@ impl WorkspaceView {
             .forced_quit_override
             .as_ref()
             .filter(|guard| self.forced_quit_guard_valid(guard));
-        let terminal_blocked = self.pending_terminal_key.is_some()
-            || !self.pending_additional_reconnects.is_empty()
-            || self.terminal_resume.active()
-            || (self.detached_terminal_input.any_busy()
-                && !self.detached_terminal_input.quit_ready(self.quit_input_override));
-        let open_input_blocked = self.pending_open_input.as_ref().is_some_and(|pending| {
-            !(pending.queue.is_empty() && pending.overflow.is_empty() && pending.post_split_line.is_none())
-        });
+        let terminal_blocked = !self.pending_additional_reconnects.is_empty();
+
         let approved = self.quit_approved
             && self.forced_quit_override.as_ref().is_none_or(|_| forced.is_some());
         let forced_path = forced.map(|guard| &guard.open.path);
@@ -15501,9 +12400,7 @@ impl WorkspaceView {
             && self.formatting.is_empty()
             && !self.editors.values().any(|e| e.saving)
             && !self.editors.iter().any(|(path, editor)| editor.dirty() && Some(path) != forced_path);
-        self.pending_file_splits.recovery_revision().is_some()
-            || open_input_blocked
-            || (self.recovery.is_some() && !self.recovery_load_finished)
+        (self.recovery.is_some() && !self.recovery_load_finished)
             || terminal_blocked
             || !(approved || nothing_to_ask)
     }
@@ -15512,370 +12409,13 @@ impl WorkspaceView {
         if !self.quit_needs_prompt() {
             return true;
         }
-        self.retain_measured_splits();
-        self.pending_file_splits.retain_active();
-        if self.pending_file_splits.recovery_revision().is_some() {
-            self.review_pending_splits(window, cx);
-            return false;
-        }
-        if let Some(pending) = &self.pending_terminal_key {
-            if !self.quit_input_prompt_open {
-                self.quit_input_prompt_open = true;
-                let revision = pending.revision;
-                let paste_held = pending.paste_held.is_some()
-                    && pending.gate.state() == workspace_app::terminal_key_gate::State::Recover;
-                let detail = if paste_held {
-                    "Un pegado de varias líneas quedó retenido y no se envió nada; la entrada que siguió tampoco se envió. Podés copiarla o descartarla y pegar de nuevo."
-                } else {
-                    "El movimiento, la copia o la escritura podrían haberse ejecutado o seguir en curso. Podés copiar la entrada o descartarla; no se volverá a enviar automáticamente."
-                };
-                let answer = window.prompt(
-                    PromptLevel::Warning,
-                    "Hay entrada de terminal pendiente",
-                    Some(detail),
-                    &[PromptButton::cancel("Cancelar"), PromptButton::new("Copiar entrada"), PromptButton::new("Descartar y seguir"), PromptButton::new("Descartar y cerrar")],
-                    cx,
-                );
-                let handle = window.window_handle();
-                let weak = cx.weak_entity();
-                cx.spawn(async move |_, cx| {
-                    let answer = answer.await.ok();
-                    let _ = handle.update(cx, |_, window, app| {
-                        let _ = weak.update(app, |view, cx| {
-                            view.quit_input_prompt_open = false;
-                            if view.pending_terminal_key.as_ref().is_some_and(|input| input.revision == revision) {
-                                if answer == Some(1) {
-                                    let pending = view.pending_terminal_key.as_ref().expect("checked");
-                                    let mut text = String::from(if paste_held {
-                                        "Entrada pendiente. El pegado retenido y lo que siguió no se enviaron.\n"
-                                    } else {
-                                        "Entrada o navegación pendiente. Alguna acción pudo ejecutarse.\n"
-                                    });
-                                    if pending.mixed_context { text.push_str("Se detectó un cambio de contexto; revisá los eventos antes de usarlos.\n"); }
-                                    for event in pending.gate.events().chain(pending.overflow.iter()) {
-                                        use workspace_app::open_input::Event;
-                                        match event {
-                                            Event::Key(key) => text.push_str(&format!("Tecla: {key} (key={:?}, texto={:?})\n", key.key, key.key_char)),
-                                            Event::Commit { range, text: value } => text.push_str(&format!("Texto {range:?}: {value}\n")),
-                                            Event::Paste { text: value } => text.push_str(&format!("Pegar: {value}\n")),
-                                            Event::Mark { range, text: value, selected } => text.push_str(&format!("Composición {range:?}, selección {selected:?}: {value}\n")),
-                                            Event::Unmark => text.push_str("Fin de composición\n"),
-                                        }
-                                    }
-                                    if view.validation { view.fixture_clipboard = Some((text, false, None)); }
-                                    else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
-                                    view.model.message = "Entrada copiada; la app sigue abierta".into();
-                                } else if matches!(answer, Some(2 | 3)) {
-                                    view.pending_terminal_key = None;
-                                    view.marked.clear();
-                                    if answer == Some(3) && view.can_quit(window, cx) { crate::quit_gate::quit(cx); }
-                                }
-                            } else if matches!(answer, Some(1..=3)) {
-                                view.model.message = "La entrada cambió; revisá el aviso de nuevo".into();
-                            }
-                            cx.notify();
-                        });
-                    });
-                }).detach();
-            }
-            return false;
-        }
-        if let Some(pending) = &self.pending_open_input {
-            if pending.queue.is_empty() && pending.overflow.is_empty() && pending.post_split_line.is_none() {
-                self.cancel_empty_open_input();
-            } else {
-                if !self.quit_input_prompt_open {
-                    self.quit_input_prompt_open = true;
-                    let revision = pending.revision;
-                    let queue_identity = pending.queue.identity();
-                    let detail = if self.pending_open_input_mixed_context {
-                        "La entrada incluye distintos contextos y no se puede reintentar automáticamente. Copiá el registro para revisarlo o conservalo."
-                    } else if pending.post_split_line.is_some() {
-                        "Hay un salto de línea pendiente. Copiá el registro para revisarlo o conservalo."
-                    } else if pending.paste_held.is_some()
-                        && pending.queue.state() == workspace_app::open_input::State::Recover
-                    {
-                        "Un pegado de varias líneas quedó retenido y no se envió nada; la entrada que siguió tampoco se envió. Podés copiarla, descartarla y pegar de nuevo, o conservarla."
-                    } else {
-                        "Una acción no confirmada pudo haberse ejecutado. Podés copiar el registro de entrada o conservarlo."
-                    };
-                    let answer = window.prompt(
-                        PromptLevel::Warning,
-                        "Hay entrada pendiente de abrir un archivo",
-                        Some(detail),
-                        &[
-                            PromptButton::cancel("Cancelar"),
-                            PromptButton::new("Copiar entrada"),
-                            PromptButton::new("Descartar y seguir"),
-                            PromptButton::new("Descartar y cerrar"),
-                            PromptButton::new("Conservar entrada"),
-                        ],
-                        cx,
-                    );
-                    let handle = window.window_handle();
-                    let weak = cx.weak_entity();
-                    cx.spawn(async move |_, cx| {
-                        let answer = answer.await.ok();
-                        let _ = handle.update(cx, |_, window, app| {
-                            let _ = weak.update(app, |view, cx| {
-                                view.quit_input_prompt_open = false;
-                                if view
-                                    .pending_open_input
-                                    .as_ref()
-                                    .is_some_and(|input| input.revision == revision
-                                        && Arc::ptr_eq(&input.queue.identity(), &queue_identity))
-                                {
-                                    if answer == Some(1) {
-                                        let input = view
-                                            .pending_open_input
-                                            .as_ref()
-                                            .expect("checked");
-                                        let mut text = if let Some(boundary) = view.pending_open_input_context_boundary {
-                                            input.recovery_text_with_boundary(Some(boundary))
-                                        } else {
-                                            input.recovery_text()
-                                        };
-                                        if view.pending_open_input_mixed_context {
-                                            text.insert_str(0, "La entrada incluye distintos contextos; revisá cada evento antes de usarlo.\n");
-                                        }
-                                        if view.validation {
-                                            view.fixture_clipboard = Some((text, false, None));
-                                        } else {
-                                            cx.write_to_clipboard(ClipboardItem::new_string(text));
-                                        }
-                                        view.model.message =
-                                            "Registro de entrada copiado; la app sigue abierta"
-                                                .into();
-                                    } else if matches!(answer, Some(2 | 3)) {
-                                        view.discard_open_input();
-                                        view.marked.clear();
-                                        if answer == Some(3) && view.can_quit(window, cx) {
-                                            crate::quit_gate::quit(cx);
-                                        }
-                                    }
-                                } else if matches!(answer, Some(1..=3)) {
-                                    view.model.message =
-                                        "La entrada cambió; revisá el aviso de nuevo".into();
-                                }
-                                cx.notify();
-                            });
-                        });
-                    })
-                    .detach();
-                }
-                return false;
-            }
-        }
+        self.cancel_measured_splits();
+
         if self.recovery.is_some() && !self.recovery_load_finished {
             self.model.message = "Esperá a que termine la recuperación antes de cerrar".into();
             return false;
         }
-        if !self.terminal_quit_ready() {
-            if let Some(guard) = self.terminal_resume.retained_guard()
-                && !self.quit_input_prompt_open
-            {
-                self.quit_input_prompt_open = true;
-                let activity = self.last_activity;
-                let can_copy_unsent = self.terminal_resume.text_if_guarded(&guard).is_some();
-                let can_copy_uncertain = self
-                    .terminal_resume
-                    .uncertain_text_if_guarded(&guard)
-                    .is_some();
-                let can_copy_prefix = self.terminal_resume.prefix_hex_if_guarded(&guard).is_some();
-                // GPUI/macOS focuses the last non-cancel button for Space.
-                // Make both that button and the first/Return action safe.
-                let mut buttons = vec![
-                    PromptButton::cancel("Cancelar"),
-                    PromptButton::new("Descartar y cerrar"),
-                    PromptButton::new("Descartar y seguir"),
-                ];
-                let copy_unsent = can_copy_unsent.then(|| {
-                    let index = buttons.len();
-                    buttons.push(PromptButton::new("Copiar sin enviar"));
-                    index
-                });
-                let copy_uncertain = can_copy_uncertain.then(|| {
-                    let index = buttons.len();
-                    buttons.push(PromptButton::new("Copiar no confirmado"));
-                    index
-                });
-                let copy_prefix = can_copy_prefix.then(|| {
-                    let index = buttons.len();
-                    buttons.push(PromptButton::new("Copiar control en hex"));
-                    index
-                });
-                if copy_unsent.is_none() && copy_uncertain.is_none() && copy_prefix.is_none() {
-                    buttons.push(PromptButton::new("Conservar entrada"));
-                }
-                let answer = window.prompt(
-                    PromptLevel::Warning,
-                    "Hay entrada de terminal pendiente",
-                    Some("El texto no confirmado pudo haberse ejecutado. El texto sin enviar y los controles se conservan por separado; los controles se copian como hexadecimal."),
-                    &buttons,
-                    cx,
-                );
-                let handle = window.window_handle();
-                let weak = cx.weak_entity();
-                cx.spawn(async move |_, cx| {
-                    let answer = answer.await.ok();
-                    let _ = handle.update(cx, |_, window, app| {
-                        let _ = weak.update(app, |view, cx| {
-                            view.quit_input_prompt_open = false;
-                            if answer == Some(1) {
-                                if view.last_activity == activity
-                                    && view.terminal_resume.cancel_guarded(&guard)
-                                {
-                                    view.terminal_resume_zoom_owner = None;
-                                    if view.can_quit(window, cx) {
-                                        crate::quit_gate::quit(cx);
-                                    }
-                                } else {
-                                    view.model.message =
-                                        "La entrada cambió; revisá la terminal y reintentá cerrar"
-                                            .into();
-                                }
-                            } else if answer.is_some() && (answer == copy_unsent || answer == copy_uncertain || answer == copy_prefix) {
-                                let uncertain = answer == copy_uncertain;
-                                let text = if view.last_activity != activity { None } else if answer == copy_prefix {
-                                    view.terminal_resume.prefix_hex_if_guarded(&guard)
-                                } else if uncertain {
-                                    view.terminal_resume.uncertain_text_if_guarded(&guard).map(str::to_owned)
-                                } else {
-                                    view.terminal_resume.text_if_guarded(&guard).map(str::to_owned)
-                                };
-                                if let Some(text) = text {
-                                    if view.validation {
-                                        view.fixture_clipboard = Some((text, false, None));
-                                    } else {
-                                        cx.write_to_clipboard(ClipboardItem::new_string(text));
-                                    }
-                                    view.model.message = if uncertain { "Entrada no confirmada copiada; revisá si ya se ejecutó" } else { "Texto sin enviar copiado; la app sigue abierta" }.into();
-                                } else {
-                                    view.model.message =
-                                        "La entrada cambió; reintentá copiar".into();
-                                }
-                            } else if answer == Some(2) {
-                                if view.last_activity == activity
-                                    && view.terminal_resume.cancel_guarded(&guard)
-                                {
-                                    view.terminal_resume_zoom_owner = None;
-                                    view.quit_intent.cancel();
-                                    view.quit_input_override = None;
-                                    view.model.focus(Surface::Normal);
-                                    view.model.message = "Entrada pendiente descartada; i vuelve a input".into();
-                                } else {
-                                    view.model.message = "La entrada cambió; revisá la terminal antes de descartarla".into();
-                                }
-                            }
-                            cx.notify();
-                        });
-                    });
-                })
-                .detach();
-            } else if let Some(guard) = self.detached_terminal_input.failed_guard()
-                && !self.quit_input_prompt_open
-            {
-                self.quit_input_prompt_open = true;
-                let activity = self.last_activity;
-                let can_copy = self
-                    .detached_terminal_input
-                    .failed_text_if_guarded(guard)
-                    .is_some();
-                let buttons = [
-                    PromptButton::cancel("Cancelar"),
-                    PromptButton::new("Descartar y cerrar"),
-                    PromptButton::new("Descartar y seguir"),
-                    PromptButton::new(if can_copy {
-                        "Copiar entrada"
-                    } else {
-                        "Conservar entrada"
-                    }),
-                ];
-                let detail = if can_copy {
-                    "La entrada pudo haberse ejecutado. Copiala para revisarla; no se reenviará automáticamente."
-                } else {
-                    "La entrada pudo haberse ejecutado y su contenido no está disponible para copiar."
-                };
-                let answer = window.prompt(
-                    PromptLevel::Warning,
-                    "Entrada de terminal no confirmada",
-                    Some(detail),
-                    &buttons,
-                    cx,
-                );
-                let handle = window.window_handle();
-                let weak = cx.weak_entity();
-                cx.spawn(async move |_, cx| {
-                    let answer = answer.await.ok();
-                    let _ = handle.update(cx, |_, window, app| {
-                        let _ = weak.update(app, |view, cx| {
-                            view.quit_input_prompt_open = false;
-                            if answer == Some(1) || answer == Some(2) {
-                                if view.last_activity == activity && view.detached_terminal_input.discard_failed_guarded(guard) {
-                                    view.quit_input_override = None;
-                                    view.quit_intent.cancel();
-                                    if answer == Some(1) {
-                                        if view.can_quit(window, cx) { crate::quit_gate::quit(cx); }
-                                    } else {
-                                        view.model.message = "Entrada no confirmada descartada; la app sigue abierta".into();
-                                    }
-                                } else {
-                                    view.model.message = "La entrada cambió; revisala antes de descartar".into();
-                                }
-                            } else if can_copy && answer == Some(3) {
-                                let text = (view.last_activity == activity)
-                                    .then(|| view.detached_terminal_input.failed_text_if_guarded(guard))
-                                    .flatten().map(str::to_owned);
-                                if let Some(text) = text {
-                                    if view.validation { view.fixture_clipboard = Some((text, false, None)); }
-                                    else { cx.write_to_clipboard(ClipboardItem::new_string(text)); }
-                                    view.model.message = "Entrada no confirmada copiada; revisá si ya se ejecutó".into();
-                                } else {
-                                    view.model.message = "La entrada cambió; reintentá copiar".into();
-                                }
-                            }
-                            cx.notify();
-                        });
-                    });
-                }).detach();
-            } else if self.detached_terminal_input.any_warned() && !self.quit_input_prompt_open {
-                self.quit_input_prompt_open = true;
-                let generation = self.detached_terminal_input.generation();
-                let answer = window.prompt(
-                    PromptLevel::Warning,
-                    "La terminal no confirmó toda la entrada",
-                    Some("La entrada pendiente pudo haberse ejecutado. ¿Cerrar igualmente?"),
-                    &[
-                        PromptButton::new("Cerrar igualmente"),
-                        PromptButton::cancel("Cancelar"),
-                    ],
-                    cx,
-                );
-                let handle = window.window_handle();
-                let weak = cx.weak_entity();
-                cx.spawn(async move |_, cx| {
-                    let accepted = answer.await.ok() == Some(0);
-                    let _ = handle.update(cx, |_, window, app| {
-                        let _ = weak.update(app, |view, cx| {
-                            view.quit_input_prompt_open = false;
-                            if accepted {
-                                // Only the specific outstanding writes described
-                                // by this prompt are covered by the choice.
-                                view.quit_input_override = Some(generation);
-                                if view.can_quit(window, cx) {
-                                    crate::quit_gate::quit(cx);
-                                }
-                            } else {
-                                view.quit_input_override = None;
-                            }
-                            cx.notify();
-                        });
-                    });
-                })
-                .detach();
-            }
-            return false;
-        }
+        if !self.terminal_quit_ready() { self.model.message = "Operacion de terminal en curso".into(); return false; }
         if self.forced_quit_override.as_ref().is_some_and(|guard| !self.forced_quit_guard_valid(guard)) {
             self.forced_quit_override = None;
             self.quit_approved = false;
@@ -15944,7 +12484,7 @@ impl WorkspaceView {
                             view.finish_approved_quit(cx);
                         }
                     }
-                    _ => view.quit_input_override = None,
+                    _ => {},
                 }
                 cx.notify();
             });
@@ -15958,158 +12498,37 @@ impl WorkspaceView {
     /// Report whether the backend accepted the action, not whether tmux has
     /// completed it. Callers must not switch panes after a rejected submission.
     fn submit_tmux_action(&mut self, action: TmuxAction) -> bool {
-        if self.pending_terminal_termination.is_some() {
-            self.model.message = "Esperá el resultado del cierre de terminal".into();
-            return false;
-        }
         if matches!(&action, TmuxAction::SelectAll)
             || matches!(&action, TmuxAction::Motion(key, _) if matches!(key.as_str(), "v" | "<C-v>"))
-        {
-            return self.submit_terminal_visual_selection(action);
-        }
+        { return self.submit_terminal_visual_selection(action); }
         if action.changes_input_target()
             || matches!(&action, TmuxAction::Motion(key, _) if key == "<Esc>")
-        {
-            self.terminal_visual_intent = None;
-        }
+        { self.terminal_visual_intent = None; }
         if matches!(action, TmuxAction::Copy | TmuxAction::CopyNormal) {
-            let accepted = self.request_tmux_copy(matches!(action, TmuxAction::CopyNormal), None, None, None, None);
-            if !accepted
-                && let Some(pending) = &mut self.pending_terminal_key
-                && pending.replaying
-            {
-                pending.replay_error = true;
-            }
-            return accepted;
+            return self.request_tmux_copy(matches!(action, TmuxAction::CopyNormal), None, None, None, None);
         }
         let Some(context) = self.terminal_input_context() else {
-            self.model.message = "Terminal no disponible".into();
-            if let Some(pending) = &mut self.pending_terminal_key
-                && pending.replaying
-            {
-                pending.replay_error = true;
-            }
-            return false;
+            self.model.message = "Terminal no disponible".into(); return false;
         };
-        if let Err(error) = terminal_backend_for(&self.backends, &self.additional_backends, context)
-        {
-            self.model.message = error;
-            if let Some(pending) = &mut self.pending_terminal_key
-                && pending.replaying
-            {
-                pending.replay_error = true;
-            }
-            return false;
-        }
         let tab_focus = matches!(&action, TmuxAction::New | TmuxAction::Select(_)
             | TmuxAction::SelectIndex(_) | TmuxAction::Cycle(_))
             .then(|| self.visible_tab.clone().map(|tab| (tab, self.model.surface,
                 self.model.file.as_ref().map(|(path, _)| path.clone()), std::time::Instant::now(), self.last_activity)))
             .flatten();
-        self.invalidate_terminal_jumps();
         let changed = action.changes_input_target();
-        let resume =
-            action.resumes_input_after_target_change(self.model.surface == Surface::Terminal);
-        if changed {
-            // Queue the original pane's pending input before switching tmux
-            // targets; otherwise a fast window change silently discards it.
-            if self.model.pending_since.is_some() && !self.terminal_resume.active() {
-                self.begin_terminal_resume();
-                if !self.terminal_resume.active() {
-                    return false;
-                }
-            }
-            if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-                if let Some(pending) = &mut self.pending_terminal_key
-                    && pending.replaying
-                {
-                    pending.replay_error = true;
-                }
-                return false;
-            }
-        }
-        let tracked = changed
-            && !matches!(action, TmuxAction::Normal(_))
-            && self
-                .pending_terminal_key
-                .as_ref()
-                .is_some_and(|pending| pending.replaying);
-        let tracked_event = if tracked {
-            self.pending_terminal_key.as_ref().and_then(|pending| {
-                (pending.target_action.is_none()
-                    && pending.write.is_none()
-                    && pending.selection_action.is_none())
-                .then_some(pending.replay_event)
-                .flatten()
-            })
-        } else {
-            None
-        };
-        let token = tracked
-            .then(|| self.tmux_copy_token.checked_add(1))
-            .flatten();
-        let target = if tracked && self.terminal_key_pty_destination_current() {
-            self.pending_terminal_key
-                .as_ref()
-                .and_then(|pending| pending.destination.as_ref())
-                .and_then(|destination| destination.tmux_target.clone())
-        } else {
-            None
-        };
-        if tracked && (tracked_event.is_none() || token.is_none() || target.is_none()) {
-            if let Some(pending) = &mut self.pending_terminal_key {
-                pending.replay_error = true;
-            }
-            self.model.message = "No se pudo confirmar el cambio de terminal".into();
-            return false;
-        }
-        let outgoing = if let (Some(token), Some((window, pane))) = (token, target) {
-            TmuxAction::TrackedTarget(token, window, pane, Box::new(action))
-        } else {
-            action
-        };
-        if let Err(e) = terminal_backend_for(&self.backends, &self.additional_backends, context)
-            .and_then(|backend| backend.send(outgoing))
-        {
-            if let Some(pending) = &mut self.pending_terminal_key
-                && pending.replaying
-            {
-                pending.replay_error = true;
-            }
-            self.model.message = e;
-            if changed && self.model.surface == Surface::Terminal {
-                let _ = self.model.focus(Surface::Normal);
-            }
-            return false;
-        }
+        let resume = action.resumes_input_after_target_change(self.model.surface == Surface::Terminal);
+        if changed { self.flush_terminal_prefix(); }
+        self.invalidate_terminal_jumps();
+        if let Err(error) = terminal_backend_for(&self.backends, &self.additional_backends, context)
+            .and_then(|backend| backend.send(action))
+        { self.model.message = error; return false; }
         if let Some(focus) = tab_focus { self.tab_focus_before_action = Some(focus); }
-        // File-read replies are applied by this UI thread after this handler
-        // returns. Invalidate them after queue acceptance but before they can
-        // be applied; a rejected tmux action must not cancel a valid open.
-        if changed
-            && workspace_app::editor_panes::cancel_terminal_open_for_target_change(
-                &mut self.pending_terminal_open,
-                &mut self.file_generation,
-                true,
-            )
-        {
-            self.model.message = "Apertura cancelada: cambió el destino de tmux".into();
+        if changed {
+            workspace_app::editor_panes::cancel_terminal_open_for_target_change(
+                &mut self.pending_terminal_open, &mut self.file_generation, true,
+            );
         }
-        if let (Some(token), Some(event)) = (token, tracked_event) {
-            self.tmux_copy_token = token;
-            if let Some(pending) = &mut self.pending_terminal_key {
-                pending.target_action = Some(PendingTerminalTargetAction {
-                    event,
-                    token,
-                    context,
-                    deadline: std::time::Instant::now() + Duration::from_secs(15),
-                    timed_out: false,
-                });
-            }
-        }
-        if resume {
-            self.begin_terminal_resume();
-        }
+        if resume { self.start_terminal_input(true); }
         true
     }
     /// Mouse and keyboard target changes use the same backend FIFO; the
@@ -16120,123 +12539,13 @@ impl WorkspaceView {
         self.submit_tmux_action(action);
         true
     }
-    /// Hold subsequent keys while a terminal-origin jump captures its mark.
-    /// The destination is rebound only after that exact capture is applied.
-    fn begin_terminal_navigation_input(&mut self, older: bool, count: usize) -> Result<(), String> {
-        // A jump replayed by the existing terminal ledger must keep the same
-        // owner and event in flight until its capture and navigation finish.
-        // Creating a second queue would lose the ordering of later input.
-        if let Some((owner, event)) = self.pending_terminal_key.as_ref().and_then(|input| {
-            (input.replaying
-                && !input.replay_error
-                && !input.mixed_context
-                && input.capture_wait.is_none()
-                && input.marked_selection.is_none()
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && input
-                    .destination
-                    .as_ref()
-                    .is_some_and(|destination| self.terminal_key_destination_current(destination)))
-            .then_some((input.source.token, input.replay_event?))
-        }) {
-            if self.pending_open_input.is_some() {
-                return Err("Hay otra entrada pendiente de resolver".into());
-            }
-            let source = self
-                .terminal_key_source(owner)
-                .ok_or("Terminal no disponible")?;
-            let mut destination = self
-                .terminal_key_destination()
-                .ok_or("Panel no disponible")?;
-            self.start_terminal_capture(TerminalCaptureKind::Navigate { older, count })?;
-            destination.generation = self.file_generation;
-            if !self.terminal_key_destination_current(&destination)
-                || !self.terminal_key_source_current(&source)
-            {
-                if let Some(capture) = &mut self.pending_terminal_capture {
-                    capture.valid = false;
-                }
-                return Err("Cambió el origen del salto".into());
-            }
-            let capture = self
-                .pending_terminal_capture
-                .as_mut()
-                .ok_or("Captura no disponible")?;
-            let capture_token = capture.token.get();
-            capture.navigate_input = Some(owner);
-            capture.navigate_event = Some(event);
-            let input = self
-                .pending_terminal_key
-                .as_mut()
-                .ok_or("Entrada no disponible")?;
-            input.source = source;
-            input.destination = Some(destination);
-            input.capture_wait = Some(capture_token);
-            return Ok(());
-        }
-        if self.pending_terminal_key.is_some() || self.pending_open_input.is_some() {
-            self.retain_replayed_jump();
-            return Err("Hay otra entrada pendiente de resolver".into());
-        }
-        let token = self
-            .tmux_copy_token
-            .checked_add(1)
-            .ok_or("Identidades agotadas")?;
-        let source = self
-            .terminal_key_source(token)
-            .ok_or("Terminal no disponible")?;
-        let mut destination = self
-            .terminal_key_destination()
-            .ok_or("Panel no disponible")?;
-        self.start_terminal_capture(TerminalCaptureKind::Navigate { older, count })?;
-        destination.generation = self.file_generation;
-        if !self.terminal_key_destination_current(&destination)
-            || !self.terminal_key_source_current(&source)
-        {
-            if let Some(capture) = &mut self.pending_terminal_capture {
-                capture.valid = false;
-            }
-            return Err("Cambió el origen del salto".into());
-        }
-        let Some(capture) = &mut self.pending_terminal_capture else {
-            return Err("Captura no disponible".into());
-        };
-        let capture_token = capture.token.get();
-        capture.navigate_input = Some(token);
-        self.tmux_copy_token = token;
-        self.pending_terminal_key = Some(PendingTerminalKey {
-            source,
-            transition_tab: None, tab_reconcile: None,
-            transition_activity: None,
-            gate: workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
-                .expect("fixed valid limits"),
-            overflow: VecDeque::new(),
-            destination: Some(destination),
-            open_identity: None,
-            open_switch_event: None,
-            replaying: false,
-            scheduled: false,
-            replay_error: false, paste_held: None,
-            replay_event: None,
-            write: None,
-            target_action: None,
-            selection_action: None,
-            split: None,
-            capture_wait: Some(capture_token),
-            mixed_context: false,
-            revision: 0,
-            marked_selection: None,
-            navigation_geometry_deadline: None,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-        });
-        Ok(())
-    }
+        fn begin_terminal_navigation_input(&mut self, older: bool, count: usize) -> Result<(), String> { self.start_terminal_capture(TerminalCaptureKind::Navigate { older, count }) }
     /// Capture the actual terminal view, including an independent zoom. The
     /// outer option rejects a stale or hidden view; an inner None is a normal
     /// pane (or the standalone terminal).
     fn terminal_focus_zoom_guard(
         &self,
-        context: workspace_app::terminal_resume::Context,
+        context: workspace_app::terminal_input::Context,
         instance: &Arc<()>,
     ) -> Option<Option<workspace_app::editor_zoom::ZoomRenderGuard>> {
         if self.terminal_input_context() != Some(context)
@@ -16261,7 +12570,7 @@ impl WorkspaceView {
 
     fn terminal_focus_guard_current(
         &self,
-        context: workspace_app::terminal_resume::Context,
+        context: workspace_app::terminal_input::Context,
         instance: &Arc<()>,
         focus: &Option<workspace_core::editor_panes::FocusGuard>,
         zoom_guard: &Option<workspace_app::editor_zoom::ZoomRenderGuard>,
@@ -16290,19 +12599,10 @@ impl WorkspaceView {
         }
     }
 
-    fn terminal_resume_zoom_current(&self, context: workspace_app::terminal_resume::Context) -> bool {
-        match &self.terminal_resume_zoom_owner {
-            None => self.editor_zoom.is_none(),
-            Some(owner) => owner.context == context && self.terminal_focus_guard_current(
-                context, &owner.instance, &Some(owner.focus.clone()), &Some(owner.zoom.clone()),
-            ),
-        }
+    fn terminal_source_snapshot(&self, token: u64) -> Option<PendingTmuxCopy> {
+        self.terminal_source_snapshot_on(token, Surface::Normal)
     }
-
-    fn terminal_key_source(&self, token: u64) -> Option<PendingTmuxCopy> {
-        self.terminal_key_source_on(token, Surface::Normal)
-    }
-    fn terminal_key_source_on(&self, token: u64, surface: Surface) -> Option<PendingTmuxCopy> {
+    fn terminal_source_snapshot_on(&self, token: u64, surface: Surface) -> Option<PendingTmuxCopy> {
         let context = self.terminal_input_context()?;
         if self.model.surface != surface {
             return None;
@@ -16328,7 +12628,7 @@ impl WorkspaceView {
             pane: selected.active_pane.clone(),
         })
     }
-    fn terminal_key_source_current(&self, source: &PendingTmuxCopy) -> bool {
+    fn terminal_source_snapshot_current(&self, source: &PendingTmuxCopy) -> bool {
         self.terminal_input_context() == Some(source.context)
             && self.model.surface == source.surface
             && self.model.focus_revision == source.focus_revision
@@ -16344,7 +12644,7 @@ impl WorkspaceView {
                     && active.next().is_none()
             })
     }
-    fn terminal_key_destination(&self) -> Option<TerminalKeyDestination> {
+    fn focused_input_target(&self) -> Option<FocusedInputTarget> {
         let panes = self.editor_panes.as_ref()?;
         let pane = panes.layout.active();
         let zoom = match (self.model.surface, self.editor_zoom.as_ref()) {
@@ -16370,7 +12670,7 @@ impl WorkspaceView {
         };
         let terminal_instance = if let PaneContent::Terminal(id) = &content {
             if self.terminal_input_context()
-                != Some(workspace_app::terminal_resume::Context {
+                != Some(workspace_app::terminal_input::Context {
                     project: self.model.project,
                     attachment: *id,
                 })
@@ -16416,7 +12716,7 @@ impl WorkspaceView {
         } else {
             None
         };
-        Some(TerminalKeyDestination {
+        Some(FocusedInputTarget {
             project: self.model.project,
             pane,
             focus: panes.layout.focus_guard(),
@@ -16440,12 +12740,12 @@ impl WorkspaceView {
             media: self.media_active(),
         })
     }
-    fn terminal_key_destination_current(&self, destination: &TerminalKeyDestination) -> bool {
-        self.terminal_key_destination_current_at(destination, destination.generation)
+    fn focused_input_target_current(&self, destination: &FocusedInputTarget) -> bool {
+        self.focused_input_target_current_at(destination, destination.generation)
     }
-    fn terminal_key_destination_current_at(
+    fn focused_input_target_current_at(
         &self,
-        destination: &TerminalKeyDestination,
+        destination: &FocusedInputTarget,
         generation: u64,
     ) -> bool {
         self.model.project == destination.project
@@ -16468,11 +12768,11 @@ impl WorkspaceView {
             && match &destination.content {
                 PaneContent::Terminal(id) => {
                     self.terminal_input_context()
-                        == Some(workspace_app::terminal_resume::Context {
+                        == Some(workspace_app::terminal_input::Context {
                             project: destination.project,
                             attachment: *id,
                         })
-                        && self.terminal_key_tmux_target_current(destination)
+                        && self.input_target_tmux_current(destination)
                         && self
                             .windows
                             .iter()
@@ -16508,7 +12808,7 @@ impl WorkspaceView {
             }
             && match (&destination.content, &destination.terminal_instance) {
                 (PaneContent::Terminal(attachment), Some(instance)) => self.terminal_focus_guard_current(
-                    workspace_app::terminal_resume::Context { project: destination.project, attachment: *attachment },
+                    workspace_app::terminal_input::Context { project: destination.project, attachment: *attachment },
                     instance, &Some(destination.focus.clone()), &destination.zoom,
                 ),
                 (PaneContent::File(path), None) if destination.zoom.is_some() => {
@@ -16530,7 +12830,7 @@ impl WorkspaceView {
     }
     /// This guards against target changes already observed by the tmux poller.
     /// It is not an atomic check against other clients or an unobserved change.
-    fn terminal_key_tmux_target_current(&self, destination: &TerminalKeyDestination) -> bool {
+    fn input_target_tmux_current(&self, destination: &FocusedInputTarget) -> bool {
         let Some((window, pane)) = &destination.tmux_target else {
             return false;
         };
@@ -16542,153 +12842,7 @@ impl WorkspaceView {
                 && active.next().is_none()
         })
     }
-    /// Replay may change mode while handling a key, but it must never write
-    /// to a different pane, attachment or terminal process as a side effect.
-    fn terminal_key_pty_destination_current(&self) -> bool {
-        let Some(destination) = self
-            .pending_terminal_key
-            .as_ref()
-            .and_then(|pending| pending.destination.as_ref())
-        else {
-            return false;
-        };
-        self.terminal_key_pane_current(destination)
-            && self.terminal_key_tmux_target_current(destination)
-    }
-    fn terminal_key_pane_current(&self, destination: &TerminalKeyDestination) -> bool {
-        let PaneContent::Terminal(attachment) = &destination.content else {
-            return false;
-        };
-        self.model.project == destination.project
-            && self.terminal_input_context()
-                == Some(workspace_app::terminal_resume::Context {
-                    project: destination.project,
-                    attachment: *attachment,
-                })
-            && self.windows.get(self.active).is_some_and(|window| {
-                window.project == destination.project
-                    && window.attachment == *attachment
-                    && destination
-                        .terminal_instance
-                        .as_ref()
-                        .is_some_and(|original| {
-                            Arc::ptr_eq(original, &window.terminal.instance_identity())
-                        })
-            })
-            && destination.terminal_instance.as_ref().is_some_and(|instance| {
-                self.terminal_focus_guard_current(
-                    workspace_app::terminal_resume::Context { project: destination.project, attachment: *attachment },
-                    instance, &Some(destination.focus.clone()), &destination.zoom,
-                )
-            })
-    }
-    fn rebind_undispatched_tab_key(&mut self) -> bool {
-        let rebound = self.pending_terminal_key.as_ref().and_then(|pending| {
-            let before = pending.transition_tab.as_ref()?;
-            let after = self.visible_tab.as_ref()?;
-            let old = pending.destination.as_ref()?;
-            let new = self.terminal_key_destination()?;
-            let (window, _) = old.tmux_target.as_ref()?;
-            let same_instance = old.terminal_instance.as_ref().zip(new.terminal_instance.as_ref())
-                .is_some_and(|(a, b)| Arc::ptr_eq(a, b));
-            (pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && !pending.replaying && !pending.scheduled
-                && before != after && before.context == after.context
-                && before.session == after.session && after.window == *window
-                && old.project == new.project && old.surface == Surface::Terminal
-                && new.surface == Surface::Terminal && old.content == new.content
-                && old.tmux_target == new.tmux_target && same_instance
-                && old.zoom.is_none() && new.zoom.is_none()
-                && old.command.is_none() && new.command.is_none()
-                && !old.window_prefix && !new.window_prefix
-                && !old.file_prompt && !new.file_prompt
-                && !old.remote_prompt && !new.remote_prompt
-                && !old.help && !new.help && !old.notifications && !new.notifications
-                && !old.media && !new.media && !pending.mixed_context
-                && pending.transition_activity == Some(self.last_activity)
-                && pending.gate.in_flight_id().is_none() && pending.marked_selection.is_none()
-                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
-                && pending.write.is_none() && pending.target_action.is_none()
-                && pending.selection_action.is_none() && pending.split.is_none()
-                && pending.capture_wait.is_none() && self.terminal_key_tmux_target_current(&new))
-                .then_some(new)
-        });
-        let Some(rebound) = rebound else { return false };
-        let Some(pending) = &mut self.pending_terminal_key else { return false };
-        pending.destination = Some(rebound);
-        pending.transition_tab = None;
-        pending.transition_activity = None;
-        pending.revision = pending.revision.wrapping_add(1);
-        let _ = self.terminal_wake.try_send(());
-        true
-    }
-    /// An acknowledged, empty replay no longer owns keyboard input. Release
-    /// it before checking focus: focus may legitimately change between the
-    /// last acknowledgement and the next scheduler tick.
-    fn release_idle_terminal_key(&mut self) -> bool {
-        let idle = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && pending.gate.is_empty()
-                && pending.gate.in_flight_id().is_none()
-                && pending.overflow.is_empty()
-                && !pending.replaying && !pending.scheduled
-                && pending.replay_event.is_none()
-                && pending.write.is_none() && pending.target_action.is_none()
-                && pending.selection_action.is_none() && pending.split.is_none()
-                && pending.capture_wait.is_none() && pending.marked_selection.is_none()
-                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
-                && pending.tab_reconcile.is_none()
-                && self.pending_open_input.is_none()
-        });
-        if idle {
-            self.pending_terminal_key = None;
-        }
-        idle
-    }
-    fn enqueue_terminal_key(&mut self, event: workspace_app::open_input::Event<Keystroke>) -> bool {
-        self.rebind_undispatched_tab_key();
-        let target_in_flight = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            pending.target_action.as_ref().is_some_and(|action| !action.timed_out)
-                && pending.destination.as_ref().is_some_and(|destination| {
-                    self.terminal_key_pane_current(destination)
-                        && self.model.surface == destination.surface
-                        && self.model.focus_revision == destination.focus_revision
-                        && self.file_generation == destination.generation
-                })
-        });
-        let stale = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            !target_in_flight && !pending.replaying
-                && match &pending.destination {
-                    Some(destination) => !self.terminal_key_destination_current(destination),
-                    None => !self.terminal_key_source_current(&pending.source),
-                }
-        });
-        let Some(pending) = self.pending_terminal_key.as_mut() else {
-            return false;
-        };
-        if pending.replaying {
-            return false;
-        }
-        if stale {
-            pending.mixed_context = true;
-            pending.gate.invalidate();
-        }
-        let bytes = PendingOpenInput::event_bytes(&event);
-        if !pending.overflow.is_empty() {
-            pending.overflow.push_back(event);
-        } else if let Err(event) = pending.gate.push(event, bytes) {
-            pending.overflow.push_back(event);
-        }
-        pending.revision = pending.revision.wrapping_add(1);
-        self.quit_intent.activity();
-        if !matches!(pending.gate.state(),
-            workspace_app::terminal_key_gate::State::Recover
-                | workspace_app::terminal_key_gate::State::Uncertain)
-        {
-            self.model.message = TERMINAL_NAVIGATION_HOLD_MESSAGE.into();
-        }
-        true
-    }
+
     fn terminal_visual_owner_current(&self, owner: &PendingTmuxCopy) -> bool {
         self.terminal_input_context() == Some(owner.context)
             && self.windows.get(self.active).is_some_and(|window| !window.snapshot.exited)
@@ -16704,7 +12858,7 @@ impl WorkspaceView {
     }
     fn finish_terminal_visual_operation(
         &mut self,
-        context: workspace_app::terminal_resume::Context,
+        context: workspace_app::terminal_input::Context,
         token: u64,
         ok: bool,
     ) -> bool {
@@ -16723,15 +12877,12 @@ impl WorkspaceView {
     }
     fn submit_terminal_visual_selection(&mut self, action: TmuxAction) -> bool {
         if self.model.surface == Surface::Terminal && self.model.pending_since.is_some()
-            && !self.terminal_resume.active()
         {
-            self.begin_terminal_resume();
+            self.begin_terminal_input();
         }
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            return false;
-        }
+
         let Some(token) = self.tmux_copy_token.checked_add(1) else { return false; };
-        let Some(owner) = self.terminal_key_source_on(token, self.model.surface) else {
+        let Some(owner) = self.terminal_source_snapshot_on(token, self.model.surface) else {
             self.model.message = "Destino de selección no disponible".into();
             return false;
         };
@@ -16756,19 +12907,9 @@ impl WorkspaceView {
             return false;
         }
         self.tmux_copy_token = token;
-        let context = owner.context;
         self.terminal_visual_intent = (!toggle_off).then(|| owner.clone());
         self.pending_visual_operations.insert(token, owner);
-        if let Some(pending) = &mut self.pending_terminal_key
-            && pending.replaying
-            && let Some(event) = pending.replay_event
-        {
-            pending.selection_action = Some(PendingTerminalSelectionAction {
-                event, token, context,
-                deadline: std::time::Instant::now() + Duration::from_secs(15),
-                timed_out: false,
-            });
-        }
+
         let _ = self.model.focus(Surface::Normal);
         true
     }
@@ -16798,1047 +12939,24 @@ impl WorkspaceView {
             return false;
         }
         self.tmux_copy_token = token;
-        let context = owner.context;
         self.pending_visual_operations.insert(token, owner);
-        if let Some(pending) = &mut self.pending_terminal_key
-            && pending.replaying
-            && let Some(event) = pending.replay_event
-        {
-            pending.selection_action = Some(PendingTerminalSelectionAction {
-                event, token, context,
-                deadline: std::time::Instant::now() + Duration::from_secs(15),
-                timed_out: false,
-            });
-        }
-        true
-    }
-    fn terminal_key_target_action_done(
-        &mut self,
-        source: workspace_app::terminal_resume::Context,
-        token: u64,
-        result: Result<Vec<WindowInfo>, String>,
-    ) {
-        let matches_request = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            pending
-                .target_action
-                .as_ref()
-                .is_some_and(|action| action.token == token && action.context == source)
-        });
-        if !matches_request {
-            return;
-        }
-        let pane_current = self
-            .pending_terminal_key
-            .as_ref()
-            .and_then(|pending| pending.destination.as_ref())
-            .is_some_and(|destination| {
-                self.terminal_key_pane_current(destination)
-                    && self.model.surface == destination.surface
-                    && self.model.focus_revision == destination.focus_revision
-                    && self.file_prompt.is_some() == destination.file_prompt
-                    && self.remote_prompt.is_some() == destination.remote_prompt
-                    && self.help == destination.help
-                    && self.model.notifications == destination.notifications
-                    && self.media_active() == destination.media
-            });
-        let event = self
-            .pending_terminal_key
-            .as_mut()
-            .and_then(|pending| pending.target_action.take())
-            .expect("request checked");
-        if let Ok(windows) = result
-            && pane_current
-        {
-            // The worker verified the action against the original tmux pane.
-            // If it selected another window, finish restoring that window's
-            // native layout before releasing the next queued input event.
-            let tab_reconcile = self.pending_terminal_key.as_ref()
-                .and_then(|pending| pending.destination.as_ref())
-                .and_then(|destination| destination.tmux_target.as_ref())
-                .and_then(|(old_window, _)| {
-                    let mut active = windows.iter().filter(|window| window.active);
-                    let window = active.next()?;
-                    if active.next().is_some() || &window.id == old_window { return None; }
-                    let snapshot = self.observed_tab_windows.get(&source)?;
-                    let visible = self.visible_tab.as_ref()?;
-                    (visible.context == source && visible.session == snapshot.identity).then(|| TabLayoutKey {
-                        context: source, session: snapshot.identity.clone(), window: window.id.clone(),
-                    })
-                });
-            if self
-                .additional_backends
-                .contains_key(&(source.project, source.attachment))
-            {
-                self.additional_tmux_windows
-                    .insert((source.project, source.attachment), windows);
-            } else {
-                self.tmux_windows.insert(source.project, windows);
-            }
-            let destination = self.terminal_key_destination();
-            if let Some(pending) = &mut self.pending_terminal_key {
-                if !event.timed_out
-                    && destination.is_some()
-                    && pending.gate.acknowledge(event.event)
-                {
-                    pending.destination = destination;
-                    pending.tab_reconcile = tab_reconcile;
-                    pending.revision = pending.revision.wrapping_add(1);
-                } else {
-                    pending.gate.uncertain(event.event);
-                    self.model.message = "Cambio de terminal pendiente de revisión".into();
-                }
-            }
-        } else if let Some(pending) = &mut self.pending_terminal_key {
-            pending.gate.uncertain(event.event);
-            self.model.message = "Cambio de terminal sin confirmar; entrada conservada".into();
-        }
-        let _ = self.terminal_wake.try_send(());
-    }
-    /// Queue one retained event to the original PTY and keep it in the gate
-    /// until the writer replies. A failed write may be partial or uncertain.
-    fn replay_terminal_key_bytes(&mut self, bytes: &[u8], prepared: bool) -> Result<(), String> {
-        let event = self
-            .pending_terminal_key
-            .as_ref()
-            .filter(|pending| {
-                pending.replaying
-                    && pending.write.is_none()
-                    && pending.target_action.is_none()
-                    && pending.selection_action.is_none()
-            })
-            .and_then(|pending| pending.replay_event)
-            .ok_or("No se pudo identificar el evento de entrada")?;
-        if self.model.surface != Surface::Terminal
-            || !self.terminal_key_pty_destination_current()
-            || self.reject_stale_open_replay()
-            || self.terminal_resume.active()
-        {
-            return Err("Cambió el destino de la terminal".into());
-        }
-        let context = self
-            .terminal_input_context()
-            .ok_or("Terminal no disponible")?;
-        if !prepared {
-            self.finish_pending_new_file_before_input();
-            self.cancel_jump_load();
-            self.note_activity();
-        }
-        if self.terminal_input_context() != Some(context)
-            || !self.terminal_key_pty_destination_current()
-            || self.terminal_resume.active()
-            || self.reject_stale_open_replay()
-        {
-            return Err("Cambió el destino de la terminal".into());
-        }
-        let reply = self
-            .windows
-            .get(self.active)
-            .filter(|terminal| {
-                terminal.project == context.project && terminal.attachment == context.attachment
-            })
-            .ok_or_else(|| "Terminal no disponible".to_owned())
-            .and_then(|terminal| terminal.terminal.input_tracked(bytes))?;
-        self.file_generation = self.file_generation.wrapping_add(1);
-        self.model.file = None;
-        let pending = self
-            .pending_terminal_key
-            .as_mut()
-            .ok_or("Entrada sin seguimiento")?;
-        pending.write = Some(PendingTerminalKeyWrite {
-            event,
-            reply,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-            timed_out: false,
-        });
-        Ok(())
-    }
-    fn replay_terminal_key_text(
-        &mut self,
-        text: &str,
-        paste: bool,
-        prepared: bool,
-        cx: &mut Context<Self>,
-    ) {
-        let bracket = paste
-            && self
-                .windows
-                .get(self.active)
-                .is_some_and(|terminal| terminal.snapshot.bracketed_paste);
-        let bytes = if paste {
-            match terminal_paste_bytes(text, bracket) {
-                Ok(bytes) => bytes,
-                Err(error) => {
-                    self.model.message = error;
-                    if let Some(pending) = &mut self.pending_terminal_key {
-                        pending.replay_error = true;
-                    }
-                    cx.notify();
-                    return;
-                }
-            }
-        } else {
-            text.as_bytes().to_vec()
-        };
-        if self.replay_terminal_key_bytes(&bytes, prepared).is_err()
-            && let Some(pending) = &mut self.pending_terminal_key
-        {
-            pending.replay_error = true;
-        }
-        cx.notify();
-    }
-    fn expire_file_jump_input(&mut self, cx: &mut Context<Self>) {
-        if let Some(load) = &mut self.pending_detached_terminal_jump_load
-            && !load.timed_out && load.started.elapsed() >= Duration::from_secs(15)
-        {
-            load.timed_out = true;
-            if let Some(input) = &mut self.pending_terminal_key
-                && input.source.token == load.owner
-            {
-                input.gate.invalidate();
-            }
-            self.model.message = "La lectura del salto no respondió; entrada conservada".into();
-            cx.notify();
-        }
-        let owner = self.pending_jump_load.as_mut().and_then(|load| {
-            if !load.timed_out && load.started.elapsed() >= Duration::from_secs(15) {
-                load.timed_out = true;
-                Some(load.owner.clone())
-            } else {
-                None
-            }
-        });
-        if let Some(owner) = owner {
-            match owner {
-                FileJumpOwner::Terminal { token, .. } => {
-                    if let Some(input) = &mut self.pending_terminal_key
-                        && input.source.token == token
-                    {
-                        input.gate.invalidate();
-                    }
-                }
-                FileJumpOwner::Open { identity, .. } => {
-                    if let Some(input) = &mut self.pending_open_input
-                        && Arc::ptr_eq(&identity, &input.queue.identity())
-                    {
-                        input.queue.invalidate();
-                    }
-                }
-            }
-            self.model.message = "La lectura del salto no respondió; entrada conservada".into();
-            cx.notify();
-        }
-    }
 
-    /// Move the remaining terminal-owned events to the guarded file-open
-    /// ledger in the same dispatch turn, before the disk reply can arrive.
-    fn handoff_terminal_replay_to_editor_open(&mut self, token: u64) {
-        use workspace_app::open_input::State as OpenState;
-        use workspace_app::terminal_key_gate::State as TerminalState;
-        let relevant = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|open| open.context.attachment == 0 && open.edit_resolution);
-        if !relevant {
-            return;
-        }
-        let valid = self.pending_terminal_key.as_ref().is_some_and(|input| {
-            input.source.token == token
-                && !input.replaying
-                && !input.scheduled
-                && !input.mixed_context
-                && input.marked_selection.is_none()
-                && input.gate.state() == TerminalState::Replaying
-                && input.gate.in_flight_id().is_none()
-                && input.destination.as_ref().is_some_and(|destination| {
-                    matches!(&destination.content, PaneContent::File(_))
-                        && self.terminal_key_destination_current(destination)
-                })
-                && self.pending_open_input.as_ref().is_some_and(|open| {
-                    input
-                        .open_identity
-                        .as_ref()
-                        .is_some_and(|identity| Arc::ptr_eq(identity, &open.queue.identity()))
-                        && input.destination.as_ref().is_some_and(|destination| {
-                            open.context.workspace == destination.project
-                                && open.context.pane == destination.pane.0
-                                && open.context.generation == destination.generation
-                        })
-                        && open.queue.state() == OpenState::Recording
-                        && open.queue.is_empty()
-                        && open.overflow.is_empty()
-                        && !open.replaying
-                        && self.open_input_context_current(open, false)
-                })
-        });
-        if !valid {
-            if let Some(input) = &mut self.pending_terminal_key
-                && input.source.token == token
-            {
-                input.gate.invalidate();
-            }
-            if let Some(open) = &mut self.pending_open_input {
-                open.queue.invalidate();
-            }
-            self.model.message = "Entrada conservada: cambió el destino de apertura".into();
-            return;
-        }
-        let input = self.pending_terminal_key.take().expect("owner checked");
-        let recovery = input.gate.into_recovery();
-        let open = self
-            .pending_open_input
-            .as_mut()
-            .expect("destination checked");
-        for event in recovery.events.into_iter().chain(input.overflow) {
-            open.enqueue(event);
-        }
-    }
-
-    /// Hand off a cycle from the exact detached terminal to its pending file
-    /// read. The file-open context uses attachment 0; its terminal identity
-    /// lives in the detached source rather than in that sentinel field.
-    fn handoff_detached_terminal_cycle_to_open(&mut self) -> bool {
-        use workspace_app::open_input::State as OpenState;
-        use workspace_app::terminal_key_gate::State as TerminalState;
-        let valid = self.pending_terminal_key.as_ref().zip(self.pending_open_input.as_ref())
-            .zip(self.pending_detached_open.as_ref()).is_some_and(|((input, open), owner)| {
-                let DetachedReadSource::Terminal { attachment, instance, .. } = &owner.source else {
-                    return false;
-                };
-                !owner.opened && open.context.attachment == 0
-                    && Arc::ptr_eq(&owner.queue, &open.queue.identity())
-                    && input.open_identity.as_ref().is_some_and(|identity| Arc::ptr_eq(identity, &owner.queue))
-                    && input.source.context.project == open.context.workspace
-                    && input.source.context.attachment == *attachment
-                    && Arc::ptr_eq(&input.source.instance, instance)
-                    && self.terminal_key_source_current(&input.source)
-                    && input.destination.as_ref().is_some_and(|destination| {
-                        destination.project == open.context.workspace
-                            && destination.pane.0 == open.context.pane
-                            && destination.generation == open.context.generation
-                            && destination.content == PaneContent::Terminal(*attachment)
-                            && destination.terminal_instance.as_ref().is_some_and(|target| Arc::ptr_eq(target, instance))
-                            && self.terminal_key_destination_current(destination)
-                    })
-                    && !input.replaying && !input.scheduled && !input.mixed_context && !input.replay_error
-                    && input.replay_event.is_none() && input.open_switch_event.is_none()
-                    && input.write.is_none() && input.target_action.is_none() && input.selection_action.is_none()
-                    && input.split.is_none() && input.capture_wait.is_none() && input.marked_selection.is_none()
-                    && input.gate.state() == TerminalState::Replaying && input.gate.in_flight_id().is_none()
-                    && open.queue.state() == OpenState::Recording && open.queue.is_empty()
-                    && open.overflow.is_empty() && !open.replaying && !open.scheduled && !open.replay_error
-                    && open.marked_selection.is_none() && !self.pending_open_input_mixed_context
-                    && self.open_input_context_current(open, false)
-            });
-        if !valid { return false; }
-        let input = self.pending_terminal_key.take().expect("ownership checked");
-        let recovery = input.gate.into_recovery();
-        let open = self.pending_open_input.as_mut().expect("ownership checked");
-        for event in recovery.events.into_iter().chain(input.overflow) { open.enqueue(event); }
         true
     }
 
-    fn pump_terminal_key(&mut self, cx: &mut Context<Self>) {
-        use workspace_app::open_input::Event;
-        use workspace_app::terminal_key_gate::State;
-        self.expire_file_jump_input(cx);
-        if let Some((owner, event, pane, deadline)) =
-            self.pending_terminal_key.as_ref().and_then(|input| {
-                (!input.replaying && !input.scheduled)
-                    .then(|| {
-                        input.split.as_ref().map(|split| {
-                            (input.source.token, split.event, split.pane, split.deadline)
-                        })
-                    })
-                    .flatten()
-            })
-        {
-            let current = self.pending_terminal_key.as_ref().is_some_and(|input| {
-                input.source.token == owner
-                    && input.gate.state() == State::Replaying
-                    && input.gate.in_flight_id() == Some(event)
-                    && input.destination.as_ref().is_some_and(|destination| {
-                        destination.pane == pane
-                            && self.terminal_key_destination_current(destination)
-                    })
-            });
-            let measured = current && self.geometry_ready_for_counted_split();
-            if !current || std::time::Instant::now() >= deadline || measured {
-                if let Some(input) = self
-                    .pending_terminal_key
-                    .as_mut()
-                    .filter(|input| input.source.token == owner)
-                {
-                    input.split = None;
-                    if measured && input.gate.acknowledge(event) {
-                        input.revision = input.revision.wrapping_add(1);
-                    } else {
-                        if !input.gate.uncertain(event) {
-                            input.gate.invalidate();
-                        }
-                        self.model.message = "Split creado; entrada conservada para revisar".into();
-                    }
-                }
-                cx.notify();
-                let _ = self.terminal_wake.try_send(());
-            }
-            return;
-        }
-        if self.pending_detached_terminal_jump_load.as_ref().is_some_and(|load| {
-            self.pending_terminal_key.as_ref().is_some_and(|input| input.source.token == load.owner)
-        }) {
-            return;
-        }
-        if let Some(load) = &self.pending_jump_load
-            && self.pending_terminal_key.as_ref().is_some_and(|input| {
-                matches!(&load.owner, FileJumpOwner::Terminal { token, .. } if input.source.token == *token)
-            })
-        {
-            return;
-        }
-        // A detached terminal capture can hand its existing queue to a
-        // restore request. Keep that queue reserved until the backend reply.
-        if self.terminal_jump_gate.pending_payload().is_some_and(|jump| {
-            self.pending_terminal_key.as_ref().is_some_and(|input| {
-                input.source.token == jump.input_token
-            })
-        }) {
-            return;
-        }
-        if let Some((capture_token, owner)) = self.pending_terminal_key.as_ref().and_then(|input| {
-            input
-                .capture_wait
-                .map(|capture| (capture, input.source.token))
-        }) {
-            let active = self
-                .pending_terminal_capture
-                .as_ref()
-                .is_some_and(|capture| {
-                    capture.token.get() == capture_token
-                        && (capture.navigate_input == Some(owner)
-                            || capture
-                                .deferred_terminal
-                                .is_some_and(|(token, _)| token == owner))
-                        && self.terminal_capture_is_current(capture)
-                });
-            if active {
-                return;
-            }
-            if let Some(input) = &mut self.pending_terminal_key
-                && input.source.token == owner
-                && input.capture_wait == Some(capture_token)
-            {
-                input.capture_wait = None;
-                input.gate.invalidate();
-            }
-            self.model.message = "Salto sin confirmar; entrada conservada para revisar".into();
-            cx.notify();
-            return;
-        }
-        if let Some(pending) = &mut self.pending_terminal_key
-            && matches!(
-                pending.gate.state(),
-                State::Inspecting | State::DecisionInFlight
-            )
-            && std::time::Instant::now() >= pending.deadline
-        {
-            pending.gate.invalidate();
-            self.model.message = "Navegación sin respuesta; entrada conservada para revisar".into();
-        }
-        if let Some(pending) = &mut self.pending_terminal_key
-            && let Some(action) = &mut pending.target_action
-            && !action.timed_out
-            && std::time::Instant::now() >= action.deadline
-        {
-            action.timed_out = true;
-            pending.gate.uncertain(action.event);
-            self.model.message = "Cambio de terminal sin respuesta; entrada conservada".into();
-            cx.notify();
-        }
-        let expired_copy_alone = self.pending_terminal_key.as_ref().and_then(|pending| {
-            let copy = pending.selection_action.as_ref()?;
-            (!copy.timed_out && std::time::Instant::now() >= copy.deadline
-                && pending.gate.events().count() == 1
-                && pending.gate.in_flight_id() == Some(copy.event)
-                && pending.overflow.is_empty() && pending.marked_selection.is_none()
-                && pending.open_identity.is_none() && pending.open_switch_event.is_none()
-                && pending.write.is_none() && pending.target_action.is_none()
-                && pending.split.is_none() && pending.capture_wait.is_none())
-                .then_some(copy.token)
-        });
-        if let Some(token) = expired_copy_alone {
-            self.pending_terminal_key = None;
-            self.pending_tmux_copy.remove(&token);
-            self.pending_yank_first.remove(&token);
-            self.pending_yank_motion.remove(&token);
-            self.model.message = "Copia sin respuesta; intentá copiar de nuevo".into();
-            cx.notify();
-        }
-        if let Some(pending) = &mut self.pending_terminal_key
-            && let Some(copy) = &mut pending.selection_action
-            && !copy.timed_out
-            && std::time::Instant::now() >= copy.deadline
-        {
-            copy.timed_out = true;
-            pending.gate.uncertain(copy.event);
-            self.model.message = "Selección sin respuesta; entrada conservada".into();
-            cx.notify();
-        }
-        // A PTY queue acceptance is not a write confirmation. Keep the event
-        // in flight until the worker reports its write/flush result; a timeout
-        // or error can include a partial write and is never retried.
-        let destination_current = self
-            .pending_terminal_key
-            .as_ref()
-            .and_then(|pending| pending.destination.as_ref())
-            .is_some_and(|destination| self.terminal_key_destination_current(destination));
-        let write_result = self.pending_terminal_key.as_mut().and_then(|pending| {
-            let write = pending.write.as_mut()?;
-            match write.reply.try_recv() {
-                Ok(result) => Some((write.event, Some(result.is_ok()), false)),
-                Err(mpsc::TryRecvError::Disconnected) => Some((write.event, Some(false), false)),
-                Err(mpsc::TryRecvError::Empty)
-                    if !write.timed_out && std::time::Instant::now() >= write.deadline =>
-                {
-                    write.timed_out = true;
-                    Some((write.event, None, true))
-                }
-                Err(mpsc::TryRecvError::Empty) => None,
-            }
-        });
-        if let Some((id, result, timed_out)) = write_result {
-            if let Some(pending) = &mut self.pending_terminal_key {
-                if !timed_out {
-                    pending.write = None;
-                }
-                if result == Some(true) && pending.gate.acknowledge(id) {
-                    pending.revision = pending.revision.wrapping_add(1);
-                    if !destination_current {
-                        pending.gate.invalidate();
-                        self.model.message =
-                            "Entrada enviada; el resto quedó conservado porque cambió el panel"
-                                .into();
-                    }
-                } else {
-                    pending.gate.uncertain(id);
-                    self.model.message =
-                        "Escritura sin confirmar: pudo ser parcial; entrada conservada".into();
-                }
-            }
-            cx.notify();
-            let _ = self.terminal_wake.try_send(());
-            return;
-        }
-        let Some(pending) = self.pending_terminal_key.as_ref() else {
-            return;
-        };
-        if pending.write.is_some()
-            || pending.target_action.is_some()
-            || pending.selection_action.is_some()
-        {
-            return;
-        }
-        if pending.scheduled || pending.replaying || pending.gate.state() != State::Replaying {
-            return;
-        }
-        if pending.tab_reconcile.is_some() {
-            self.reconcile_tab_layout();
-            return;
-        }
-        // The existing resume fence owns PTY input until tmux confirms that
-        // copy mode ended. Do not bypass it with replayed text or paste.
-        if self.model.surface == Surface::Terminal && self.terminal_resume.active() {
-            return;
-        }
-        // If buffer cycling started an asynchronous file read, hand over the
-        // entire ordered queue before that read is allowed to replay input.
-        if let Some(open) = &self.pending_open_input {
-            if self.pending_detached_open.as_ref().is_some_and(|owner| {
-                matches!(&owner.source, DetachedReadSource::Terminal { .. })
-                    && Arc::ptr_eq(&owner.queue, &open.queue.identity())
-            }) {
-                if !self.handoff_detached_terminal_cycle_to_open() {
-                    if let Some(input) = &mut self.pending_terminal_key { input.gate.invalidate(); }
-                    self.model.message = "Entrada conservada: cambió la apertura de terminal".into();
-                }
-                return;
-            }
-            let same_destination = !pending.mixed_context
-                && pending.open_identity.as_ref().is_some_and(|expected| {
-                    Arc::ptr_eq(expected, &open.queue.identity())
-                })
-                && pending.destination.as_ref().is_some_and(|destination| {
-                    open.context.workspace == destination.project
-                        && open.context.pane == destination.pane.0
-                        && matches!(&destination.content, PaneContent::Terminal(id) if *id == open.context.attachment)
-                })
-                && (self.open_input_context_current(open, false)
-                    || self.open_input_context_current(open, true));
-            if !same_destination || !open.queue.is_empty() || !open.overflow.is_empty() {
-                if let Some(pending) = &mut self.pending_terminal_key {
-                    pending.gate.invalidate();
-                }
-                self.model.message = "Entrada conservada: dos aperturas coinciden".into();
-                return;
-            }
-            let pending = self.pending_terminal_key.take().expect("checked above");
-            let recovery = pending.gate.into_recovery();
-            if let Some(open) = &mut self.pending_open_input {
-                for event in recovery.events.into_iter().chain(pending.overflow) {
-                    open.enqueue(event);
-                }
-            }
-            return;
-        }
-        if self.release_idle_terminal_key() {
-            return;
-        }
-        let pending = self.pending_terminal_key.as_ref().expect("idle queue already released");
-        let current = pending
-            .destination
-            .as_ref()
-            .is_some_and(|destination| self.terminal_key_destination_current(destination));
-        if !current {
-            if self.rebind_undispatched_tab_key() { return; }
-            let detail = if self.validation {
-                self.pending_terminal_key.as_ref().and_then(|pending| pending.destination.as_ref()).map(|destination| format!(
-                    " · proyecto={} superficie={} foco={} generación={} tmux={} panel={}",
-                    self.model.project == destination.project,
-                    self.model.surface == destination.surface,
-                    self.model.focus_revision == destination.focus_revision,
-                    self.file_generation == destination.generation,
-                    self.terminal_key_tmux_target_current(destination),
-                    self.terminal_key_pane_current(destination),
-                )).unwrap_or_else(|| " · destino ausente".into())
-            } else { String::new() };
-            if let Some(pending) = &mut self.pending_terminal_key {
-                pending.gate.invalidate();
-            }
-            self.model.message = format!("Entrada conservada: cambió el panel{detail}");
-            return;
-        }
-        let editor_mode = self.current_editor().map(|editor| editor.mode);
-        let unobstructed = self.terminal_command.is_none()
-            && self.file_prompt.is_none()
-            && self.remote_prompt.is_none()
-            && !self.help
-            && !self.model.notifications
-            && !self.media_active();
-        let editor_text = unobstructed && self.model.surface == Surface::File;
-        let terminal_text = unobstructed && self.model.surface == Surface::Terminal;
-        let copy_pending = self.pending_tmux_copy.keys().any(|token| *token > self.last_delivered_terminal_copy);
-        #[cfg(feature = "ghostty")]
-        let copy_pending = copy_pending || self.native_selection.as_ref().is_some_and(|selection| {
-            matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
-        });
-        let pending = self.pending_terminal_key.as_mut().expect("checked above");
-        while let Some(event) = pending.overflow.pop_front() {
-            let bytes = PendingOpenInput::event_bytes(&event);
-            if let Err(event) = pending.gate.push(event, bytes) {
-                pending.overflow.push_front(event);
-                break;
-            }
-        }
-        if pending.gate.is_empty() {
-            if pending.overflow.is_empty() {
-                self.pending_terminal_key = None;
-            } else {
-                pending.gate.invalidate();
-                self.model.message = "Entrada conservada: requiere revisión".into();
-            }
-            return;
-        }
-        // Resolve a queued paste shortcut only after the copy that preceded
-        // it has updated the clipboard. Leave it at the front so later input
-        // cannot overtake the paste.
-        if copy_pending && pending.gate.events().next().is_some_and(|event| {
-            let Event::Key(key) = event else { return false; };
-            (key.modifiers.platform && key.key.eq_ignore_ascii_case("v"))
-                || (!key.modifiers.platform && !key.modifiers.control && !key.modifiers.alt
-                    && key.modifiers.shift && key.key.eq_ignore_ascii_case("insert"))
-        }) {
-            return;
-        }
-        let direction_pending = unobstructed
-            && self.editor_zoom.is_none()
-            && self.editor_panes.as_ref().is_some_and(|panes| panes.layout.panes().len() > 1)
-            && pending.gate.events().next().is_some_and(|event| {
-                let Event::Key(key) = event else { return false; };
-                queued_direction_key(key, self.editor_window_prefix.is_some())
-            });
-        let geometry_ready = !direction_pending || self.directional_focus_geometry_ready();
-        let pending = self.pending_terminal_key.as_mut().expect("checked above");
-        if !geometry_ready {
-            if let Some(deadline) = pending.navigation_geometry_deadline {
-                if std::time::Instant::now() >= deadline {
-                    pending.gate.invalidate();
-                    self.model.message = "No se pudo medir el panel; entrada conservada".into();
-                    cx.notify();
-                }
-            } else {
-                pending.navigation_geometry_deadline = Some(std::time::Instant::now() + Duration::from_secs(3));
-                cx.notify();
-            }
-            return;
-        }
-        if !direction_pending {
-            pending.navigation_geometry_deadline = None;
-        }
-        let Some((id, event)) = pending
-            .gate
-            .begin_event(true)
-            .map(|(id, event)| (id, event.clone()))
-        else {
-            return;
-        };
-        // Ranges from before the destination was known cannot be safely
-        // interpreted against the destination editor's UTF-16 text.
-        if workspace_app::open_input::requires_loaded_context(&event)
-            || match &event {
-                Event::Key(_) => false,
-                Event::Commit { .. } | Event::Paste { .. } => !(editor_text || terminal_text),
-                Event::Mark { .. } | Event::Unmark => !editor_text,
-            }
-            || (matches!(event, Event::Mark { .. }) && editor_mode != Some(EditMode::Insert))
-        {
-            pending.gate.not_dispatched(id);
-            self.model.message = "Texto o composición conservados para revisar".into();
-            return;
-        }
-        if matches!(&event, Event::Key(key) if pending_key_may_need_native_composition(key, editor_mode))
-        {
-            pending.gate.not_dispatched(id);
-            self.model.message = "Composición conservada para revisar".into();
-            return;
-        }
-        pending.scheduled = true;
-        let replay_owner = pending.source.token;
-        pending.replay_event = Some(id);
-        let handle = self.quit_window;
-        let weak = cx.weak_entity();
-        cx.defer(move |app| {
-            let ready = weak
-                .update(app, |view, cx| {
-                    let current = view
-                        .pending_terminal_key
-                        .as_ref()
-                        .filter(|pending| pending.source.token == replay_owner)
-                        .and_then(|pending| pending.destination.as_ref())
-                        .is_some_and(|destination| {
-                            view.terminal_key_destination_current(destination)
-                        });
-                    let geometry_current = !direction_pending || view.directional_focus_geometry_ready();
-                    if let Some(pending) = view.pending_terminal_key.as_mut().filter(|pending| pending.source.token == replay_owner) {
-                        if current && geometry_current {
-                            pending.navigation_geometry_deadline = None;
-                            pending.replaying = true;
-                            pending.replay_error = false;
-                            pending.paste_held = None;
-                        } else if current {
-                            let expired = pending.navigation_geometry_deadline
-                                .is_some_and(|deadline| std::time::Instant::now() >= deadline);
-                            if expired || !pending.gate.defer_undispatched(id) {
-                                if !pending.gate.not_dispatched(id) {
-                                    pending.gate.invalidate();
-                                }
-                                view.model.message = "No se pudo medir el panel; entrada conservada".into();
-                            } else {
-                                pending.navigation_geometry_deadline.get_or_insert(
-                                    std::time::Instant::now() + Duration::from_secs(3),
-                                );
-                            }
-                            pending.scheduled = false;
-                            pending.replay_event = None;
-                            cx.notify();
-                        } else {
-                            pending.gate.not_dispatched(id);
-                            pending.scheduled = false;
-                            pending.replay_event = None;
-                            view.model.message = "Entrada conservada: cambió el panel".into();
-                            cx.notify();
-                        }
-                    }
-                    current && geometry_current
-                })
-                .unwrap_or(false);
-            if !ready {
-                return;
-            }
-            let result = handle
-                .update(app, |_, window, app| -> Result<(), ()> {
-                    match event {
-                        Event::Key(key) => {
-                            if window.dispatch_keystroke(key, app) {
-                                Ok(())
-                            } else {
-                                Err(())
-                            }
-                        }
-                        Event::Commit { range, text } => weak
-                            .update(app, |view, cx| {
-                                view.replace_text_in_range(range, &text, window, cx);
-                            })
-                            .map_err(|_| ()),
-                        Event::Paste { text } => weak
-                            .update(app, |view, cx| {
-                                if terminal_text {
-                                    view.replay_terminal_key_text(&text, true, false, cx);
-                                } else {
-                                    view.replay_open_paste(&text, cx);
-                                }
-                            })
-                            .map_err(|_| ()),
-                        Event::Mark {
-                            range,
-                            text,
-                            selected,
-                        } => weak
-                            .update(app, |view, cx| {
-                                view.replace_and_mark_text_in_range(
-                                    range, &text, selected, window, cx,
-                                )
-                            })
-                            .map_err(|_| ()),
-                        Event::Unmark => weak
-                            .update(app, |view, cx| view.unmark_text(window, cx))
-                            .map_err(|_| ()),
-                    }
-                })
-                .map_err(|_| ())
-                .and_then(|result| result);
-            let _ = weak.update(app, |view, cx| {
-                if !view.pending_terminal_key.as_ref().is_some_and(|pending| pending.source.token == replay_owner) {
-                    return;
-                }
-                let deferred = view
-                    .pending_terminal_capture
-                    .as_ref()
-                    .is_some_and(|capture| {
-                        capture.deferred_jump.is_some() && view.terminal_capture_is_current(capture)
-                    });
-                let held = result.is_ok() && deferred && view.hold_terminal_jump_for_capture(id);
-                if deferred && !held {
-                    view.retain_replayed_jump();
-                    if let Some(capture) = &mut view.pending_terminal_capture {
-                        capture.deferred_jump = None;
-                    }
-                }
-                let destination = view.terminal_key_destination();
-                let open_identity = view
-                    .pending_open_input
-                    .as_ref()
-                    .map(|open| open.queue.identity());
-                let mut acknowledged = false;
-                let mut drained = false;
-                if let Some(pending) = &mut view.pending_terminal_key {
-                    pending.replaying = false;
-                    pending.scheduled = false;
-                    pending.replay_event = None;
-                    if held {
-                        // The event stays in flight until the mark and jump
-                        // both complete for this exact queue owner.
-                    } else if result.is_ok()
-                        && !pending.replay_error
-                        && view.pending_jump_load.as_ref().is_some_and(|load| {
-                            matches!(&load.owner, FileJumpOwner::Terminal { token, event } if *token == pending.source.token && *event == Some(id))
-                        })
-                    {
-                        // The requested file has not been loaded yet.
-                    } else if result.is_ok()
-                        && !pending.replay_error
-                        && view
-                            .terminal_jump_gate
-                            .pending_payload()
-                            .is_some_and(|jump| {
-                                jump.input_token == pending.source.token
-                                    && jump.replay_event == Some(id)
-                            })
-                    {
-                        // The restored terminal must be confirmed before the
-                        // queued jump event and following keys are released.
-                    } else if result.is_ok()
-                        && !pending.replay_error
-                        && pending.selection_action.is_some()
-                    {
-                        // A copy or Visual Line action remains in flight until
-                        // its result is checked against the original target.
-                    } else if result.is_ok()
-                        && !pending.replay_error
-                        && pending.capture_wait.is_some()
-                    {
-                        // A replayed jump owns this event until its capture
-                        // applies; acknowledging now would release later keys.
-                    } else if result.is_ok()
-                        && !pending.replay_error
-                        && pending.target_action.is_some()
-                    {
-                        // Focusing an already selected terminal invalidates
-                        // file reads and advances the generation. This is a
-                        // synchronous effect of this event, not a new owner.
-                        let same_owner = pending.destination.as_ref().zip(destination.as_ref())
-                            .is_some_and(|(old, new)| {
-                                old.project == new.project && old.pane == new.pane
-                                    && old.surface == new.surface && old.content == new.content
-                                    && old.focus_revision == new.focus_revision
-                                    && old.terminal_instance.as_ref().zip(new.terminal_instance.as_ref())
-                                        .is_some_and(|(a, b)| Arc::ptr_eq(a, b))
-                            });
-                        if same_owner {
-                            if let Some(old) = &mut pending.destination {
-                                old.generation = view.file_generation;
-                            }
-                        } else {
-                            pending.mixed_context = true;
-                            pending.gate.uncertain(id);
-                            view.model.message = "Cambió el panel; entrada conservada".into();
-                        }
-                        // The worker must observe the new tmux target before
-                        // this event and the following input are released.
-                    } else if result.is_ok()
-                        && !pending.replay_error
-                        && pending.split.as_ref().is_some_and(|split| split.event == id)
-                    {
-                        // The split exists, but later input must wait for the
-                        // new pane's geometry before this event is committed.
-                        pending.destination = destination;
-                        if pending.destination.is_none() {
-                            pending.split = None;
-                            pending.gate.uncertain(id);
-                            view.model.message =
-                                "Split creado; entrada conservada porque cambió el panel".into();
-                        }
-                    } else if result.is_ok() && !pending.replay_error && pending.write.is_some() {
-                        pending.destination = destination;
-                        if pending.destination.is_none() {
-                            pending.gate.uncertain(id);
-                            view.model.message =
-                                "Escritura en curso; cambió el destino, revisá la entrada".into();
-                        }
-                    } else if result.is_ok()
-                        && !pending.replay_error
-                        && pending.gate.acknowledge(id)
-                    {
-                        pending.destination = destination;
-                        pending.open_identity = open_identity;
-                        acknowledged = true;
-                        if pending.destination.is_none() && view.pending_open_input.is_none() {
-                            pending.gate.invalidate();
-                        }
-                        pending.revision = pending.revision.wrapping_add(1);
-                    } else if let Some(lines) = pending.paste_held.filter(|_| {
-                        result.is_ok()
-                            && pending.write.is_none()
-                            && pending.target_action.is_none()
-                            && pending.selection_action.is_none()
-                            && pending.capture_wait.is_none()
-                            && pending.split.is_none()
-                    }) {
-                        // The paste was held before any byte reached the PTY,
-                        // so this is a known hold, not an uncertain action.
-                        // Alone in the queue, it is dropped and the queue
-                        // released: pasting again raises the prompt. Input
-                        // typed after it must not run without it, so that
-                        // stays held for review.
-                        let alone = pending.gate.events().count() == 1 && pending.overflow.is_empty();
-                        if alone && pending.gate.acknowledge(id) {
-                            pending.paste_held = None;
-                            pending.revision = pending.revision.wrapping_add(1);
-                            drained = view.pending_open_input.is_none();
-                            if !drained {
-                                pending.destination = destination;
-                                pending.open_identity = open_identity;
-                                acknowledged = true;
-                            }
-                            view.model.message = held_paste_message(lines, false);
-                        } else if pending.gate.not_dispatched(id) {
-                            pending.revision = pending.revision.wrapping_add(1);
-                            view.model.message = held_paste_message(lines, true);
-                        } else {
-                            pending.paste_held = None;
-                            pending.gate.uncertain(id);
-                            view.model.message =
-                                "Entrada conservada: una acción pudo ejecutarse".into();
-                        }
-                    } else {
-                        pending.split = None;
-                        pending.paste_held = None;
-                        pending.gate.uncertain(id);
-                        view.model.message =
-                            "Entrada conservada: una acción pudo ejecutarse".into();
-                    }
-                }
-                if drained {
-                    view.pending_terminal_key = None;
-                }
-                if acknowledged {
-                    view.handoff_terminal_replay_to_editor_open(replay_owner);
-                }
-                let _ = view.terminal_wake.try_send(());
-                cx.notify();
-            });
-        });
-    }
-    fn terminal_selection_done(
+    fn report_terminal_selection(
         &mut self,
-        source: workspace_app::terminal_resume::Context,
-        token: u64,
         result: Result<(), String>,
     ) {
-        let current = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-            pending.selection_action.as_ref().is_some_and(|action| {
-                action.token == token && action.context == source && !action.timed_out
-            }) && pending.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && pending
-                    .destination
-                    .as_ref()
-                    .is_some_and(|destination| self.terminal_key_destination_current(destination))
-        });
-        let destination = self.terminal_key_destination();
-        if let Some(pending) = &mut self.pending_terminal_key
-            && pending
-                .selection_action
-                .as_ref()
-                .is_some_and(|action| action.token == token && action.context == source)
-        {
-            let action = pending.selection_action.take().expect("token checked");
-            if current && destination.is_some() && pending.gate.acknowledge(action.event) {
-                pending.destination = destination;
-                pending.revision = pending.revision.wrapping_add(1);
-                // This selection request has finished, even when tmux could
-                // not confirm its result. Never repeat it or hold later keys
-                // merely because the selection's final state is uncertain.
-                if let Err(error) = result {
-                    self.model.message = format!("No se pudo confirmar la selección: {error}");
-                }
-            } else {
-                pending.gate.uncertain(action.event);
-                self.model.message = match result {
-                    Err(error) => format!("Selección sin confirmar; entrada conservada: {error}"),
-                    Ok(()) => "Selección sin confirmar; entrada conservada".into(),
-                };
-            }
-            let _ = self.terminal_wake.try_send(());
-        } else if let Err(error) = result {
-            self.model.message = format!("No se pudo confirmar la selección: {error}");
-        }
+        if let Err(error) = result { self.model.message = format!("No se pudo confirmar la selección: {error}"); }
     }
     fn request_terminal_visual_line(&mut self, count: usize) -> bool {
-        let event = self.pending_terminal_key.as_ref().and_then(|pending| {
-            (pending.replaying
-                && pending.selection_action.is_none()
-                && pending.write.is_none()
-                && pending.target_action.is_none())
-            .then_some(pending.replay_event)
-            .flatten()
-        });
-        if event.is_some() && !self.terminal_key_pty_destination_current() {
-            self.model.message = "Cambió el destino de la selección".into();
-            return false;
-        }
+
         let Some(token) = self.tmux_copy_token.checked_add(1) else {
             self.model.message = "No se pudo identificar la selección".into();
             return false;
         };
-        let Some(source) = self.terminal_key_source(token) else {
+        let Some(source) = self.terminal_source_snapshot(token) else {
             self.model.message = "Destino de terminal no disponible; reintentá".into();
             return false;
         };
@@ -17859,15 +12977,7 @@ impl WorkspaceView {
         self.tmux_copy_token = token;
         let source = Arc::new(source);
         self.terminal_visual_intent = Some(source.clone());
-        if let Some(event) = event && let Some(pending) = &mut self.pending_terminal_key {
-            pending.selection_action = Some(PendingTerminalSelectionAction {
-                event,
-                token,
-                context: source.context,
-                deadline: std::time::Instant::now() + Duration::from_secs(15),
-                timed_out: false,
-            });
-        }
+
         self.pending_visual_operations.insert(token, source);
         true
     }
@@ -17876,7 +12986,7 @@ impl WorkspaceView {
             .and_then(|count| self.pending_tmux_copy.get(&self.latest_tmux_copy)
                 .map(|source| (source.clone(), *count)));
         if let Some((source, first_count)) = self.terminal_yank_prefix.take().or(pending_prefix) {
-            if !self.terminal_key_source_current(&source) {
+            if !self.terminal_source_snapshot_current(&source) {
                 self.model.message = "Cambió el panel de terminal; yank cancelado".into();
                 return false;
             }
@@ -17891,7 +13001,7 @@ impl WorkspaceView {
     }
     fn request_terminal_yank_motion(&mut self, motion: &str, count: usize) -> bool {
         let Some((source, first_count)) = self.terminal_yank_prefix.take() else { return false; };
-        if !self.terminal_key_source_current(&source) {
+        if !self.terminal_source_snapshot_current(&source) {
             self.model.message = "Cambió el panel de terminal; yank cancelado".into();
             return false;
         }
@@ -17902,31 +13012,7 @@ impl WorkspaceView {
         self.request_tmux_copy(true, None, None, Some((motion.to_owned(), total)), Some(source.token))
     }
     fn request_tmux_copy(&mut self, keep_mode: bool, normal_lines: Option<usize>, first_yank: Option<usize>, normal_motion: Option<(String, usize)>, anchor_token: Option<u64>) -> bool {
-        if self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|pending| pending.selection_action.is_some())
-        {
-            self.model.message = "Hay una copia pendiente de confirmación".into();
-            return false;
-        }
-        let replaying = self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|pending| pending.replaying);
-        let replay_event = if replaying {
-            self.pending_terminal_key.as_ref().and_then(|pending| {
-                (pending.target_action.is_none() && pending.write.is_none())
-                    .then_some(pending.replay_event)
-                    .flatten()
-            })
-        } else {
-            None
-        };
-        if replaying && (replay_event.is_none() || !self.terminal_key_pty_destination_current()) {
-            self.model.message = "Cambió el destino de la copia".into();
-            return false;
-        }
+
         let Some(context) = self.terminal_input_context() else {
             self.model.message = "Terminal no disponible".into();
             return false;
@@ -18001,17 +13087,7 @@ impl WorkspaceView {
             window,
             pane,
         });
-        if let Some(event) = replay_event
-            && let Some(pending) = &mut self.pending_terminal_key
-        {
-            pending.selection_action = Some(PendingTerminalSelectionAction {
-                event,
-                token,
-                context,
-                deadline: std::time::Instant::now() + Duration::from_secs(15),
-                timed_out: false,
-            });
-        }
+
         true
     }
     /// Include saved panel layouts even when their tmux backend is absent.
@@ -18081,39 +13157,30 @@ impl WorkspaceView {
             .filter(|window| window.snapshot.exited)
             .map(|_| "el cliente tmux terminó".to_owned())
     }
-    fn terminal_input_context(&self) -> Option<workspace_app::terminal_resume::Context> {
+    fn terminal_input_context(&self) -> Option<workspace_app::terminal_input::Context> {
         self.windows
             .get(self.active)
             .filter(|t| t.project == self.model.project)
-            .map(|t| workspace_app::terminal_resume::Context {
+            .map(|t| workspace_app::terminal_input::Context {
                 project: t.project,
                 attachment: t.attachment,
             })
     }
     /// Resume and its following input share the backend FIFO, not a UI-event
-    /// handshake. Only an attachment that has not been verified retains bytes.
-    fn submit_terminal_resume_input(
+    /// handshake. An unavailable destination rejects this event without retention.
+    fn send_terminal_input(
         &mut self,
-        context: workspace_app::terminal_resume::Context,
+        context: workspace_app::terminal_input::Context,
         bytes: &[u8],
         paste: bool,
-    ) -> Result<bool, String> {
-        if self.pending_backend_resume.is_some_and(|(pending, _)| pending == context) {
-            return if paste {
-                self.terminal_resume.push_paste(context, bytes)
-            } else {
-                self.terminal_resume.push(context, bytes)
-            };
-        }
-        let backends = &self.backends;
-        let additional = &self.additional_backends;
-        self.terminal_resume.submit(
-            context, bytes, paste, std::time::Instant::now(),
-            |token, bytes, paste| {
-                terminal_backend_for(backends, additional, context)?
-                    .send(TmuxAction::ResumeStreamInput(token, bytes, paste))
-            },
-        )
+    ) -> Result<(), String> {
+        if bytes.is_empty() { return Ok(()); }
+        let route = self.terminal_input_route.filter(|route| route.context == context)
+            .ok_or_else(|| "Destino de terminal no disponible; evento no enviado".to_owned())?;
+        terminal_backend_for(&self.backends, &self.additional_backends, context)?.send(
+            TmuxAction::ResumeStreamInput(route.token, Arc::new(bytes.to_vec()), paste),
+        )?;
+        Ok(())
     }
     fn current_tmux_windows(&self) -> Option<&[WindowInfo]> {
         let context = self.terminal_input_context()?;
@@ -18135,258 +13202,110 @@ impl WorkspaceView {
             None
         }
     }
-    fn cancel_terminal_resume(&mut self) {
+    fn cancel_terminal_input(&mut self) {
         self.terminal_visual_intent = None;
-        let active = self.terminal_resume.active();
-        self.pending_backend_resume = None;
-        self.terminal_resume_zoom_owner = None;
-        self.terminal_resume.cancel();
-        if active && self.model.surface == Surface::Terminal {
-            self.model.focus(Surface::Normal);
-        }
-        if active {
-            self.model.message = "Destino o foco cambió; entrada pendiente cancelada".into();
-        }
+        self.flush_terminal_prefix();
     }
-    fn retain_rejected_terminal_input(&mut self, bytes: Vec<u8>, error: &str) {
-        if !self.terminal_resume.can_retain_rejected() {
-            self.model.message = format!("Este evento no se envió: {error}");
-            return;
-        }
-        let mut prefix = match self.model.focus(Surface::Normal) {
-            Effect::Pty(prefix) => prefix,
-            _ => Vec::new(),
-        };
-        prefix.extend(bytes);
-        if self.terminal_resume.retain_rejected(prefix).is_ok() {
-            self.model.message = "Entrada conservada; Cmd+Q permite revisarla".into();
-        } else {
-            self.model.message = format!("Este evento no se envió: {error}");
-        }
-    }
-    fn detach_terminal_input_on_pane_focus(&mut self) -> bool {
-        if self.pending_backend_resume.is_some() {
-            self.model.message = "Terminal sin verificar; entrada conservada antes de cambiar de panel".into();
-            return false;
-        }
-        if self.terminal_resume.active()
-            && self.model.surface == Surface::Terminal
-            && self.model.pending_since.is_some()
-        {
-            if self.terminal_resume.recovery_blocked() {
-                self.model.message = "Entrada conservada; revisala antes de cambiar de panel".into();
-                return false;
-            }
-            // The prefix belongs after the earlier input, on the original
-            // backend. Transfer it before changing focus instead of waiting
-            // for a UI acknowledgement to release the keyboard.
+
+    fn flush_terminal_prefix(&mut self) {
+        if self.model.surface == Surface::Terminal && self.model.pending_since.is_some() {
+            if self.terminal_input_route.is_none() { self.start_terminal_input(false); }
             if let Effect::Pty(bytes) = self.model.expire_prefix() {
-                let result = self.terminal_resume.context()
-                    .ok_or_else(|| "Terminal original no disponible".to_owned())
-                    .and_then(|context| self.submit_terminal_resume_input(context, &bytes, false));
-                if let Err(error) = result {
-                    self.retain_rejected_terminal_input(bytes, &error);
-                    return false;
+                match self.terminal_input_route {
+                    Some(route) => {
+                        if let Err(error) = self.send_terminal_input(route.context, &bytes, false) {
+                            self.model.message = format!("Prefijo no enviado: {error}");
+                        }
+                    }
+                    None => self.model.message = "Prefijo no enviado: terminal no disponible".into(),
                 }
             }
         }
-        let result = workspace_app::terminal_resume::detach_with_delivery_typed(
-            &mut self.terminal_resume,
-            &mut self.detached_terminal_input,
-            std::time::Instant::now(),
-            |_, _, _, _| Err("La entrada aún no se envió; Cmd+Q permite revisarla".into()),
-        );
-        if let Err(error) = result {
-            self.model.message = format!("Input pendiente conservado; reintentá: {error}");
-            return false;
-        }
-        if !self.terminal_resume.active() {
-            self.terminal_resume_zoom_owner = None;
-        }
-        true
+        self.terminal_input_route = None;
     }
-    fn begin_terminal_resume(&mut self) {
-        self.terminal_visual_intent = None;
-        if self.terminal_resume.retained_guard().is_some() {
-            self.model.focus(Surface::Normal);
-            self.model.message =
-                "Entrada pendiente conservada; Cmd+Q permite copiarla o descartarla".into();
-            return;
-        }
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            return;
-        }
-        self.cancel_terminal_resume();
-        let Some(context) = self.terminal_input_context() else {
-            self.model.focus(Surface::Normal);
-            self.model.message = "El terminal aún no está listo; i reintenta input".into();
-            return;
-        };
-        // A floating terminal must still own this exact PTY before asking the
-        // backend to resume input. The layout anchor may be another buffer.
-        if self.editor_zoom.is_some() {
-            let owner = self.windows.get(self.active).and_then(|terminal| {
-                let instance = terminal.terminal.instance_identity();
-                let zoom = self.terminal_focus_zoom_guard(context, &instance)??;
-                let focus = self.editor_panes.as_ref()?.layout.focus_guard();
-                Some(TerminalResumeZoomOwner { context, instance, focus, zoom })
-            });
-            let Some(owner) = owner else {
-                self.model.focus(Surface::Normal);
-                self.model.message = "Cambió la terminal ampliada; input no iniciado".into();
-                return;
-            };
-            self.terminal_resume_zoom_owner = Some(owner);
-        }
+    fn begin_terminal_input(&mut self) {
         let prefix = match self.model.focus(Surface::Terminal) {
-            Effect::Pty(prefix) => prefix,
+            Effect::Pty(bytes) => bytes,
             _ => Vec::new(),
         };
-        let token = self
-            .terminal_resume
-            .begin(context, std::time::Instant::now());
-        if terminal_backend_binding(&self.backends, &self.additional_backends, context)
-            .is_ok_and(|backend| backend.attachment.is_none())
-        {
-            self.pending_backend_resume = Some((context, token));
-            self.model.message = "Esperando verificar la terminal; entrada conservada".into();
-            if let Err(error) = self.submit_terminal_resume_input(context, &prefix, false) {
-                self.retain_rejected_terminal_input(prefix, &error);
-            }
-            return;
-        }
+        self.start_terminal_input(false);
+        if !prefix.is_empty() && let Some(route) = self.terminal_input_route
+            && let Err(error) = self.send_terminal_input(route.context, &prefix, false)
+        { self.model.message = format!("Prefijo no enviado: {error}"); }
+    }
+    fn start_terminal_input(&mut self, follow_target_change: bool) {
+        self.terminal_visual_intent = None;
+        let Some(context) = self.terminal_input_context() else {
+            self.model.message = "Terminal no disponible; input no enviado".into(); return;
+        };
+        let Some(token) = self.terminal_input_sequence.checked_add(1) else {
+            self.model.message = "Identidades de entrada agotadas".into(); return;
+        };
+        let action = if follow_target_change {
+            TmuxAction::Resume(token)
+        } else {
+            let target = self.current_tmux_windows().and_then(|windows| {
+                let mut active = windows.iter().filter(|window| window.active);
+                let window = active.next()?;
+                active.next().is_none().then(|| (window.id.clone(), window.active_pane.clone()))
+            });
+            let Some((window, pane)) = target else {
+                self.model.message = "Terminal visible no disponible; evento no enviado".into(); return;
+            };
+            TmuxAction::ResumeOn(token, window, pane)
+        };
         let result = terminal_backend_for(&self.backends, &self.additional_backends, context)
-            .and_then(|b| b.send(TmuxAction::Resume(token)));
-        if let Err(error) = result {
-            self.cancel_terminal_resume();
-            self.model.focus(Surface::Normal);
-            self.model.message = error;
-            if !prefix.is_empty() {
-                let _ = self.terminal_resume.retain_before_backend(
-                    context, prefix, std::time::Instant::now(),
-                );
-                self.model.message = "Input no iniciado; entrada conservada. Cmd+Q permite revisarla".into();
+            .and_then(|backend| backend.send(action));
+        match result {
+            Ok(()) => {
+                self.terminal_input_sequence = token;
+                self.terminal_input_route = Some(workspace_app::terminal_input::Route { context, token });
+
             }
-        } else if let Err(error) = self.submit_terminal_resume_input(context, &prefix, false) {
-            self.retain_rejected_terminal_input(prefix, &error);
+            Err(error) => {
+                self.terminal_input_route = None;
+                self.model.message = format!("Input no enviado: {error}");
+            }
         }
     }
-    fn finish_pending_backend_resume(&mut self, project: usize, attached: bool) {
-        let Some((context, token)) = self
-            .pending_backend_resume
-            .take_if(|(context, _)| context.project == project)
-        else {
+
+    fn start_terminal_input_at_cell(&mut self, row: u16, column: u16) {
+        let Some(context) = self.terminal_input_context() else { return; };
+        let window = self.current_tmux_windows().and_then(|windows| {
+            let mut active = windows.iter().filter(|window| window.active);
+            let window = active.next()?;
+            active.next().is_none().then(|| window.id.clone())
+        });
+        let (Some(window), Some(token)) = (window, self.terminal_input_sequence.checked_add(1)) else {
+            self.terminal_input_route = None;
+            self.model.message = "Destino del clic no disponible; evento no enviado".into();
             return;
         };
-        // A timeout or a superseded fence must never send a delayed input.
-        if self.terminal_resume.recovery_blocked()
-            || !self.terminal_resume.expects(context, token, true)
+        match terminal_backend_for(&self.backends, &self.additional_backends, context)
+            .and_then(|backend| backend.send(TmuxAction::ResumeCell(token, window, row, column)))
         {
-            return;
+            Ok(()) => {
+                self.terminal_input_sequence = token;
+                self.terminal_input_route = Some(workspace_app::terminal_input::Route { context, token });
+            }
+            Err(error) => {
+                self.terminal_input_route = None;
+                self.model.message = error;
+            }
         }
-        if attached
-            && self.model.surface == Surface::Terminal
-            && self.terminal_input_context() == Some(context)
-            && self.terminal_resume_zoom_current(context)
-        {
-            let result = terminal_backend_for(&self.backends, &self.additional_backends, context)
-                .and_then(|backend| backend.send(TmuxAction::Resume(token)));
-            if let Err(error) = result {
-                self.terminal_resume_ack(context, token, true, Err(error));
-                return;
-            }
-            let backends = &self.backends;
-            let additional = &self.additional_backends;
-            if let Err(error) = self.terminal_resume.submit_buffered(
-                context, std::time::Instant::now(),
-                |token, bytes, ranges| {
-                    let action = if ranges.is_empty() {
-                        TmuxAction::ResumeStreamInput(token, bytes, false)
-                    } else {
-                        TmuxAction::ResumeStreamMixed(token, bytes, ranges)
-                    };
-                    terminal_backend_for(backends, additional, context)?.send(action)
-                },
-            ) {
-                self.model.message = format!("Entrada no enviada; Cmd+Q permite revisarla: {error}");
-            }
-            return;
-        }
-        let prefix = if self.model.surface == Surface::Terminal
-            && self.terminal_input_context() == Some(context)
-            && self.terminal_resume_zoom_current(context)
-        {
-            match self.model.focus(Surface::Normal) {
-                Effect::Pty(bytes) => bytes,
-                _ => Vec::new(),
-            }
-        } else {
-            Vec::new()
-        };
-        self.terminal_resume.ack_with_failure_prefix(
-            context,
-            token,
-            true,
-            false,
-            || prefix,
-        );
-        if !self.terminal_resume.active() { self.terminal_resume_zoom_owner = None; }
-        self.model.message = if self.terminal_resume.retained_guard().is_some() {
-            "Cambió la terminal; entrada conservada. Cmd+Q permite revisarla".into()
-        } else {
-            "No se pudo verificar la terminal; i reintenta".into()
-        };
     }
-    fn terminal_resume_ack(
+    fn terminal_input_result(
         &mut self,
-        context: workspace_app::terminal_resume::Context,
+        context: workspace_app::terminal_input::Context,
         token: u64,
-        ready: bool,
         result: Result<(), String>,
     ) {
-        let was_waiting_recovery = self.terminal_resume.awaiting_recovery_ack();
-        if !self.terminal_resume.expects(context, token, ready) {
-            return;
-        }
-        let focused = self.model.surface == Surface::Terminal
-            && self.terminal_input_context() == Some(context);
-        self.terminal_resume.ack_with_failure_prefix(
-            context,
-            token,
-            ready,
-            result.is_ok(),
-            || {
-                if focused {
-                    match self.model.focus(Surface::Normal) {
-                        Effect::Pty(bytes) => bytes,
-                        _ => Vec::new(),
-                    }
-                } else {
-                    Vec::new()
-                }
-            },
-        );
-        if was_waiting_recovery {
-            self.model.message = if self.terminal_resume.retained_guard().is_some() {
-                "Llegó una respuesta tardía; entrada conservada. Cmd+Q permite revisarla".into()
-            } else {
-                "La terminal confirmó tarde; i vuelve a input".into()
-            };
-            if !self.terminal_resume.active() { self.terminal_resume_zoom_owner = None; }
-            return;
-        }
         if let Err(error) = result {
-            self.model.message = if self.terminal_resume.retained_guard().is_some() {
-                format!(
-                    "Entrada pendiente conservada: {error}. Cmd+Q permite copiarla o descartarla"
-                )
-            } else if ready {
-                format!("No se pudo volver a input: {error}. i reintenta")
-            } else {
-                format!("La entrega no se confirmó: {error}. La entrada anterior pudo ejecutarse")
-            };
+            if self.terminal_input_route.is_some_and(|route| route.context == context && route.token == token) {
+                self.terminal_input_route = None;
+            }
+            self.model.message = format!("Terminal: {error}");
         }
-        if !self.terminal_resume.active() { self.terminal_resume_zoom_owner = None; }
     }
     fn terminal_open_guard(&self, generation: u64) -> TerminalOpenGuard {
         TerminalOpenGuard {
@@ -18439,11 +13358,10 @@ impl WorkspaceView {
             }
         }
     }
-    // The zero-attachment input ledger also supports an editor origin. The
-    // original editor's version is independently guarded by begin_edit_path.
+
     fn begin_sidebar_edit_path(&mut self, name: String, mut guard: PaneCommandGuard) {
-        if self.pending_open_input.is_some() || !self.pane_command_guard_valid(&guard) {
-            self.model.message = "Entrada anterior conservada; revisala antes de abrir".into();
+        if !self.pane_command_guard_valid(&guard) {
+            self.model.message = "El panel de origen ya no corresponde a esta apertura".into();
             return;
         }
         let path = match self.resolve_active_edit_path(&name) {
@@ -18467,11 +13385,11 @@ impl WorkspaceView {
             return;
         };
         *generation = self.file_generation;
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: self.model.project,
             pane: pane.0,
             // Zero is not allocated to terminal attachments; this is a
-            // ledger discriminator, never a PTY or backend destination.
+            // file-operation discriminator, never a PTY or backend destination.
             attachment: 0,
             generation: self.file_generation,
             path,
@@ -18479,24 +13397,18 @@ impl WorkspaceView {
         self.pending_sidebar_open = Some(guard);
         self.pending_sidebar_buffer_relist = None;
         self.pending_open_terminal_instance = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            queue: workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024),
+        self.pending_file_read = Some(PendingFileRead {
+            identity: Arc::new(()), state: workspace_app::file_read::State::Reading,
             context,
             focus,
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
+
             edit_resolution: true,
             edit_force: false,
             edit_reload_current: false,
             awaiting_edit_read: false,
             terminal_jump: false,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
+
+             post_split_line: None,
         });
     }
 
@@ -18507,8 +13419,8 @@ impl WorkspaceView {
         vertical: bool,
         count: usize,
     ) -> Option<PaneCommandGuard> {
-        if self.pending_open_input.is_some() || !self.pane_command_guard_valid(&guard) {
-            self.model.message = "Entrada anterior conservada; reintentá la apertura".into();
+        if !self.pane_command_guard_valid(&guard) {
+            self.model.message = "No se pudo iniciar la apertura".into();
             return None;
         }
         let PaneCommandGuard::Sidebar {
@@ -18527,7 +13439,7 @@ impl WorkspaceView {
         let before = panes.layout.order();
         let source = panes.layout.active();
         if self
-            .pending_file_splits
+            .sidebar_read_guard
             .is_current(generation, project, Some(source), Some(&content))
             .is_some()
         {
@@ -18568,24 +13480,24 @@ impl WorkspaceView {
         name: String,
     ) {
         if name.is_empty() {
-            self.retain_replayed_jump();
+
             self.model.message = "Indicá una ruta".into();
             return;
         }
         let (name, line) = match workspace_app::editor::split_path_position(&name) {
             Ok((name, line)) => (name.to_owned(), line),
-            Err(error) => { self.retain_replayed_jump(); self.model.message = error.into(); return; }
+            Err(error) => {  self.model.message = error.into(); return; }
         };
         let path = match self.resolve_active_edit_path(&name) {
             Ok(path) => path,
             Err(error) => {
-                self.retain_replayed_jump();
+
                 self.model.message = error;
                 return;
             }
         };
         let Some(target) = self.sidebar_split_target(guard, vertical, count) else {
-            self.retain_replayed_jump();
+
             return;
         };
         let Some(pane) = self
@@ -18593,13 +13505,13 @@ impl WorkspaceView {
             .as_ref()
             .map(|panes| panes.layout.active())
         else {
-            self.retain_replayed_jump();
+
             return;
         };
         let project = self.model.project;
         let generation = self.file_generation.wrapping_add(1);
         self.begin_sidebar_edit_path(name, target);
-        if let Some(input) = &mut self.pending_open_input
+        if let Some(input) = &mut self.pending_file_read
             && input.edit_resolution
             && input.context.workspace == project
             && input.context.pane == pane.0
@@ -18607,18 +13519,18 @@ impl WorkspaceView {
             && input.context.generation == generation
             && input.context.path == path
         {
-            input.wait_for_geometry = true;
+
             input.set_post_split_line(line);
             return;
         }
-        self.retain_replayed_jump();
-        self.model.message = "Split parcial; apertura e entrada conservadas para revisar".into();
+
+        self.model.message = "Split creado; no se pudo completar la apertura".into();
     }
 
     fn split_new_window(&mut self, vertical: bool, count: usize) {
         if self.editors.len() >= 128 {
             self.model.message = "Límite de 128 buffers; cerrá uno antes de :new".into();
-            self.retain_replayed_jump();
+
             return;
         }
         if matches!(
@@ -18626,16 +13538,16 @@ impl WorkspaceView {
             Surface::Tree | Surface::Agents | Surface::Backlog
         ) {
             let Some(panes) = self.editor_panes.as_ref() else {
-                self.retain_replayed_jump();
+
                 return;
             };
             let Some(content) = panes.content(panes.layout.active()).cloned() else {
-                self.retain_replayed_jump();
+
                 return;
             };
             if !matches!(content, PaneContent::Explorer(_) | PaneContent::Agents(_)) {
                 self.model.message = "El foco lateral ya no coincide con el panel".into();
-                self.retain_replayed_jump();
+
                 return;
             }
             let guard = PaneCommandGuard::Sidebar {
@@ -18646,14 +13558,10 @@ impl WorkspaceView {
                 content,
                 focus: panes.layout.focus_guard(),
             };
-            if self.sidebar_split_target(guard, vertical, count).is_none()
-                || self.new_file_now_at_target(true).is_none()
-            {
-                self.retain_replayed_jump();
-            }
+            let _ = self.sidebar_split_target(guard, vertical, count).is_none()
+                || self.new_file_now_at_target(true).is_none();
             return;
         }
-        let previous_file = self.model.file.as_ref().map(|(path, _)| path.clone());
         let before = self
             .editor_panes
             .as_ref()
@@ -18665,95 +13573,16 @@ impl WorkspaceView {
             .map_or(0, |p| p.layout.panes().len());
         if after == before + 1 {
             self.new_file();
-            let created_file = self.model.file.as_ref().is_some_and(|(path, _)| {
-                Some(path) != previous_file.as_ref() && self.model.unnamed.contains(path)
-            });
-            if !created_file {
-                self.retain_replayed_jump();
-            }
-        } else {
-            self.retain_replayed_jump();
         }
     }
 
-    /// A terminal-owned replay can reach :split {path} after switching to an
-    /// editor. Validate that original editor before splitting, then bind the
-    /// asynchronous read to the newly created pane in the same dispatch.
-    fn replay_editor_split_path(&mut self, vertical: bool, count: usize, name: &str) -> bool {
-        if !self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|input| input.replaying)
-        {
-            return false;
-        }
-        let (name, line) = match workspace_app::editor::split_path_position(name) {
-            Ok(value) => value,
-            Err(error) => { self.retain_replayed_jump(); self.model.message = error.into(); return true; }
-        };
-        if name.is_empty()
-            || self.pending_open_input.is_some()
-            || !self.terminal_key_editor_edit_source_current()
-        {
-            self.retain_replayed_jump();
-            self.model.message =
-                "No se pudo confirmar el origen del split; entrada conservada".into();
-            return true;
-        }
-        let path = match self.resolve_active_edit_path(name) {
-            Ok(path) => path,
-            Err(error) => { self.retain_replayed_jump(); self.model.message = error; return true; }
-        };
-        let Some(panes) = self.editor_panes.as_ref() else {
-            self.retain_replayed_jump();
-            return true;
-        };
-        let before = panes.layout.order();
-        let source = panes.layout.active();
-        let content = panes.content(source).cloned();
-        self.editor_window_counted(if vertical { "v" } else { "s" }, count);
-        let target = self.editor_panes.as_ref().and_then(|panes| {
-            let pane = panes.layout.active();
-            (panes.layout.panes().len() == before.len() + 1
-                && !before.contains(&pane)
-                && panes.content(pane) == content.as_ref()
-                && matches!(&content, Some(PaneContent::File(_))))
-            .then(|| PaneCommandGuard::Sidebar {
-                project: self.model.project,
-                surface: self.model.surface,
-                generation: self.file_generation,
-                focus_revision: self.model.focus_revision,
-                content: content.clone().expect("file checked"),
-                focus: panes.layout.focus_guard(),
-            })
-        });
-        if let Some(guard) = target {
-            let project = self.model.project;
-            let pane = self.editor_panes.as_ref().map(|panes| panes.layout.active());
-            let generation = self.file_generation.wrapping_add(1);
-            self.begin_sidebar_edit_path(name.to_owned(), guard);
-            if let Some(input) = &mut self.pending_open_input
-                && input.edit_resolution && input.context.workspace == project
-                && Some(input.context.pane) == pane.map(|pane| pane.0)
-                && input.context.attachment == 0 && input.context.generation == generation
-                && input.context.path == path
-            {
-                input.wait_for_geometry = true;
-                input.set_post_split_line(line);
-                return true;
-            }
-        }
-        self.retain_replayed_jump();
-        self.model.message = "Split parcial; apertura e entrada conservadas para revisar".into();
-        true
-    }
+    /// Validate the source editor before splitting, then associate the file
+    /// read with the new destination pane.
 
     fn split_editor_path(&mut self, vertical: bool, count: usize, name: String) {
         if name.is_empty()
-            || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some()
         {
-            self.model.message = "Indicá una ruta y resolvé la entrada pendiente".into();
+            self.model.message = "Indicá una ruta para abrir".into();
             return;
         }
         let (name, line) = match workspace_app::editor::split_path_position(&name) {
@@ -18819,7 +13648,7 @@ impl WorkspaceView {
         let project = self.model.project;
         let generation = self.file_generation.wrapping_add(1);
         self.begin_sidebar_edit_path(name, guard);
-        if let Some(input) = &mut self.pending_open_input
+        if let Some(input) = &mut self.pending_file_read
             && input.edit_resolution
             && input.context.workspace == project
             && input.context.pane == pane.0
@@ -18827,7 +13656,7 @@ impl WorkspaceView {
             && input.context.generation == generation
             && input.context.path == path
         {
-            input.wait_for_geometry = true;
+
             input.set_post_split_line(line);
             return;
         }
@@ -18836,24 +13665,24 @@ impl WorkspaceView {
 
     /// Open a path in a fresh pane without losing the terminal's queued input.
     fn split_terminal_path(&mut self, vertical: bool, count: usize, name: String) {
-        if name.is_empty() || self.pending_open_input.is_some() {
-            self.retain_replayed_jump();
-            self.model.message = "Indicá una ruta y resolvé la entrada pendiente".into();
+        if name.is_empty() {
+
+            self.model.message = "Indicá una ruta para abrir".into();
             return;
         }
         let (name, line) = match workspace_app::editor::split_path_position(&name) {
             Ok((name, line)) => (name.to_owned(), line),
-            Err(error) => { self.retain_replayed_jump(); self.model.message = error.into(); return; }
+            Err(error) => {  self.model.message = error.into(); return; }
         };
         let Some(context) = self.terminal_input_context() else {
-            self.retain_replayed_jump();
-            self.model.message = "Terminal no disponible; entrada conservada".into();
+
+            self.model.message = "Terminal no disponible".into();
             return;
         };
         let path = match self.resolve_active_edit_path(&name) {
             Ok(path) => path,
             Err(error) => {
-                self.retain_replayed_jump();
+
                 self.model.message = error;
                 return;
             }
@@ -18874,13 +13703,13 @@ impl WorkspaceView {
             .then_some(pane)
         });
         let Some(pane) = target else {
-            self.retain_replayed_jump();
-            self.model.message = "No se pudo confirmar el split; entrada conservada".into();
+
+            self.model.message = "No se pudo confirmar el split".into();
             return;
         };
         let generation = self.file_generation.wrapping_add(1);
         self.begin_edit_path(name, true);
-        if let Some(input) = &mut self.pending_open_input
+        if let Some(input) = &mut self.pending_file_read
             && input.edit_resolution
             && input.context.workspace == context.project
             && input.context.attachment == context.attachment
@@ -18888,16 +13717,15 @@ impl WorkspaceView {
             && input.context.generation == generation
             && input.context.path == path
         {
-            input.wait_for_geometry = true;
+
             input.set_post_split_line(line);
             return;
         }
-        self.retain_replayed_jump();
-        self.model.message = "Split parcial; apertura e entrada conservadas para revisar".into();
+
+        self.model.message = "Split creado; no se pudo completar la apertura".into();
     }
 
-    /// Resolve and read a zoom-local :edit while retaining its own input.
-    fn begin_detached_edit_path(&mut self, name: String, force: bool) {
+        fn begin_detached_edit_path(&mut self, name: String, force: bool) {
         if name.is_empty() {
             self.model.message = "Indicá una ruta para :e".into();
             return;
@@ -18907,9 +13735,7 @@ impl WorkspaceView {
                 let source = match self.editor_zoom.as_ref().map(|zoom| zoom.content().clone()) {
                     Some(PaneContent::File(source)) => source,
                     Some(PaneContent::Agents(id)) => {
-                        if !self.begin_detached_agents_file_read(id, path, None, true, true, true) {
-                            self.retain_replayed_jump();
-                        }
+                        self.begin_detached_agents_file_read(id, path, None, true, true, true);
                         return;
                     }
                     Some(PaneContent::Terminal(_)) if self.editors.contains_key(&path) => {
@@ -18917,14 +13743,14 @@ impl WorkspaceView {
                         return;
                     }
                     Some(PaneContent::Terminal(attachment)) => {
-                        let opened = if self.model.unnamed.contains(&path) {
+                        if self.model.unnamed.contains(&path) {
                             self.activate_detached_listed_target(
                                 ListedBuffer::Terminal(attachment), ListedBuffer::File(path), true,
                             )
                         } else {
                             self.begin_detached_terminal_file_read(attachment, path, true, None, None, true)
                         };
-                        if !opened { self.retain_replayed_jump(); }
+
                         return;
                     }
                     _ => {
@@ -18932,52 +13758,46 @@ impl WorkspaceView {
                         return;
                     }
                 };
-                if !self.begin_detached_file_read(source, path, true, true, true, None) {
-                    self.retain_replayed_jump();
-                } else if let Some(input) = &mut self.pending_open_input {
+                if self.begin_detached_file_read(source, path, true, true, true, None)
+                    && let Some(input) = &mut self.pending_file_read {
                     input.edit_force = force;
                     input.edit_reload_current = true;
                 }
             }
             Err(error) => {
-                self.retain_replayed_jump();
+
                 self.model.message = error;
             }
         }
     }
 
-    /// Keep the edit command's input ledger alive through the reload. A
-    /// failed or stale read retains queued keys instead of delivering them to
-    /// a potentially different buffer.
-    fn finish_reload_edit_input(&mut self, input: Option<(u64, PathBuf, Arc<()>)>, opened: bool) {
+        fn finish_reload_edit_input(&mut self, input: Option<(u64, PathBuf, Arc<()>)>, opened: bool) {
         let Some((generation, path, owner)) = input else { return; };
-        if !self.pending_open_input.as_ref().is_some_and(|input| {
+        if !self.pending_file_read.as_ref().is_some_and(|input| {
             input.context.generation == generation && input.context.path == path
-                && Arc::ptr_eq(&owner, &input.queue.identity())
+                && Arc::ptr_eq(&owner, &input.identity.clone())
         }) { return; }
         if opened {
             self.finish_resolved_edit_open(generation, &path);
         } else {
-            self.finish_open_input_read(generation, &path, false);
+            self.finish_file_read(generation, &path, false);
         }
     }
 
     fn begin_resolved_editor_reload(&mut self, generation: u64, path: &Path) {
         if self.pending_editor_reload.is_some() {
-            self.finish_open_input_read(generation, path, false);
+            self.finish_file_read(generation, path, false);
             self.model.message = "Ya hay una recarga pendiente; archivo conservado".into();
             return;
         }
-        let Some(input) = self.pending_open_input.take() else { return; };
-        let owner = input.queue.identity();
+        let Some(input) = self.pending_file_read.take() else { return; };
+        let owner = input.identity.clone();
         let force = input.edit_force;
         let sidebar = self.pending_sidebar_open.take();
-        // The caller has already checked the input and its source. Temporarily
-        // remove only this ledger while starting the ordinary guarded reload;
-        // all unrelated pending operations still block it.
+        // Preserve the file operation identity across the guarded reload.
         self.begin_editor_reload(force);
         self.pending_sidebar_open = sidebar;
-        self.pending_open_input = Some(input);
+        self.pending_file_read = Some(input);
         let edit_input = Some((generation, path.to_path_buf(), owner));
         if let Some(pending) = &mut self.pending_editor_reload {
             pending.edit_input = edit_input;
@@ -19003,21 +13823,20 @@ impl WorkspaceView {
             })
             && !self.pending_saves.contains_key(&pending.open.path)
             && !self.formatting.contains(&pending.open.path)
-            && match (&pending.edit_input, &self.pending_open_input) {
+            && match (&pending.edit_input, &self.pending_file_read) {
                 (None, None) => true,
                 (Some((generation, path, owner)), Some(input)) => {
                     input.context.generation == *generation && input.context.path == *path
                         && input.awaiting_edit_read
-                        && Arc::ptr_eq(owner, &input.queue.identity())
+                        && Arc::ptr_eq(owner, &input.identity.clone())
                 }
                 _ => false,
             }
-            && self.pending_terminal_key.is_none()
     }
 
     fn begin_editor_reload(&mut self, force: bool) {
         if self.pending_editor_reload.is_some() || self.snacks_operation_blocked() {
-            self.retain_replayed_jump();
+
             self.model.message = "Terminá la operación pendiente antes de recargar".into();
             return;
         }
@@ -19082,28 +13901,16 @@ impl WorkspaceView {
             self.begin_detached_edit_path(name, force);
             return;
         }
-        if self.pending_open_input.is_some() {
-            if !force && self.pending_terminal_key.is_none() && self.retarget_replayed_edit(&name, true) {
-                return;
-            }
-            self.retain_replayed_jump();
-            self.model.message = "Entrada anterior conservada; revisala antes de abrir".into();
-            return;
-        }
-        let terminal_replay = self.pending_terminal_key.is_some();
-        if terminal_replay && !self.terminal_key_editor_edit_source_current() {
-            self.retain_replayed_jump();
-            self.model.message = "Entrada anterior conservada; revisala antes de abrir".into();
-            return;
-        }
+        if self.pending_file_read.is_some() { self.cancel_file_read_request(); }
+
         let Some(panes) = self.editor_panes.as_ref() else {
-            self.retain_replayed_jump();
+
             self.model.message = "Panel de origen no disponible".into();
             return;
         };
         let Some(content @ PaneContent::File(_)) = panes.content(panes.layout.active()).cloned()
         else {
-            self.retain_replayed_jump();
+
             self.model.message = "Archivo de origen no disponible".into();
             return;
         };
@@ -19116,155 +13923,15 @@ impl WorkspaceView {
             focus: panes.layout.focus_guard(),
         };
         self.begin_sidebar_edit_path(name, guard);
-        if let Some(input) = &mut self.pending_open_input {
+        if let Some(input) = &mut self.pending_file_read {
             input.edit_force = force;
             input.edit_reload_current = true;
         }
-        if terminal_replay && self.pending_open_input.is_none() {
-            self.retain_replayed_jump();
-        }
+
     }
     /// Return from a replayed editor command changes Command to Normal before
     /// OpenPath is delivered. Everything else must still match its owner.
-    fn terminal_key_editor_edit_source_current(&self) -> bool {
-        use workspace_app::terminal_key_gate::State;
-        let Some(input) = &self.pending_terminal_key else {
-            return false;
-        };
-        let Some(destination) = &input.destination else {
-            return false;
-        };
-        let Some((identity, version, mode)) = &destination.editor else {
-            return false;
-        };
-        let Some(panes) = &self.editor_panes else {
-            return false;
-        };
-        let PaneContent::File(path) = &destination.content else {
-            return false;
-        };
-        input.replaying
-            && !input.replay_error
-            && !input.mixed_context
-            && input.marked_selection.is_none()
-            && input.write.is_none()
-            && input.target_action.is_none()
-            && input.selection_action.is_none()
-            && input.capture_wait.is_none()
-            && input.gate.state() == State::Replaying
-            && input.replay_event.is_some()
-            && input.gate.in_flight_id() == input.replay_event
-            && destination.project == self.model.project
-            && destination.generation == self.file_generation
-            && destination.focus_revision == self.model.focus_revision
-            && destination.surface == Surface::File
-            && self.model.surface == Surface::File
-            && panes.layout.active() == destination.pane
-            && panes.layout.focus_guard_is_current(&destination.focus)
-            && panes.content(destination.pane) == Some(&destination.content)
-            && self
-                .model
-                .file
-                .as_ref()
-                .is_some_and(|(active, _)| active == path)
-            && self.editors.get(path).is_some_and(|editor| {
-                identity.matches(editor)
-                    && *version == editor.version
-                    && *mode == EditMode::Command
-                    && editor.mode == EditMode::Normal
-            })
-            && destination.command.is_none()
-            && self.terminal_command.is_none()
-            && !destination.window_prefix
-            && self.editor_window_prefix.is_none()
-            && !destination.file_prompt
-            && self.file_prompt.is_none()
-            && !destination.remote_prompt
-            && self.remote_prompt.is_none()
-            && !destination.help
-            && !self.help
-            && !destination.notifications
-            && !self.model.notifications
-            && !destination.media
-            && !self.media_active()
-    }
-    fn retarget_replayed_edit(&mut self, name: &str, reload_current: bool) -> bool {
-        if name.is_empty() || self.pending_open_input_mixed_context {
-            return false;
-        }
-        let Some(pending) = self.pending_open_input.as_ref() else {
-            return false;
-        };
-        if !pending.replaying
-            || pending.replay_error
-            || pending.marked_selection.is_some()
-            || pending.deferred_capture.is_some()
-            || !self.open_input_context_current(pending, true)
-        {
-            return false;
-        }
-        let Some(event) = pending.queue.in_flight_id() else {
-            return false;
-        };
-        let old_context = pending.context.clone();
-        let Ok(path) = self.resolve_active_edit_path(name) else {
-            return false;
-        };
-        let Some(panes) = self.editor_panes.as_ref() else {
-            return false;
-        };
-        let Some(content @ PaneContent::File(_)) = panes.content(panes.layout.active()).cloned()
-        else {
-            return false;
-        };
-        let focus = panes.layout.focus_guard();
-        let generation = self.file_generation;
-        let guard = PaneCommandGuard::Sidebar {
-            project: self.model.project,
-            surface: self.model.surface,
-            generation: generation.wrapping_add(1),
-            focus_revision: self.model.focus_revision,
-            content,
-            focus: focus.clone(),
-        };
-        self.begin_edit_path(name.to_owned(), false);
-        if self.file_generation != generation.wrapping_add(1) {
-            return false;
-        }
-        let next = workspace_app::open_input::Context {
-            workspace: old_context.workspace,
-            pane: old_context.pane,
-            attachment: 0,
-            generation: self.file_generation,
-            path,
-        };
-        let Some(pending) = &mut self.pending_open_input else {
-            self.file_generation = self.file_generation.wrapping_add(1);
-            return false;
-        };
-        if !pending
-            .queue
-            .retarget_edit(event, &old_context, next.clone())
-        {
-            pending.queue.invalidate();
-            self.file_generation = self.file_generation.wrapping_add(1);
-            return false;
-        }
-        pending.context = next;
-        pending.focus = focus;
-        pending.edit_resolution = true;
-        pending.edit_force = false;
-        pending.edit_reload_current = reload_current;
-        pending.awaiting_edit_read = false;
-        pending.terminal_jump = false;
-        let identity = pending.queue.identity();
-        self.pending_direction_replay
-            .take_if(|source| Arc::ptr_eq(&source.owner, &identity));
-        self.pending_sidebar_open = Some(guard);
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_terminal_instance = None;
-        true
-    }
+
     fn active_working_directory(&self) -> Result<&Path, String> {
         let workspace = self.model.projects.get(self.model.project)
             .ok_or("Workspace no disponible")?;
@@ -19327,14 +13994,14 @@ impl WorkspaceView {
         self.pending_edit_guard = self.open_guard(generation);
         self.pending_terminal_open = terminal.then(|| self.terminal_open_guard(generation));
         if terminal {
-            if !self.begin_open_input(generation, &path) {
+            if !self.prepare_terminal_file_read(generation, &path) {
                 self.pending_edit_guard
                     .take_if(|guard| guard.generation == generation);
                 self.cancel_unstarted_file_read(generation, &path);
-                self.model.message = "Entrada anterior conservada; reintentá su apertura".into();
+                self.model.message = "No se pudo iniciar la apertura".into();
                 return;
             }
-            if let Some(pending) = &mut self.pending_open_input {
+            if let Some(pending) = &mut self.pending_file_read {
                 pending.edit_resolution = true;
             }
         }
@@ -19357,17 +14024,9 @@ impl WorkspaceView {
         });
     }
     fn split_current_file_at(&mut self, vertical: bool, count: usize, position: workspace_app::editor::SplitPosition) {
-        if self.editor_zoom.is_some() || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some() || self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active() || self.pending_file_splits.recovery_revision().is_some()
+        if self.editor_zoom.is_some() || self.pending_measured_splits.is_some()
         {
-            if let Some(input) = &mut self.pending_open_input && input.replaying {
-                input.replay_error = true;
-            }
-            if let Some(input) = &mut self.pending_terminal_key && input.replaying {
-                input.replay_error = true;
-            }
-            self.retain_replayed_jump();
+
             self.model.message = "Split con posición pendiente; contenido conservado".into();
             return;
         }
@@ -19432,12 +14091,12 @@ impl WorkspaceView {
             EditEffect::ChangeGlobalDirectory(name) => self.change_directory(name, false),
             EditEffect::PrintDirectory => self.print_working_directory(),
             EditEffect::Split(vertical) => {
-                self.editor_window_from_open_input(if vertical { "v" } else { "s" }, 0)
+                self.editor_window_counted(if vertical { "v" } else { "s" }, 0)
             }
             EditEffect::Only => self.editor_window("o"),
             EditEffect::WindowCommand(key, count) => {
                 if matches!(key, 's' | 'v' | 'n' | 'N') {
-                    self.editor_window_from_open_input(&key.to_string(), count)
+                    self.editor_window_counted(&key.to_string(), count)
                 } else {
                     self.editor_window_counted(&key.to_string(), count)
                 }
@@ -19469,7 +14128,7 @@ impl WorkspaceView {
                 if self.editor_zoom.is_some() {
                     if let Err(message) = self.end_floating_zoom() {
                         self.model.message = message.into();
-                        self.retain_replayed_jump();
+
                     }
                 } else if self
                     .editor_panes
@@ -19488,10 +14147,10 @@ impl WorkspaceView {
                 else { self.counted_ex_window("q", count); }
             }
             EditEffect::SplitNew(vertical) => {
-                self.editor_window_from_open_input(if vertical { "N" } else { "n" }, 0)
+                self.editor_window_counted(if vertical { "N" } else { "n" }, 0)
             }
             EditEffect::SplitNewSized(vertical, count) => {
-                self.editor_window_from_open_input(if vertical { "N" } else { "n" }, count)
+                self.editor_window_counted(if vertical { "N" } else { "n" }, count)
             }
             EditEffect::SplitCurrentPosition(vertical, count, position) => {
                 self.split_current_file_at(vertical, count, position)
@@ -19501,29 +14160,11 @@ impl WorkspaceView {
                     self.model.message = "Indicá una ruta".into();
                     return;
                 }
-                if self.replay_editor_split_path(vertical, 0, &name) {
-                    return;
-                }
-                if self.defer_replayed_split(
-                    if vertical { "v" } else { "s" },
-                    0,
-                    Some(name.clone()),
-                ) {
-                    return;
-                }
+
                 self.split_editor_path(vertical, 0, name);
             }
             EditEffect::SplitPathSized(vertical, count, name) => {
-                if self.replay_editor_split_path(vertical, count, &name) {
-                    return;
-                }
-                if self.defer_replayed_split(
-                    if vertical { "v" } else { "s" },
-                    count,
-                    Some(name.clone()),
-                ) {
-                    return;
-                }
+
                 self.split_editor_path(vertical, count, name);
             }
             EditEffect::OpenPath(name) => {
@@ -19681,7 +14322,7 @@ impl WorkspaceView {
                 if self.editor_zoom.is_some() {
                     if let Err(message) = self.end_floating_zoom() {
                         self.model.message = message.into();
-                        self.retain_replayed_jump();
+
                     }
                     return;
                 }
@@ -19860,42 +14501,19 @@ impl WorkspaceView {
         workspace: usize,
         origin: PaneId,
         commands: VecDeque<(String, usize)>,
-        input_owner: Option<Arc<()>>,
-        input_event: Option<u64>,
+
     ) -> Result<PendingMeasuredSplits, VecDeque<(String, usize)>> {
-        let input_current = match (&input_owner, &self.pending_open_input) {
-            (None, None) => input_event.is_none(),
-            (Some(owner), Some(input)) => {
-                Arc::ptr_eq(owner, &input.queue.identity())
-                    && input.queue.state() == workspace_app::open_input::State::Ready
-                    && match input_event {
-                        Some(event) => {
-                            input.replaying
-                                && input.scheduled
-                                && input.queue.in_flight_id() == Some(event)
-                        }
-                        None => {
-                            !input.replaying
-                                && !input.scheduled
-                                && input.queue.in_flight_id().is_none()
-                        }
-                    }
-                    && self.open_input_context_current(input, true)
-            }
-            _ => false,
-        };
+
         if self.model.project != workspace
             || self.model.surface != Surface::File
-            || !input_current
-            || (input_owner.is_none() && !self.marked.is_empty())
+            || !self.marked.is_empty()
             || self.file_prompt.is_some()
             || self.remote_prompt.is_some()
             || self.terminal_command.is_some()
             || self.help
             || self.model.notifications
             || self.media_active()
-            || self.pending_terminal_key.is_some()
-            || self.terminal_jump_gate.busy()
+
             || self.pending_jump_load.is_some()
             || self.pending_terminal_jump_load.is_some()
             || self
@@ -19920,8 +14538,7 @@ impl WorkspaceView {
         }
         Ok(PendingMeasuredSplits {
             identity: Arc::new(()),
-            input_owner,
-            input_event,
+
             path_after_split: None,
             workspace,
             origin,
@@ -19960,20 +14577,6 @@ impl WorkspaceView {
             && !self.help
             && !self.model.notifications
             && !self.media_active()
-            && match (&pending.input_owner, &self.pending_open_input) {
-                (None, None) => true,
-                (Some(owner), Some(input)) => {
-                    Arc::ptr_eq(owner, &input.queue.identity())
-                        && input.queue.state() == workspace_app::open_input::State::Ready
-                        && !input.replaying
-                        && !input.scheduled
-                        && input.queue.in_flight_id() == pending.input_event
-                        && self.open_input_context_current(input, true)
-                }
-                _ => false,
-            }
-            && self.pending_terminal_key.is_none()
-            && !self.terminal_jump_gate.busy()
             && self.pending_jump_load.is_none()
             && self.pending_terminal_jump_load.is_none()
             && self
@@ -20000,544 +14603,9 @@ impl WorkspaceView {
             })
     }
 
-    fn ensure_measured_input(&mut self) -> bool {
-        let Some(split) = self.pending_measured_splits.as_ref() else {
-            return false;
-        };
-        if split.input_owner.is_some() {
-            return self.measured_splits_current(split);
-        }
-        if !self.measured_splits_current(split) {
-            return false;
-        }
-        let Some(panes) = &self.editor_panes else {
-            return false;
-        };
-        let focus = panes.layout.focus_guard();
-        let context = workspace_app::open_input::Context {
-            workspace: split.workspace,
-            pane: split.target.0,
-            attachment: 0,
-            generation: split.file_generation,
-            path: split.path.clone(),
-        };
-        let mut queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
-        if !queue.ready(&context, true) {
-            return false;
-        }
-        let owner = queue.identity();
-        self.pending_sidebar_open = Some(PaneCommandGuard::Sidebar {
-            project: split.workspace,
-            surface: Surface::File,
-            generation: split.file_generation,
-            focus_revision: self.model.focus_revision,
-            content: PaneContent::File(split.path.clone()),
-            focus: focus.clone(),
-        });
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context,
-            focus,
-            queue,
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
-            edit_resolution: false,
-            edit_force: false,
-            edit_reload_current: false,
-            awaiting_edit_read: false,
-            terminal_jump: false,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
-        });
-        if let Some(split) = &mut self.pending_measured_splits {
-            split.input_owner = Some(owner);
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Hold the first file-navigation key until a fresh layout exists. The
-    /// ledger remains bound to the exact original file and focus; successors
-    /// that cannot be transferred after a focus change go to recovery.
-    fn begin_file_direction_replay(&mut self, key: Keystroke) -> bool {
-        if self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-            || self.pending_sidebar_open.is_some() || self.pending_detached_open.is_some()
-            || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
-            || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_read_guard.is_some()
-            || self.pending_edit_guard.is_some() || self.pending_jump_load.is_some()
-            || self.pending_terminal_jump_load.is_some()
-            || self.pending_terminal_open.is_some() || self.pending_terminal_capture.is_some()
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
-            || self.terminal_resume.active()
-        { return false; }
-        let Some((path, _)) = &self.model.file else { return false; };
-        let Some(panes) = &self.editor_panes else { return false; };
-        let pane = panes.layout.active();
-        if self.model.surface != Surface::File
-            || panes.content(pane) != Some(&PaneContent::File(path.clone()))
-            || !self.editors.get(path).is_some_and(|editor| {
-                editor.mode == EditMode::Normal && !editor.composing()
-                    && !editor.command_pending() && !editor.replaying()
-            })
-        { return false; }
-        let focus = panes.layout.focus_guard();
-        let context = workspace_app::open_input::Context {
-            workspace: self.model.project, pane: pane.0, attachment: 0,
-            generation: self.file_generation, path: path.clone(),
-        };
-        let mut queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
-        let event = workspace_app::open_input::Event::Key(key);
-        let bytes = PendingOpenInput::event_bytes(&event);
-        if queue.push(event, bytes).is_err() || !queue.ready(&context, true) { return false; }
-        let Some(selection) = self.direction_replay_selection(&PaneContent::File(context.path.clone())) else { return false; };
-        self.pending_direction_replay = Some(DirectionReplaySource {
-            owner: queue.identity(), selection,
-        });
-        self.pending_sidebar_open = Some(PaneCommandGuard::Sidebar {
-            project: context.workspace, surface: Surface::File, generation: context.generation,
-            focus_revision: self.model.focus_revision, content: PaneContent::File(context.path.clone()),
-            focus: focus.clone(),
-        });
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context, focus, queue, overflow: VecDeque::new(), replaying: false, scheduled: false,
-            revision: 0, marked_selection: None, replay_error: false, paste_held: None, edit_resolution: false,
-            edit_force: false, edit_reload_current: false, awaiting_edit_read: false,
-            terminal_jump: false, deferred_capture: None, wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
-        });
-        let _ = self.terminal_wake.try_send(());
-        true
-    }
-
-    /// Preserve the first direction from a list until its selected row and
-    /// pane bounds have been measured for the current frame. The queue is
-    /// tied to that row, not merely to the sidebar's pane identity.
-    fn direction_replay_selection(&self, content: &PaneContent) -> Option<DirectionReplaySelection> {
-        match (self.model.surface, content) {
-            (Surface::Tree, PaneContent::Explorer(_)) => Some(DirectionReplaySelection::Explorer {
-                root: self.model.explorer_root().to_owned(),
-                selected: self.model.tree_rows().get(self.model.tree_selected)
-                    .map(|row| row.path.clone()),
-            }),
-            (surface @ (Surface::Agents | Surface::Backlog), PaneContent::Agents(_)) => {
-                Some(DirectionReplaySelection::Agents { surface, selected: self.model.selected.clone() })
-            }
-            (Surface::File, PaneContent::File(path))
-                if self.model.file.as_ref().is_some_and(|(active, _)| active == path) => {
-                Some(DirectionReplaySelection::File {
-                    path: path.clone(), editor: self.editors.get(path)?.identity(),
-                })
-            }
-            _ => None,
-        }
-    }
-
-    /// A queued list-motion key may synchronously change the selected row
-    /// without changing panes. Rebind only after that exact key was accepted.
-    fn refresh_direction_replay_selection(&mut self, owner: &Arc<()>) {
-        let Some(pending) = self.pending_open_input.as_ref() else { return; };
-        let Some(source) = self.pending_direction_replay.as_ref() else { return; };
-        if !Arc::ptr_eq(&source.owner, owner) || !Arc::ptr_eq(&pending.queue.identity(), owner)
-            || self.pending_open_input_mixed_context || pending.replaying || pending.scheduled
-            || pending.replay_error || pending.queue.in_flight_id().is_some()
-            || self.file_prompt.is_some() || self.remote_prompt.is_some()
-            || self.terminal_command.is_some() || self.terminal_search_prompt.is_some()
-            || self.editor_zoom.is_some() || self.help || self.model.notifications || self.media_active()
-            || !self.pending_sidebar_open.as_ref().is_some_and(|guard| self.pane_command_guard_valid(guard))
-        { return; }
-        let Some(panes) = &self.editor_panes else { return; };
-        if panes.layout.active().0 != pending.context.pane
-            || !panes.layout.focus_guard_is_current(&pending.focus)
-        { return; }
-        let Some(content) = panes.content(panes.layout.active()) else { return; };
-        let Some(next) = self.direction_replay_selection(content) else { return; };
-        let same_list = match (&source.selection, &next) {
-            (DirectionReplaySelection::Explorer { root: before, .. },
-             DirectionReplaySelection::Explorer { root: after, .. }) => before == after,
-            (DirectionReplaySelection::Agents { surface: before, .. },
-             DirectionReplaySelection::Agents { surface: after, .. }) => before == after,
-            _ => false,
-        };
-        if same_list && let Some(source) = &mut self.pending_direction_replay {
-            source.selection = next;
-        }
-    }
-
-    fn begin_sidebar_direction_replay(&mut self, key: Keystroke) -> bool {
-        if self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-            || self.pending_sidebar_open.is_some() || self.pending_detached_open.is_some()
-            || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
-            || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_read_guard.is_some()
-            || self.pending_edit_guard.is_some() || self.pending_jump_load.is_some()
-            || self.pending_terminal_jump_load.is_some()
-            || self.pending_terminal_open.is_some() || self.pending_terminal_capture.is_some()
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
-            || self.terminal_resume.active()
-        { return false; }
-        let Some(panes) = &self.editor_panes else { return false; };
-        let pane = panes.layout.active();
-        let Some(content) = panes.content(pane).cloned() else { return false; };
-        let Some(selection) = self.direction_replay_selection(&content) else { return false; };
-        let focus = panes.layout.focus_guard();
-        let context = workspace_app::open_input::Context {
-            workspace: self.model.project, pane: pane.0, attachment: 0,
-            generation: self.file_generation, path: PathBuf::new(),
-        };
-        let mut queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
-        let event = workspace_app::open_input::Event::Key(key);
-        let bytes = PendingOpenInput::event_bytes(&event);
-        if queue.push(event, bytes).is_err() || !queue.ready(&context, true) { return false; }
-        self.pending_direction_replay = Some(DirectionReplaySource {
-            owner: queue.identity(), selection,
-        });
-        self.pending_sidebar_open = Some(PaneCommandGuard::Sidebar {
-            project: context.workspace, surface: self.model.surface, generation: context.generation,
-            focus_revision: self.model.focus_revision, content, focus: focus.clone(),
-        });
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context, focus, queue, overflow: VecDeque::new(), replaying: false, scheduled: false,
-            revision: 0, marked_selection: None, replay_error: false, paste_held: None, edit_resolution: false,
-            edit_force: false, edit_reload_current: false, awaiting_edit_read: false,
-            terminal_jump: false, deferred_capture: None, wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
-        });
-        let _ = self.terminal_wake.try_send(());
-        true
-    }
-
-    /// Transfer remaining input only after an acknowledged directional key
-    /// made exactly one synchronous move to an identified list or file pane.
-    fn handoff_direction_replay(&mut self, owner: &Arc<()>) {
-        let Some(pending) = self.pending_open_input.as_ref() else { return; };
-        if !self.pending_direction_replay.as_ref().is_some_and(|source| Arc::ptr_eq(&source.owner, owner))
-            || !Arc::ptr_eq(&pending.queue.identity(), owner)
-            || self.pending_open_input_mixed_context || pending.replaying || pending.scheduled
-            || pending.replay_error || pending.marked_selection.is_some()
-            || pending.deferred_capture.is_some() || pending.wait_for_geometry
-            || pending.post_split_line.is_some() || pending.queue.in_flight_id().is_some()
-            || pending.context.workspace != self.model.project
-            || pending.context.generation != self.file_generation
-            || self.editor_zoom.is_some() || self.file_prompt.is_some() || self.remote_prompt.is_some()
-            || self.terminal_command.is_some() || self.terminal_search_prompt.is_some()
-            || self.help || self.model.notifications || self.media_active()
-        { return; }
-        let Some(PaneCommandGuard::Sidebar { surface, focus_revision, .. }) = self.pending_sidebar_open.as_ref() else { return; };
-        let expected_revision = if *surface == self.model.surface {
-            Some(*focus_revision)
-        } else {
-            focus_revision.checked_add(1)
-        };
-        if expected_revision != Some(self.model.focus_revision) { return; }
-        let Some(panes) = self.editor_panes.as_ref() else { return; };
-        if !panes.layout.focus_guard_direct_move(&pending.focus) { return; }
-        let pane = panes.layout.active();
-        let Some(content) = panes.content(pane).cloned() else { return; };
-        let Some(selection) = self.direction_replay_selection(&content) else { return; };
-        let focus = panes.layout.focus_guard();
-        let mut next = pending.context.clone();
-        next.pane = pane.0;
-        next.path = match &selection {
-            DirectionReplaySelection::File { path, .. } => path.clone(),
-            DirectionReplaySelection::Explorer { .. } | DirectionReplaySelection::Agents { .. } => PathBuf::new(),
-        };
-        let Some(pending) = self.pending_open_input.as_mut() else { return; };
-        if !pending.queue.transfer_after_direction_focus(&pending.context, next.clone()) { return; }
-        pending.context = next;
-        pending.focus = focus.clone();
-        pending.geometry_deadline = None;
-        self.pending_sidebar_open = Some(PaneCommandGuard::Sidebar {
-            project: self.model.project, surface: self.model.surface, generation: self.file_generation,
-            focus_revision: self.model.focus_revision, content, focus,
-        });
-        self.pending_direction_replay = Some(DirectionReplaySource { owner: owner.clone(), selection });
-    }
-
-    /// Confirm copy mode and the exact tmux target in worker order before
-    /// handing successor keys to a newly focused terminal.
-    fn begin_direction_terminal_confirmation(&mut self, owner: &Arc<()>) {
-        let Some(input) = self.pending_open_input.as_ref() else { return; };
-        if self.model.surface != Surface::Normal || self.model.file.is_some()
-            || self.pending_direction_terminal.is_some() || self.pending_terminal_key.is_some()
-            || !self.pending_direction_replay.as_ref().is_some_and(|source| Arc::ptr_eq(&source.owner, owner))
-            || !Arc::ptr_eq(&input.queue.identity(), owner)
-            || input.queue.state() != workspace_app::open_input::State::Ready
-            || input.queue.in_flight_id().is_some() || input.replaying || input.scheduled
-            || input.replay_error || input.marked_selection.is_some() || input.deferred_capture.is_some()
-            || input.wait_for_geometry || input.post_split_line.is_some()
-            || self.pending_open_input_mixed_context || self.editor_zoom.is_some()
-            || input.context.workspace != self.model.project || input.context.generation != self.file_generation
-        { return; }
-        let Some(PaneCommandGuard::Sidebar { focus_revision, .. }) = self.pending_sidebar_open.as_ref() else { return; };
-        if focus_revision.checked_add(1) != Some(self.model.focus_revision) { return; }
-        let Some(panes) = self.editor_panes.as_ref() else { return; };
-        if !panes.layout.focus_guard_direct_move(&input.focus)
-            || !matches!(panes.content(panes.layout.active()), Some(PaneContent::Terminal(_)))
-        { return; }
-        // Confirm even an empty queue: a new key may arrive before tmux has
-        // entered copy mode. The same owner holds that key until the target
-        // and mode are confirmed or the operation is explicitly recovered.
-        let Some(token) = self.tmux_copy_token.checked_add(1) else { return; };
-        let Some(source) = self.terminal_key_source(token) else { return; };
-        let Some(destination) = self.terminal_key_destination() else { return; };
-        if !self.terminal_key_destination_current(&destination) { return; }
-        let action = TmuxAction::InspectSelection {
-            token, window: source.window.clone(), pane: source.pane.clone(),
-        };
-        if let Err(error) = terminal_backend_for(&self.backends, &self.additional_backends, source.context)
-            .and_then(|backend| backend.send(action))
-        {
-            if let Some(input) = &mut self.pending_open_input { input.queue.invalidate(); }
-            self.model.message = format!("Terminal sin confirmar; entrada conservada: {error}");
-            return;
-        }
-        self.tmux_copy_token = token;
-        self.pending_direction_terminal = Some(PendingDirectionTerminal {
-            owner: owner.clone(), source, destination,
-            deadline: std::time::Instant::now() + Duration::from_secs(15), timed_out: false,
-        });
-        self.model.message = "Confirmando terminal; entrada retenida".into();
-        let _ = self.terminal_wake.try_send(());
-    }
-
-    fn direction_terminal_confirmed(
-        &mut self,
-        context: workspace_app::terminal_resume::Context,
-        token: u64,
-        result: Result<bool, String>,
-    ) {
-        if !self.pending_direction_terminal.as_ref().is_some_and(|pending| {
-            pending.source.token == token && pending.source.context == context
-        }) { return; }
-        let terminal = self.pending_direction_terminal.take().expect("token checked");
-        // The event loop may receive this reply before its next timeout poll.
-        // A late confirmation must never release input just because the
-        // periodic timeout flag has not yet been set.
-        let valid = result.is_ok() && !terminal.timed_out
-            && std::time::Instant::now() < terminal.deadline
-            && !self.pending_open_input_mixed_context
-            && self.pending_terminal_key.is_none()
-            && self.terminal_key_source_current(&terminal.source)
-            && self.terminal_key_destination_current(&terminal.destination)
-            && self.pending_open_input.as_ref().is_some_and(|input| {
-                Arc::ptr_eq(&terminal.owner, &input.queue.identity())
-                    && input.queue.state() == workspace_app::open_input::State::Ready
-                    && input.queue.in_flight_id().is_none() && !input.replaying && !input.scheduled
-                    && !input.replay_error && input.marked_selection.is_none()
-                    && input.deferred_capture.is_none() && !input.wait_for_geometry
-                    && input.post_split_line.is_none()
-            });
-        if !valid {
-            if let Some(input) = &mut self.pending_open_input
-                && Arc::ptr_eq(&terminal.owner, &input.queue.identity())
-            { input.queue.invalidate(); }
-            self.model.message = "Terminal sin confirmar; entrada conservada para revisar".into();
-            let _ = self.terminal_wake.try_send(());
-            return;
-        }
-        let input = self.pending_open_input.take().expect("owner checked");
-        let (_, events) = input.queue.into_recovery();
-        self.pending_direction_replay = None;
-        self.pending_sidebar_open = None;
-        self.pending_sidebar_buffer_relist = None;
-        self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        let gate = workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
-            .expect("checked nonzero token and limits");
-        self.pending_terminal_key = Some(PendingTerminalKey {
-            source: terminal.source, transition_tab: None, tab_reconcile: None, transition_activity: None, gate, overflow: VecDeque::new(),
-            destination: Some(terminal.destination), open_identity: None, open_switch_event: None,
-            replaying: false, scheduled: false, replay_error: false, paste_held: None,
-            replay_event: None, write: None, target_action: None, selection_action: None,
-            split: None, capture_wait: None, mixed_context: false, revision: 0,
-            marked_selection: None, navigation_geometry_deadline: None,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-        });
-        for event in events.into_iter().map(|(_, event)| event).chain(input.overflow) {
-            self.enqueue_terminal_key(event);
-        }
-        let _ = self.terminal_wake.try_send(());
-    }
-
-    /// An unfinished predecessor makes later input unsafe to replay even when
-    /// the later events themselves have not been dispatched.
-    fn block_measured_input(&mut self, owner: Option<&Arc<()>>) {
-        let Some(owner) = owner else { return };
-        let Some(input) = self
-            .pending_open_input
-            .as_mut()
-            .filter(|input| Arc::ptr_eq(owner, &input.queue.identity()))
-        else {
-            return;
-        };
-        if input.queue.is_empty() && input.overflow.is_empty() && input.post_split_line.is_none() {
-            self.pending_open_input = None;
-            self.pending_sidebar_open = None;
-            self.pending_sidebar_buffer_relist = None;
-            self.pending_open_terminal_instance = None;
-            self.pending_open_input_mixed_context = false;
-            self.pending_open_input_context_boundary = None;
-        } else {
-            input.queue.block_after_predecessor();
-            input.revision = input.revision.wrapping_add(1);
-        }
-    }
-
-    fn transfer_measured_input(&mut self, pending: &PendingMeasuredSplits, new_file: bool) -> bool {
-        let Some(owner) = pending.input_owner.as_ref() else {
-            return true;
-        };
-        let Some(panes) = &self.editor_panes else {
-            return false;
-        };
-        let Some((path, _)) = &self.model.file else {
-            return false;
-        };
-        let target = panes.layout.active();
-        if panes.content(target) != Some(&PaneContent::File(path.clone())) {
-            return false;
-        }
-        let focus = panes.layout.focus_guard();
-        let next = workspace_app::open_input::Context {
-            workspace: pending.workspace,
-            pane: target.0,
-            attachment: 0,
-            generation: self.file_generation,
-            path: path.clone(),
-        };
-        let Some(input) = self
-            .pending_open_input
-            .as_mut()
-            .filter(|input| Arc::ptr_eq(owner, &input.queue.identity()))
-        else {
-            return false;
-        };
-        if input.context.workspace != pending.workspace
-            || input.context.pane != pending.target.0
-            || input.context.generation != pending.file_generation
-            || input.context.path != pending.path
-        {
-            return false;
-        }
-        let transferred = match (pending.input_event, pending.path_after_split.is_some()) {
-            (Some(event), true) => {
-                input
-                    .queue
-                    .rebind_split_for_edit(event, &input.context, next.clone())
-            }
-            (Some(event), false) => input.queue.acknowledge_split_and_transfer(
-                event,
-                &input.context,
-                next.clone(),
-                new_file,
-            ),
-            (None, false) => {
-                input
-                    .queue
-                    .transfer_after_split(&input.context, next.clone(), new_file)
-            }
-            (None, true) => false,
-        };
-        if !transferred {
-            return false;
-        }
-        input.context = next;
-        input.focus = focus.clone();
-        input.revision = input.revision.wrapping_add(1);
-        // A measured split changes the queue's pane identity. Keep the
-        // directional replay source aligned with that new pane so a queued
-        // focus movement can hand its successors to the next destination.
-        // A split followed by an edit has its own pending transition; do not
-        // introduce directional ownership while that transition is unresolved.
-        if pending.path_after_split.is_none() {
-            self.pending_direction_replay = self
-                .direction_replay_selection(&PaneContent::File(path.clone()))
-                .map(|selection| DirectionReplaySource {
-                    owner: owner.clone(),
-                    selection,
-                });
-        } else {
-            self.pending_direction_replay
-                .take_if(|source| Arc::ptr_eq(&source.owner, owner));
-        }
-        self.pending_open_terminal_instance = None;
-        self.pending_sidebar_open = Some(PaneCommandGuard::Sidebar {
-            project: pending.workspace,
-            surface: Surface::File,
-            generation: self.file_generation,
-            focus_revision: self.model.focus_revision,
-            content: PaneContent::File(path.clone()),
-            focus,
-        });
-        true
-    }
-
-    fn release_measured_input(&mut self, owner: Option<&Arc<()>>) {
-        let Some(owner) = owner else { return };
-        let Some(input) = self
-            .pending_open_input
-            .as_mut()
-            .filter(|input| Arc::ptr_eq(owner, &input.queue.identity()))
-        else {
-            return;
-        };
-        if input.post_split_line.is_some() {
-            input.queue.invalidate();
-            self.model.message = "Salto y entrada conservados; usá Revisar".into();
-        } else if input.queue.is_empty() && input.overflow.is_empty() {
-            self.pending_open_input = None;
-            self.pending_sidebar_open = None;
-            self.pending_sidebar_buffer_relist = None;
-            self.pending_open_terminal_instance = None;
-            self.pending_open_input_mixed_context = false;
-            self.pending_open_input_context_boundary = None;
-        } else {
-            let _ = self.terminal_wake.try_send(());
-        }
-    }
-
-    fn measured_split_recovery(pending: &mut PendingMeasuredSplits) -> Vec<(String, usize)> {
-        let mut commands: Vec<_> = pending.commands.drain(..).collect();
-        if let Some(path) = &pending.path_after_split
-            && let Some((key, _)) = commands.first_mut()
-        {
-            *key = Self::split_recovery_key(key, Some(&path.name));
-        }
-        commands
-    }
-
-    fn retain_measured_splits(&mut self) {
-        if let Some(mut pending) = self.pending_measured_splits.take() {
-            self.block_measured_input(pending.input_owner.as_ref());
-            let commands = Self::measured_split_recovery(&mut pending);
-            self.pending_file_splits
-                .retain(pending.workspace, pending.origin, false, commands);
-            self.model.message = "Acciones de panel conservadas para revisar".into();
+    fn cancel_measured_splits(&mut self) {
+        if self.pending_measured_splits.take().is_some() {
+            self.model.message = "Split cancelado por una nueva accion".into();
         }
     }
 
@@ -20568,30 +14636,6 @@ impl WorkspaceView {
 
     /// Directional focus also needs the selected sidebar row, not merely the
     /// pane rectangle. The Backlog header is measured separately from lists.
-    fn directional_focus_geometry_ready(&self) -> bool {
-        if !self.geometry_ready_for_counted_split() { return false; }
-        match self.model.surface {
-            Surface::Tree => self.tree_scroll.bounds_for_item(self.model.tree_selected).is_some(),
-            Surface::Backlog if self.model.selected == AgentRow::Backlog => {
-                self.editor_panes.as_ref().is_some_and(|panes| {
-                    let pane = panes.layout.active();
-                    self.backlog_header_bounds.get(&(self.model.project, pane))
-                        .is_some_and(|(_, measurement)| self.pane_measurement_current(pane, measurement))
-                })
-            }
-            Surface::Agents | Surface::Backlog => {
-                let (location, scroll, skip) = if self.model.surface == Surface::Backlog {
-                    (Location::Later, &self.backlog_scroll, 1)
-                } else {
-                    (Location::Main, &self.agents_scroll, 0)
-                };
-                self.model.rows(location).iter().position(|(row, _)| *row == self.model.selected)
-                    .and_then(|index| index.checked_sub(skip))
-                    .and_then(|index| scroll.bounds_for_item(index)).is_some()
-            }
-            _ => true,
-        }
-    }
 
     fn resume_measured_splits(
         &mut self,
@@ -20608,12 +14652,10 @@ impl WorkspaceView {
             self.pending_measured_splits = Some(pending);
             return;
         }
+
         pending.scheduled = false;
         if !self.measured_splits_current(&pending) {
-            self.block_measured_input(pending.input_owner.as_ref());
-            let commands = Self::measured_split_recovery(&mut pending);
-            self.pending_file_splits
-                .retain(pending.workspace, pending.origin, false, commands);
+
             self.model.message = "Cambió el contexto; acciones de panel conservadas".into();
             cx.notify();
             return;
@@ -20624,10 +14666,7 @@ impl WorkspaceView {
         {
             pending.attempts = pending.attempts.saturating_add(1);
             if pending.attempts >= 3 {
-                self.block_measured_input(pending.input_owner.as_ref());
-                let commands = Self::measured_split_recovery(&mut pending);
-                self.pending_file_splits
-                    .retain(pending.workspace, pending.origin, false, commands);
+
                 self.model.message = "No se pudo medir el panel; acciones conservadas".into();
             } else {
                 self.pending_measured_splits = Some(pending);
@@ -20639,10 +14678,7 @@ impl WorkspaceView {
             let current = workspace_app::editor::split_path_position(&path.name).ok()
                 .and_then(|(name, _)| self.resolve_active_edit_path(name).ok());
             if current.as_ref() != Some(&path.resolved) {
-                self.block_measured_input(pending.input_owner.as_ref());
-                let commands = Self::measured_split_recovery(&mut pending);
-                self.pending_file_splits
-                    .retain(pending.workspace, pending.origin, false, commands);
+
                 self.model.message = "Cambió la ruta; split conservado para revisar".into();
                 cx.notify();
                 return;
@@ -20673,92 +14709,26 @@ impl WorkspaceView {
                 })
         });
         if !split_created || !new_file_created || !expected_file {
-            self.block_measured_input(pending.input_owner.as_ref());
+
             pending.commands.push_front((key, count));
-            let commands = Self::measured_split_recovery(&mut pending);
-            self.pending_file_splits
-                .retain(pending.workspace, pending.origin, true, commands);
+
             self.model.message = "Acciones de panel conservadas; revisá la primera".into();
-        } else if !self.transfer_measured_input(&pending, matches!(key.as_str(), "n" | "N")) {
-            self.block_measured_input(pending.input_owner.as_ref());
-            let uncertain = pending.path_after_split.is_some();
-            if uncertain {
-                pending.commands.push_front((key, count));
-            }
-            let commands = Self::measured_split_recovery(&mut pending);
-            self.pending_file_splits
-                .retain(pending.workspace, pending.origin, uncertain, commands);
-            self.model.message = if self.validation {
-                format!(
-                    "Split: transferencia falló (dueño={} evento={} apertura={})",
-                    pending.input_owner.is_some(),
-                    pending.input_event.is_some(),
-                    pending.path_after_split.is_some(),
-                )
-            } else {
-                "Split creado; entrada posterior conservada para revisar".into()
-            };
         } else if let Some(path) = pending.path_after_split.take() {
-            let parsed = workspace_app::editor::split_path_position(&path.name).ok();
-            let owner = pending.input_owner.as_ref();
-            let replay_ready = owner.is_some_and(|owner| {
-                self.pending_open_input.as_ref().is_some_and(|input| {
-                    Arc::ptr_eq(owner, &input.queue.identity())
-                        && input.queue.in_flight_id() == pending.input_event
-                })
-            });
-            if replay_ready && let Some(input) = &mut self.pending_open_input {
-                input.replaying = true;
-            }
-            let started = replay_ready && parsed.is_some_and(|(name, _)| {
-                self.retarget_replayed_edit(name, false)
-            });
-            if let Some(owner) = owner
-                && let Some(input) = self
-                    .pending_open_input
-                    .as_mut()
-                    .filter(|input| Arc::ptr_eq(owner, &input.queue.identity()))
-            {
-                input.replaying = false;
-                if started {
-                    input.wait_for_geometry = true;
-                    input.geometry_deadline = None;
-                    input.set_post_split_line(parsed.and_then(|(_, line)| line));
+            match workspace_app::editor::split_path_position(&path.name) {
+                Ok((name, line)) => {
+                    let name = name.to_owned();
+                    self.begin_editor_edit_path(name, false);
+                    if let Some(request) = &mut self.pending_file_read {
+                        request.set_post_split_line(line);
+                    }
                 }
-            }
-            if !started {
-                self.block_measured_input(owner);
-                self.pending_file_splits.retain(
-                    pending.workspace,
-                    pending.origin,
-                    true,
-                    vec![(Self::split_recovery_key(&key, Some(&path.name)), count)],
-                );
-                self.model.message =
-                    "Split creado; apertura e entrada conservadas para revisar".into();
+                Err(error) => self.model.message = error.into(),
             }
         } else if !pending.commands.is_empty() {
-            match self.prepare_measured_splits(
-                pending.workspace,
-                pending.origin,
-                pending.commands,
-                pending.input_owner.clone(),
-                None,
-            ) {
+            match self.prepare_measured_splits(pending.workspace, pending.origin, pending.commands) {
                 Ok(next) => self.pending_measured_splits = Some(next),
-                Err(commands) => {
-                    self.block_measured_input(pending.input_owner.as_ref());
-                    self.pending_file_splits.retain(
-                        pending.workspace,
-                        pending.origin,
-                        false,
-                        commands.into_iter().collect(),
-                    );
-                    self.model.message = "Acciones de panel restantes conservadas".into();
-                }
+                Err(_) => self.model.message = "No se pudieron completar los splits restantes".into(),
             }
-        } else {
-            self.release_measured_input(pending.input_owner.as_ref());
         }
         cx.notify();
     }
@@ -21013,14 +14983,13 @@ impl WorkspaceView {
         true
     }
 
-    fn begin_sidebar_file_input(&mut self, generation: u64, path: &Path) -> bool {
+    fn prepare_sidebar_file_read(&mut self, generation: u64, path: &Path) -> bool {
         let Some(destination) = self.pending_sidebar_destination.as_ref() else {
-            // A deliberate :edit/:buffer replacement has its own ledger; a
-            // not-yet-materialized layout cannot identify a pane to bind.
+            // A deliberate :edit/:buffer replacement has its own file request;
+            // an absent layout cannot identify a destination pane.
             return true;
         };
-        if self.pending_open_input.is_some()
-            || destination.generation != generation
+        if destination.generation != generation
             || destination.path != path
             || destination.workspace != self.model.project
             || !self.marked.is_empty()
@@ -21043,16 +15012,16 @@ impl WorkspaceView {
         }
         let source = panes.layout.active();
         let focus = panes.layout.focus_guard();
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: destination.workspace,
             pane: source.0,
             attachment: 0,
             generation,
             path: path.to_owned(),
         };
-        let queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
-        let owner = queue.identity();
-        self.pending_sidebar_input_transfer = Some(SidebarInputTransfer {
+        let identity = Arc::new(());
+        let owner = identity.clone();
+        self.pending_sidebar_file_target = Some(SidebarFileTarget {
             owner,
             generation,
             workspace: destination.workspace,
@@ -21071,32 +15040,25 @@ impl WorkspaceView {
         });
         self.pending_sidebar_buffer_relist = None;
         self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
+
+        self.pending_file_read = Some(PendingFileRead {
             context,
             focus,
-            queue,
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
+            identity: identity, state: workspace_app::file_read::State::Reading,
+
             edit_resolution: false,
             edit_force: false,
             edit_reload_current: false,
             awaiting_edit_read: false,
             terminal_jump: false,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
+
+             post_split_line: None,
         });
         true
     }
 
-    fn complete_sidebar_file_input(&mut self, generation: u64, path: &Path) -> bool {
-        let Some(transfer) = self.pending_sidebar_input_transfer.as_ref() else {
+    fn finish_sidebar_file_read_target(&mut self, generation: u64, path: &Path) -> bool {
+        let Some(transfer) = self.pending_sidebar_file_target.as_ref() else {
             return true;
         };
         if transfer.generation != generation {
@@ -21121,7 +15083,7 @@ impl WorkspaceView {
             return false;
         }
         let focus = panes.layout.focus_guard();
-        let next = workspace_app::open_input::Context {
+        let next = workspace_app::file_read::Context {
             workspace: transfer.workspace,
             pane: transfer.target.0,
             attachment: 0,
@@ -21129,17 +15091,15 @@ impl WorkspaceView {
             path: path.to_owned(),
         };
         let Some(input) = self
-            .pending_open_input
+            .pending_file_read
             .as_mut()
-            .filter(|input| Arc::ptr_eq(&transfer.owner, &input.queue.identity()))
+            .filter(|input| Arc::ptr_eq(&transfer.owner, &input.identity.clone()))
         else {
             return false;
         };
         if input.context.pane != transfer.source.0
             || input.context.generation != generation
-            || !input
-                .queue
-                .transfer_after_sidebar_open(&input.context, next.clone())
+
         {
             return false;
         }
@@ -21156,7 +15116,7 @@ impl WorkspaceView {
         let bootstrap = transfer.bootstrap.clone();
         let workspace = transfer.workspace;
         let pane = transfer.target;
-        self.pending_sidebar_input_transfer = None;
+        self.pending_sidebar_file_target = None;
         if let Some((placeholder, identity, version)) = bootstrap
             && self.unlist_untouched_bootstrap(workspace, &placeholder, &identity, version)
             && let Some(content_identity) = self
@@ -21326,24 +15286,24 @@ impl WorkspaceView {
 
     fn activate_editor_file(&mut self, path: PathBuf, text: String) -> bool {
         let ordinary_sidebar_open =
-            self.pending_sidebar_input_transfer
+            self.pending_sidebar_file_target
                 .as_ref()
                 .is_some_and(|transfer| {
                     transfer.generation == self.file_generation
                         && transfer.path == path
-                        && self.pending_open_input.as_ref().is_some_and(|input| {
-                            Arc::ptr_eq(&transfer.owner, &input.queue.identity())
-                                && input.queue.state()
-                                    == workspace_app::open_input::State::Recording
+                        && self.pending_file_read.as_ref().is_some_and(|input| {
+                            Arc::ptr_eq(&transfer.owner, &input.identity.clone())
+                                && input.state
+                                    == workspace_app::file_read::State::Reading
                         })
                 });
-        let sidebar_request = self.pending_open_input.as_ref().is_some_and(|pending| {
+        let sidebar_request = self.pending_file_read.as_ref().is_some_and(|pending| {
             pending.context.attachment == 0
                 && pending.context.path == path
                 && self.pending_sidebar_open.is_some()
         });
         if sidebar_request {
-            let current = self.pending_open_input.as_ref().is_some_and(|pending| {
+            let current = self.pending_file_read.as_ref().is_some_and(|pending| {
                 pending.context.workspace == self.model.project
                     && (pending.context.generation == self.file_generation
                         || (pending.awaiting_edit_read
@@ -21359,13 +15319,13 @@ impl WorkspaceView {
                         .is_some_and(|guard| self.pane_command_guard_valid(guard))
             });
             if !current {
-                self.retain_failed_file_open_input(&path);
+                self.fail_file_read(&path);
                 self.model.message = "Apertura cancelada: cambió el panel".into();
                 return false;
             }
-            if self.pending_sidebar_input_transfer.is_some() && !ordinary_sidebar_open {
-                self.retain_failed_file_open_input(&path);
-                self.model.message = "Apertura cancelada: entrada conservada para revisar".into();
+            if self.pending_sidebar_file_target.is_some() && !ordinary_sidebar_open {
+                self.fail_file_read(&path);
+                self.model.message = "Apertura cancelada: cambió el destino lateral".into();
                 return false;
             }
         }
@@ -21378,7 +15338,7 @@ impl WorkspaceView {
         replace_sidebar: bool,
     ) -> bool {
         if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached()) {
-            self.retain_replayed_jump();
+
             self.model.message = "Apertura en zoom pendiente; contenido conservado".into();
             return false;
         }
@@ -22339,9 +16299,7 @@ impl WorkspaceView {
         self.set_focus(Surface::Details);
     }
     fn navigate_listed_buffer(&mut self, action: &str) {
-        if !self.navigate_listed_buffer_checked(action) {
-            self.retain_replayed_jump();
-        }
+        self.navigate_listed_buffer_checked(action);
     }
 
     /// Whether the selected buffer became active, was accepted for loading,
@@ -22494,20 +16452,11 @@ impl WorkspaceView {
             return true;
         }
         if detached {
-            if let (ListedBuffer::File(path), ListedBuffer::Explorer(id)) = (&current, &target)
-                && self.detached_open_jump_replay().is_some()
-            {
-                return self.replay_detached_file_explorer(path.clone(), *id, relist);
-            }
-            if let (ListedBuffer::File(source), ListedBuffer::File(destination)) = (&current, &target)
-                && self.editors.contains_key(destination) && self.detached_open_jump_replay().is_some()
-            {
-                return self.replay_detached_loaded_file(ListedBuffer::File(source.clone()), target, relist, None);
-            }
+
             return self.activate_detached_listed_target(current, target, relist);
         }
         self.activate_listed_target(pane, current, target.clone(), relist);
-        let loading = matches!(&target, ListedBuffer::File(path) if self.pending_open_input.as_ref().is_some_and(|open| {
+        let loading = matches!(&target, ListedBuffer::File(path) if self.pending_file_read.as_ref().is_some_and(|open| {
             open.context.workspace == project && open.context.pane == pane.0 && &open.context.path == path
         }));
         loading
@@ -22569,46 +16518,41 @@ impl WorkspaceView {
     fn complete_detached_edit_target(
         &mut self, generation: u64, requested: PathBuf, result: Result<(PathBuf, bool), String>,
     ) {
-        let current = self.pending_open_input.as_ref().is_some_and(|pending| {
+        let current = self.pending_file_read.as_ref().is_some_and(|pending| {
             pending.context.generation == generation && pending.context.path == requested
-                && pending.queue.state() == workspace_app::open_input::State::Recording
-                && !pending.replaying && !pending.scheduled
-                && self.open_input_context_current(pending, false)
+                && pending.state == workspace_app::file_read::State::Reading
+                && self.file_read_context_current(pending, false)
                 && self.pending_detached_open.as_ref().is_some_and(|owner| {
                     owner.explicit && owner.resolving && !owner.opened
-                        && Arc::ptr_eq(&owner.queue, &pending.queue.identity())
+                        && Arc::ptr_eq(&owner.identity, &pending.identity.clone())
                 })
-        }) && !self.pending_open_input_mixed_context;
+        });
         if !current {
-            self.finish_open_input_read(generation, &requested, false);
+            self.finish_file_read(generation, &requested, false);
             return;
         }
         let path = match result {
             Ok((path, _)) if !self.validation || path.starts_with(self.state_dir.join("demo")) => path,
             Ok(_) => {
-                self.finish_open_input_read(generation, &requested, false);
+                self.finish_file_read(generation, &requested, false);
                 self.model.message = "Validación: archivos limitados a fixtures".into();
                 return;
             }
             Err(error) => {
-                self.finish_open_input_read(generation, &requested, false);
-                self.model.message = format!("{error} · entrada conservada");
+                self.finish_file_read(generation, &requested, false);
+                self.model.message = format!("{error}");
                 return;
             }
         };
         if self.pending_detached_open.as_ref().and_then(|owner| owner.allowed_root.as_ref())
             .is_some_and(|root| !path.starts_with(root))
         {
-            self.finish_open_input_read(generation, &requested, false);
-            self.model.message = "Destino fuera de la carpeta permitida; entrada conservada".into();
+            self.finish_file_read(generation, &requested, false);
+            self.model.message = "Destino fuera de la carpeta permitida".into();
             return;
         }
-        let Some(pending) = &mut self.pending_open_input else { return; };
-        if !pending.queue.resolved_path(&pending.context, path.clone(), true) {
-            pending.queue.invalidate();
-            self.model.message = "Ruta resuelta; entrada conservada para revisar".into();
-            return;
-        }
+        let Some(pending) = &mut self.pending_file_read else { return; };
+
         pending.context.path = path.clone();
         let loaded = self.editors.contains_key(&path);
         let Some(owner) = &mut self.pending_detached_open else { return; };
@@ -22622,8 +16566,8 @@ impl WorkspaceView {
         let relist = owner.relist;
         if let Some(guard) = same_source_guard {
             if !self.position_detached_file(&path, position.as_ref()) {
-                self.finish_open_input_read(generation, &path, false);
-                self.model.message = "Cambió el zoom; salto y entrada conservados".into();
+                self.finish_file_read(generation, &path, false);
+                self.model.message = "Cambió el zoom; salto cancelado".into();
                 return;
             }
             if let Some(owner) = &mut self.pending_detached_open {
@@ -22632,13 +16576,13 @@ impl WorkspaceView {
                 owner.destination_agents = None;
                 owner.opened = true;
             }
-            if let Some(input) = &mut self.pending_open_input
+            if let Some(input) = &mut self.pending_file_read
                 && input.edit_reload_current
             {
                 input.awaiting_edit_read = true;
                 self.begin_resolved_editor_reload(generation, &path);
             } else {
-                self.finish_open_input_read(generation, &path, true);
+                self.finish_file_read(generation, &path, true);
             }
         } else if loaded || self.model.unnamed.contains(&path) {
             self.complete_detached_listed_read(generation, path, relist, Ok(Some(String::new())));
@@ -22652,38 +16596,27 @@ impl WorkspaceView {
         result: Result<(PathBuf, Option<String>, Result<workspace_app::tmux::CopyMark, String>), String>,
     ) {
         // The disk reply may arrive before the terminal replay pump. Transfer
-        // its queue first, while the original float and both owners are current.
-        if self.pending_terminal_key.is_some()
-            && self.pending_open_input.as_ref().is_some_and(|open| {
-                open.context.generation == generation && open.context.path == requested
-            })
-            && !self.handoff_detached_terminal_cycle_to_open()
-        {
-            if let Some(input) = &mut self.pending_terminal_key { input.gate.invalidate(); }
-            self.finish_open_input_read(generation, &requested, false);
-            self.model.message = "Entrada conservada: cambió la apertura de terminal".into();
-            return;
-        }
-        let current = self.pending_open_input.as_ref().is_some_and(|pending| {
+        // its identity first, while the original float and both owners are current.
+
+        let current = self.pending_file_read.as_ref().is_some_and(|pending| {
             pending.context.generation == generation && pending.context.path == requested
-                && pending.queue.state() == workspace_app::open_input::State::Recording
-                && !pending.replaying && !pending.scheduled
-                && self.open_input_context_current(pending, false)
+                && pending.state == workspace_app::file_read::State::Reading
+                && self.file_read_context_current(pending, false)
                 && self.pending_detached_open.as_ref().is_some_and(|owner| {
                     matches!(&owner.source, DetachedReadSource::Terminal { .. })
                         && owner.explicit && owner.resolving && !owner.opened
-                        && Arc::ptr_eq(&owner.queue, &pending.queue.identity())
+                        && Arc::ptr_eq(&owner.identity, &pending.identity.clone())
                 })
-        }) && !self.pending_open_input_mixed_context;
+        });
         if !current {
-            self.finish_open_input_read(generation, &requested, false);
+            self.finish_file_read(generation, &requested, false);
             return;
         }
         let (path, text, mark) = match result {
             Ok(value) => value,
             Err(error) => {
-                self.finish_open_input_read(generation, &requested, false);
-                self.model.message = format!("{error} · entrada conservada");
+                self.finish_file_read(generation, &requested, false);
+                self.model.message = format!("{error}");
                 return;
             }
         };
@@ -22705,16 +16638,12 @@ impl WorkspaceView {
             }
         });
         if !allowed || !target_current {
-            self.finish_open_input_read(generation, &requested, false);
-            self.model.message = "Cambió el destino de apertura; entrada conservada".into();
+            self.finish_file_read(generation, &requested, false);
+            self.model.message = "Cambió el destino de apertura".into();
             return;
         }
-        let Some(pending) = &mut self.pending_open_input else { return; };
-        if !pending.queue.resolved_path(&pending.context, path.clone(), true) {
-            pending.queue.invalidate();
-            self.model.message = "Ruta resuelta; entrada conservada para revisar".into();
-            return;
-        }
+        let Some(pending) = &mut self.pending_file_read else { return; };
+
         pending.context.path = path.clone();
         if let Some(owner) = &mut self.pending_detached_open {
             owner.resolving = false;
@@ -22728,18 +16657,16 @@ impl WorkspaceView {
         &mut self, generation: u64, path: PathBuf, relist: bool,
         result: Result<Option<String>, String>,
     ) {
-        let matches = self.pending_open_input.as_ref().is_some_and(|pending| {
+        let matches = self.pending_file_read.as_ref().is_some_and(|pending| {
             pending.context.generation == generation && pending.context.path == path
                 && self.pending_detached_open.as_ref().is_some_and(|owner| {
-                    !owner.opened && Arc::ptr_eq(&owner.queue, &pending.queue.identity())
+                    !owner.opened && Arc::ptr_eq(&owner.identity, &pending.identity.clone())
                 })
         });
         if !matches { return; }
-        let current = self.pending_open_input.as_ref()
-            .is_some_and(|pending| self.open_input_context_current(pending, false)
-                && pending.queue.state() == workspace_app::open_input::State::Recording
-                && !pending.replaying && !pending.scheduled)
-            && !self.pending_open_input_mixed_context;
+        let current = self.pending_file_read.as_ref()
+            .is_some_and(|pending| self.file_read_context_current(pending, false)
+                && pending.state == workspace_app::file_read::State::Reading);
         let project = self.model.project;
         let target = ListedBuffer::File(path.clone());
         let explicit = self.pending_detached_open.as_ref().is_some_and(|owner| owner.explicit && !owner.resolving);
@@ -22750,8 +16677,8 @@ impl WorkspaceView {
         if !loaded && matches!(&result, Ok(None))
             && self.pending_detached_open.as_ref().is_some_and(|owner| !owner.allow_missing)
         {
-            self.finish_open_input_read(generation, &path, false);
-            self.model.message = "El archivo ya no existe; entrada conservada".into();
+            self.finish_file_read(generation, &path, false);
+            self.model.message = "El archivo ya no existe".into();
             return;
         }
         if !current || explicit && loaded != expected_loaded || !loaded && self.editors.len() >= 128
@@ -22760,23 +16687,23 @@ impl WorkspaceView {
             || explicit && known && !loaded && !unloaded
             || !loaded && self.pending_new_files.contains(&path)
         {
-            self.finish_open_input_read(generation, &path, false);
-            self.model.message = "Apertura cancelada: cambió el zoom o el buffer; entrada conservada".into();
+            self.finish_file_read(generation, &path, false);
+            self.model.message = "Apertura cancelada: cambió el zoom o el buffer".into();
             return;
         }
         let text = match result {
             Ok(text) => text,
             Err(error) => {
-                self.finish_open_input_read(generation, &path, false);
-                self.model.message = format!("{error} · entrada conservada");
+                self.finish_file_read(generation, &path, false);
+                self.model.message = format!("{error}");
                 return;
             }
         };
         let missing = !loaded && text.is_none();
         let text = text.unwrap_or_default();
         let Some(original_registry) = self.listed_buffers.get(&project).cloned() else {
-            self.finish_open_input_read(generation, &path, false);
-            self.model.message = "Registro de buffers no disponible; entrada conservada".into();
+            self.finish_file_read(generation, &path, false);
+            self.model.message = "Registro de buffers no disponible".into();
             return;
         };
         let original_numbers = self.numbered_buffers.clone();
@@ -22787,8 +16714,8 @@ impl WorkspaceView {
             next_numbers.register(project, target.clone());
         }
         if next_numbers.number_for(project, &target).is_err() {
-            self.finish_open_input_read(generation, &path, false);
-            self.model.message = "Números de buffer no disponibles; entrada conservada".into();
+            self.finish_file_read(generation, &path, false);
+            self.model.message = "Números de buffer no disponibles".into();
             return;
         }
         let jump = self.pending_detached_open.as_ref().and_then(|owner| owner.jump.clone());
@@ -22797,8 +16724,8 @@ impl WorkspaceView {
             !self.live_jump_tracking.is_suspended(number)
                 || next_numbers.resolve(project, number).ok().as_ref() != Some(&target)
         })) {
-            self.finish_open_input_read(generation, &path, false);
-            self.model.message = "Cambió el historial del salto; entrada conservada".into();
+            self.finish_file_read(generation, &path, false);
+            self.model.message = "Cambió el historial del salto".into();
             return;
         }
         let new_unnamed = self.pending_detached_open.as_ref().is_some_and(|owner| {
@@ -22806,11 +16733,11 @@ impl WorkspaceView {
         });
         let original_owners = self.buffer_workspaces.get(&path).cloned();
         let Some(source) = self.pending_detached_open.as_ref().map(|owner| owner.source.buffer()) else {
-            self.finish_open_input_read(generation, &path, false);
-            self.model.message = "Origen del panel no disponible; entrada conservada".into();
+            self.finish_file_read(generation, &path, false);
+            self.model.message = "Origen del panel no disponible".into();
             return;
         };
-        let Some(mut pending) = self.pending_open_input.take() else { return; };
+        let Some(mut pending) = self.pending_file_read.take() else { return; };
         if new_unnamed { self.model.unnamed.insert(path.clone()); }
         if !loaded {
             let editor = Editor::with_registers(text, self.registers.clone());
@@ -22845,8 +16772,8 @@ impl WorkspaceView {
             } else {
                 self.buffer_workspaces.remove(&path);
             }
-            self.pending_open_input = Some(pending);
-            self.finish_open_input_read(generation, &path, false);
+            self.pending_file_read = Some(pending);
+            self.finish_file_read(generation, &path, false);
             return;
         }
         // A previously unloaded buffer retains suspended jump marks. Resume
@@ -22858,9 +16785,9 @@ impl WorkspaceView {
         }
         let position = self.pending_detached_open.as_ref().and_then(|owner| owner.position.clone());
         if !self.position_detached_file(&path, position.as_ref()) {
-            pending.queue.invalidate();
-            self.pending_open_input = Some(pending);
-            self.model.message = "Buffer abierto; salto y entrada conservados para revisar".into();
+            pending.state = workspace_app::file_read::State::Cancelled;
+            self.pending_file_read = Some(pending);
+            self.model.message = "Buffer abierto; salto cancelado para revisar".into();
             return;
         }
         let terminal_mark = self.pending_detached_open.as_mut().and_then(|owner| {
@@ -22890,7 +16817,7 @@ impl WorkspaceView {
         let mut next = pending.context.clone();
         next.generation = self.file_generation;
         if let Some(guard) = new_guard
-            && pending.queue.advance_read(&pending.context, next.clone(), true)
+            && true
         {
             pending.context = next;
             if let Some(owner) = &mut self.pending_detached_open {
@@ -22900,19 +16827,19 @@ impl WorkspaceView {
                 owner.focus_revision = self.model.focus_revision;
                 owner.opened = true;
             }
-            self.pending_open_input = Some(pending);
-            self.finish_open_input_read(self.file_generation, &path, true);
-            if self.pending_open_input.as_ref().is_none_or(|input| {
-                input.queue.state() == workspace_app::open_input::State::Ready
+            self.pending_file_read = Some(pending);
+            self.finish_file_read(self.file_generation, &path, true);
+            if self.pending_file_read.as_ref().is_none_or(|input| {
+                input.state == workspace_app::file_read::State::Loaded
             }) {
                 self.model.message = if missing_terminal_mark { "Archivo abierto · salto de terminal no disponible" }
                     else if new_unnamed || self.model.unnamed.contains(&path) { "[No Name] · :w ruta para guardar" }
                     else if missing { "Archivo nuevo · :w para crear" } else { "Buffer abierto" }.into();
             }
         } else {
-            pending.queue.invalidate();
-            self.pending_open_input = Some(pending);
-            self.model.message = "Buffer abierto; entrada conservada para revisar".into();
+            pending.state = workspace_app::file_read::State::Cancelled;
+            self.pending_file_read = Some(pending);
+            self.model.message = "Buffer abierto; no se pudo completar su posicionamiento".into();
         }
     }
 
@@ -22922,112 +16849,23 @@ impl WorkspaceView {
     }
 
     /// A file-open key replayed in the detached Explorer owns the existing
-    /// queue until its own resolver and read have completed.
-    fn replay_detached_explorer_file_read(
-        &mut self, path: PathBuf, position: Option<DetachedPosition>, allow_missing: bool, relist: bool,
-    ) -> bool {
-        let Some(identity) = self.detached_open_jump_replay() else { return false; };
-        let project = self.model.project;
-        if self.model.surface != Surface::Tree || self.model.file.is_some()
-            || self.pending_terminal_key.is_some() || self.pending_jump_load.is_some()
-            || self.pending_terminal_jump_load.is_some() || self.pending_detached_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
-            || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
-            || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
-            || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_copy_close > 0 || self.pending_backend_resume.is_some()
-            || self.pending_list_page.is_some() || self.terminal_resume.active()
-            || self.terminal_jump_gate.busy() || !self.pending_saves.is_empty()
-            || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
-            || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
-            || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
-            || self.file_prompt.is_some() || self.remote_prompt.is_some() || self.terminal_command.is_some()
-            || self.media_active() || self.markdown.is_some() || self.preview.is_some()
-            || self.model.unnamed.contains(&path)
-            || self.validation && (!path.starts_with(self.state_dir.join("demo"))
-                || path.components().any(|part| matches!(part, std::path::Component::ParentDir)))
-        {
-            self.model.message = "No se pudo abrir el archivo; entrada conservada".into();
-            return false;
-        }
-        self.sync_sidebar_pane();
-        let Some((id, guard)) = self.editor_zoom.as_ref().zip(self.editor_panes.as_ref())
-            .and_then(|(zoom, panes)| {
-                let PaneContent::Explorer(id) = zoom.content() else { return None; };
-                (zoom.is_detached() && zoom.is_current(project, panes) && self.current_zoom_list().is_some()
-                    && self.listed_buffers.get(&project).is_some_and(|registry| registry.knows(&ListedBuffer::Explorer(*id))))
-                    .then(|| (*id, zoom.render_guard(self.geometry_render)))
-            }) else { return false; };
-        let source = DetachedReadSource::Explorer {
-            id, guard, root: self.model.explorer_root().to_path_buf(),
-            selected: self.model.tree_rows().get(self.model.tree_selected).map(|row| row.path.clone()),
-        };
-        let Some(generation) = self.file_generation.checked_add(1) else { return false; };
-        let valid_owner = self.pending_detached_open.as_ref().is_some_and(|owner| {
-            owner.opened && owner.destination_explorer.is_some() && Arc::ptr_eq(&owner.queue, &identity)
-        });
-        if !valid_owner { return false; }
-        let Some(input) = &mut self.pending_open_input else { return false; };
-        let Some(event) = input.queue.in_flight_id() else { return false; };
-        let mut next = input.context.clone();
-        next.path = path.clone();
-        next.generation = generation;
-        if !input.queue.retarget_edit(event, &input.context, next.clone()) {
-            self.model.message = "No se pudo conservar la apertura en cola".into();
-            return false;
-        }
-        input.context = next;
-        input.replay_error = false;
-        let Some(owner) = self.pending_detached_open.as_mut()
-            .filter(|owner| Arc::ptr_eq(&owner.queue, &identity)) else {
-                input.queue.invalidate();
-                input.replay_error = true;
-                return false;
-            };
-        owner.source = source;
-        owner.destination_guard = None;
-        owner.destination_explorer = None;
-        owner.destination_agents = None;
-        owner.focus_revision = self.model.focus_revision;
-        owner.relist = relist;
-        owner.explicit = true;
-        owner.resolving = true;
-        owner.expected_loaded = false;
-        owner.opened = false;
-        owner.position = position;
-        owner.jump = None;
-        owner.terminal_mark = None;
-        owner.loaded_target = None;
-        owner.unnamed_target = None;
-        owner.allowed_root = None;
-        owner.allow_missing = allow_missing;
-        self.file_generation = generation;
-        self.spawn_detached_edit_target(generation, path);
-        self.model.message = "Abriendo archivo; entrada retenida".into();
-        true
-    }
+    /// identity until its own resolver and read have completed.
 
     fn begin_detached_explorer_file_read(
         &mut self, path: PathBuf, position: Option<DetachedPosition>, allow_missing: bool, relist: bool,
     ) -> bool {
-        if self.detached_open_jump_replay().is_some() {
-            return self.replay_detached_explorer_file_read(path, position, allow_missing, relist);
-        }
+
         if self.model.surface != Surface::Tree || self.model.file.is_some()
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
+            || self.pending_measured_splits.is_some()
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_copy_close > 0 || self.pending_backend_resume.is_some()
-            || self.pending_list_page.is_some() || self.terminal_resume.active()
-            || self.terminal_jump_gate.busy() || !self.pending_saves.is_empty()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_copy_close > 0
+            || self.pending_list_page.is_some()
+            || !self.pending_saves.is_empty()
             || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
             || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
             || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
@@ -23057,28 +16895,27 @@ impl WorkspaceView {
         let root = self.model.explorer_root().to_path_buf();
         let selected = self.model.tree_rows().get(self.model.tree_selected).map(|row| row.path.clone());
         self.file_generation = generation;
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: project, pane: pane.0, attachment: 0, generation, path: path.clone(),
         };
-        let queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
+        let identity = Arc::new(());
         self.pending_detached_open = Some(PendingDetachedOpen {
-            queue: queue.identity(), source: DetachedReadSource::Explorer { id, guard, root, selected },
+            identity: identity.clone(), source: DetachedReadSource::Explorer { id, guard, root, selected },
             destination_guard: None, destination_explorer: None, destination_agents: None, focus_revision: self.model.focus_revision,
             relist, explicit: true, resolving: true, expected_loaded: false, opened: false,
             position, jump: None, terminal_mark: None, loaded_target: None, unnamed_target: None,
             allowed_root: None, allow_missing,
         });
         self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context, focus, queue, overflow: VecDeque::new(), replaying: false, scheduled: false,
-            revision: 0, marked_selection: None, replay_error: false, paste_held: None, edit_resolution: false, edit_force: false, edit_reload_current: false,
-            awaiting_edit_read: false, terminal_jump: false, deferred_capture: None,
-            wait_for_geometry: false, geometry_deadline: None, post_split_line: None,
+
+        self.pending_file_read = Some(PendingFileRead {
+            context, focus, identity: identity, state: workspace_app::file_read::State::Reading,
+                edit_resolution: false, edit_force: false, edit_reload_current: false,
+            awaiting_edit_read: false, terminal_jump: false,
+              post_split_line: None,
         });
         self.spawn_detached_edit_target(generation, path);
-        self.model.message = "Abriendo archivo; entrada retenida".into();
+        self.model.message = "Abriendo archivo".into();
         true
     }
 
@@ -23086,24 +16923,19 @@ impl WorkspaceView {
         &mut self, id: u64, path: PathBuf, position: Option<DetachedPosition>,
         allow_missing: bool, relist: bool, explicit: bool,
     ) -> bool {
-        if self.detached_open_jump_replay().is_some() {
-            return self.replay_detached_agents_file_read(id, path, position, allow_missing, relist, explicit);
-        }
+
         if !matches!(self.model.surface, Surface::Agents | Surface::Backlog) || self.model.file.is_some()
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
+            || self.pending_measured_splits.is_some()
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_copy_close > 0 || self.pending_backend_resume.is_some()
-            || self.pending_list_page.is_some() || self.terminal_resume.active()
-            || self.terminal_resume_zoom_owner.is_some() || self.detached_terminal_input.any_busy()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_copy_close > 0
+            || self.pending_list_page.is_some()
             || self.pending_terminal_rebind.contains_key(&self.model.project)
-            || self.terminal_jump_gate.busy() || !self.pending_saves.is_empty()
+            || !self.pending_saves.is_empty()
             || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
             || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
             || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
@@ -23146,12 +16978,12 @@ impl WorkspaceView {
             };
         let Some(generation) = self.file_generation.checked_add(1) else { return false; };
         self.file_generation = generation;
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: project, pane: pane.0, attachment: 0, generation, path: path.clone(),
         };
-        let queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
+        let identity = Arc::new(());
         self.pending_detached_open = Some(PendingDetachedOpen {
-            queue: queue.identity(), source: DetachedReadSource::Agents {
+            identity: identity.clone(), source: DetachedReadSource::Agents {
                 id, guard, surface: self.model.surface, selected: self.model.selected.clone(),
             }, destination_guard: None, destination_explorer: None, destination_agents: None, focus_revision: self.model.focus_revision,
             relist, explicit, resolving: explicit, expected_loaded: false, opened: false,
@@ -23159,136 +16991,34 @@ impl WorkspaceView {
             allowed_root: None, allow_missing,
         });
         self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context, focus, queue, overflow: VecDeque::new(), replaying: false, scheduled: false,
-            revision: 0, marked_selection: None, replay_error: false, paste_held: None, edit_resolution: false, edit_force: false, edit_reload_current: false,
-            awaiting_edit_read: false, terminal_jump: false, deferred_capture: None,
-            wait_for_geometry: false, geometry_deadline: None, post_split_line: None,
+
+        self.pending_file_read = Some(PendingFileRead {
+            context, focus, identity: identity, state: workspace_app::file_read::State::Reading,
+                edit_resolution: false, edit_force: false, edit_reload_current: false,
+            awaiting_edit_read: false, terminal_jump: false,
+              post_split_line: None,
         });
         if explicit {
             self.spawn_detached_edit_target(generation, path);
         } else {
             self.spawn_detached_listed_read(generation, path, relist);
         }
-        self.model.message = "Abriendo buffer; entrada retenida".into();
+        self.model.message = "Abriendo buffer".into();
         true
     }
 
     /// Keep a file-open or buffer switch in flight while the target reads.
-    fn replay_detached_agents_file_read(
-        &mut self, id: u64, path: PathBuf, position: Option<DetachedPosition>,
-        allow_missing: bool, relist: bool, explicit: bool,
-    ) -> bool {
-        let Some(identity) = self.detached_open_jump_replay() else { return false; };
-        let project = self.model.project;
-        let target = ListedBuffer::File(path.clone());
-        if !matches!(self.model.surface, Surface::Agents | Surface::Backlog) || self.model.file.is_some()
-            || self.pending_terminal_key.is_some() || self.pending_jump_load.is_some()
-            || self.pending_terminal_jump_load.is_some() || self.pending_detached_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
-            || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
-            || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
-            || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_copy_close > 0 || self.pending_backend_resume.is_some()
-            || self.pending_list_page.is_some() || self.terminal_resume.active()
-            || self.terminal_resume_zoom_owner.is_some() || self.detached_terminal_input.any_busy()
-            || self.pending_terminal_rebind.contains_key(&project) || self.terminal_jump_gate.busy()
-            || !self.pending_saves.is_empty() || self.editors.values().any(|editor| editor.saving)
-            || !self.formatting.is_empty() || self.pending_guarded_quit.is_some()
-            || self.delete_after_save.is_some() || self.quit_after_save || self.mouse_drag.is_some()
-            || self.selecting || !self.marked.is_empty() || self.model.pending_since.is_some()
-            || self.file_prompt.is_some() || self.remote_prompt.is_some() || self.terminal_command.is_some()
-            || self.terminal_search_prompt.is_some() || self.media_active() || self.markdown.is_some()
-            || self.preview.is_some()
-            || explicit && self.model.unnamed.contains(&path)
-            || !explicit && (self.editors.contains_key(&path) || self.editors.len() >= 128
-                || self.pending_new_files.contains(&path))
-            || !self.listed_buffers.get(&project).is_some_and(|registry| {
-                registry.knows(&ListedBuffer::Agents(id))
-                    && (explicit || registry.knows(&target) && registry.is_unloaded(&path))
-            }) || !explicit && self.numbered_buffers.number_for(project, &target).is_err()
-            || self.validation && (!path.starts_with(self.state_dir.join("demo"))
-                || path.components().any(|part| matches!(part, std::path::Component::ParentDir)))
-        { self.model.message = "No se pudo cargar el buffer; entrada conservada".into(); return false; }
-        #[cfg(feature = "ghostty")]
-        if self.native_selection.is_some() { return false; }
-        self.sync_sidebar_pane();
-        let Some(guard) = self.editor_zoom.as_ref().zip(self.editor_panes.as_ref())
-            .and_then(|(zoom, panes)| {
-                (zoom.is_detached() && zoom.is_current(project, panes)
-                    && zoom.content() == &PaneContent::Agents(id) && self.current_zoom_list().is_some())
-                    .then(|| zoom.render_guard(self.geometry_render))
-            }) else { return false; };
-        let Some(generation) = self.file_generation.checked_add(1) else { return false; };
-        if !self.pending_detached_open.as_ref().is_some_and(|owner| {
-            owner.opened && owner.destination_agents.as_ref().is_some_and(|(_, actual)| *actual == id)
-                && Arc::ptr_eq(&owner.queue, &identity)
-        }) { return false; }
-        let Some(input) = &mut self.pending_open_input else { return false; };
-        let Some(event) = input.queue.in_flight_id() else { return false; };
-        let mut next = input.context.clone();
-        next.path = path.clone();
-        next.generation = generation;
-        if !input.queue.retarget_edit(event, &input.context, next.clone()) { return false; }
-        input.context = next;
-        input.replay_error = false;
-        let Some(owner) = self.pending_detached_open.as_mut()
-            .filter(|owner| Arc::ptr_eq(&owner.queue, &identity)) else {
-                input.queue.invalidate(); input.replay_error = true; return false;
-            };
-        owner.source = DetachedReadSource::Agents {
-            id, guard, surface: self.model.surface, selected: self.model.selected.clone(),
-        };
-        owner.destination_guard = None;
-        owner.destination_explorer = None;
-        owner.destination_agents = None;
-        owner.focus_revision = self.model.focus_revision;
-        owner.relist = relist;
-        owner.explicit = explicit;
-        owner.resolving = explicit;
-        owner.expected_loaded = false;
-        owner.opened = false;
-        owner.position = position;
-        owner.jump = None;
-        owner.terminal_mark = None;
-        owner.loaded_target = None;
-        owner.unnamed_target = None;
-        owner.allowed_root = None;
-        owner.allow_missing = allow_missing;
-        self.file_generation = generation;
-        if explicit {
-            self.spawn_detached_edit_target(generation, path);
-        } else if self.model.unnamed.contains(&path) {
-            if self.disk_tx.send(DiskResult::DetachedListedFile(
-                generation, path.clone(), relist, Ok(Some(String::new())),
-            )).is_err() {
-                self.retain_replayed_jump();
-                self.finish_open_input_read(generation, &path, false);
-                return false;
-            }
-        } else {
-            self.spawn_detached_listed_read(generation, path, relist);
-        }
-        self.model.message = "Abriendo buffer; entrada retenida".into();
-        true
-    }
 
     fn begin_detached_file_read(&mut self, source: PathBuf, path: PathBuf, relist: bool, explicit: bool, allow_missing: bool, allowed_root: Option<PathBuf>) -> bool {
-        if self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-            || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
+        if self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
+            || self.pending_measured_splits.is_some()
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_copy_close > 0 || self.pending_backend_resume.is_some()
-            || self.pending_list_page.is_some() || self.terminal_resume.active()
-            || self.terminal_jump_gate.busy() || !self.pending_saves.is_empty()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_copy_close > 0
+            || self.pending_list_page.is_some()
+            || !self.pending_saves.is_empty()
             || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
             || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
             || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
@@ -23331,12 +17061,12 @@ impl WorkspaceView {
             return false;
         };
         self.file_generation = generation;
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: project, pane: pane.0, attachment: 0, generation, path: path.clone(),
         };
-        let queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
+        let identity = Arc::new(());
         self.pending_detached_open = Some(PendingDetachedOpen {
-            queue: queue.identity(), source: DetachedReadSource::File {
+            identity: identity.clone(), source: DetachedReadSource::File {
                 path: source, guard, version: source_version, cursor: source_cursor,
             }, destination_guard: None, destination_explorer: None, destination_agents: None, focus_revision: self.model.focus_revision,
             relist, explicit, resolving: explicit, expected_loaded: false, opened: false,
@@ -23345,20 +17075,19 @@ impl WorkspaceView {
             allow_missing,
         });
         self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context, focus, queue, overflow: VecDeque::new(), replaying: false, scheduled: false,
-            revision: 0, marked_selection: None, replay_error: false, paste_held: None, edit_resolution: false, edit_force: false, edit_reload_current: false,
-            awaiting_edit_read: false, terminal_jump: false, deferred_capture: None,
-            wait_for_geometry: false, geometry_deadline: None, post_split_line: None,
+
+        self.pending_file_read = Some(PendingFileRead {
+            context, focus, identity: identity, state: workspace_app::file_read::State::Reading,
+                edit_resolution: false, edit_force: false, edit_reload_current: false,
+            awaiting_edit_read: false, terminal_jump: false,
+              post_split_line: None,
         });
         if explicit {
             self.spawn_detached_edit_target(generation, path);
         } else {
             self.spawn_detached_listed_read(generation, path, relist);
         }
-        self.model.message = "Abriendo buffer; entrada retenida".into();
+        self.model.message = "Abriendo buffer".into();
         true
     }
 
@@ -23394,21 +17123,16 @@ impl WorkspaceView {
         unnamed_target: Option<DetachedUnnamedTarget>,
     ) -> bool {
         let project = self.model.project;
-        let terminal_context = workspace_app::terminal_resume::Context { project, attachment };
+        let terminal_context = workspace_app::terminal_input::Context { project, attachment };
         if self.model.surface != Surface::Normal || self.model.file.is_some()
             || self.model.unnamed.contains(&path) && !self.editors.contains_key(&path) && unnamed_target.is_none()
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
+            || self.pending_measured_splits.is_some()
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_terminal_rebind.contains_key(&project) || self.pending_copy_close > 0
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.terminal_resume.active() || self.terminal_resume_zoom_owner.is_some()
-            || self.detached_terminal_input.any_busy() || self.terminal_jump_gate.busy()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_terminal_rebind.contains_key(&project) || self.pending_copy_close > 0 || self.pending_list_page.is_some()
             || self.pending_terminal_search.contains(&terminal_context)
             || self.pending_additional_reconnects.contains_key(&(project, attachment))
             || !self.pending_saves.is_empty() || self.editors.values().any(|editor| editor.saving)
@@ -23466,27 +17190,26 @@ impl WorkspaceView {
             };
         let Some(generation) = self.file_generation.checked_add(1) else { return false; };
         self.file_generation = generation;
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: project, pane: pane.0, attachment: 0, generation, path: path.clone(),
         };
-        let queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
+        let identity = Arc::new(());
         self.pending_detached_open = Some(PendingDetachedOpen {
-            queue: queue.identity(), source: DetachedReadSource::Terminal { attachment, instance, guard, jump_focus },
+            identity: identity.clone(), source: DetachedReadSource::Terminal { attachment, instance, guard, jump_focus },
             destination_guard: None, destination_explorer: None, destination_agents: None, focus_revision: self.model.focus_revision,
             relist, explicit: true, resolving: true, expected_loaded: loaded_target.is_some(), opened: false,
             position, jump: None, terminal_mark: None, loaded_target, unnamed_target, allowed_root, allow_missing,
         });
         self.pending_open_terminal_instance = None;
-        self.pending_open_input_mixed_context = false;
-        self.pending_open_input_context_boundary = None;
-        self.pending_open_input = Some(PendingOpenInput {
-            context, focus, queue, overflow: VecDeque::new(), replaying: false, scheduled: false,
-            revision: 0, marked_selection: None, replay_error: false, paste_held: None, edit_resolution: false, edit_force: false, edit_reload_current: false,
-            awaiting_edit_read: false, terminal_jump: false, deferred_capture: None,
-            wait_for_geometry: false, geometry_deadline: None, post_split_line: None,
+
+        self.pending_file_read = Some(PendingFileRead {
+            context, focus, identity: identity, state: workspace_app::file_read::State::Reading,
+                edit_resolution: false, edit_force: false, edit_reload_current: false,
+            awaiting_edit_read: false, terminal_jump: false,
+              post_split_line: None,
         });
         self.spawn_detached_terminal_file_read(generation, path, relist);
-        self.model.message = "Abriendo archivo; entrada retenida".into();
+        self.model.message = "Abriendo archivo".into();
         true
     }
 
@@ -23577,16 +17300,7 @@ impl WorkspaceView {
     fn activate_detached_listed_target(
         &mut self, current: ListedBuffer, target: ListedBuffer, relist: bool,
     ) -> bool {
-        if let (ListedBuffer::File(source), ListedBuffer::Agents(id)) = (&current, &target)
-            && self.detached_open_jump_replay().is_some()
-        {
-            return self.replay_detached_file_agents(source.clone(), *id, relist);
-        }
-        if let (ListedBuffer::File(source), ListedBuffer::Terminal(attachment)) = (&current, &target)
-            && self.detached_open_jump_replay().is_some()
-        {
-            return self.replay_detached_file_terminal(source.clone(), *attachment, relist);
-        }
+
         let ListedBuffer::File(path) = &target else {
             return self.activate_detached_loaded_file(current, target, relist, None);
         };
@@ -23597,21 +17311,10 @@ impl WorkspaceView {
             if let ListedBuffer::Terminal(attachment) = current {
                 return self.begin_detached_terminal_file_read(attachment, path.clone(), relist, None, None, true);
             }
-            if matches!(&current, ListedBuffer::Agents(_)) && self.detached_open_jump_replay().is_some() {
-                return self.replay_detached_loaded_file(current, target, relist, None);
-            }
+
             return self.activate_detached_loaded_file(current, target, relist, None);
         }
-        if let ListedBuffer::Agents(id) = &current
-            && self.detached_open_jump_replay().is_some()
-        {
-            return self.replay_detached_agents_file_read(*id, path.clone(), None, true, relist, false);
-        }
-        if let ListedBuffer::File(source) = &current
-            && self.detached_open_jump_replay().is_some()
-        {
-            return self.replay_detached_unloaded_file(source.clone(), path.clone(), relist, None);
-        }
+
         if !self.model.unnamed.contains(path) {
             return match current {
                 ListedBuffer::File(source) => self.begin_detached_listed_read(source, path.clone(), relist),
@@ -23729,32 +17432,19 @@ impl WorkspaceView {
     fn activate_detached_terminal_file_guarded(
         &mut self, attachment: u64, destination: PathBuf, relist: bool,
         jump: Option<(workspace_core::editor_panes::PaneJump, workspace_core::editor_jumplist::Location)>,
-        owner: Option<(u64, u64, Arc<()>)>,
+        owner: Option<Arc<()>>,
     ) -> bool {
         let project = self.model.project;
-        let context = workspace_app::terminal_resume::Context { project, attachment };
-        let input_allowed = match (&owner, &self.pending_terminal_key) {
-            (None, None) => true,
-            (Some((token, capture, _)), Some(input)) => input.source.token == *token
-                && input.capture_wait == Some(*capture)
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && !input.replaying && !input.scheduled && !input.mixed_context
-                && input.destination.as_ref().is_some_and(|destination| self.terminal_key_destination_current(destination)),
-            _ => false,
-        };
+        let context = workspace_app::terminal_input::Context { project, attachment };
+
         if self.model.surface != Surface::Normal || self.model.file.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
-            || self.pending_open_input.is_some() || !input_allowed
+            || self.pending_measured_splits.is_some() || self.pending_copy_close > 0
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
-            || self.pending_terminal_rebind.contains_key(&project) || self.terminal_jump_gate.busy()
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.terminal_resume.active() || self.terminal_resume_zoom_owner.is_some()
-            || self.detached_terminal_input.any_busy() || self.pending_terminal_search.contains(&context)
+            || self.pending_terminal_rebind.contains_key(&project) || self.pending_list_page.is_some() || self.pending_terminal_search.contains(&context)
             || self.pending_additional_reconnects.contains_key(&(project, attachment))
             || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
             || self.model.pending_since.is_some() || self.terminal_command.is_some()
@@ -23766,14 +17456,8 @@ impl WorkspaceView {
         {
             self.model.message = if self.model.surface != Surface::Normal || self.model.file.is_some() {
                 "Cambió el foco de la terminal; navegación conservada"
-            } else if !input_allowed || self.pending_open_input.is_some() {
-                "Otra entrada o apertura está pendiente; terminal conservada"
-            } else if self.terminal_resume.active() || self.terminal_resume_zoom_owner.is_some()
-                || self.detached_terminal_input.any_busy() || self.pending_backend_resume.is_some()
-            {
-                "Esperando confirmar entrada de terminal; navegación conservada"
             } else if self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
-                || self.pending_terminal_jump_load.is_some() || self.terminal_jump_gate.busy()
+                || self.pending_terminal_jump_load.is_some()
                 || self.pending_terminal_rebind.contains_key(&project)
                 || self.pending_terminal_search.contains(&context)
                 || self.pending_additional_reconnects.contains_key(&(project, attachment))
@@ -23781,8 +17465,7 @@ impl WorkspaceView {
                 "Operación de terminal pendiente; navegación conservada"
             } else if self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty() {
                 "Terminá la selección o composición; terminal conservada"
-            } else if self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-                || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
+            } else if self.pending_measured_splits.is_some() || self.pending_copy_close > 0
             {
                 "Operación de panel pendiente; terminal conservada"
             } else if !self.pending_saves.is_empty() || self.editors.values().any(|editor| editor.saving)
@@ -23805,7 +17488,7 @@ impl WorkspaceView {
             window.project == project && window.attachment == attachment
         }) else { self.model.message = "Terminal original no disponible".into(); return false; };
         let instance = terminal.terminal.instance_identity();
-        if owner.as_ref().is_some_and(|(_, _, expected)| !Arc::ptr_eq(expected, &instance)) {
+        if owner.as_ref().is_some_and(|expected| !Arc::ptr_eq(expected, &instance)) {
             self.model.message = "Cambió la terminal; salto conservado".into();
             return false;
         }
@@ -23908,89 +17591,27 @@ impl WorkspaceView {
         true
     }
 
-    /// Rebind a replayed buffer switch only after the exact terminal becomes
-    /// the float's owner. Its successor events remain in the open ledger
-    /// until the dispatcher acknowledges this switch.
-    fn replay_detached_file_terminal(&mut self, source: PathBuf, attachment: u64, relist: bool) -> bool {
-        let Some(identity) = self.detached_open_jump_replay() else { return false; };
-        if self.pending_terminal_key.is_some() { return false; }
-        let Some(token) = self.tmux_copy_token.checked_add(1) else { return false; };
-        let Some(mut input) = self.pending_open_input.take() else { return false; };
-        let Some(event) = input.queue.in_flight_id() else {
-            self.pending_open_input = Some(input);
-            return false;
-        };
-        if !self.activate_detached_file_terminal(source, attachment, relist) {
-            self.pending_open_input = Some(input);
-            return false;
-        }
-        let target = self.terminal_key_source(token).zip(self.terminal_key_destination())
-            .filter(|(source, destination)| {
-                source.context.attachment == attachment
-                    && self.terminal_key_source_current(source)
-                    && destination.content == PaneContent::Terminal(attachment)
-                    && self.terminal_key_destination_current(destination)
-            });
-        let Some((source, destination)) = target else {
-            input.queue.invalidate();
-            input.replay_error = true;
-            self.pending_open_input = Some(input);
-            self.model.message = "Terminal abierta; entrada conservada para revisar".into();
-            return false;
-        };
-        self.tmux_copy_token = token;
-        self.pending_terminal_key = Some(PendingTerminalKey {
-            source,
-            transition_tab: None, tab_reconcile: None,
-            transition_activity: None,
-            gate: workspace_app::terminal_key_gate::Gate::for_replay(token, 4096, 1024 * 1024)
-                .expect("fixed valid limits"),
-            overflow: VecDeque::new(), destination: Some(destination), open_identity: Some(identity),
-            open_switch_event: Some(event), replaying: false,
-            scheduled: false, replay_error: false, paste_held: None, replay_event: None, write: None,
-            target_action: None, selection_action: None, split: None, capture_wait: None,
-            mixed_context: false, revision: 0, marked_selection: None, navigation_geometry_deadline: None,
-            deadline: std::time::Instant::now() + Duration::from_secs(15),
-        });
-        self.pending_open_input = Some(input);
-        true
-    }
-
-    /// Restore an already running terminal to the detached float without
-    /// changing tmux mode or replacing the unrelated layout anchor.
-    fn activate_detached_file_terminal(&mut self, source: PathBuf, attachment: u64, relist: bool) -> bool {
+        fn activate_detached_file_terminal(&mut self, source: PathBuf, attachment: u64, relist: bool) -> bool {
         self.activate_detached_file_terminal_guarded(source, attachment, relist, None, None)
     }
 
     fn activate_detached_file_terminal_guarded(
         &mut self, source: PathBuf, attachment: u64, relist: bool,
         jump: Option<(workspace_core::editor_panes::PaneJump, workspace_core::editor_jumplist::Location)>,
-        owner: Option<(u64, Arc<()>)>,
+        owner: Option<Arc<()>>,
     ) -> bool {
         let project = self.model.project;
-        let context = workspace_app::terminal_resume::Context { project, attachment };
-        let input_allowed = match (&owner, &self.pending_terminal_key) {
-            (None, None) => true,
-            (Some((token, _)), Some(input)) => input.source.token == *token
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                && !input.replaying && !input.scheduled && !input.mixed_context
-                && input.destination.as_ref().is_some_and(|destination| self.terminal_key_destination_current(destination)),
-            _ => false,
-        };
+        let context = workspace_app::terminal_input::Context { project, attachment };
+
         if self.model.surface != Surface::File
             || self.model.file.as_ref().is_none_or(|(path, _)| path != &source)
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
-            || self.pending_open_input.is_some() || !input_allowed
+            || self.pending_measured_splits.is_some() || self.pending_copy_close > 0
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
-            || self.pending_terminal_rebind.contains_key(&project) || self.terminal_jump_gate.busy()
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.terminal_resume.active() || self.terminal_resume_zoom_owner.is_some()
-            || self.detached_terminal_input.any_busy() || self.pending_terminal_search.contains(&context)
+            || self.pending_terminal_rebind.contains_key(&project) || self.pending_list_page.is_some() || self.pending_terminal_search.contains(&context)
             || self.pending_additional_reconnects.contains_key(&(project, attachment))
             || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
             || self.model.pending_since.is_some() || self.terminal_command.is_some()
@@ -24013,7 +17634,7 @@ impl WorkspaceView {
             window.project == project && window.attachment == attachment
         }) else { self.model.message = "Terminal original no disponible".into(); return false; };
         let instance = self.windows[index].terminal.instance_identity();
-        if owner.as_ref().is_some_and(|(_, expected)| !Arc::ptr_eq(expected, &instance)) {
+        if owner.as_ref().is_some_and(|expected| !Arc::ptr_eq(expected, &instance)) {
             self.model.message = "Cambió la terminal; salto conservado".into();
             return false;
         }
@@ -24088,28 +17709,24 @@ impl WorkspaceView {
             _ => return false,
         };
         if self.model.file.is_some()
-            || self.current_zoom_list().is_none() || self.pending_open_input.is_some()
+            || self.current_zoom_list().is_none()
         { return false; }
         if matches!(&source, ListedBuffer::Agents(_))
-            && (self.pending_terminal_key.is_some() || self.pending_jump_load.is_some()
+            && (self.pending_jump_load.is_some()
                 || self.pending_terminal_jump_load.is_some() || self.pending_detached_terminal_jump_load.is_some()
-                || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-                || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
+                || self.pending_measured_splits.is_some() || self.pending_copy_close > 0
                 || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
                 || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
                 || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-                || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-                || self.pending_terminal_rebind.contains_key(&project) || self.terminal_jump_gate.busy()
-                || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-                || self.terminal_resume.active() || self.terminal_resume_zoom_owner.is_some()
-                || self.detached_terminal_input.any_busy() || self.mouse_drag.is_some() || self.selecting
+                || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+                || self.pending_terminal_rebind.contains_key(&project) || self.pending_list_page.is_some() || self.mouse_drag.is_some() || self.selecting
                 || !self.marked.is_empty() || self.model.pending_since.is_some()
                 || self.file_prompt.is_some() || self.remote_prompt.is_some() || self.terminal_command.is_some()
                 || self.terminal_search_prompt.is_some() || self.media_active() || self.markdown.is_some()
                 || self.preview.is_some() || !self.pending_saves.is_empty()
                 || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
                 || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save)
-        { self.model.message = "Entrada pendiente; Agents conservado".into(); return false; }
+        { self.model.message = "No se pudo cambiar la vista de Agents".into(); return false; }
         #[cfg(feature = "ghostty")]
         if matches!(&source, ListedBuffer::Agents(_)) && self.native_selection.is_some() {
             self.model.message = "Terminá la selección; Agents conservado".into();
@@ -24165,115 +17782,28 @@ impl WorkspaceView {
 
     /// A buffer change replayed after an asynchronous open keeps the same
     /// event in flight until the exact Explorer view owns its successors.
-    fn replay_detached_file_explorer(&mut self, source: PathBuf, id: u64, relist: bool) -> bool {
-        let Some(identity) = self.detached_open_jump_replay() else { return false; };
-        let Some(mut input) = self.pending_open_input.take() else { return false; };
-        let Some(event) = input.queue.in_flight_id() else {
-            self.pending_open_input = Some(input);
-            return false;
-        };
-        if !self.activate_detached_file_explorer(source, id, relist) {
-            self.pending_open_input = Some(input);
-            return false;
-        }
-        let guard = self.editor_zoom.as_ref().zip(self.editor_panes.as_ref()).and_then(|(zoom, panes)| {
-            (zoom.is_detached() && zoom.is_current(self.model.project, panes)
-                && zoom.content() == &PaneContent::Explorer(id) && self.current_zoom_list().is_some())
-                .then(|| zoom.render_guard(self.geometry_render))
-        });
-        let mut next = input.context.clone();
-        next.generation = self.file_generation;
-        let owner = self.pending_detached_open.as_mut().filter(|owner| {
-            owner.opened && Arc::ptr_eq(&owner.queue, &identity)
-        });
-        let success = if let (Some(guard), Some(owner)) = (guard, owner)
-            && input.queue.retarget_in_flight_jump(event, &input.context, next.clone())
-        {
-            owner.destination_guard = None;
-            owner.destination_explorer = Some((guard, id, self.model.explorer_root().to_path_buf()));
-            owner.destination_agents = None;
-            owner.focus_revision = self.model.focus_revision;
-            input.context = next;
-            input.replay_error = false;
-            self.model.message.clear();
-            true
-        } else {
-            input.queue.invalidate();
-            input.replay_error = true;
-            self.model.message = "Explorer abierto; entrada conservada para revisar".into();
-            false
-        };
-        self.pending_open_input = Some(input);
-        success
-    }
 
     /// Hand queued input to the same detached Agents view after the switch.
-    fn replay_detached_file_agents(&mut self, source: PathBuf, id: u64, relist: bool) -> bool {
-        let Some(identity) = self.detached_open_jump_replay() else { return false; };
-        let Some(mut input) = self.pending_open_input.take() else { return false; };
-        let Some(event) = input.queue.in_flight_id() else {
-            self.pending_open_input = Some(input);
-            return false;
-        };
-        if !self.activate_detached_file_agents(source, id, relist) {
-            self.pending_open_input = Some(input);
-            return false;
-        }
-        let guard = self.editor_zoom.as_ref().zip(self.editor_panes.as_ref()).and_then(|(zoom, panes)| {
-            (zoom.is_detached() && zoom.is_current(self.model.project, panes)
-                && zoom.content() == &PaneContent::Agents(id) && self.current_zoom_list().is_some())
-                .then(|| zoom.render_guard(self.geometry_render))
-        });
-        let mut next = input.context.clone();
-        next.generation = self.file_generation;
-        let owner = self.pending_detached_open.as_mut().filter(|owner| {
-            owner.opened && Arc::ptr_eq(&owner.queue, &identity)
-        });
-        let success = if let (Some(guard), Some(owner)) = (guard, owner)
-            && input.queue.retarget_in_flight_jump(event, &input.context, next.clone())
-        {
-            owner.destination_guard = None;
-            owner.destination_explorer = None;
-            owner.destination_agents = Some((guard, id));
-            owner.focus_revision = self.model.focus_revision;
-            input.context = next;
-            input.replay_error = false;
-            self.model.message.clear();
-            true
-        } else {
-            input.queue.invalidate();
-            input.replay_error = true;
-            self.model.message = "Agents abierto; entrada conservada para revisar".into();
-            false
-        };
-        self.pending_open_input = Some(input);
-        success
-    }
 
     fn activate_detached_file_explorer(&mut self, source: PathBuf, id: u64, relist: bool) -> bool {
         let project = self.model.project;
         if self.model.surface != Surface::File
             || self.model.file.as_ref().is_none_or(|(path, _)| path != &source)
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
+            || self.pending_measured_splits.is_some() || self.pending_copy_close > 0
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_terminal_rebind.contains_key(&project) || self.terminal_jump_gate.busy()
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.terminal_resume.active() || self.terminal_resume_zoom_owner.is_some()
-            || self.detached_terminal_input.any_busy() || self.mouse_drag.is_some() || self.selecting
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_terminal_rebind.contains_key(&project) || self.pending_list_page.is_some() || self.mouse_drag.is_some() || self.selecting
             || !self.marked.is_empty() || self.model.pending_since.is_some()
             || self.file_prompt.is_some() || self.remote_prompt.is_some() || self.terminal_command.is_some()
             || self.terminal_search_prompt.is_some() || self.media_active() || self.markdown.is_some()
             || self.preview.is_some() || !self.pending_saves.is_empty()
             || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
             || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
-        { self.model.message = "Entrada pendiente; archivo conservado".into(); return false; }
+        { self.model.message = "No se pudo cambiar la vista del archivo".into(); return false; }
         self.sync_editor_pane();
         let (Some(zoom), Some(panes), Some(registry), Some(editor), Some(list)) = (
             self.editor_zoom.as_ref(), self.editor_panes.as_ref(), self.listed_buffers.get(&project),
@@ -24329,26 +17859,21 @@ impl WorkspaceView {
         let project = self.model.project;
         if self.model.surface != Surface::File
             || self.model.file.as_ref().is_none_or(|(path, _)| path != &source)
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
+            || self.pending_measured_splits.is_some() || self.pending_copy_close > 0
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_terminal_rebind.contains_key(&project) || self.terminal_jump_gate.busy()
-            || self.pending_backend_resume.is_some() || self.pending_list_page.is_some()
-            || self.terminal_resume.active() || self.terminal_resume_zoom_owner.is_some()
-            || self.detached_terminal_input.any_busy() || self.mouse_drag.is_some() || self.selecting
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_terminal_rebind.contains_key(&project) || self.pending_list_page.is_some() || self.mouse_drag.is_some() || self.selecting
             || !self.marked.is_empty() || self.model.pending_since.is_some()
             || self.file_prompt.is_some() || self.remote_prompt.is_some() || self.terminal_command.is_some()
             || self.terminal_search_prompt.is_some() || self.media_active() || self.markdown.is_some()
             || self.preview.is_some() || !self.pending_saves.is_empty()
             || self.editors.values().any(|editor| editor.saving) || !self.formatting.is_empty()
             || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
-        { self.model.message = "Entrada pendiente; archivo conservado".into(); return false; }
+        { self.model.message = "No se pudo cambiar la vista del archivo".into(); return false; }
         #[cfg(feature = "ghostty")]
         if self.native_selection.is_some() {
             self.model.message = "Terminá la selección; archivo conservado".into();
@@ -24433,26 +17958,20 @@ impl WorkspaceView {
         if self.model.surface != Surface::File
             || self.model.file.as_ref().is_none_or(|(path, _)| path != &source)
             || self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
             || self.pending_copy_close > 0
-            || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some()
             || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some()
             || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
+            || self.pending_sidebar_file_target.is_some()
             || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some()
             || self.pending_terminal_jump_load.is_some()
             || self.pending_terminal_capture.is_some()
             || self.pending_terminal_open.is_some()
             || self.pending_terminal_rebind.contains_key(&self.model.project)
-            || self.terminal_jump_gate.busy()
-            || self.pending_backend_resume.is_some()
+
             || self.pending_list_page.is_some()
-            || self.terminal_resume.active()
             || self.mouse_drag.is_some()
             || self.selecting
             || !self.marked.is_empty()
@@ -24613,9 +18132,7 @@ impl WorkspaceView {
         );
     }
     fn navigate_numbered_buffer(&mut self, number: u64) {
-        if !self.navigate_numbered_buffer_checked(number) {
-            self.retain_replayed_jump();
-        }
+        self.navigate_numbered_buffer_checked(number);
     }
     fn navigate_numbered_buffer_checked(&mut self, number: u64) -> bool {
         if number == 0 {
@@ -24654,16 +18171,7 @@ impl WorkspaceView {
             if current == target {
                 return true;
             }
-            if let (ListedBuffer::File(path), ListedBuffer::Explorer(id)) = (&current, &target)
-                && self.detached_open_jump_replay().is_some()
-            {
-                return self.replay_detached_file_explorer(path.clone(), *id, false);
-            }
-            if let (ListedBuffer::File(source), ListedBuffer::File(destination)) = (&current, &target)
-                && self.editors.contains_key(destination) && self.detached_open_jump_replay().is_some()
-            {
-                return self.replay_detached_loaded_file(ListedBuffer::File(source.clone()), target, false, None);
-            }
+
             return self.activate_detached_listed_target(current, target, false);
         }
         self.sync_sidebar_pane();
@@ -24683,7 +18191,7 @@ impl WorkspaceView {
         let previous_generation = self.file_generation;
         self.activate_listed_target(pane, current, target.clone(), false);
         let loading = self.file_generation != previous_generation
-            && matches!(&target, ListedBuffer::File(path) if self.pending_open_input.as_ref().is_some_and(|open| {
+            && matches!(&target, ListedBuffer::File(path) if self.pending_file_read.as_ref().is_some_and(|open| {
                 open.context.workspace == project && open.context.pane == pane.0 && &open.context.path == path
             }));
         loading || self.editor_panes.as_ref().is_some_and(|panes| {
@@ -24703,9 +18211,7 @@ impl WorkspaceView {
         target: ListedBuffer,
         relist: bool,
     ) {
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            return;
-        }
+
         let registry = self.listed_buffers.entry(self.model.project).or_default();
         if let ListedBuffer::File(path) = &target
             && !self.editors.contains_key(path)
@@ -24827,10 +18333,7 @@ impl WorkspaceView {
     }
     /// Retain input in the originating sidebar or file pane while :buffer loads.
     fn begin_sidebar_listed_read(&mut self, path: PathBuf, relist: bool) {
-        if self.pending_open_input.is_some() {
-            self.model.message = "Entrada anterior conservada; revisala antes de abrir".into();
-            return;
-        }
+
         let Some(panes) = self.editor_panes.as_ref() else {
             return;
         };
@@ -24866,7 +18369,7 @@ impl WorkspaceView {
         };
         let focus = panes.layout.focus_guard();
         let generation = self.file_generation;
-        let context = workspace_app::open_input::Context {
+        let context = workspace_app::file_read::Context {
             workspace: self.model.project,
             pane: pane.0,
             attachment: 0,
@@ -24883,34 +18386,28 @@ impl WorkspaceView {
         });
         self.pending_sidebar_buffer_relist = Some(relist);
         self.pending_open_terminal_instance = None;
-        let queue = workspace_app::open_input::Queue::new(context.clone(), 4096, 1024 * 1024);
+        let identity = Arc::new(());
         self.pending_pane_file_source = file_source.map(|(path, editor, version, cursor)| {
-            PendingPaneFileSource { queue: queue.identity(), path, editor, version, cursor }
+            PendingPaneFileSource { identity: identity.clone(), path, editor, version, cursor }
         });
-        self.pending_open_input = Some(PendingOpenInput {
-            queue,
+        self.pending_file_read = Some(PendingFileRead {
+            identity: identity, state: workspace_app::file_read::State::Reading,
             context,
             focus,
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
+
             edit_resolution: false,
             edit_force: false,
             edit_reload_current: false,
             awaiting_edit_read: true,
             terminal_jump: false,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
+
+             post_split_line: None,
         });
         self.load_listed_file(path.clone(), relist);
-        if self.pending_open_input.as_ref().is_some_and(|pending| {
+        if self.pending_file_read.as_ref().is_some_and(|pending| {
             pending.context.generation == generation && pending.awaiting_edit_read
         }) {
-            self.finish_open_input_read(generation, &path, false);
+            self.finish_file_read(generation, &path, false);
         }
     }
     /// Load a deliberately unloaded listed buffer through the same generation
@@ -24944,8 +18441,8 @@ impl WorkspaceView {
             let previous_generation = self.file_generation;
             self.file_generation = self.file_generation.wrapping_add(1);
             if !self.advance_sidebar_open_generation(&path, false) {
-                self.retain_failed_file_open_input(&path);
-                self.model.message = "Entrada conservada: cambió el panel".into();
+                self.fail_file_read(&path);
+                self.model.message = "Apertura cancelada: cambió el panel".into();
                 return;
             }
             self.editors.insert(
@@ -24957,7 +18454,7 @@ impl WorkspaceView {
                 if matches!(&capture, Some(Ok(()))) {
                     self.pending_terminal_capture = None;
                 }
-                self.retain_failed_file_open_input(&path);
+                self.fail_file_read(&path);
                 return;
             }
             if relist {
@@ -24985,8 +18482,8 @@ impl WorkspaceView {
         self.file_generation = self.file_generation.wrapping_add(1);
         let generation = self.file_generation;
         if !self.advance_sidebar_open_generation(&path, true) {
-            self.retain_failed_file_open_input(&path);
-            self.model.message = "Entrada conservada: cambió el panel".into();
+            self.fail_file_read(&path);
+            self.model.message = "Apertura cancelada: cambió el panel".into();
             return;
         }
         if capture && let Some(pending) = &mut self.pending_terminal_capture {
@@ -24997,9 +18494,9 @@ impl WorkspaceView {
         self.pending_read_guard = self.open_guard(generation);
         self.pending_terminal_open =
             (self.model.surface == Surface::Normal).then(|| self.terminal_open_guard(generation));
-        if self.model.surface == Surface::Normal && !self.begin_open_input(generation, &path) {
+        if self.model.surface == Surface::Normal && !self.prepare_terminal_file_read(generation, &path) {
             self.cancel_unstarted_file_read(generation, &path);
-            self.model.message = "Entrada anterior conservada; reintentá su apertura".into();
+            self.model.message = "No se pudo iniciar la apertura".into();
             return;
         }
         if self.model.surface == Surface::Normal {
@@ -25009,7 +18506,7 @@ impl WorkspaceView {
             self.cancel_unstarted_file_read(generation, &path);
             return;
         }
-        if !self.begin_sidebar_file_input(generation, &path) {
+        if !self.prepare_sidebar_file_read(generation, &path) {
             self.cancel_unstarted_file_read(generation, &path);
             return;
         }
@@ -25271,7 +18768,7 @@ impl WorkspaceView {
     fn open_root_file_picker(&mut self) {
         self.cancel_closed_picker_root();
         if self.snacks_operation_blocked() {
-            self.retain_replayed_jump();
+
             self.model.message = "Terminá la operación pendiente antes de buscar".into();
             return;
         }
@@ -25317,11 +18814,8 @@ impl WorkspaceView {
     fn snacks_operation_blocked(&self) -> bool {
         self.pending_terminal_termination.is_some()
             || self.pending_snacks_root.is_some()
-            || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some()
+            || self.pending_file_read.is_some()
             || self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some()
             || self.pending_copy_close > 0
             || self.pending_terminal_capture.is_some()
             || self.pending_terminal_open.is_some()
@@ -25329,16 +18823,13 @@ impl WorkspaceView {
             || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some()
             || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some()
+            || self.pending_sidebar_file_target.is_some()
             || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some()
             || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some()
-            || self.pending_backend_resume.is_some()
             || self.pending_list_page.is_some()
-            || self.terminal_jump_gate.busy()
-            || self.detached_terminal_input.any_busy()
-            || self.terminal_resume.active()
+
             || self.mouse_drag.is_some()
             || self.selecting
             || !self.marked.is_empty()
@@ -25385,7 +18876,7 @@ impl WorkspaceView {
     fn toggle_snacks_terminal(&mut self, root: bool, focus: bool, count: usize) {
         self.cancel_closed_picker_root();
         if self.snacks_toggle_blocked() {
-            self.retain_replayed_jump();
+
             self.model.message = "Terminá la operación pendiente antes de alternar la terminal".into();
             return;
         }
@@ -25403,7 +18894,7 @@ impl WorkspaceView {
     fn change_directory(&mut self, name: String, local: bool) {
         self.cancel_closed_picker_root();
         if self.snacks_toggle_blocked() {
-            self.retain_replayed_jump();
+
             self.model.message = "Terminá la operación pendiente antes de cambiar el directorio".into();
             return;
         }
@@ -25431,7 +18922,7 @@ impl WorkspaceView {
 
     fn toggle_snacks_at(&mut self, cwd: PathBuf, focus: bool, count: usize) {
         if self.snacks_toggle_blocked() {
-            self.retain_replayed_jump();
+
             self.model.message = "Terminá la operación pendiente antes de alternar la terminal".into();
             return;
         }
@@ -25506,21 +18997,19 @@ impl WorkspaceView {
 
     fn focus_snacks_terminal(&mut self, id: u64, pane: PaneId) -> bool {
         let project = self.model.project;
-        let context = workspace_app::terminal_resume::Context { project, attachment: id };
-        if self.editor_zoom.is_some() || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
+        let context = workspace_app::terminal_input::Context { project, attachment: id };
+        if self.editor_zoom.is_some()
+            || self.pending_measured_splits.is_some() || self.pending_copy_close > 0
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_detached_terminal_jump_load.is_some() || self.pending_backend_resume.is_some()
+            || self.pending_detached_terminal_jump_load.is_some()
             || self.pending_list_page.is_some() || self.pending_terminal_rebind.contains_key(&project)
             || self.pending_additional_reconnects.keys().any(|(owner, _)| *owner == project)
             || self.pending_terminal_search.iter().any(|owner| owner.project == project)
-            || self.terminal_jump_gate.busy() || self.detached_terminal_input.any_busy()
-            || self.terminal_resume.active() || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
+            || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
             || self.current_editor().is_some_and(|editor| editor.composing() || editor.replaying())
             || self.terminal_command.is_some() || self.file_prompt.is_some() || self.remote_prompt.is_some()
             || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
@@ -25540,7 +19029,7 @@ impl WorkspaceView {
         if self.terminal_input_context() == Some(context) && self.model.surface == Surface::Normal
             && self.editor_panes.as_ref().is_some_and(|panes| panes.layout.active() == pane)
         {
-            self.begin_terminal_resume();
+            self.begin_terminal_input();
             true
         } else {
             self.model.message = "Foco de terminal pendiente de revisión".into();
@@ -25552,25 +19041,23 @@ impl WorkspaceView {
     /// Ambiguous shared views and in-flight input are left untouched.
     fn hide_snacks_terminal(&mut self, id: u64, target: PaneId, allow_displaced_file: bool) -> bool {
         let project = self.model.project;
-        let context = workspace_app::terminal_resume::Context { project, attachment: id };
+        let context = workspace_app::terminal_input::Context { project, attachment: id };
         if !self.windows.iter().any(|window| window.project == project && window.attachment == id
             && window.snacks.is_some() && !window.snapshot.exited)
             || !terminal_backend_binding(&self.backends, &self.additional_backends, context)
                 .is_ok_and(|backend| backend.attachment == Some(id))
-            || self.editor_zoom.is_some() || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-            || self.pending_measured_splits.is_some() || self.pending_file_splits.has_active()
-            || self.pending_file_splits.recovery_revision().is_some() || self.pending_copy_close > 0
+            || self.editor_zoom.is_some()
+            || self.pending_measured_splits.is_some() || self.pending_copy_close > 0
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_detached_terminal_jump_load.is_some() || self.pending_backend_resume.is_some()
+            || self.pending_detached_terminal_jump_load.is_some()
             || self.pending_list_page.is_some() || self.pending_terminal_rebind.contains_key(&project)
             || self.pending_additional_reconnects.keys().any(|(owner, _)| *owner == project)
             || self.pending_terminal_search.iter().any(|owner| owner.project == project)
-            || self.terminal_jump_gate.busy() || self.detached_terminal_input.any_busy()
-            || self.terminal_resume.active() || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
+            || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
             || self.current_editor().is_some_and(|editor| editor.composing() || editor.replaying())
             || self.terminal_command.is_some() || self.file_prompt.is_some() || self.remote_prompt.is_some()
             || self.pending_guarded_quit.is_some() || self.delete_after_save.is_some() || self.quit_after_save
@@ -25658,27 +19145,24 @@ impl WorkspaceView {
     /// pane. The caller must revalidate async request ownership before calling.
     fn show_snacks_terminal(&mut self, id: u64) -> bool {
         let project = self.model.project;
-        let context = workspace_app::terminal_resume::Context { project, attachment: id };
+        let context = workspace_app::terminal_input::Context { project, attachment: id };
         let available = self.windows.iter().any(|window| {
             window.project == project && window.attachment == id
                 && window.snacks.is_some() && !window.snapshot.exited
         }) && terminal_backend_binding(&self.backends, &self.additional_backends, context)
             .is_ok_and(|backend| backend.attachment == Some(id));
-        if !available || self.editor_zoom.is_some() || self.pending_open_input.is_some()
-            || self.pending_terminal_key.is_some() || self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active() || self.pending_file_splits.recovery_revision().is_some()
+        if !available || self.editor_zoom.is_some() || self.pending_measured_splits.is_some()
             || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
-            || self.pending_detached_terminal_jump_load.is_some() || self.pending_backend_resume.is_some()
+            || self.pending_detached_terminal_jump_load.is_some()
             || self.pending_list_page.is_some() || self.pending_copy_close > 0
             || self.pending_terminal_rebind.contains_key(&project)
             || self.pending_additional_reconnects.keys().any(|(owner, _)| *owner == project)
             || self.pending_terminal_search.iter().any(|owner| owner.project == project)
-            || self.terminal_jump_gate.busy()
-            || self.detached_terminal_input.any_busy() || self.terminal_resume.active()
+
             || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
             || self.current_editor().is_some_and(|editor| editor.composing() || editor.replaying())
             || self.terminal_command.is_some() || self.file_prompt.is_some() || self.remote_prompt.is_some()
@@ -25738,7 +19222,7 @@ impl WorkspaceView {
                 panes.layout.active() == created && panes.content(created) == Some(&PaneContent::Terminal(id))
             })
         {
-            self.begin_terminal_resume();
+            self.begin_terminal_input();
             true
         } else {
             self.model.message = "Panel creado; foco de terminal pendiente de revisión".into();
@@ -25747,9 +19231,7 @@ impl WorkspaceView {
     }
 
     fn show_terminal_buffer(&mut self, id: u64, replace_sidebar: bool) {
-        if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-            return;
-        }
+
         if !self
             .windows
             .iter()
@@ -25807,7 +19289,7 @@ impl WorkspaceView {
         };
         let old = old.filter(|buffer| {
             !matches!(buffer, ListedBuffer::Terminal(attachment)
-            if self.terminated_terminals.contains(&workspace_app::terminal_resume::Context {
+            if self.terminated_terminals.contains(&workspace_app::terminal_input::Context {
                 project: self.model.project, attachment: *attachment,
             }))
         });
@@ -26021,7 +19503,7 @@ impl WorkspaceView {
                     }
                     ListedBuffer::Terminal(id)
                         if !self.terminated_terminals.contains(
-                            &workspace_app::terminal_resume::Context {
+                            &workspace_app::terminal_input::Context {
                                 project: self.model.project,
                                 attachment: *id,
                             },
@@ -26047,7 +19529,7 @@ impl WorkspaceView {
         self.model.set_buffer_picker_choices(choices);
     }
     fn prune_terminal_jump_marks(&mut self) {
-        if self.terminal_jump_gate.busy() || self.pending_terminal_jump_load.is_some()
+        if self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some() {
             return;
         }
@@ -26116,20 +19598,7 @@ impl WorkspaceView {
         if !self.terminal_capture_is_current(&pending) {
             return;
         }
-        if let Some(owner) = pending.navigate_input {
-            let current = self.pending_terminal_key.as_ref().is_some_and(|input| {
-                input.source.token == owner
-                    && input.capture_wait == Some(token)
-                    && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                    && self.terminal_key_source_current(&input.source)
-                    && input.destination.as_ref().is_some_and(|destination| {
-                        self.terminal_key_destination_current(destination)
-                    })
-            });
-            if !current {
-                return;
-            }
-        }
+
         let mark = match result {
             Ok(mark) => mark,
             Err(error) => {
@@ -26159,33 +19628,10 @@ impl WorkspaceView {
         };
         let path = match pending.kind {
             TerminalCaptureKind::Navigate { older, count } => {
-                let applied = if let Some((_, instance)) = pending.detached_origin {
-                    if let Some(owner) = pending.navigate_input {
-                        self.jump_from_detached_terminal(
-                            project, attachment, location, anchor, older, count, owner, token,
-                            pending.navigate_event, instance,
-                        )
-                    } else { false }
+                if let Some((_, instance)) = pending.detached_origin {
+                    self.jump_from_detached_terminal(project, attachment, location, anchor, older, count, instance);
                 } else {
-                    self.jump_from_terminal(
-                        pending.focus, project, attachment, location, anchor, older, count,
-                    )
-                };
-                if let Some(owner) = pending.navigate_input
-                    && !self.pending_detached_terminal_jump_load.as_ref().is_some_and(|load| {
-                        load.owner == owner && load.capture == token
-                    })
-                    && !self.terminal_jump_gate.pending_payload().is_some_and(|jump| {
-                        jump.input_token == owner && matches!(&jump.request,
-                            TerminalRestoreRequest::DetachedTerminal { capture, .. } if *capture == token)
-                    })
-                {
-                    self.finish_terminal_navigation_capture(
-                        token,
-                        owner,
-                        pending.navigate_event,
-                        applied,
-                    );
+                    self.jump_from_terminal(pending.focus, project, attachment, location, anchor, older, count);
                 }
                 return;
             }
@@ -26226,16 +19672,7 @@ impl WorkspaceView {
             if let Some((older, count)) =
                 deferred.take_if_current(self.current_jump_location(), normal)
             {
-                if let Some(owner) = &pending.deferred_open {
-                    if !self.resume_open_jump_after_capture(token, owner, older, count) {
-                        self.model.message =
-                            "Salto cancelado: la entrada original ya no está disponible".into();
-                    }
-                } else if let Some((owner, event)) = pending.deferred_terminal {
-                    self.resume_terminal_jump_after_capture(token, owner, event, older, count);
-                } else {
-                    self.navigate_jump(older, count);
-                }
+                self.navigate_jump(older, count);
             }
         }
     }
@@ -26266,67 +19703,6 @@ impl WorkspaceView {
         }
     }
 
-    fn finish_terminal_navigation_capture(
-        &mut self,
-        capture: u64,
-        owner: u64,
-        event: Option<u64>,
-        applied: bool,
-    ) -> bool {
-        let current = self.pending_terminal_key.as_ref().is_some_and(|input| {
-            input.source.token == owner
-                && input.capture_wait == Some(capture)
-                && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-        });
-        if !current {
-            return false;
-        }
-        let target = self.terminal_key_destination();
-        let same_pane = target.as_ref().is_some_and(|target| {
-            self.pending_terminal_key
-                .as_ref()
-                .and_then(|input| input.destination.as_ref())
-                .is_some_and(|origin| {
-                    target.project == origin.project && target.pane == origin.pane
-                })
-        });
-        let open = self.pending_open_input.as_ref().and_then(|open| {
-            (self.pending_terminal_jump_load.is_some()
-                && open.queue.is_empty()
-                && open.overflow.is_empty()
-                && self.open_input_context_current(open, false))
-            .then(|| open.queue.identity())
-        });
-        let target_ok = same_pane
-            && target.as_ref().is_some_and(|target| match &target.content {
-                PaneContent::File(_) => true,
-                PaneContent::Terminal(_) => self
-                    .pending_terminal_key
-                    .as_ref()
-                    .is_some_and(|input| self.terminal_key_source_current(&input.source)),
-                _ => false,
-            });
-        let mut released = false;
-        if let Some(input) = &mut self.pending_terminal_key
-            && input.source.token == owner
-            && input.capture_wait == Some(capture)
-        {
-            input.capture_wait = None;
-            let acknowledged =
-                applied && target_ok && event.is_none_or(|event| input.gate.acknowledge(event));
-            if applied && target_ok && acknowledged {
-                input.destination = target;
-                input.open_identity = open;
-                released = true;
-            } else {
-                input.gate.invalidate();
-                self.model.message = "Salto sin confirmar; entrada conservada para revisar".into();
-            }
-        }
-        let _ = self.terminal_wake.try_send(());
-        released
-    }
-
     /// The float owns its own jump history; never stage this transition on
     /// the unrelated ordinary panel underneath it.
     #[allow(clippy::too_many_arguments)]
@@ -26334,7 +19710,7 @@ impl WorkspaceView {
         &mut self, project: usize, attachment: u64,
         origin: workspace_core::editor_jumplist::Location,
         anchor: workspace_core::editor_jumplist::AnchorId,
-        older: bool, count: usize, owner: u64, capture: u64, event: Option<u64>, instance: Arc<()>,
+        older: bool, count: usize,    instance: Arc<()>,
     ) -> bool {
         self.sync_inactive_jump_tracking();
         let (Some(zoom), Some(panes), Some(registry)) = (
@@ -26363,7 +19739,7 @@ impl WorkspaceView {
         let path = match self.numbered_buffers.resolve(project, location.buffer) {
             Ok(ListedBuffer::File(path)) => path,
             Ok(ListedBuffer::Terminal(target)) => return self.begin_detached_terminal_to_terminal_jump(
-                project, attachment, target, origin, plan, owner, capture, event, instance,
+                project, attachment, target, origin, plan,    instance,
             ),
             _ => {
                 self.model.message = "Destino de terminal ampliada aún no disponible".into();
@@ -26372,7 +19748,7 @@ impl WorkspaceView {
         };
         if plan.target_anchor().is_some() || !registry.knows(&ListedBuffer::File(path.clone()))
         {
-            self.model.message = "Carga del salto ampliado pendiente; entrada conservada".into();
+            self.model.message = "Carga del salto ampliado pendiente".into();
             return false;
         }
         if !self.editors.contains_key(&path) {
@@ -26381,12 +19757,12 @@ impl WorkspaceView {
                 return false;
             }
             return self.begin_detached_terminal_jump_load(
-                project, attachment, path, origin, anchor, plan, owner, capture, event, instance,
+                project, attachment, path, origin, anchor, plan,    instance,
             );
         }
         if registry.is_unloaded(&path) { return false; }
         self.activate_detached_terminal_file_guarded(
-            attachment, path, true, Some((plan, origin)), Some((owner, capture, instance)),
+            attachment, path, true, Some((plan, origin)), Some(instance),
         )
     }
 
@@ -26395,7 +19771,7 @@ impl WorkspaceView {
         &mut self, project: usize, source_attachment: u64, target_attachment: u64,
         origin: workspace_core::editor_jumplist::Location,
         plan: workspace_core::editor_panes::PaneJump,
-        owner: u64, capture: u64, event: Option<u64>, source_instance: Arc<()>,
+           source_instance: Arc<()>,
     ) -> bool {
         let Some(location) = plan.target() else { return false; };
         let Some(anchor) = plan.target_anchor() else {
@@ -26415,84 +19791,51 @@ impl WorkspaceView {
         let Some(pane) = self.editor_panes.as_ref().map(|panes| panes.layout.active().0) else {
             return false;
         };
-        let (window, pane_id) = mark.target_ids();
+
         let payload = PendingTerminalRestore {
             request: TerminalRestoreRequest::DetachedTerminal {
                 source_attachment, source_instance, target_instance,
-                target_window: window.to_owned(), target_pane: pane_id.to_owned(), capture, plan,
+                   plan,
             },
-            origin, project, generation: self.file_generation, input_token: owner,
-            open_input: None, replay_event: event,
+            origin, project, generation: self.file_generation,
+
         };
-        let context = workspace_app::terminal_jump_gate::Context {
+        let context = workspace_app::terminal_jump::Context {
             workspace: project, pane, attachment: target_attachment,
         };
-        if self.terminal_jump_gate.busy() || !self.detached_terminal_jump_current(&payload, context) {
+        if !self.detached_terminal_jump_current(&payload, context) {
             self.model.message = "Cambió la terminal; salto conservado".into();
             return false;
         }
-        let backend_context = workspace_app::terminal_resume::Context {
+        let backend_context = workspace_app::terminal_input::Context {
             project, attachment: target_attachment,
         };
         let backend = match terminal_backend_for(&self.backends, &self.additional_backends, backend_context) {
             Ok(backend) => backend,
             Err(error) => { self.model.message = error; return false; }
         };
-        if self.terminal_jump_gate.try_dispatch(context, payload, |token| {
+        if self.terminal_jump.try_dispatch(context, payload, |token| {
             backend.send(TmuxAction::RestoreCopyMark(token.get(), mark)).map_err(|_| ())
         }).is_err() {
             self.model.message = "No se pudo enviar el salto de terminal".into();
             return false;
         }
-        self.model.message = "Restaurando salto de terminal; entrada retenida".into();
+        self.model.message = "Restaurando salto de terminal".into();
         true
     }
 
     fn detached_terminal_jump_current(
-        &self, pending: &PendingTerminalRestore, context: workspace_app::terminal_jump_gate::Context,
+        &self, pending: &PendingTerminalRestore, context: workspace_app::terminal_jump::Context,
     ) -> bool {
-        #[cfg(feature = "ghostty")]
-        if self.native_selection.is_some() { return false; }
         let TerminalRestoreRequest::DetachedTerminal {
-            source_attachment, source_instance, target_instance, capture, plan, ..
+            source_attachment, source_instance, target_instance, plan, ..
         } = &pending.request else { return false; };
         let project = pending.project;
         let source = ListedBuffer::Terminal(*source_attachment);
         let target = ListedBuffer::Terminal(context.attachment);
-        let backend_context = workspace_app::terminal_resume::Context {
-            project, attachment: context.attachment,
-        };
         self.model.project == project && context.workspace == project
             && self.model.surface == Surface::Normal && self.model.file.is_none()
             && self.file_generation == pending.generation
-            && self.pending_terminal_capture.is_none() && self.pending_terminal_open.is_none()
-            && self.pending_detached_terminal_jump_load.is_none()
-            && self.pending_terminal_jump_load.is_none() && self.pending_jump_load.is_none()
-            && self.pending_open_input.is_none() && self.pending_read_guard.is_none()
-            && self.pending_edit_guard.is_none() && self.pending_backend_resume.is_none()
-            && self.pending_sidebar_open.is_none() && self.pending_sidebar_destination.is_none()
-            && self.pending_sidebar_input_transfer.is_none() && self.pending_empty_sidebar_destination.is_none()
-            && self.pending_measured_splits.is_none() && !self.pending_file_splits.has_active()
-            && self.pending_file_splits.recovery_revision().is_none() && self.pending_copy_close == 0
-            && !self.pending_terminal_rebind.contains_key(&project)
-            && !self.pending_additional_reconnects.contains_key(&(project, context.attachment))
-            && !self.detached_terminal_input.any_busy() && !self.pending_terminal_search.contains(&backend_context)
-            && !self.terminal_resume.active() && self.terminal_resume_zoom_owner.is_none()
-            && self.pending_list_page.is_none() && self.mouse_drag.is_none() && !self.selecting
-            && self.marked.is_empty() && self.model.pending_since.is_none()
-            && self.terminal_command.is_none() && self.terminal_search_prompt.is_none()
-            && self.file_prompt.is_none() && self.remote_prompt.is_none() && !self.media_active()
-            && self.markdown.is_none() && self.preview.is_none() && self.pending_saves.is_empty()
-            && !self.editors.values().any(|editor| editor.saving) && self.formatting.is_empty()
-            && self.pending_guarded_quit.is_none() && self.delete_after_save.is_none() && !self.quit_after_save
-            && self.pending_terminal_key.as_ref().is_some_and(|input| {
-                input.source.token == pending.input_token && input.capture_wait == Some(*capture)
-                    && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                    && input.gate.in_flight_id() == pending.replay_event
-                    && !input.replaying && !input.scheduled && !input.mixed_context
-                    && self.terminal_key_source_current(&input.source)
-                    && input.destination.as_ref().is_some_and(|dest| self.terminal_key_destination_current(dest))
-            })
             && self.windows.get(self.active).is_some_and(|window| {
                 window.project == project && window.attachment == *source_attachment
                     && Arc::ptr_eq(source_instance, &window.terminal.instance_identity())
@@ -26501,7 +19844,6 @@ impl WorkspaceView {
                 window.project == project && window.attachment == context.attachment
                     && Arc::ptr_eq(target_instance, &window.terminal.instance_identity())
             })
-            && terminal_backend_for(&self.backends, &self.additional_backends, backend_context).is_ok()
             && self.editor_panes.as_ref().zip(self.editor_zoom.as_ref()).is_some_and(|(panes, zoom)| {
                 panes.layout.active().0 == context.pane && zoom.is_detached()
                     && zoom.content() == &PaneContent::Terminal(*source_attachment)
@@ -26517,44 +19859,31 @@ impl WorkspaceView {
 
     fn detached_terminal_jump_restored(
         &mut self, project: usize, token: std::num::NonZeroU64,
-        context: workspace_app::terminal_jump_gate::Context,
+        context: workspace_app::terminal_jump::Context,
         result: workspace_app::tmux::RestoreCopyMark,
     ) {
-        use workspace_app::terminal_jump_gate::Completion;
-        let current = self.terminal_jump_gate.pending_payload().is_some_and(|pending| {
+        use workspace_app::terminal_jump::Completion;
+        let current = self.terminal_jump.pending_payload().is_some_and(|pending| {
             self.detached_terminal_jump_current(pending, context)
         });
-        let Some(completion) = self.terminal_jump_gate.finish(token, context, result, current) else { return; };
+        let Some(completion) = self.terminal_jump.finish(token, context, result, current) else { return; };
         let (pending, success, message) = match completion {
             Completion::Ready(pending) => (pending, true, "Salto de terminal restaurado"),
             Completion::Rejected(pending) => (pending, false, "Salto cancelado: la terminal cambió"),
             Completion::StaleAfterMove(pending) => (pending, false, "La terminal se movió; cambió el foco"),
             Completion::Uncertain(pending) => (pending, false, "El salto pudo mover la terminal; revisá su posición"),
         };
-        let PendingTerminalRestore { request, origin, input_token, replay_event, .. } = pending;
+        let PendingTerminalRestore { request, origin, .. } = pending;
         let TerminalRestoreRequest::DetachedTerminal {
-            source_attachment, source_instance, target_instance, target_window, target_pane, capture, plan,
+            source_attachment, source_instance, target_instance, plan,
         } = request else { return; };
         let applied = success && self.activate_detached_terminal_jump(
             project, source_attachment, context.attachment, source_instance, target_instance.clone(), plan, origin,
         );
-        let next_source = applied.then(|| self.terminal_key_source(input_token)).flatten().filter(|source| {
-            source.context.project == project && source.context.attachment == context.attachment
-                && Arc::ptr_eq(&source.instance, &target_instance)
-                && source.window == target_window && source.pane == target_pane
-        });
-        let ready = if let Some(source) = next_source {
-            if let Some(input) = self.pending_terminal_key.as_mut().filter(|input| input.source.token == input_token) {
-                input.source = source;
-                true
-            } else { false }
-        } else { false };
-        let released = self.finish_terminal_navigation_capture(capture, input_token, replay_event, applied && ready);
-        self.model.message = if applied && (!ready || !released) {
-            "Terminal cambiada; entrada conservada para revisar su destino".into()
-        } else if success && !applied {
-            "La terminal se movió; no se pudo confirmar el cambio de panel".into()
+        self.model.message = if success && !applied {
+            "La terminal se movio; no se pudo confirmar el cambio de panel".into()
         } else { message.into() };
+
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -26604,21 +19933,12 @@ impl WorkspaceView {
         origin: workspace_core::editor_jumplist::Location,
         anchor: workspace_core::editor_jumplist::AnchorId,
         plan: workspace_core::editor_panes::PaneJump,
-        owner: u64, capture: u64, event: Option<u64>, instance: Arc<()>,
+           instance: Arc<()>,
     ) -> bool {
         if self.pending_detached_terminal_jump_load.is_some() || self.editors.len() >= 128
             || self.validation && (!path.starts_with(self.state_dir.join("demo"))
                 || path.components().any(|part| matches!(part, std::path::Component::ParentDir)))
-            || !self.pending_terminal_key.as_ref().is_some_and(|input| {
-                input.source.token == owner && input.capture_wait == Some(capture)
-                    && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                    && self.terminal_key_source_current(&input.source)
-                    && input.destination.as_ref().is_some_and(|target| self.terminal_key_destination_current(target))
-            })
-        {
-            self.model.message = "No se pudo iniciar el salto; entrada conservada".into();
-            return false;
-        }
+        { self.model.message = "No se pudo iniciar el salto".into(); return false; }
         let Some(mark) = self.terminal_jump_marks.get(anchor, project, origin).cloned() else { return false; };
         let Some(session) = self.windows.get(self.active).filter(|window| {
             window.project == project && window.attachment == attachment
@@ -26631,7 +19951,7 @@ impl WorkspaceView {
         let tx = self.disk_tx.clone();
         self.pending_detached_terminal_jump_load = Some(PendingDetachedTerminalJumpLoad {
             generation, project, attachment, path: path.clone(), origin, anchor, plan,
-            owner, capture, event, instance, started: std::time::Instant::now(), timed_out: false, invalid: false,
+               instance,   invalid: false,
         });
         let validation_root = self.validation.then(|| self.state_dir.join("demo"));
         std::thread::spawn(move || {
@@ -26648,7 +19968,7 @@ impl WorkspaceView {
             let result = session.while_target_stable(read);
             let _ = tx.send(DiskResult::DetachedTerminalJumpFile(generation, project, path, result));
         });
-        self.model.message = "Cargando salto de terminal; entrada retenida".into();
+        self.model.message = "Cargando salto de terminal".into();
         true
     }
 
@@ -26660,16 +19980,16 @@ impl WorkspaceView {
         }) else { return; };
         let target = ListedBuffer::File(path.clone());
         let number = load.plan.target().map(|location| location.buffer);
-        let current = !load.timed_out && !load.invalid && self.file_generation == generation && self.model.project == project
-            && self.pending_terminal_key.as_ref().is_some_and(|input| {
-                input.source.token == load.owner && input.capture_wait == Some(load.capture)
-                    && input.gate.state() == workspace_app::terminal_key_gate::State::Replaying
-                    && self.terminal_key_source_current(&input.source)
-                    && input.destination.as_ref().is_some_and(|target| self.terminal_key_destination_current(target))
-            })
+        let current = !load.invalid
+            && self.file_generation == generation && self.model.project == project
+            && self.model.surface == Surface::Normal && self.model.file.is_none()
             && self.windows.get(self.active).is_some_and(|window| {
                 window.project == project && window.attachment == load.attachment
                     && Arc::ptr_eq(&load.instance, &window.terminal.instance_identity())
+            })
+            && self.editor_panes.as_ref().zip(self.editor_zoom.as_ref()).is_some_and(|(panes, zoom)| {
+                zoom.is_detached() && zoom.content() == &PaneContent::Terminal(load.attachment)
+                    && zoom.owns_terminal(project, panes, &load.instance)
             })
             && self.terminal_jump_marks.get(load.anchor, project, load.origin).is_some()
             && self.listed_buffers.get(&project).is_some_and(|registry| registry.knows(&target) && registry.is_unloaded(&path))
@@ -26678,8 +19998,8 @@ impl WorkspaceView {
             && !self.editors.contains_key(&path) && self.editors.len() < 128
             && !self.pending_new_files.contains(&path);
         if !current || result.is_err() {
-            self.finish_terminal_navigation_capture(load.capture, load.owner, load.event, false);
-            self.model.message = "No se pudo completar el salto; entrada conservada".into();
+
+            self.model.message = "No se pudo completar el salto".into();
             return;
         }
         let text = result.expect("error checked");
@@ -26690,8 +20010,8 @@ impl WorkspaceView {
         editor = editor.with_clipboard();
         let number = number.expect("current checked");
         if !self.live_jump_tracking.resume(number, &mut editor) {
-            self.finish_terminal_navigation_capture(load.capture, load.owner, load.event, false);
-            self.model.message = "No se pudo restaurar el historial; entrada conservada".into();
+
+            self.model.message = "No se pudo restaurar el historial".into();
             return;
         }
         let registry = self.listed_buffers.get(&project).cloned().expect("current checked");
@@ -26700,7 +20020,7 @@ impl WorkspaceView {
         self.listed_buffers.get_mut(&project).expect("current checked").mark_loaded(&path);
         let applied = self.activate_detached_terminal_file_guarded(
             load.attachment, path.clone(), true, Some((load.plan, load.origin)),
-            Some((load.owner, load.capture, load.instance)),
+            Some(load.instance),
         );
         if !applied {
             let mut layouts: Vec<&mut workspace_core::editor_panes::Layout> = Vec::new();
@@ -26716,7 +20036,7 @@ impl WorkspaceView {
             for registry in self.listed_buffers.values_mut() { registry.mark_loaded(&path); }
             if missing && !unnamed { self.pending_new_files.insert(path); }
         }
-        self.finish_terminal_navigation_capture(load.capture, load.owner, load.event, applied);
+
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -26848,18 +20168,17 @@ impl WorkspaceView {
         if (self.validation && !path.starts_with(self.state_dir.join("demo")))
             || self.editors.len() >= 128
             || self.editors.contains_key(&path)
-            || self.pending_open_input.is_some()
             || self.pending_terminal_jump_load.is_some()
             || self.jump_load_in_flight.is_some()
         {
             self.model.message = "No se pudo preparar la lectura del salto".into();
             return;
         }
-        if !self.begin_open_input(generation, &path) {
+        if !self.prepare_terminal_file_read(generation, &path) {
             self.model.message = "No se pudo conservar la entrada durante el salto".into();
             return;
         }
-        if let Some(input) = &mut self.pending_open_input {
+        if let Some(input) = &mut self.pending_file_read {
             input.terminal_jump = true;
         }
         let unnamed = self.model.unnamed.contains(&path);
@@ -26930,14 +20249,13 @@ impl WorkspaceView {
             && self.file_generation == generation
             && self.model.surface == Surface::Normal
             && self.model.file.is_none()
-            && !self.terminal_resume.active()
             && self.windows.get(self.active).is_some_and(|window| {
                 window.project == project && window.attachment == pending.attachment
             })
-            && self.pending_open_input.as_ref().is_some_and(|input| {
+            && self.pending_file_read.as_ref().is_some_and(|input| {
                 input.context.generation == generation
                     && input.context.path == path
-                    && self.open_input_context_current(input, false)
+                    && self.file_read_context_current(input, false)
             });
         let number = self
             .numbered_buffers
@@ -26968,14 +20286,14 @@ impl WorkspaceView {
                 .as_ref()
                 .is_ok_and(|number| self.live_jump_tracking.is_suspended(*number))
         {
-            self.finish_open_input_read(generation, &path, false);
+            self.finish_file_read(generation, &path, false);
             self.model.message = "Salto cancelado: cambió el panel o el historial".into();
             return;
         }
         let text = match result {
             Ok(text) => text,
             Err(error) => {
-                self.finish_open_input_read(generation, &path, false);
+                self.finish_file_read(generation, &path, false);
                 self.model.message = format!("No se pudo cargar el salto: {error}");
                 return;
             }
@@ -26989,7 +20307,7 @@ impl WorkspaceView {
         editor = editor.with_clipboard();
         let number = number.expect("preflight verified number");
         if !self.live_jump_tracking.resume(number, &mut editor) {
-            self.finish_open_input_read(generation, &path, false);
+            self.finish_file_read(generation, &path, false);
             self.model.message = "No se pudo restaurar el buffer del salto".into();
             return;
         }
@@ -27027,10 +20345,10 @@ impl WorkspaceView {
             if missing && !unnamed {
                 self.pending_new_files.insert(path.clone());
             }
-            if let Some(input) = &mut self.pending_open_input {
+            if let Some(input) = &mut self.pending_file_read {
                 input.terminal_jump = false;
             }
-            self.finish_open_input_read(generation, &path, true);
+            self.finish_file_read(generation, &path, true);
             return;
         }
         // Never remove an editor if a partially applied pane still refers to it.
@@ -27065,14 +20383,13 @@ impl WorkspaceView {
                 .suspend(number, self.editors.get_mut(&path), &mut layouts);
             self.editors.remove(&path);
         }
-        self.finish_open_input_read(generation, &path, false);
-        self.model.message = "No se pudo completar el salto; entrada conservada".into();
+        self.finish_file_read(generation, &path, false);
+        self.model.message = "No se pudo completar el salto".into();
     }
 
     fn start_terminal_capture(&mut self, kind: TerminalCaptureKind) -> Result<(), String> {
         if self.model.surface != Surface::Normal
             || self.model.file.is_some()
-            || self.terminal_resume.active()
         {
             return Err("La terminal no está en modo normal".into());
         }
@@ -27090,9 +20407,7 @@ impl WorkspaceView {
         {
             self.pending_terminal_capture = None;
         }
-        if self.pending_terminal_capture.is_some() || self.terminal_jump_gate.busy() {
-            return Err("Hay una captura o salto de terminal pendiente".into());
-        }
+        self.pending_terminal_capture = None;
         let attachment = self
             .windows
             .get(self.active)
@@ -27144,14 +20459,11 @@ impl WorkspaceView {
             valid: true,
             kind,
             deferred_jump: None,
-            deferred_open: None,
-            deferred_terminal: None,
-            navigate_input: None,
-            navigate_event: None,
+
             detached_origin,
             started: std::time::Instant::now(),
         });
-        let context = workspace_app::terminal_resume::Context {
+        let context = workspace_app::terminal_input::Context {
             project,
             attachment,
         };
@@ -27166,9 +20478,7 @@ impl WorkspaceView {
 
     fn new_file(&mut self) {
         if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached()) {
-            if self.new_detached_file().is_none() {
-                self.retain_replayed_jump();
-            }
+            let _ = self.new_detached_file();
             return;
         }
         if self.editors.len() >= 128 {
@@ -27227,16 +20537,11 @@ impl WorkspaceView {
                 PaneContent::Agents(id) => Some(ListedBuffer::Agents(*id)),
             });
         let Some(source) = source else {
-            self.retain_replayed_jump();
+
             self.model.message = "Zoom o archivo de origen no disponible".into();
             return None;
         };
-        let replay = self.detached_open_jump_replay().is_some();
-        if self.pending_open_input.as_ref().is_some_and(|input| input.replaying) && !replay {
-            self.retain_replayed_jump();
-            self.model.message = "Cambió la entrada; buffer conservado".into();
-            return None;
-        }
+
         let path = workspace_app::unnamed::id(&self.model.projects[project].path);
         let buffer = ListedBuffer::File(path.clone());
         if self.editors.contains_key(&path)
@@ -27256,7 +20561,7 @@ impl WorkspaceView {
             ) {
                 return Some(path);
             }
-            self.retain_replayed_jump();
+
             return None;
         }
         let Some(original_registry) = self.listed_buffers.get(&project).cloned() else {
@@ -27280,19 +20585,17 @@ impl WorkspaceView {
         self.model.unnamed.insert(path.clone());
         self.numbered_buffers = next_numbers;
         self.listed_buffers.insert(project, next_registry);
-        let switched = if replay {
-            self.replay_detached_loaded_file(source, buffer, false, None)
-        } else {
+        let switched = {
             self.activate_detached_loaded_file(source, buffer, false, None)
         };
         if !switched {
-            // A switch may have committed before queue retargeting failed.
+            // A switch may have committed before identity retargeting failed.
             // Preserve that live buffer and the uncertain input for review.
             if self.editor_zoom.as_ref().is_some_and(|zoom| {
                 zoom.content() == &PaneContent::File(path.clone())
             }) {
-                self.retain_replayed_jump();
-                self.model.message = "Buffer abierto; entrada conservada para revisar".into();
+
+                self.model.message = "Buffer abierto; no se pudo completar su posicionamiento".into();
                 return None;
             }
             self.listed_buffers.insert(project, original_registry);
@@ -27300,7 +20603,7 @@ impl WorkspaceView {
             self.model.unnamed.remove(&path);
             self.buffer_workspaces.remove(&path);
             self.editors.remove(&path);
-            self.retain_replayed_jump();
+
             return None;
         }
         self.preview = None;
@@ -27486,11 +20789,9 @@ impl WorkspaceView {
                 let close: Vec<_> = panes.layout.order().into_iter()
                     .filter(|pane| *pane != active && panes.path(*pane) == Some(&path)).collect();
                 if !close.is_empty() {
-                    if self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
-                        || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
+                    if self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
                         || self.pending_detached_terminal_jump_load.is_some() || self.pending_measured_splits.is_some()
-                        || self.pending_file_splits.has_active() || self.pending_file_splits.recovery_revision().is_some()
-                        || self.pending_copy_close > 0 || self.terminal_resume.active()
+                        || self.pending_copy_close > 0
                     {
                         self.model.message = "Hay una operación pendiente; paneles conservados".into(); return;
                     }
@@ -27753,13 +21054,11 @@ impl WorkspaceView {
         });
         let editor = self.editors.get(&path);
         let unloaded = self.listed_buffers.get(&project).is_some_and(|registry| registry.is_unloaded(&path));
-        if saved_visible || editor.is_none() && !unloaded
-            || self.pending_open_input.is_some() || self.pending_detached_open.is_some()
-            || self.pending_detached_close_load.is_some() || self.pending_terminal_key.is_some()
+        if saved_visible || editor.is_none() && !unloaded || self.pending_detached_open.is_some()
+            || self.pending_detached_close_load.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some() || self.pending_read_guard.is_some()
             || self.pending_edit_guard.is_some() || self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active() || self.pending_file_splits.recovery_revision().is_some()
             || self.formatting.contains(&path) || self.pending_saves.contains_key(&path)
             || editor.is_some_and(|editor| editor.saving || editor.composing() || editor.replaying())
             || self.trash_busy.as_ref().is_some_and(|root| path.starts_with(root))
@@ -27788,7 +21087,7 @@ impl WorkspaceView {
                 || !self.zoom_return_pane_ready(panes, anchor)
                 || self.workspace_panes.contains_key(&project)
                 || self.pending_copy_close > 0 || self.pending_sidebar_open.is_some()
-                || self.pending_sidebar_destination.is_some() || self.pending_sidebar_input_transfer.is_some()
+                || self.pending_sidebar_destination.is_some() || self.pending_sidebar_file_target.is_some()
                 || self.pending_empty_sidebar_destination.is_some() || self.pending_terminal_capture.is_some()
                 || self.pending_terminal_open.is_some()
             {
@@ -27886,7 +21185,7 @@ impl WorkspaceView {
             });
         if only_listed && no_other_view && self.model.unnamed.contains(&path)
             && !editor.dirty() && editor.contents().is_empty()
-            && self.pending_open_input.is_none() && self.pending_terminal_key.is_none()
+            && self.pending_file_read.is_none()
             && self.pending_jump_load.is_none() && self.pending_terminal_jump_load.is_none()
         {
             self.model.message.clear(); return;
@@ -27957,7 +21256,7 @@ impl WorkspaceView {
                 && self.editors.contains_key(path)
                 && self.buffer_workspaces.get(path).is_some_and(|owners| owners.contains(&project)),
             ListedBuffer::Terminal(id) => {
-                let context = workspace_app::terminal_resume::Context { project, attachment: *id };
+                let context = workspace_app::terminal_input::Context { project, attachment: *id };
                 self.windows.iter().any(|window| window.project == project
                     && window.attachment == *id && !window.snapshot.exited)
                     && !self.pending_additional_reconnects.contains_key(&(project, *id))
@@ -27983,7 +21282,7 @@ impl WorkspaceView {
                 "Esperá a que termine la reconexión antes de cerrar el buffer".into();
             return;
         }
-        let context = workspace_app::terminal_resume::Context {
+        let context = workspace_app::terminal_input::Context {
             project,
             attachment,
         };
@@ -27995,20 +21294,13 @@ impl WorkspaceView {
             .additional_backends
             .contains_key(&(project, attachment));
         let target = ListedBuffer::Terminal(attachment);
-        if workspace_app::terminal_resume::terminal_delete_busy(
-            &self.terminal_resume,
-            &self.detached_terminal_input,
-            project,
-            self.pending_terminal_search
+        if self.pending_terminal_search
                 .iter()
-                .any(|context| context.project == project),
-            self.pending_terminal_rebind.contains_key(&project),
-            self.pending_terminal_open
+                .any(|context| context.project == project) || self.pending_terminal_rebind.contains_key(&project) || self.pending_terminal_open
                 .as_ref()
-                .is_some_and(|guard| guard.project == project),
-        ) {
+                .is_some_and(|guard| guard.project == project) {
             self.model.message =
-                "Terminal ocupada; esperá a que termine la entrada o apertura".into();
+                "Hay una operación de terminal pendiente; cierre cancelado".into();
             return;
         }
         let Some(index) = self
@@ -28234,20 +21526,17 @@ impl WorkspaceView {
     /// Switch a detached terminal view without writing to either PTY.
     fn activate_detached_terminal_replacement(&mut self, source: u64, target: u64) -> bool {
         let project = self.model.project;
-        let target_context = workspace_app::terminal_resume::Context { project, attachment: target };
+        let target_context = workspace_app::terminal_input::Context { project, attachment: target };
         if source == target || self.model.surface != Surface::Normal || self.model.file.is_some()
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some() || self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active() || self.pending_file_splits.recovery_revision().is_some()
             || self.pending_copy_close > 0 || self.pending_terminal_capture.is_some() || self.pending_terminal_open.is_some()
             || self.pending_read_guard.is_some() || self.pending_edit_guard.is_some()
             || self.pending_sidebar_open.is_some() || self.pending_sidebar_destination.is_some()
-            || self.pending_sidebar_input_transfer.is_some() || self.pending_empty_sidebar_destination.is_some()
-            || self.pending_terminal_rebind.contains_key(&project) || self.pending_backend_resume.is_some()
-            || self.pending_list_page.is_some() || self.terminal_resume.active()
-            || self.terminal_resume_zoom_owner.is_some() || self.detached_terminal_input.any_busy()
-            || self.terminal_jump_gate.busy() || self.pending_terminal_search.contains(&target_context)
+            || self.pending_sidebar_file_target.is_some() || self.pending_empty_sidebar_destination.is_some()
+            || self.pending_terminal_rebind.contains_key(&project)
+            || self.pending_list_page.is_some()
+            || self.pending_terminal_search.contains(&target_context)
             || self.pending_additional_reconnects.contains_key(&(project, target))
             || self.mouse_drag.is_some() || self.selecting || !self.marked.is_empty()
             || self.model.pending_since.is_some() || self.terminal_command.is_some()
@@ -28316,7 +21605,7 @@ impl WorkspaceView {
                 return;
             };
         let target = ListedBuffer::Terminal(attachment);
-        let context = workspace_app::terminal_resume::Context { project, attachment };
+        let context = workspace_app::terminal_input::Context { project, attachment };
         let mut numbers = self.numbered_buffers.clone();
         if terminal_backend_for(&self.backends, &self.additional_backends, context).is_err()
             || self.pending_detached_terminal_jump_load.is_some()
@@ -28330,12 +21619,7 @@ impl WorkspaceView {
             || self.next_attachment.checked_add(1)
                 .is_none_or(|id| self.windows.iter().any(|terminal| terminal.attachment == id))
             || !numbers.wipe_owned(project, &target)
-            || workspace_app::terminal_resume::terminal_delete_busy(
-                &self.terminal_resume, &self.detached_terminal_input, project,
-                self.pending_terminal_search.iter().any(|source| source.project == project),
-                self.pending_terminal_rebind.contains_key(&project),
-                self.pending_terminal_open.as_ref().is_some_and(|guard| guard.project == project),
-            )
+            || (self.pending_terminal_search.iter().any(|source| source.project == project) || self.pending_terminal_rebind.contains_key(&project) || self.pending_terminal_open.as_ref().is_some_and(|guard| guard.project == project))
         {
             self.model.message = "Terminal ocupada o compartida; sesión conservada".into();
             return;
@@ -28550,13 +21834,7 @@ impl WorkspaceView {
         if self.delete_prompt_open || self.delete_after_save.is_some() {
             return;
         }
-        if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached())
-            && (self.pending_open_input.is_some() || self.pending_terminal_key.is_some())
-        {
-            self.retain_replayed_jump();
-            self.model.message = "Entrada pendiente; buffer conservado".into();
-            return;
-        }
+
         if self.editor_zoom.as_ref().is_some_and(|zoom| zoom.is_detached())
             && self.model.surface == Surface::Normal
         {
@@ -28952,7 +22230,7 @@ impl WorkspaceView {
             && !self.editors.contains_key(&pending.target) && self.editors.len() < 128
             && self.model.unnamed.contains(&pending.target) == pending.unnamed
             && !self.pending_new_files.contains(&pending.target)
-            && self.pending_open_input.is_none() && self.pending_detached_open.is_none()
+            && self.pending_file_read.is_none() && self.pending_detached_open.is_none()
             && self.pending_jump_load.is_none() && self.pending_terminal_jump_load.is_none()
             && self.pending_detached_terminal_jump_load.is_none();
         if !current {
@@ -29014,17 +22292,15 @@ impl WorkspaceView {
         if !valid || self.model.surface != Surface::File || !discard && editor.dirty()
             || editor.saving || editor.composing() || editor.replaying()
             || self.formatting.contains(&old) || self.pending_saves.contains_key(&old)
-            || self.pending_open_input.is_some() || self.pending_terminal_key.is_some()
             || self.pending_jump_load.is_some() || self.pending_terminal_jump_load.is_some()
             || self.pending_detached_terminal_jump_load.is_some() || self.pending_measured_splits.is_some()
-            || self.pending_file_splits.has_active() || self.pending_file_splits.recovery_revision().is_some()
             || self.pending_copy_close > 0 || self.pending_guarded_quit.is_some()
             || self.delete_after_save.is_some() || self.quit_after_save
             || self.trash_busy.as_ref().is_some_and(|root| old.starts_with(root))
             || self.transfer_busy.iter().any(|root| old.starts_with(root))
             || self.workspace_panes.contains_key(&project)
         {
-            self.retain_replayed_jump();
+
             self.model.message = "No se pudo cerrar el buffer ampliado; contenido conservado".into();
             return;
         }
@@ -29063,7 +22339,7 @@ impl WorkspaceView {
                         PaneContent::File(path)
                     }
                     Some(ListedBuffer::Terminal(id)) => {
-                        let context = workspace_app::terminal_resume::Context { project: owner, attachment: id };
+                        let context = workspace_app::terminal_input::Context { project: owner, attachment: id };
                         if !self.windows.iter().any(|window| window.project == owner && window.attachment == id)
                             || self.pending_additional_reconnects.contains_key(&(owner, id))
                             || terminal_backend_for(&self.backends, &self.additional_backends, context).is_err()
@@ -29166,7 +22442,7 @@ impl WorkspaceView {
             None => self.new_detached_file().is_some(),
         };
         if !switched {
-            self.retain_replayed_jump();
+
             self.model.message = "No hay reemplazo verificado; buffer conservado".into();
             return;
         }
@@ -30595,19 +23871,7 @@ impl WorkspaceView {
     /// Clears the mirrored marked text when the input method ends a
     /// composition through a path that otherwise returns early. Replays keep
     /// their own marked state, as in the normal unmark/commit paths.
-    fn clear_marked_after_ime_end(&mut self) {
-        let replaying = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| pending.replaying)
-            || self
-                .pending_terminal_key
-                .as_ref()
-                .is_some_and(|pending| pending.replaying);
-        if !replaying {
-            self.marked.clear();
-        }
-    }
+    fn clear_marked_after_ime_end(&mut self) { self.marked.clear(); }
     fn current_pr_video(&mut self) {
         if self.validation {
             self.request_pr_video("https://github.com/terminal-workspace/synthetic/pull/1");
@@ -31421,8 +24685,7 @@ impl WorkspaceView {
             "buffers": buffers,
             "pinned": pinned,
             "pending_input": {
-                "open_input": self.pending_open_input.is_some(),
-                "terminal_key": self.pending_terminal_key.is_some(),
+                "file_read": self.pending_file_read.is_some(),
             },
             "keys": {
                 "keydowns": self.validation_keydowns,
@@ -31445,38 +24708,17 @@ impl WorkspaceView {
     }
     /// Paste immediately using the terminal's bracketed-paste mode.
     fn paste_into_terminal(&mut self, text: String) {
-        if self.terminal_resume.active() {
-            let Some(context) = self.terminal_input_context()
-                .filter(|context| self.terminal_resume_zoom_current(*context))
-            else {
-                self.retain_rejected_terminal_input(text.into_bytes(), "Cambió la terminal de pegado");
-                return;
-            };
-            if self.model.pending_since.is_some()
-                && let Effect::Pty(mut prefix) = self.model.expire_prefix()
-                && let Err(error) = self.submit_terminal_resume_input(context, &prefix, false)
-            {
-                prefix.extend_from_slice(text.as_bytes());
-                self.retain_rejected_terminal_input(prefix, &error);
-                return;
-            }
-            let result = self.submit_terminal_resume_input(context, text.as_bytes(), true);
-            match result {
-                Ok(true) => return,
-                Ok(false) => {}
-                Err(error) => {
-                    self.retain_rejected_terminal_input(text.into_bytes(), &error);
-                    return;
-                }
-            }
-        }
-        let bracket = self
-            .windows
-            .get(self.active)
-            .is_some_and(|t| t.snapshot.bracketed_paste);
-        match terminal_paste_bytes(&text, bracket) {
-            Ok(bytes) => self.effect(Effect::Pty(bytes)),
-            Err(error) => self.model.message = error,
+        if let Some(route) = self.terminal_input_route
+            && self.terminal_input_context() != Some(route.context)
+        { self.terminal_input_route = None; }
+        if self.terminal_input_route.is_none() { self.begin_terminal_input(); }
+        let Some(context) = self.terminal_input_context() else { return; };
+        if self.model.pending_since.is_some()
+            && let Effect::Pty(prefix) = self.model.expire_prefix()
+            && let Err(error) = self.send_terminal_input(context, &prefix, false)
+        { self.model.message = error; }
+        if let Err(error) = self.send_terminal_input(context, text.as_bytes(), true) {
+            self.model.message = format!("Pegado no enviado: {error}");
         }
     }
     fn request_terminal_paste(&mut self, cx: &App) {
@@ -31484,7 +24726,7 @@ impl WorkspaceView {
             self.model.message = "Destino de pegado no disponible".into();
             return;
         };
-        let target = self.terminal_key_destination().and_then(|destination| destination.tmux_target);
+        let target = self.focused_input_target().and_then(|destination| destination.tmux_target);
         let copy = self.pending_tmux_copy.iter()
             .filter(|(token, copy)| **token > self.last_delivered_terminal_copy
                 && copy.context == context
@@ -31505,25 +24747,21 @@ impl WorkspaceView {
             if let Some(text) = self.paste_text(cx) { self.paste_into_terminal(text); }
             return;
         }
-        if !self.terminal_resume.active() { self.begin_terminal_resume(); }
-        if self.pending_backend_resume.is_some() {
-            self.model.message = "Pegado no enviado: la terminal aún no está verificada".into();
-            return;
-        }
-        let Some((resume, bytes, ranges)) = self.terminal_resume.waiting_input(context) else {
-            self.model.message = "Pegado no enviado: revisá la entrada pendiente".into();
-            return;
+        if self.terminal_input_route.is_none_or(|route| route.context != context) { self.begin_terminal_input(); }
+        let Some(route) = self.terminal_input_route.filter(|route| route.context == context) else {
+            self.model.message = "Pegado no enviado: terminal no disponible".into(); return;
         };
+        let resume = route.token;
         // A held router prefix belongs before this paste on the same backend.
         if self.model.pending_since.is_some()
             && let Effect::Pty(prefix) = self.model.expire_prefix()
-            && let Err(error) = self.submit_terminal_resume_input(context, &prefix, false)
+            && let Err(error) = self.send_terminal_input(context, &prefix, false)
         {
-            self.retain_rejected_terminal_input(prefix, &error);
+            self.model.message = format!("Evento no enviado: {}", &error);
             return;
         }
         let action = if let Some(copy) = copy {
-            TmuxAction::ResumeCopied(resume, copy, self.paste_text(cx), bytes, ranges)
+            TmuxAction::ResumeCopied(resume, copy, self.paste_text(cx))
         } else {
             #[cfg(feature = "ghostty")]
             {
@@ -31544,10 +24782,7 @@ impl WorkspaceView {
         match terminal_backend_for(&self.backends, &self.additional_backends, context)
             .and_then(|backend| backend.send(action))
         {
-            Ok(()) => {
-                let marked = self.terminal_resume.mark_ordered_paste(context, resume);
-                debug_assert!(marked);
-            }
+            Ok(()) => {},
             Err(error) => self.model.message = format!("Pegado no enviado: {error}"),
         }
     }
@@ -31568,10 +24803,8 @@ impl WorkspaceView {
         } else {
             cx.read_from_clipboard().and_then(|item| item.text())?
         };
-        let terminal_transition = self.model.surface == Surface::Normal
-            && self.pending_terminal_key.as_ref().and_then(|pending| pending.destination.as_ref())
-                .is_some_and(|destination| matches!(&destination.content, PaneContent::Terminal(_)));
-        if self.model.surface != Surface::Terminal && !terminal_transition && text.len() > 2 * 1024 * 1024 {
+
+        if self.model.surface != Surface::Terminal && text.len() > 2 * 1024 * 1024 {
             self.model.message = "Clipboard fuera de límites (2 MiB); no se pegó nada".into();
             return None;
         }
@@ -31753,65 +24986,18 @@ impl WorkspaceView {
             cx.notify();
             return;
         }
-        self.retain_measured_splits();
+        self.cancel_measured_splits();
         for pending in self.pending_additional_terminals.values_mut() {
             pending.show_when_ready = false;
         }
-        if self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|pending| !pending.replaying)
-            && !matches!(&action, Ui::ReviewTerminalKey | Ui::ReviewPendingSplits)
-        {
-            self.model.message = "Navegación pendiente; esperá o revisá la entrada".into();
-            cx.notify();
-            return;
-        }
-        let allow_recovery_navigation = self.pending_open_input.as_ref().is_some_and(|pending| {
-            matches!(&action, Ui::ReviewOpenInput | Ui::ReviewPendingSplits)
-                || (pending.queue.state() == workspace_app::open_input::State::Recover
-                    && matches!(
-                        &action,
-                        Ui::Focus(_) | Ui::SelectProject(_) | Ui::RetryOpenInput
-                    ))
-        });
-        if !allow_recovery_navigation
-            && self
-                .pending_open_input
-                .as_ref()
-                .is_some_and(|pending| !pending.replaying)
-        {
-            let empty = self
-                .pending_open_input
-                .as_ref()
-                .is_some_and(|pending| pending.queue.is_empty() && pending.overflow.is_empty()
-                    && pending.post_split_line.is_none());
-            if empty {
-                self.cancel_empty_open_input();
-            } else {
-                self.model.message =
-                    "Entrada conservada; esperá la apertura o usá Reintentar".into();
-                cx.notify();
-                return;
-            }
-        }
+
         self.finish_pending_new_file_before_input();
         self.cancel_jump_load();
-        if self.terminal_resume.recovery_blocked() {
-            self.model.message = "Entrada conservada; Cmd+Q permite revisarla".into();
-            cx.notify();
-            return;
-        }
+
         if matches!(&action, Ui::SelectProject(index) if *index == self.model.project) {
             return;
         }
-        if self.terminal_resume.active()
-            && !matches!(&action, Ui::ReconnectTerminal | Ui::Tmux(..))
-            && !self.detach_terminal_input_on_pane_focus()
-        {
-            cx.notify();
-            return;
-        }
+
         // Selecting a control hands Escape to the newly opened picker/dialog.
         if !matches!(&action, Ui::Tools) {
             self.tools = false;
@@ -31826,12 +25012,9 @@ impl WorkspaceView {
                 )
             {
                 // Enqueue the original pane's input before changing focus.
-                if !self.detach_terminal_input_on_pane_focus() {
-                    cx.notify();
-                    return;
-                }
+                { self.flush_terminal_prefix(); }
             } else {
-                self.cancel_terminal_resume();
+                self.cancel_terminal_input();
             }
         }
         if let Some(editor) = self.current_editor_mut() {
@@ -31916,14 +25099,7 @@ impl WorkspaceView {
             Ui::OpenFile(path) => self.effect(Effect::File(path)),
             Ui::OpenTerminalBuffer(id) => self.show_terminal_buffer(id, false),
             Ui::ReconnectTerminal => self.reconnect_terminal(),
-            Ui::RetryOpenInput => self.retry_open_input(),
-            Ui::ReviewOpenInput => {
-                let _ = self.can_quit(window, cx);
-            }
-            Ui::ReviewTerminalKey => {
-                let _ = self.can_quit(window, cx);
-            }
-            Ui::ReviewPendingSplits => self.review_pending_splits(window, cx),
+
             Ui::SelectProject(index) if index != self.model.project => {
                 self.note_workspace_chosen(index);
                 self.effect(Effect::Project(index));
@@ -32078,19 +25254,8 @@ impl WorkspaceView {
         cx.notify();
     }
     fn on_key(&mut self, event: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
-        if self.pending_terminal_termination.is_some()
-            && !(event.keystroke.modifiers.platform && event.keystroke.key == "q")
-        {
-            self.model.message = "Cierre en curso · tecla no enviada; esperá el resultado".into();
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
-        self.release_idle_terminal_key();
-        if self.pending_open_input.is_none() {
-            self.pending_direction_replay = None;
-        }
+        self.note_activity();
+
         if self.validation {
             self.validation_keydowns = self.validation_keydowns.saturating_add(1);
             if event.is_held {
@@ -32142,10 +25307,9 @@ impl WorkspaceView {
         }
         if self.pending_measured_splits.is_some()
             && ((event.keystroke.modifiers.platform
-                && event.keystroke.key.eq_ignore_ascii_case("q"))
-                || !self.ensure_measured_input())
+                && event.keystroke.key.eq_ignore_ascii_case("q")))
         {
-            self.retain_measured_splits();
+            self.cancel_measured_splits();
         }
         for pending in self.pending_additional_terminals.values_mut() {
             pending.show_when_ready = false;
@@ -32162,17 +25326,14 @@ impl WorkspaceView {
                 && !key.modifiers.alt && key.modifiers.shift
                 && key.key.eq_ignore_ascii_case("insert");
             let paste_shortcut = shift_insert || matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Paste));
-            // Only an existing explicit file/jump replay owns a frontend
-            // ledger. Resume and dependent copies use bounded worker FIFOs.
-            let defer_paste = self.pending_terminal_key.as_ref()
-                .is_some_and(|pending| !pending.replaying);
+
             if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy)) {
                 self.copy_selection(cx);
-            } else if paste_shortcut && !defer_paste {
+            } else if paste_shortcut {
                 self.request_terminal_paste(cx);
             }
             if matches!(shortcut, Some(workspace_app::terminal_shortcuts::Shortcut::Copy))
-                || (paste_shortcut && !defer_paste)
+                || (paste_shortcut)
             {
                 window.prevent_default();
                 cx.stop_propagation();
@@ -32180,80 +25341,7 @@ impl WorkspaceView {
                 return;
             }
         }
-        if self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|pending| !pending.replaying)
-            && !(event.keystroke.modifiers.platform
-                && event.keystroke.key.eq_ignore_ascii_case("q"))
-        {
-            let shift_insert = self.model.surface == Surface::Terminal
-                && !event.keystroke.modifiers.platform
-                && !event.keystroke.modifiers.control
-                && !event.keystroke.modifiers.alt
-                && event.keystroke.modifiers.shift
-                && event.keystroke.key.eq_ignore_ascii_case("insert");
-            if event.keystroke.modifiers.platform && event.keystroke.key.eq_ignore_ascii_case("v")
-                || shift_insert
-            {
-                let copy_before_paste = self.pending_terminal_key.as_ref().is_some_and(|pending| {
-                    pending.selection_action.is_some()
-                        || pending
-                            .gate
-                            .events()
-                            .chain(pending.overflow.iter())
-                            .any(|queued| {
-                                matches!(queued, workspace_app::open_input::Event::Key(key)
-                                if !key.modifiers.control && !key.modifiers.alt
-                                    && !key.modifiers.platform && !key.modifiers.shift
-                                    && key.key_char.as_deref().unwrap_or(&key.key) == "y")
-                            })
-                });
-                #[cfg(feature = "ghostty")]
-                let copy_before_paste = copy_before_paste || self.native_selection.as_ref().is_some_and(|selection| {
-                    matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
-                });
-                if copy_before_paste {
-                    // Resolve the clipboard only when this key is replayed,
-                    // after the preceding terminal copy has completed.
-                    self.enqueue_terminal_key(workspace_app::open_input::Event::Key(
-                        event.keystroke.clone(),
-                    ));
-                } else if let Some(text) = self.paste_text(cx) {
-                    self.enqueue_terminal_key(workspace_app::open_input::Event::Paste { text });
-                }
-            } else {
-                self.enqueue_terminal_key(workspace_app::open_input::Event::Key(
-                    event.keystroke.clone(),
-                ));
-            }
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
-        let pending = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|input| !input.replaying);
-        if pending
-            && !(event.keystroke.modifiers.platform
-                && event.keystroke.key.eq_ignore_ascii_case("q"))
-        {
-            if event.keystroke.modifiers.platform && event.keystroke.key.eq_ignore_ascii_case("v") {
-                if let Some(text) = self.paste_text(cx) {
-                    self.enqueue_open_input(workspace_app::open_input::Event::Paste { text });
-                }
-            } else {
-                self.enqueue_open_input(workspace_app::open_input::Event::Key(
-                    event.keystroke.clone(),
-                ));
-            }
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
+
         // Route target shortcuts immediately; the tmux worker preserves the
         // order of the target change and the ensuing resume operation.
         let key = &event.keystroke;
@@ -32267,54 +25355,13 @@ impl WorkspaceView {
             self.set_focus(Surface::Terminal);
         }
         self.finish_pending_new_file_before_input();
-        self.note_activity();
+
         self.metrics.input();
         let k = &event.keystroke;
-        if self.terminal_resume.recovery_blocked()
-            && !(k.modifiers.platform && k.key.eq_ignore_ascii_case("q"))
-        {
-            self.model.message = "Entrada conservada; Cmd+Q permite revisarla".into();
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
+
         let key = k.key.as_str();
         self.invalidate_completion();
-        if self.model.surface == Surface::File
-            && self.editor_zoom.is_none()
-            && self.editor_panes.as_ref().is_some_and(|panes| panes.layout.panes().len() > 1)
-            && self.model.pending_since.is_none()
-            && self.terminal_command.is_none() && self.terminal_search_prompt.is_none()
-            && self.file_prompt.is_none() && self.remote_prompt.is_none()
-            && self.marked.is_empty() && !self.help && !self.model.notifications
-            && !self.media_active() && !k.modifiers.function
-            && queued_direction_key(k, self.editor_window_prefix.is_some())
-            && !self.directional_focus_geometry_ready()
-            && self.begin_file_direction_replay(k.clone())
-        {
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
-        if matches!(self.model.surface, Surface::Tree | Surface::Agents | Surface::Backlog)
-            && self.editor_zoom.is_none()
-            && self.editor_panes.as_ref().is_some_and(|panes| panes.layout.panes().len() > 1)
-            && self.model.pending_since.is_none()
-            && self.terminal_command.is_none() && self.terminal_search_prompt.is_none()
-            && self.file_prompt.is_none() && self.remote_prompt.is_none()
-            && self.marked.is_empty() && !self.help && !self.model.notifications
-            && !self.media_active() && !k.modifiers.function
-            && queued_direction_key(k, self.editor_window_prefix.is_some())
-            && !self.directional_focus_geometry_ready()
-            && self.begin_sidebar_direction_replay(k.clone())
-        {
-            window.prevent_default();
-            cx.stop_propagation();
-            cx.notify();
-            return;
-        }
+
         if self.tools && key == "escape" {
             self.tools = false;
             window.prevent_default();
@@ -32476,7 +25523,7 @@ impl WorkspaceView {
                 } else if let Some(source) = prompt
                     .source
                     .as_ref()
-                    .filter(|source| self.terminal_key_source_current(source))
+                    .filter(|source| self.terminal_source_snapshot_current(source))
                 {
                     terminal_backend_for(&self.backends, &self.additional_backends, source.context)
                         .and_then(|backend| {
@@ -32601,7 +25648,7 @@ impl WorkspaceView {
                             EditEffect::ReconnectTerminal => self.reconnect_terminal(),
                             EditEffect::RecoverTerminals => self.retry_terminal_recovery(),
                             EditEffect::Split(vertical) => {
-                                self.editor_window_from_open_input(
+                                self.editor_window_counted(
                                     if vertical { "v" } else { "s" },
                                     0,
                                 );
@@ -32616,7 +25663,7 @@ impl WorkspaceView {
                             }
                             EditEffect::WindowCommand(key, count) => {
                                 if matches!(key, 's' | 'v' | 'n' | 'N') {
-                                    self.editor_window_from_open_input(&key.to_string(), count);
+                                    self.editor_window_counted(&key.to_string(), count);
                                 } else {
                                     self.editor_window_counted(&key.to_string(), count);
                                 }
@@ -32633,13 +25680,13 @@ impl WorkspaceView {
                                 }
                             }
                             EditEffect::SplitNew(vertical) => {
-                                self.editor_window_from_open_input(
+                                self.editor_window_counted(
                                     if vertical { "N" } else { "n" },
                                     0,
                                 );
                             }
                             EditEffect::SplitNewSized(vertical, count) => {
-                                self.editor_window_from_open_input(
+                                self.editor_window_counted(
                                     if vertical { "N" } else { "n" },
                                     count,
                                 );
@@ -33253,7 +26300,7 @@ impl WorkspaceView {
             }
         }
         if let Some((source, _)) = &self.terminal_yank_prefix {
-            let current = self.terminal_key_source_current(source);
+            let current = self.terminal_source_snapshot_current(source);
             let digit = chord.len() == 1 && chord.as_bytes()[0].is_ascii_digit()
                 && (chord != "0" || self.model.count > 0);
             let yank_motion = !digit && matches!(chord.as_str(), "w" | "W" | "e" | "E" | "b" | "B" | "0" | "^" | "$" | "h" | "l");
@@ -33264,10 +26311,7 @@ impl WorkspaceView {
                 self.model.count = 0;
             } else if yank_motion {
                 let count = std::mem::take(&mut self.model.count).max(1);
-                if !self.request_terminal_yank_motion(&chord, count)
-                    && let Some(pending) = &mut self.pending_terminal_key
-                    && pending.replaying
-                { pending.replay_error = true; }
+                self.request_terminal_yank_motion(&chord, count);
                 window.prevent_default();
                 cx.stop_propagation();
                 cx.notify();
@@ -33330,7 +26374,7 @@ impl WorkspaceView {
             self.terminal_command = Some(command);
             self.terminal_command_guard = Some(guard);
             self.terminal_search_prompt = terminal_search.then(|| TerminalSearchPrompt {
-                source: self.terminal_key_source(0),
+                source: self.terminal_source_snapshot(0),
                 forward: chord == "/",
                 count: std::mem::take(&mut self.model.count).max(1),
                 error: None,
@@ -33364,12 +26408,7 @@ impl WorkspaceView {
             if let Some(id) = visible {
                 self.focus_editor_pane(id);
             } else {
-                if self.terminal_resume.active() && !self.detach_terminal_input_on_pane_focus() {
-                    window.prevent_default();
-                    cx.stop_propagation();
-                    cx.notify();
-                    return;
-                }
+
                 self.effect(Effect::File(path));
             }
             window.prevent_default();
@@ -33486,7 +26525,6 @@ impl WorkspaceView {
                 && self.model.surface == Surface::Terminal
                 && self.terminal_input_context() == original_terminal
                 && self.editor_panes.as_ref().map(|panes| panes.layout.active()) == original_pane
-                && !self.terminal_resume.active()
             {
                 self.set_focus(Surface::Normal);
                 if self.model.surface == Surface::Normal {
@@ -34112,8 +27150,8 @@ impl WorkspaceView {
                 let _ = self.terminal_wake.try_send(());
                 if self.native_selection.as_ref().is_some_and(|selection| {
                     matches!(selection.pending, Some(NativeSelectionReply::Copy(..)))
-                }) && !self.terminal_resume.active() {
-                    self.begin_terminal_resume();
+                }) {
+                    self.begin_terminal_input();
                 }
             } else {
                 self.clear_native_selection();
@@ -34127,9 +27165,8 @@ impl WorkspaceView {
             // paste and typing cannot reach tmux's copy-mode key bindings.
             if self.submit_tmux_action(TmuxAction::Copy)
                 && self.model.surface == Surface::Terminal
-                && !self.terminal_resume.active()
             {
-                self.begin_terminal_resume();
+                self.begin_terminal_input();
             }
             return;
         };
@@ -34810,7 +27847,7 @@ impl WorkspaceView {
             terminal: Some(self.windows[index].terminal.instance_identity()),
         });
         #[cfg(feature = "ghostty")]
-        let frame_context = workspace_app::terminal_resume::Context {
+        let frame_context = workspace_app::terminal_input::Context {
             project: self.windows[index].project,
             attachment,
         };
@@ -35339,7 +28376,7 @@ impl WorkspaceView {
                     if !floating && v.editor_zoom.is_some() {
                         if let Err(message) = v.end_floating_zoom() {
                             v.model.message = message.into();
-                            v.retain_replayed_jump();
+
                         } else if let Some(id) = pane_id {
                             v.focus_editor_pane(id);
                             if v.active == index && v.editor_panes.as_ref()
@@ -35354,7 +28391,7 @@ impl WorkspaceView {
                         cx.notify();
                         return;
                     }
-                    v.retain_measured_splits();
+                    v.cancel_measured_splits();
                     v.finish_terminal_mouse_drag(event.position);
                     if floating && !pane_id.zip(mouse_measurement.as_ref()).is_some_and(
                         |(pane, measurement)| v.pane_measurement_current(pane, measurement),
@@ -35426,8 +28463,9 @@ impl WorkspaceView {
                                     .input(&terminal::mouse_event(0, cell.0, cell.1, false))
                                     .is_ok()
                             {
+                                v.start_terminal_input_at_cell(cell.0, cell.1);
                                 v.mouse_drag = Some(TerminalMouseDrag {
-                                    context: workspace_app::terminal_resume::Context {
+                                    context: workspace_app::terminal_input::Context {
                                         project: wheel_project,
                                         attachment: wheel_attachment,
                                     },
@@ -35539,7 +28577,7 @@ impl WorkspaceView {
             )
             .on_scroll_wheel(cx.listener(move |v, event: &ScrollWheelEvent, _, cx| {
                 v.cancel_pending_detached_close_load();
-                v.retain_measured_splits();
+                v.cancel_measured_splits();
                 if floating
                     && !pane_id.zip(wheel_measurement.as_ref()).is_some_and(
                         |(pane, measurement)| v.pane_measurement_current(pane, measurement),
@@ -35716,7 +28754,7 @@ impl WorkspaceView {
                     if !floating && view.editor_zoom.is_some() {
                         if let Err(message) = view.end_floating_zoom() {
                             view.model.message = message.into();
-                            view.retain_replayed_jump();
+
                             cx.notify();
                             return;
                         }
@@ -35724,7 +28762,7 @@ impl WorkspaceView {
                         cx.notify();
                         return;
                     }
-                    view.retain_measured_splits();
+                    view.cancel_measured_splits();
                     view.invalidate_terminal_jumps();
                     view.cancel_jump_load();
                     if floating {
@@ -35746,7 +28784,7 @@ impl WorkspaceView {
             )
             .on_scroll_wheel(cx.listener(move |view, event: &ScrollWheelEvent, _, cx| {
                 view.cancel_pending_detached_close_load();
-                view.retain_measured_splits();
+                view.cancel_measured_splits();
                 if floating && !view.pane_measurement_current(id, &wheel_measurement) {
                     return;
                 }
@@ -36450,7 +29488,7 @@ impl WorkspaceView {
                                 if view.editor_zoom.is_some() {
                                     if let Err(message) = view.end_floating_zoom() {
                                         view.model.message = message.into();
-                                        view.retain_replayed_jump();
+
                                         cx.notify();
                                         return;
                                     }
@@ -36458,14 +29496,14 @@ impl WorkspaceView {
                                     cx.notify();
                                     return;
                                 }
-                                view.retain_measured_splits();
+                                view.cancel_measured_splits();
                                 view.focus_editor_pane(pane);
                             }),
                         )
                         .on_scroll_wheel(cx.listener(|view, _: &ScrollWheelEvent, _, cx| {
                             view.cancel_pending_detached_close_load();
                             if view.pending_measured_splits.is_some() {
-                                view.retain_measured_splits();
+                                view.cancel_measured_splits();
                                 cx.notify();
                             }
                         }))
@@ -37753,7 +30791,7 @@ impl Render for WorkspaceView {
                     && !(0..view.model.projects.len()).any(|index| index != view.model.project && view.workspace_is_open(index));
                 if !valid {
                     view.model.message = "Cambió el panel o su contenido; cierre cancelado".into();
-                    view.retain_replayed_jump();
+
                 } else if view.can_quit(window, cx) {
                     crate::quit_gate::quit(cx);
                 }
@@ -38215,36 +31253,12 @@ impl Render for WorkspaceView {
                 .contains_key(&(context.project, context.attachment))
         });
         let show_reconnect = lost_primary && lost_primary_is_target;
-        let show_splits = !confirming && self.pending_file_splits.recovery_revision().is_some();
-        let show_retry_open = !confirming
-            && self.pending_open_input.as_ref().is_some_and(|pending| {
-                pending.queue.state() == workspace_app::open_input::State::Recover
-            })
-            && !self.pending_open_input_mixed_context;
-        let show_review_open = !confirming
-            && self.pending_open_input.as_ref().is_some_and(|pending| {
-                matches!(
-                    pending.queue.state(),
-                    workspace_app::open_input::State::Recover
-                        | workspace_app::open_input::State::Uncertain
-                )
-            });
-        let show_review_key = !confirming
-            && self.pending_terminal_key.as_ref().is_some_and(|pending| {
-                matches!(
-                    pending.gate.state(),
-                    workspace_app::terminal_key_gate::State::Recover
-                        | workspace_app::terminal_key_gate::State::Uncertain
-                )
-            });
+
         // Every shown action button takes its own width: 12 px text at a
         // conservative 7.8 px per character, 16 px padding and a 12 px gap.
         let button_px: f32 = [
             (show_reconnect, "Reconectar"),
-            (show_splits, "Splits pendientes"),
-            (show_retry_open, "Reintentar"),
-            (show_review_open, "Revisar"),
-            (show_review_key, "Revisar"),
+
         ]
         .into_iter()
         .filter(|(shown, _)| *shown)
@@ -38401,19 +31415,9 @@ impl Render for WorkspaceView {
                         };
                         div().truncate().child(message).into_any_element()
                     } else {
-                        // An open-input recovery notice must not outlive its queue.
-                        // Keep it visible whenever recovery still owns input.
-                        let stale_open_notice = self.pending_open_input.is_none()
-                            && matches!(self.model.message.as_str(),
-                                "Entrada conservada: cambió el panel; usá Reintentar"
-                                | "Entrada retenida mientras abre el archivo");
                         div()
                             .truncate()
-                            .child(if stale_open_notice {
-                                String::new()
-                            } else {
-                                fit_status_text(&self.model.message, message_budget)
-                            })
+                            .child(fit_status_text(&self.model.message, message_budget))
                             .into_any_element()
                     }),
             )
@@ -38436,36 +31440,6 @@ impl Render for WorkspaceView {
                         cx,
                     )
                     .flex_shrink_0(),
-                )
-            })
-            .when(show_splits, |status| {
-                status.child(
-                    self.button(
-                        "review-pending-splits",
-                        "Splits pendientes",
-                        Ui::ReviewPendingSplits,
-                        p,
-                        cx,
-                    )
-                    .flex_shrink_0(),
-                )
-            })
-            .when(show_retry_open, |status| {
-                status.child(
-                    self.button("retry-open-input", "Reintentar", Ui::RetryOpenInput, p, cx)
-                        .flex_shrink_0(),
-                )
-            })
-            .when(show_review_open, |status| {
-                status.child(
-                    self.button("review-open-input", "Revisar", Ui::ReviewOpenInput, p, cx)
-                        .flex_shrink_0(),
-                )
-            })
-            .when(show_review_key, |status| {
-                status.child(
-                    self.button("review-terminal-key", "Revisar", Ui::ReviewTerminalKey, p, cx)
-                        .flex_shrink_0(),
                 )
             })
             .when_some(self.storage_unavailable.as_ref().filter(|_| show_storage), |status, cause| {
@@ -38560,22 +31534,7 @@ impl EntityInputHandler for WorkspaceView {
         _: &mut Window,
         _: &mut Context<Self>,
     ) -> Option<String> {
-        if self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|pending| !pending.replaying)
-            || self
-                .pending_open_input
-                .as_ref()
-                .is_some_and(|pending| !pending.replaying)
-            || self.terminal_command.is_some()
-            || self.model.surface != Surface::File
-            || self.file_prompt.is_some()
-            || self.remote_prompt.is_some()
-            || self.media_active()
-        {
-            return None;
-        }
+
         let (text, range) = self.current_editor()?.input_text(range)?;
         *actual = Some(range);
         Some(text)
@@ -38586,31 +31545,7 @@ impl EntityInputHandler for WorkspaceView {
         _: &mut Window,
         _: &mut Context<Self>,
     ) -> Option<UTF16Selection> {
-        if let Some(pending) = self
-            .pending_terminal_key
-            .as_ref()
-            .filter(|pending| !pending.replaying)
-        {
-            return Some(UTF16Selection {
-                range: pending.marked_selection.clone().unwrap_or(0..0),
-                reversed: false,
-            });
-        }
-        if self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| !pending.replaying)
-        {
-            let range = self
-                .pending_open_input
-                .as_ref()
-                .and_then(|pending| pending.marked_selection.clone())
-                .unwrap_or(0..0);
-            return Some(UTF16Selection {
-                range,
-                reversed: false,
-            });
-        }
+
         if self.model.surface == Surface::Picker
             && !self.model.picker.as_ref().is_some_and(|p| p.input_active())
         {
@@ -38630,23 +31565,11 @@ impl EntityInputHandler for WorkspaceView {
         })
     }
     fn marked_text_range(&self, _: &mut Window, _: &mut Context<Self>) -> Option<Range<usize>> {
-        if self
-            .pending_terminal_key
-            .as_ref()
-            .is_some_and(|pending| !pending.replaying)
-        {
-            return (!self.marked.is_empty()).then(|| 0..self.marked.encode_utf16().count());
-        }
+
         if self.media_active() {
             return None;
         }
-        if self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| !pending.replaying)
-        {
-            return (!self.marked.is_empty()).then(|| 0..self.marked.encode_utf16().count());
-        }
+
         if self.model.surface == Surface::Picker
             && !self.model.picker.as_ref().is_some_and(|p| p.input_active())
         {
@@ -38661,29 +31584,7 @@ impl EntityInputHandler for WorkspaceView {
         (!self.marked.is_empty()).then(|| 0..self.marked.encode_utf16().count())
     }
     fn unmark_text(&mut self, _: &mut Window, cx: &mut Context<Self>) {
-        if self.pending_measured_splits.is_some() && !self.ensure_measured_input() {
-            self.retain_measured_splits();
-        }
-        if self.enqueue_terminal_key(workspace_app::open_input::Event::Unmark) {
-            self.marked.clear();
-            if let Some(pending) = &mut self.pending_terminal_key {
-                pending.marked_selection = None;
-            }
-            cx.notify();
-            return;
-        }
-        if self.enqueue_open_input(workspace_app::open_input::Event::Unmark) {
-            self.marked.clear();
-            if let Some(pending) = &mut self.pending_open_input {
-                pending.marked_selection = None;
-            }
-            cx.notify();
-            return;
-        }
-        if self.reject_stale_open_replay() {
-            cx.notify();
-            return;
-        }
+
         if self.media_active() {
             // The input method ended its composition: keep self.marked in
             // step, or a later terminal/picker Enter or Backspace would be
@@ -38691,15 +31592,7 @@ impl EntityInputHandler for WorkspaceView {
             self.clear_marked_after_ime_end();
             return;
         }
-        let replaying_open = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| pending.replaying)
-            || self
-                .pending_terminal_key
-                .as_ref()
-                .is_some_and(|pending| pending.replaying);
-        let mut replay_error = false;
+
         if self.model.surface == Surface::File
             && self.file_prompt.is_none()
             && self.remote_prompt.is_none()
@@ -38707,22 +31600,15 @@ impl EntityInputHandler for WorkspaceView {
             && let Err(error) = editor.unmark_input()
         {
             editor.message = error;
-            if replaying_open {
-                replay_error = true;
-            } else {
+            {
                 editor.cancel_input();
             }
         }
-        if replay_error && let Some(pending) = &mut self.pending_open_input {
-            pending.replay_error = true;
-        }
-        if replay_error && let Some(pending) = &mut self.pending_terminal_key {
-            pending.replay_error = true;
-        }
+
         if self.model.surface == Surface::File {
             self.sync_active_jump_tracking();
         }
-        if !replaying_open {
+        {
             self.marked.clear();
         }
         cx.notify();
@@ -38734,35 +31620,7 @@ impl EntityInputHandler for WorkspaceView {
         _: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        if self.pending_measured_splits.is_some() && !self.ensure_measured_input() {
-            self.retain_measured_splits();
-        }
-        if self.enqueue_terminal_key(workspace_app::open_input::Event::Commit {
-            range: range.clone(),
-            text: text.to_owned(),
-        }) {
-            self.marked.clear();
-            if let Some(pending) = &mut self.pending_terminal_key {
-                pending.marked_selection = None;
-            }
-            cx.notify();
-            return;
-        }
-        if self.enqueue_open_input(workspace_app::open_input::Event::Commit {
-            range: range.clone(),
-            text: text.to_owned(),
-        }) {
-            self.marked.clear();
-            if let Some(pending) = &mut self.pending_open_input {
-                pending.marked_selection = None;
-            }
-            cx.notify();
-            return;
-        }
-        if self.reject_stale_open_replay() {
-            cx.notify();
-            return;
-        }
+
         self.finish_pending_new_file_before_input();
         self.cancel_jump_load();
         if self.media_active() {
@@ -38771,19 +31629,12 @@ impl EntityInputHandler for WorkspaceView {
             self.clear_marked_after_ime_end();
             return;
         }
-        let replaying_open = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| pending.replaying)
-            || self
-                .pending_terminal_key
-                .as_ref()
-                .is_some_and(|pending| pending.replaying);
+
         self.note_activity();
-        if !replaying_open {
+        {
             self.marked.clear();
         }
-        let mut replay_error = false;
+
         if self
             .terminal_command_guard
             .as_ref()
@@ -38806,13 +31657,7 @@ impl EntityInputHandler for WorkspaceView {
         } else if let Some(prompt) = &mut self.remote_prompt {
             prompt.append(text);
         } else if self.model.surface == Surface::Terminal {
-            if self
-                .pending_terminal_key
-                .as_ref()
-                .is_some_and(|pending| pending.replaying)
             {
-                self.replay_terminal_key_text(text, false, true, cx);
-            } else {
                 self.effect(Effect::Pty(text.as_bytes().to_vec()));
             }
         } else if self.model.surface == Surface::Picker {
@@ -38822,39 +31667,19 @@ impl EntityInputHandler for WorkspaceView {
             && let Some(editor) = self.editors.get_mut(path)
         {
             editor.cancel_replay();
-            let previous_message = if replaying_open {
-                std::mem::take(&mut editor.message)
-            } else {
-                editor.message.clone()
-            };
-            let too_large = text.len() > 2 * 1024 * 1024
-                || (editor.mode == EditMode::Insert
-                    && editor.text.len().saturating_add(text.chars().count()) > 2_000_000);
-            if replaying_open && too_large {
-                replay_error = true;
-                editor.message = "Texto demasiado grande".into();
-            } else if editor.mode == EditMode::Insert {
+
+
+            if editor.mode == EditMode::Insert {
                 if let Err(error) = editor.commit_input(range, text) {
                     editor.message = error;
-                    replay_error = replaying_open;
+
                 }
             } else {
                 editor.insert(text);
             }
-            if replaying_open {
-                if editor.message.is_empty() {
-                    editor.message = previous_message;
-                } else {
-                    replay_error = true;
-                }
-            }
+
         }
-        if replay_error && let Some(pending) = &mut self.pending_open_input {
-            pending.replay_error = true;
-        }
-        if replay_error && let Some(pending) = &mut self.pending_terminal_key {
-            pending.replay_error = true;
-        }
+
         if self.model.surface == Surface::File {
             self.sync_active_jump_tracking();
         }
@@ -38880,60 +31705,12 @@ impl EntityInputHandler for WorkspaceView {
         _: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        if self.pending_measured_splits.is_some() && !self.ensure_measured_input() {
-            self.retain_measured_splits();
-        }
-        if self.enqueue_terminal_key(workspace_app::open_input::Event::Mark {
-            range: range.clone(),
-            text: text.to_owned(),
-            selected: selected.clone(),
-        }) {
-            self.marked = text.to_owned();
-            if let Some(pending) = &mut self.pending_terminal_key {
-                let end = text.encode_utf16().count();
-                pending.marked_selection = Some(
-                    selected
-                        .filter(|range| range.start <= range.end && range.end <= end)
-                        .unwrap_or(end..end),
-                );
-            }
-            cx.notify();
-            return;
-        }
-        if self.enqueue_open_input(workspace_app::open_input::Event::Mark {
-            range: range.clone(),
-            text: text.to_owned(),
-            selected: selected.clone(),
-        }) {
-            self.marked = text.to_owned();
-            if let Some(pending) = &mut self.pending_open_input {
-                let end = text.encode_utf16().count();
-                pending.marked_selection = Some(
-                    selected
-                        .filter(|range| range.start <= range.end && range.end <= end)
-                        .unwrap_or(end..end),
-                );
-            }
-            cx.notify();
-            return;
-        }
-        if self.reject_stale_open_replay() {
-            cx.notify();
-            return;
-        }
+
         if self.media_active() {
             return;
         }
         self.note_activity();
-        let replaying_open = self
-            .pending_open_input
-            .as_ref()
-            .is_some_and(|pending| pending.replaying)
-            || self
-                .pending_terminal_key
-                .as_ref()
-                .is_some_and(|pending| pending.replaying);
-        let mut replay_error = false;
+
         if self.model.surface == Surface::Picker
             && !self.model.picker.as_ref().is_some_and(|p| p.input_active())
         {
@@ -38949,21 +31726,14 @@ impl EntityInputHandler for WorkspaceView {
         {
             if let Err(error) = editor.mark_input(range, text, selected) {
                 editor.message = error;
-                replay_error = replaying_open;
+
             }
             self.completion.clear();
             self.completion_origin = None;
-        } else if replaying_open {
-            replay_error = true;
         } else if text.len() <= 65_536 {
             self.marked = text.into();
         }
-        if replay_error && let Some(pending) = &mut self.pending_open_input {
-            pending.replay_error = true;
-        }
-        if replay_error && let Some(pending) = &mut self.pending_terminal_key {
-            pending.replay_error = true;
-        }
+
         cx.notify();
     }
     fn bounds_for_range(
@@ -39130,13 +31900,6 @@ fn has_unescaped_file_expansion(name: &str) -> bool {
 }
 
 /// Preserve clipboard text, including control characters, in terminal paste.
-fn terminal_paste_bytes(text: &str, bracketed: bool) -> Result<Vec<u8>, String> {
-    Ok(if bracketed {
-        format!("\x1b[200~{text}\x1b[201~").into_bytes()
-    } else {
-        text.as_bytes().to_vec()
-    })
-}
 
 fn read_preview_for_validation(root: &Path, path: &Path, validation_root: Option<&Path>) -> Result<String, String> {
     if let Some(fixture_root) = validation_root {
@@ -39557,269 +32320,15 @@ fn followed_column(left: usize, column: usize, columns: usize) -> usize {
 
 /// GPUI's synthetic replay cannot reconstruct the platform's dead-key state.
 /// Retain plausible composing keys instead of silently inserting wrong text.
-fn pending_key_may_need_native_composition(key: &Keystroke, mode: Option<EditMode>) -> bool {
-    if !matches!(
-        mode,
-        Some(EditMode::Insert | EditMode::Command | EditMode::Search)
-    ) || key.modifiers.control
-        || key.modifiers.platform
-        || key.modifiers.function
-    {
-        return false;
-    }
-    let Some(text) = key.key_char.as_deref().filter(|text| !text.is_empty()) else {
-        return false;
-    };
-    key.modifiers.alt || matches!(text, "´" | "`" | "^" | "~" | "¨" | "ˋ" | "˜" | "ˆ")
-}
-
-fn queued_direction_key(key: &Keystroke, window_prefix: bool) -> bool {
-    let hjkl = ["h", "j", "k", "l"].iter().any(|letter| key.key.eq_ignore_ascii_case(letter));
-    let window_alias = ["left", "right", "up", "down", "backspace"]
-        .iter().any(|name| key.key.eq_ignore_ascii_case(name));
-    !key.modifiers.platform && !key.modifiers.alt && !key.modifiers.shift
-        && (key.modifiers.control && hjkl || window_prefix && (hjkl || window_alias))
-}
-
-fn queued_sidebar_selection_key(key: &Keystroke) -> bool {
-    if key.modifiers.platform || key.modifiers.alt || key.modifiers.shift || key.modifiers.function {
-        return false;
-    }
-    if key.modifiers.control {
-        ["d", "u"].iter().any(|name| key.key.eq_ignore_ascii_case(name))
-    } else {
-        ["j", "k", "up", "down"].iter().any(|name| key.key.eq_ignore_ascii_case(name))
-    }
-}
 
 #[cfg(test)]
-mod open_input_view_tests {
+mod view_tests {
     use super::{
-        EditMode, PaneView, PendingOpenInput, pending_key_may_need_native_composition, read_preview,
+        EditMode, PaneView, read_preview,
     };
     use gpui::Keystroke;
     use std::collections::VecDeque;
-    use workspace_app::open_input::{Context as InputContext, Event, Queue};
 
-    #[test]
-    #[cfg(unix)]
-    fn resolved_edit_queue_preserves_input_for_real_synthetic_file_and_missing_target() {
-        let root = workspace_app::unnamed::id(&std::env::temp_dir());
-        workspace_app::storage::private_directory(&root).unwrap();
-        let root = root.canonicalize().unwrap();
-        let real = root.join("real");
-        std::fs::create_dir(&real).unwrap();
-        std::fs::write(real.join("archivo ñ.txt"), "original").unwrap();
-        std::os::unix::fs::symlink(&real, root.join("enlace")).unwrap();
-        let requested =
-            workspace_app::unnamed::edit_path(&root, None, "enlace/archivo\\ ñ.txt").unwrap();
-        let mut original = InputContext {
-            workspace: 1,
-            pane: 1,
-            attachment: 3,
-            generation: 4,
-            path: requested.clone(),
-        };
-        let mut queue = Queue::new(original.clone(), 4, 128);
-        assert!(queue.push(Event::Key("i"), 1).is_ok());
-        assert!(
-            queue
-                .push(
-                    Event::Commit {
-                        range: None,
-                        text: "ñ".into()
-                    },
-                    0
-                )
-                .is_ok()
-        );
-        let (resolved, missing) = workspace_app::unnamed::edit_target(&requested).unwrap();
-        assert!(!missing);
-        assert_eq!(resolved, real.join("archivo ñ.txt"));
-        assert!(queue.resolved_path(&original, resolved.clone(), true));
-        original.path = resolved.clone();
-        let mut read = original.clone();
-        read.generation += 1;
-        assert!(queue.advance_read(&original, read.clone(), true));
-        let content = read_preview(&root, &resolved).unwrap();
-        assert!(queue.ready(&read, true));
-        let mut editor = workspace_app::editor::Editor::new(content);
-        while let Some((id, event)) = queue
-            .begin(&read, true)
-            .map(|(id, event)| (id, event.clone()))
-        {
-            match event {
-                Event::Key(key) => {
-                    editor.key(key);
-                }
-                Event::Commit { range, text } => editor.commit_input(range, &text).unwrap(),
-                _ => panic!("unexpected event"),
-            }
-            assert!(queue.acknowledge(id));
-        }
-        assert_eq!(editor.contents(), "ñoriginal");
-        assert_eq!(std::fs::read_to_string(&resolved).unwrap(), "original");
-        let missing_request = root.join("enlace/nuevo.txt");
-        let (missing_path, missing) =
-            workspace_app::unnamed::edit_target(&missing_request).unwrap();
-        assert!(missing);
-        assert_eq!(missing_path, real.join("nuevo.txt"));
-        assert!(!missing_path.exists());
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn possible_composition_is_retained_only_for_text_input_modes() {
-        let mut option = Keystroke::parse("alt-e").unwrap();
-        option.key_char = Some("´".into());
-        assert!(pending_key_may_need_native_composition(
-            &option,
-            Some(EditMode::Insert)
-        ));
-        assert!(pending_key_may_need_native_composition(
-            &option,
-            Some(EditMode::Search)
-        ));
-        assert!(!pending_key_may_need_native_composition(
-            &option,
-            Some(EditMode::Normal)
-        ));
-        let mut acute = Keystroke::parse("a").unwrap();
-        acute.key_char = Some("´".into());
-        assert!(pending_key_may_need_native_composition(
-            &acute,
-            Some(EditMode::Insert)
-        ));
-        acute.key_char = Some("a".into());
-        assert!(!pending_key_may_need_native_composition(
-            &acute,
-            Some(EditMode::Insert)
-        ));
-        option.modifiers.control = true;
-        assert!(!pending_key_may_need_native_composition(
-            &option,
-            Some(EditMode::Insert)
-        ));
-    }
-
-    #[test]
-    fn recovery_copy_preserves_event_order_and_identifies_uncertain_front() {
-        let context = InputContext {
-            workspace: 1,
-            pane: 1,
-            attachment: 3,
-            generation: 4,
-            path: "/synthetic/example".into(),
-        };
-        let mut queue = Queue::new(context.clone(), 2, 128);
-        assert!(
-            queue
-                .push(Event::Key(Keystroke::parse("i").unwrap()), 1)
-                .is_ok()
-        );
-        assert!(
-            queue
-                .push(
-                    Event::Commit {
-                        range: None,
-                        text: "ñ😀".into()
-                    },
-                    0
-                )
-                .is_ok()
-        );
-        assert!(queue.ready(&context, true));
-        let id = queue.begin(&context, true).unwrap().0;
-        assert!(queue.uncertain(id));
-        let layout = workspace_core::editor_panes::Layout::new(PaneView {
-            buffer: 0,
-            row: 0,
-            column: 0,
-            top: 0,
-            left: 0,
-        });
-        let pending = PendingOpenInput {
-            context,
-            focus: layout.focus_guard(),
-            queue,
-            overflow: VecDeque::from([Event::Key(Keystroke::parse("escape").unwrap())]),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
-            edit_resolution: false,
-            edit_force: false,
-            edit_reload_current: false,
-            awaiting_edit_read: false,
-            terminal_jump: false,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
-        };
-        let copied = pending.recovery_text();
-        assert!(
-            copied.starts_with("Entrada pendiente; la primera acción podría haberse ejecutado:")
-        );
-        let key = copied.find("key=\"i\"").unwrap();
-        let text = copied.find("Texto None: ñ😀").unwrap();
-        let tail = copied.rfind("key=\"escape\"").unwrap();
-        assert!(key < text && text < tail);
-    }
-
-    #[test]
-    fn overflow_is_refilled_behind_earlier_keys_and_clipboard_snapshot() {
-        let context = InputContext {
-            workspace: 1,
-            pane: 1,
-            attachment: 3,
-            generation: 4,
-            path: "/synthetic/example".into(),
-        };
-        let layout = workspace_core::editor_panes::Layout::new(PaneView {
-            buffer: 0,
-            row: 0,
-            column: 0,
-            top: 0,
-            left: 0,
-        });
-        let mut pending = PendingOpenInput {
-            queue: Queue::new(context.clone(), 2, 128),
-            context,
-            focus: layout.focus_guard(),
-            overflow: VecDeque::new(),
-            replaying: false,
-            scheduled: false,
-            revision: 0,
-            marked_selection: None,
-            replay_error: false, paste_held: None,
-            edit_resolution: false,
-            edit_force: false,
-            edit_reload_current: false,
-            awaiting_edit_read: false,
-            terminal_jump: false,
-            deferred_capture: None,
-            wait_for_geometry: false,
-            geometry_deadline: None, post_split_line: None,
-        };
-        assert!(pending.enqueue(Event::Key(Keystroke::parse("i").unwrap())));
-        assert!(pending.enqueue(Event::Paste { text: "ñ".into() }));
-        assert!(pending.enqueue(Event::Key(Keystroke::parse("j").unwrap())));
-        assert_eq!(pending.overflow.len(), 1);
-        assert!(pending.queue.ready(&pending.context, true));
-        let (first, event) = pending.queue.begin(&pending.context, true).unwrap();
-        assert!(matches!(event, Event::Key(key) if key.key == "i"));
-        assert!(pending.queue.acknowledge(first));
-        pending.refill();
-        assert!(pending.overflow.is_empty());
-        let (second, event) = pending.queue.begin(&pending.context, true).unwrap();
-        assert!(matches!(event, Event::Paste { text } if text == "ñ"));
-        assert!(pending.queue.acknowledge(second));
-        let (third, event) = pending.queue.begin(&pending.context, true).unwrap();
-        assert!(matches!(event, Event::Key(key) if key.key == "j"));
-        assert!(pending.queue.acknowledge(third));
-        assert!(pending.queue.is_empty());
-    }
 }
 
 /// Write a validation state snapshot atomically: a private 0600 temporary file

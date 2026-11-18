@@ -256,10 +256,6 @@ impl LiveParser {
 #[derive(Debug)]
 enum Command {
     Input(Vec<u8>),
-    InputTracked {
-        bytes: Vec<u8>,
-        reply: SyncSender<Result<(), String>>,
-    },
     #[cfg(feature = "ghostty")]
     SelectionBegin {
         token: u64,
@@ -455,12 +451,7 @@ impl Terminal {
                         .take()
                         .map_or_else(|| commands_rx.try_recv(), Ok)
                     {
-                        Ok(command @ (Command::Input(_) | Command::InputTracked { .. })) => {
-                            let (bytes, reply) = match command {
-                                Command::Input(bytes) => (bytes, None),
-                                Command::InputTracked { bytes, reply } => (bytes, Some(reply)),
-                                _ => unreachable!(),
-                            };
+                        Ok(Command::Input(bytes)) => {
                             if viewport_may_be_scrolled {
                                 content_revision = content_revision.saturating_add(1);
                             }
@@ -482,12 +473,7 @@ impl Terminal {
                                 error = Some(e.clone());
                                 changed = true;
                             }
-                            if let Some(reply) = reply {
-                                let _ = reply.send(result);
-                                if let Some(wake) = &wake {
-                                    let _ = wake.try_send(());
-                                }
-                            }
+
                         }
                         #[cfg(feature = "ghostty")]
                         Ok(Command::SelectionBegin {
@@ -750,21 +736,6 @@ impl Terminal {
         self.commands
             .try_send(Command::Input(bytes.to_vec()))
             .map_err(|e| e.to_string())
-    }
-    /// A successful reply means the PTY writer accepted all bytes and flush
-    /// returned successfully. Failure can follow a partial write; do not retry.
-    pub fn input_tracked(
-        &self,
-        bytes: &[u8],
-    ) -> Result<mpsc::Receiver<Result<(), String>>, String> {
-        let (reply, received) = mpsc::sync_channel(1);
-        self.commands
-            .try_send(Command::InputTracked {
-                bytes: bytes.to_vec(),
-                reply,
-            })
-            .map_err(|error| error.to_string())?;
-        Ok(received)
     }
     #[cfg(feature = "ghostty")]
     pub fn selection_begin(
