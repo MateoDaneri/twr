@@ -133,12 +133,6 @@ pub fn terminal_delete_busy(
     fence.active() || deliveries.busy(project) || search_pending || rebind_pending || open_pending
 }
 
-/// A terminal router prefix still belongs ahead of any focus change. Do not
-/// detach its earlier queued input until the resume has completed and the
-/// router can deliver that prefix through the original terminal client.
-pub fn router_prefix_blocks_detach(fence: &Fence, terminal: bool, pending: bool) -> bool {
-    fence.active() && terminal && pending
-}
 
 /// Transfer queued input only after it has been accepted by the backend. A
 /// rejected enqueue leaves the fence and its original destination untouched.

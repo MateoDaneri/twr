@@ -18188,14 +18188,26 @@ impl WorkspaceView {
             self.model.message = "Cambió la terminal ampliada; entrada conservada para revisar".into();
             return false;
         }
-        if workspace_app::terminal_resume::router_prefix_blocks_detach(
-            &self.terminal_resume,
-            self.model.surface == Surface::Terminal,
-            self.model.pending_since.is_some(),
-        ) {
-            self.model.message =
-                "Esperá a que la terminal confirme la entrada antes de cambiar de panel".into();
-            return false;
+        if self.terminal_resume.active()
+            && self.model.surface == Surface::Terminal
+            && self.model.pending_since.is_some()
+        {
+            if self.terminal_resume.recovery_blocked() {
+                self.model.message = "Entrada conservada; revisala antes de cambiar de panel".into();
+                return false;
+            }
+            // The prefix belongs after the earlier input, on the original
+            // backend. Transfer it before changing focus instead of waiting
+            // for a UI acknowledgement to release the keyboard.
+            if let Effect::Pty(bytes) = self.model.expire_prefix() {
+                let result = self.terminal_input_context()
+                    .ok_or_else(|| "Terminal original no disponible".to_owned())
+                    .and_then(|context| self.terminal_resume.push(context, &bytes));
+                if let Err(error) = result {
+                    self.retain_rejected_terminal_input(bytes, &error);
+                    return false;
+                }
+            }
         }
         let windows = &self.windows;
         let backends = &self.backends;

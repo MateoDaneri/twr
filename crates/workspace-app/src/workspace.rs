@@ -3895,37 +3895,6 @@ mod tests {
         assert_eq!(fence.uncertain_text_if_guarded(&guard), None);
         assert!(fence.recovery_blocked());
     }
-    #[test]
-    fn pending_terminal_prefix_defers_focus_until_resume_batches_are_acknowledged() {
-        use crate::terminal_resume::{Context, Fence, router_prefix_blocks_detach};
-        let mut w = model();
-        w.focus(Surface::Terminal);
-        let now = Instant::now();
-        let context = Context {
-            project: 0,
-            attachment: 42,
-        };
-        let mut fence = Fence::default();
-        let token = fence.begin(context, now);
-        fence.push(context, b"earlier").unwrap();
-        assert_eq!(w.key("<Esc>", b"\x1b"), Effect::None);
-        let blocked = |f: &Fence, w: &Workspace| {
-            router_prefix_blocks_detach(
-                f,
-                w.surface == Surface::Terminal,
-                w.pending_since.is_some(),
-            )
-        };
-        assert!(blocked(&fence, &w));
-        assert_eq!(
-            fence.ack(context, token, true, true, now),
-            Some(b"earlier".to_vec())
-        );
-        assert!(blocked(&fence, &w));
-        assert!(fence.ack(context, token, false, true, now).is_none());
-        assert!(!blocked(&fence, &w));
-        assert_eq!(w.expire_prefix(), Effect::Pty(b"\x1b".to_vec()));
-    }
     fn file_choices(count: usize) -> Vec<Choice> {
         (0..count)
             .map(|i| Choice {
