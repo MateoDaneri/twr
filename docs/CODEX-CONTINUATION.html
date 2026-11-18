@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex · entrada de terminal sin bloqueo</title>
+<style>
+body { color-scheme: light dark; font: 16px/1.6 system-ui; max-width: 80ch; margin: 3rem auto; padding: 0 1rem; }
+aside { border: 2px solid currentColor; padding: 1rem; }
+code { overflow-wrap: anywhere; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; vertical-align: top; border: 1px solid currentColor; padding: .65rem; }
+</style>
+</head>
+<body><main>
+<h1>Para Codex: validar la entrada sin bloqueo</h1>
+<aside><strong>Validación manual aplazada por decisión explícita del usuario.</strong>
+El usuario pidió terminar la implementación, integrarla en el <em>main público</em> y actualizar la copia pública; comprobará su corrección cuando recupere acceso a Codex. Esta autorización de integración no equivale a una comprobación visual ni a aceptación de los comportamientos pendientes.</aside>
+<h2>Revisión fuente y candidata final</h2>
+<ul>
+<li>Implementación: <code>09dde99720</code>; limpieza final de bookkeeping: <code>5f78ea2146</code>. La integración incluye también los checkpoints previos de esta misma rama sobre la base pública <code>3d0638d3</code>.</li>
+<li>Compilación release final correcta con el núcleo Ghostty oficial 1.0.0. Sin advertencias de los crates locales en esa compilación; Cargo mantiene avisos de incompatibilidad futura de <code>block</code> y <code>proc-macro-error2</code>. No se ejecutaron tests, lint ni drivers automatizados.</li>
+<li>Fingerprint de fuentes nativas: <code>1ceb36b76325b40593a533b3a2978c49a25e37d578d42360781a7b9f04af75f1</code>.</li>
+<li>Paquete Development local: <code>staged/1ceb36b76325-e3a94c55/Terminal Workspace Development.app</code>, relativo al runtime indicado por <code>.runtime-location</code>. SHA-256 del ejecutable firmado: <code>0a8e016664e105d731b5a33cb507d65b419e025ce388223edabc2478df46ab41</code>.</li>
+<li>Snapshot de esa fuente: <code>dd3ab4da4dc92aa297925c09efc863634c4aa364f4db2ddd0c967da09d9dc8a1-2m02a4mg</code>. No confundirlo con candidatas anteriores descritas en el registro cronológico.</li>
+<li>El paquete está preparado para revisión posterior; no se instala ni se declara observado o validado. La app personal permanece sin cambios.</li>
+</ul>
+<h2>Leer antes de continuar</h2>
+<ul>
+<li>El usuario no ejecutó la matriz manual propuesta. No marcarla como aprobada.</li>
+<li>El proceso de este asistente no tiene permisos de Accessibility ni Screen Capture en macOS. No hubo una revisión visual nueva de la implementación final.</li>
+<li>Una compilación correcta solo demuestra que el código compila. No demuestra orden de entrada, selección, pegado, foco ni comportamiento ante fallos.</li>
+<li>No se autorizó instalar o reemplazar la app personal. Identificar el ejecutable, la revisión fuente y el perfil antes de atribuirle cualquier observación.</li>
+<li>Se mantiene la instrucción de no ejecutar tests automatizados, self-tests ni drivers de prueba. Revisar con Computer Use y contenido sintético, salvo nueva instrucción del usuario.</li>
+<li>La historia de <code>main</code> privado y la de <code>origin/main</code> público son distintas. No fusionarlas ni sobrescribir una para hacerla coincidir con la otra.</li>
+</ul>
+<h2>Puntos de entrada para revisar el código</h2>
+<ul>
+<li><code>terminal_resume::Fence::submit</code> despacha la entrada normal; <code>submit_buffered</code> entrega el contenido conservado únicamente mientras falta una conexión verificada al backend. Las confirmaciones liberan datos de recuperación, no autorizan la siguiente tecla.</li>
+<li><code>tmux::Action::ResumeStreamInput</code> y <code>ResumeStreamMixed</code> mantienen bytes y límites de pegado en la cola FIFO del trabajador. <code>ResumeCopied</code> y <code>ResumeNativeCopied</code> resuelven sus dependencias de copia en ese mismo orden.</li>
+<li><code>terminal::SelectionCopyDelivery</code> transporta una sola respuesta de copia nativa; no debe consumirse otra vez ni reemplazarse por texto antiguo del portapapeles.</li>
+<li><code>terminal_resume::Deliveries</code> conserva las confirmaciones de la terminal de origen al cambiar de foco. Revisar por separado la confirmación de Resume y la confirmación de cada entrega.</li>
+<li>Después de una entrega incierta, las siguientes entregas dependientes no deben reautorizarse automáticamente. La recuperación distingue texto conocido de operaciones cuyo contenido se resolvió dentro del backend.</li>
+</ul>
+<h2>Contrato que debe comprobarse</h2>
+<p>La entrada posterior a reanudar se despacha en orden al backend de su terminal sin esperar confirmaciones en la interfaz. Una confirmación de entrega no debe bloquear teclas ajenas ni permitir que estas adelanten la copia, el pegado o la salida de copy-mode. Cambiar de foco no cambia el destino de una entrega ya enviada. Un fallo incierto no autoriza reenviar automáticamente el texto.</p>
+<p><strong>Contrato de H/L:</strong> la selección Visual iniciada por TWR determina si H/L mueve la selección. Sin intención Visual propia de la aplicación, H/L cambia el buffer de forma síncrona, antes de procesar las teclas siguientes. Una selección de tmux creada externamente y no observada por TWR no redefine estos atajos. Si el backend pierde una selección propia, informar el error; no cambiar de buffer como fallback tardío.</p>
+<h2>Matriz manual pendiente</h2>
+<table>
+<thead><tr><th>Recorrido con datos sintéticos</th><th>Resultado esperado; todavía no observado en la versión final</th></tr></thead>
+<tbody>
+<tr><td>Escape dos veces, <code>i</code> y escritura inmediata, repetido rápidamente.</td><td>Entrada completa y ordenada; no aparece una retención que requiera revisar o descartar teclas para continuar.</td></tr>
+<tr><td>Dos paneles con <code>cat -v</code>: escribir <code>ANTES</code>, Escape una vez y cambiar de panel; escribir <code>DESPUES</code> en el nuevo destino.</td><td>El prefijo Escape y el texto anterior llegan al origen; el texto nuevo llega solo al destino nuevo. Sin inversión, pérdida ni espera por la confirmación en la interfaz.</td></tr>
+<tr><td>Selección con <code>V</code>, <code>H</code>, <code>gg</code> y <code>Ctrl+G</code>; copiar y pegar.</td><td>Movimiento y selección completos, sin bloqueo por consulta de selección ni error de columna; se pega exactamente lo seleccionado.</td></tr>
+<tr><td>Copiar <code>azul</code>, pegar de inmediato y escribir <code>SIGUIENTE</code>; repetir con dos pegados intercalados con texto.</td><td>Contenido completo en orden. No aparecen delimitadores literales <code>ESC[200~</code> o <code>ESC[201~</code>.</td></tr>
+<tr><td>Selección con ratón y copia/pegado inmediato antes de que termine la confirmación visual de la selección.</td><td>Se usa la copia de ese token, no una selección antigua ni el portapapeles anterior. La escritura posterior no se pierde ni adelanta el pegado.</td></tr>
+<tr><td>Copiar, pegar y cambiar inmediatamente de pestaña o panel; escribir en el destino nuevo.</td><td>El pegado permanece en el origen y las teclas nuevas permanecen en el destino elegido. Las confirmaciones tardías no cambian el foco actual.</td></tr>
+<tr><td>Pegar texto multilínea, Unicode, controles y una entrada grande en un receptor sintético, con y sin bracketed-paste.</td><td>Se conservan bytes y límites de pegado; no se ejecutan secuencias de encuadre como texto literal ni se descarta silenciosamente una parte de la entrada.</td></tr>
+<tr><td>Con contenido descartable, provocar una entrega rechazada, pérdida del backend o respuesta tardía.</td><td>Error explícito, destino preservado y ninguna repetición automática de una escritura incierta. La recuperación no descarta otras entregas pendientes.</td></tr>
+</tbody>
+</table>
+<h2>Disciplina de candidatas</h2>
+<p>Por instrucción del usuario, conservar solo el último paquete Development y solo el último snapshot expandido de fuentes en cada iteración. Cerrar normalmente los procesos que aún usen el artefacto anterior, comprobar rutas e identidades y preservar fuentes únicas y evidencia necesaria antes de retirarlo. No borrar sesiones ni la app instalada. No afirmar que los scripts históricos aplican por sí solos esta regla: el flujo de trabajo debe comprobarla.</p>
+<h2>Evidencia y explicación</h2>
+<p><a href="REVISION-FLUIDEZ-ENTRADA.html">Registro cronológico de observaciones anteriores y límites</a>. Las revisiones allí descritas corresponden a sus candidatas concretas, no prueban la versión final.</p>
+<p><a href="media/fluidez-entrada-sintetico.mp4">Video explicativo sintético en español</a>: 20 segundos, texto y diagramación generados, sin captura de pantalla. Explica el contrato y la validación aplazada; no representa una ejecución real.</p>
+<h2>Cómo cerrar la validación</h2>
+<p>Anotar revisión fuente, candidata exacta, secuencia realizada, resultado observado y cualquier caso no cubierto. Si falla una secuencia, conservar esa observación como reproducción y corregirla sin ocultar errores ni perder entrada. La integración solicitada por el usuario no elimina esta revisión pendiente.</p>
+</main></body></html>
