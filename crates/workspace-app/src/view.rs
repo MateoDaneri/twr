@@ -318,7 +318,6 @@ struct PendingTmuxCopy {
     instance: Arc<()>,
     window: String,
     pane: String,
-    replay_event: Option<u64>,
 }
 struct TerminalResumeZoomOwner {
     context: workspace_app::terminal_resume::Context,
@@ -11176,7 +11175,6 @@ impl WorkspaceView {
             instance: terminal.terminal.instance_identity(),
             window: window_id.to_owned(),
             pane: pane_id.to_owned(),
-            replay_event: None,
         };
         let Some(pane) = self
             .editor_panes
@@ -11353,7 +11351,6 @@ impl WorkspaceView {
             token: input_token, context, surface: Surface::File,
             focus_revision: self.model.focus_revision, focus: Some(destination.focus.clone()),
             zoom: None, instance: instance.clone(), window: window.to_owned(), pane: pane.to_owned(),
-            replay_event: None,
         };
         let gate_context = workspace_app::terminal_jump_gate::Context {
             workspace: project, pane: destination.pane.0, attachment,
@@ -16193,7 +16190,6 @@ impl WorkspaceView {
             instance,
             window: selected.id.clone(),
             pane: selected.active_pane.clone(),
-            replay_event: None,
         })
     }
     fn terminal_key_source_current(&self, source: &PendingTmuxCopy) -> bool {
@@ -17868,7 +17864,6 @@ impl WorkspaceView {
             instance,
             window,
             pane,
-            replay_event,
         });
         if let Some(event) = replay_event
             && let Some(pending) = &mut self.pending_terminal_key
@@ -35816,7 +35811,7 @@ impl WorkspaceView {
                             let rows = ((f32::from(bounds.size.height) / line_height).floor()
                                 as usize)
                                 .clamp(1, 100);
-                            entity.update(cx, |view, cx| {
+                            entity.update(cx, |view, _cx| {
                                 if !view.pane_measurement_current(id, &pane_measurement) {
                                     return;
                                 }

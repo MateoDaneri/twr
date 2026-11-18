@@ -4043,7 +4043,6 @@ impl Backend {
                 if let (Some(expected), Ok(action)) = (&guard, &request)
                     && let Err(error) = session.verify_additional_terminal(expected)
                 {
-                    resume = None;
                     let event = match action {
                         Action::Resume(token) => Event::Resumed(*token, Err(error)),
                         Action::ResumeStreamInput(token, _, _)
