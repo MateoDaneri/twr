@@ -286,11 +286,31 @@ enum Command {
         token: u64,
         reply: SyncSender<Result<String, String>>,
     },
+    #[cfg(feature = "ghostty")]
+    SelectionCopied {
+        token: u64,
+        reply: SyncSender<Result<Arc<Vec<u8>>, String>>,
+    },
     #[cfg(test)]
     WriterBarrier(std::sync::mpsc::SyncSender<()>),
     Resize(u16, u16, u16, u16, Option<SyncSender<Result<(), String>>>),
     Scroll(usize),
     Shutdown,
+}
+/// A single-use native-copy continuation, cloneable only for backend actions.
+#[derive(Clone, Debug)]
+pub struct SelectionCopyDelivery {
+    reply: Arc<Mutex<Option<mpsc::Receiver<Result<Arc<Vec<u8>>, String>>>>>,
+}
+impl SelectionCopyDelivery {
+    pub fn receive(self, timeout: Duration) -> Result<Arc<Vec<u8>>, String> {
+        let receiver = self.reply.lock()
+            .map_err(|_| "Terminal copy continuation lock failed".to_owned())?
+            .take()
+            .ok_or_else(|| "Terminal copy continuation was already consumed".to_owned())?;
+        receiver.recv_timeout(timeout)
+            .map_err(|error| format!("Terminal copy did not complete: {error}"))?
+    }
 }
 pub struct Terminal {
     commands: SyncSender<Command>,
@@ -416,6 +436,8 @@ impl Terminal {
             let mut content_revision: u64 = 0;
             #[cfg(feature = "ghostty")]
             let mut selection_token: Option<u64> = None;
+            #[cfg(feature = "ghostty")]
+            let mut selection_copy: Option<(u64, Result<Arc<Vec<u8>>, String>)> = None;
             let mut error = None;
             let mut exited = false;
             // A viewport explicitly moved into history must be republished
@@ -475,6 +497,7 @@ impl Terminal {
                             col,
                             reply,
                         }) => {
+                            selection_copy = None;
                             let result = if token == 0
                                 || content_revision == u64::MAX
                                 || frame != content_revision
@@ -497,6 +520,7 @@ impl Terminal {
                             col,
                             reply,
                         }) => {
+                            selection_copy = None;
                             let result = if selection_token != Some(token)
                                 || content_revision == u64::MAX
                                 || frame != content_revision
@@ -506,6 +530,9 @@ impl Terminal {
                                 parser.selection_extend(row, col)
                             };
                             changed |= result.is_ok();
+                            if result.is_err() {
+                                selection_token = None;
+                            }
                             let _ = reply.try_send(result);
                         }
                         #[cfg(feature = "ghostty")]
@@ -526,8 +553,20 @@ impl Terminal {
                             let result = if selection_token != Some(token) {
                                 Err("Terminal selection changed".into())
                             } else {
-                                parser.selection_copy()
+                                parser.selection_copy().map(|text| Arc::new(text.into_bytes()))
                             };
+                            let clipboard = result.as_ref()
+                                .map(|bytes| String::from_utf8((**bytes).clone()).expect("selection is UTF-8"))
+                                .map_err(Clone::clone);
+                            selection_copy = Some((token, result));
+                            let _ = reply.try_send(clipboard);
+                        }
+                        #[cfg(feature = "ghostty")]
+                        Ok(Command::SelectionCopied { token, reply }) => {
+                            let result = selection_copy.as_ref()
+                                .filter(|(copied, _)| *copied == token)
+                                .map(|(_, result)| result.clone())
+                                .unwrap_or_else(|| Err("Terminal copy did not complete".into()));
                             let _ = reply.try_send(result);
                         }
                         #[cfg(test)]
@@ -788,6 +827,19 @@ impl Terminal {
             .try_send(Command::SelectionCopy { token, reply })
             .map_err(|_| "Terminal command queue is unavailable".to_owned())?;
         Ok(received)
+    }
+    /// Continue a copy on the same bounded worker queue. The exact result is
+    /// shared with the backend; the UI need not receive its clipboard reply.
+    #[cfg(feature = "ghostty")]
+    pub fn selection_copied(
+        &self,
+        token: u64,
+    ) -> Result<SelectionCopyDelivery, String> {
+        let (reply, received) = mpsc::sync_channel(1);
+        self.commands
+            .try_send(Command::SelectionCopied { token, reply })
+            .map_err(|_| "Terminal command queue is unavailable".to_owned())?;
+        Ok(SelectionCopyDelivery { reply: Arc::new(Mutex::new(Some(received))) })
     }
     pub fn resize(&mut self, rows: u16, cols: u16) -> Result<(), String> {
         self.resize_cells(rows, cols, 0, 0)

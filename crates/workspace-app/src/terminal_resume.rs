@@ -1,7 +1,7 @@
-//! Bounded resume handshake. No bytes leave this gate before backend acknowledgement.
+//! FIFO resume submissions with acknowledgement-bound recovery, independent of focus.
 use std::{
     collections::{HashMap, HashSet, VecDeque},
-    sync::Arc,
+    sync::{Arc, OnceLock},
     time::{Duration, Instant},
 };
 const LIMIT: usize = 4096;
@@ -12,37 +12,45 @@ pub struct Context {
     pub attachment: u64,
 }
 #[derive(Clone, PartialEq, Eq)]
+struct Batch {
+    bytes: Option<Arc<Vec<u8>>>,
+    since: Instant,
+}
+#[derive(Clone, PartialEq, Eq)]
 struct Pending {
     token: u64,
     context: Context,
     waiting_ready: bool,
-    retrying_enqueue: bool,
     bytes: Vec<u8>,
+    paste_ranges: Vec<(usize, usize)>,
     since: Instant,
     retain_after_enqueue_failure: bool,
     halted_after_backend_failure: bool,
     timed_out: bool,
     rejected_waiting_ack: bool,
-    in_flight: Option<Vec<u8>>,
+    batches: VecDeque<Batch>,
+    failed_batches: Vec<Batch>,
     raw_prefix: Option<Arc<Vec<u8>>>,
+}
+impl Pending {
+    fn has_input(&self) -> bool {
+        !self.bytes.is_empty() || !self.batches.is_empty()
+            || !self.failed_batches.is_empty() || self.raw_prefix.is_some()
+    }
+    fn awaiting_ack(&self) -> bool {
+        self.waiting_ready || !self.batches.is_empty()
+    }
 }
 /// Opaque snapshot used to avoid discarding newer input after a quit prompt.
 #[derive(Clone, PartialEq, Eq)]
-pub struct PendingGuard(Pending);
+pub struct PendingGuard {
+    pending: Pending,
+    uncertain: OnceLock<Option<Arc<Vec<u8>>>>,
+}
 #[derive(Default)]
 pub struct Fence {
     sequence: u64,
     pending: Option<Pending>,
-}
-/// A focus change can hand the queued bytes to the same backend, while keeping
-/// the original token. This does not authorize delivery: the backend must still
-/// verify the tmux window and pane associated with that token.
-#[derive(Debug, PartialEq, Eq)]
-pub struct Detached {
-    pub context: Context,
-    pub token: u64,
-    pub bytes: Vec<u8>,
-    pub in_flight: bool,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DeferredAction {
@@ -93,14 +101,15 @@ impl QuitIntent {
 
 struct Delivery {
     context: Context,
-    batches: VecDeque<Option<Vec<u8>>>,
+    waiting_ready: bool,
+    batches: VecDeque<Batch>,
     since: Instant,
 }
 
 struct FailedDelivery {
     id: u64,
     context: Context,
-    bytes: Option<Vec<u8>>,
+    bytes: Option<Arc<Vec<u8>>>,
 }
 
 /// An opaque, generation-bound reference to one possibly executed batch.
@@ -133,20 +142,15 @@ pub fn terminal_delete_busy(
     fence.active() || deliveries.busy(project) || search_pending || rebind_pending || open_pending
 }
 
-/// A terminal router prefix still belongs ahead of any focus change. Do not
-/// detach its earlier queued input until the resume has completed and the
-/// router can deliver that prefix through the original terminal client.
-pub fn router_prefix_blocks_detach(fence: &Fence, terminal: bool, pending: bool) -> bool {
-    fence.active() && terminal && pending
-}
 
-/// Transfer queued input only after it has been accepted by the backend. A
-/// rejected enqueue leaves the fence and its original destination untouched.
-pub fn detach_with_delivery(
+
+/// Transfer outstanding acknowledgements independently of keyboard focus.
+/// Input buffered before attachment is enqueued before ownership is moved.
+pub fn detach_with_delivery_typed(
     fence: &mut Fence,
     deliveries: &mut Deliveries,
     now: Instant,
-    send: impl FnOnce(Context, u64, &[u8]) -> Result<(), String>,
+    send: impl FnOnce(Context, u64, &[u8], &[(usize, usize)]) -> Result<(), String>,
 ) -> Result<bool, String> {
     let Some(pending) = fence.pending.as_ref() else {
         return Ok(false);
@@ -158,56 +162,40 @@ pub fn detach_with_delivery(
     }
     let context = pending.context;
     let token = pending.token;
-    let mut batches = VecDeque::new();
-    if !pending.waiting_ready && !pending.retrying_enqueue {
-        batches.push_back(pending.in_flight.clone());
-    }
-    if !pending.bytes.is_empty() {
-        batches.push_back(Some(pending.bytes.clone()));
-    }
-    if !batches.is_empty() && !deliveries.track_batches(context, token, batches, now) {
-        fence
-            .pending
-            .as_mut()
-            .expect("pending fence")
-            .retain_after_enqueue_failure = true;
+    if deliveries.pending.contains_key(&(context.project, token)) {
+        fence.pending.as_mut().expect("pending fence").retain_after_enqueue_failure = true;
         return Err("No se pudo registrar la confirmación de input pendiente".into());
     }
     if !pending.bytes.is_empty()
-        && let Err(error) = send(context, token, &pending.bytes)
+        && let Err(error) = send(context, token, &pending.bytes, &pending.paste_ranges)
     {
-        deliveries.pending.remove(&(context.project, token));
-        fence
-            .pending
-            .as_mut()
-            .expect("pending fence")
-            .retain_after_enqueue_failure = true;
+        fence.pending.as_mut().expect("pending fence").retain_after_enqueue_failure = true;
         return Err(error);
     }
-    fence.detach();
+    let mut pending = fence.pending.take().expect("pending fence");
+    if !pending.bytes.is_empty() {
+        pending.batches.push_back(Batch {
+            bytes: Some(Arc::new(std::mem::take(&mut pending.bytes))),
+            since: now,
+        });
+    }
+    if pending.waiting_ready || !pending.batches.is_empty() {
+        deliveries.track_batches(
+            context, token, pending.waiting_ready, pending.batches, pending.since,
+        );
+    }
     Ok(true)
 }
 impl Deliveries {
-    #[cfg(test)]
-    pub fn track(&mut self, project: usize, token: u64, count: usize, now: Instant) -> bool {
-        self.track_batches(
-            Context {
-                project,
-                attachment: 0,
-            },
-            token,
-            std::iter::repeat_n(None, count).collect(),
-            now,
-        )
-    }
     fn track_batches(
         &mut self,
         context: Context,
         token: u64,
-        batches: VecDeque<Option<Vec<u8>>>,
+        waiting_ready: bool,
+        batches: VecDeque<Batch>,
         now: Instant,
     ) -> bool {
-        if batches.is_empty() || self.pending.contains_key(&(context.project, token)) {
+        if (!waiting_ready && batches.is_empty()) || self.pending.contains_key(&(context.project, token)) {
             return false;
         }
         self.generation = self.generation.wrapping_add(1);
@@ -215,6 +203,7 @@ impl Deliveries {
             (context.project, token),
             Delivery {
                 context,
+                waiting_ready,
                 batches,
                 since: now,
             },
@@ -254,7 +243,7 @@ impl Deliveries {
             .failed
             .front()
             .filter(|failure| failure.id == guard.id)?;
-        std::str::from_utf8(failure.bytes.as_ref()?).ok()
+        std::str::from_utf8(failure.bytes.as_ref()?.as_slice()).ok()
     }
     pub fn discard_failed_guarded(&mut self, guard: FailedDeliveryGuard) -> bool {
         if guard.generation != self.generation
@@ -285,57 +274,52 @@ impl Deliveries {
         }
         true
     }
-    /// A reply from a different attachment must not consume this delivery,
-    /// even if its project and token happen to match.
+    /// A reply from a different attachment or a ready reply must never consume
+    /// the next input batch.
     pub fn ack_for_context(&mut self, context: Context, token: u64, ok: bool) -> DeliveryAck {
-        if self
-            .pending
-            .get(&(context.project, token))
-            .is_none_or(|delivery| delivery.context != context)
-        {
-            return DeliveryAck::Unknown;
-        }
-        self.ack(context.project, token, ok)
+        self.ack_matching(context, token, false, ok)
     }
-
-    pub fn ack(&mut self, project: usize, token: u64, ok: bool) -> DeliveryAck {
+    pub fn ack_ready_for_context(&mut self, context: Context, token: u64, ok: bool) -> DeliveryAck {
+        self.ack_matching(context, token, true, ok)
+    }
+    fn ack_matching(&mut self, context: Context, token: u64, ready: bool, ok: bool) -> DeliveryAck {
+        let project = context.project;
         let key = (project, token);
-        let Some(delivery) = self.pending.get_mut(&key) else {
+        let Some(delivery) = self.pending.get_mut(&key).filter(|delivery| {
+            delivery.context == context && delivery.waiting_ready == ready
+        }) else {
             return DeliveryAck::Unknown;
         };
-        let context = delivery.context;
-        let bytes = delivery
-            .batches
-            .pop_front()
-            .expect("tracked nonempty delivery");
-        if delivery.batches.is_empty() {
+        let bytes = if ready {
+            delivery.waiting_ready = false;
+            None
+        } else {
+            delivery.batches.pop_front().expect("tracked nonempty delivery").bytes
+        };
+        if let Some(next) = delivery.batches.front() {
+            delivery.since = next.since;
+        } else {
             self.pending.remove(&key);
         }
         self.generation = self.generation.wrapping_add(1);
         if !ok {
-            self.next_failure = self.next_failure.wrapping_add(1);
-            self.failed.push_back(FailedDelivery {
-                id: self.next_failure,
-                context,
-                bytes,
-            });
+            if !ready {
+                self.next_failure = self.next_failure.wrapping_add(1);
+                self.failed.push_back(FailedDelivery {
+                    id: self.next_failure,
+                    context,
+                    bytes,
+                });
+            }
             self.deferred.remove(&project);
             self.warned.insert(project);
         }
         if self.busy(project) {
-            return if ok {
-                DeliveryAck::Pending
-            } else {
-                DeliveryAck::Failed
-            };
+            return if ok { DeliveryAck::Pending } else { DeliveryAck::Failed };
         }
         self.warned.remove(&project);
         let deferred = self.deferred.remove(&project);
-        if ok {
-            DeliveryAck::Finished(deferred)
-        } else {
-            DeliveryAck::Failed
-        }
+        if ok { DeliveryAck::Finished(deferred) } else { DeliveryAck::Failed }
     }
     /// A timeout is not proof of non-delivery. Keep the gate closed and
     /// cancel deferred actions; a late acknowledgement still resolves it.
@@ -363,14 +347,15 @@ impl Fence {
             token: self.sequence,
             context,
             waiting_ready: true,
-            retrying_enqueue: false,
             bytes: Vec::new(),
+            paste_ranges: Vec::new(),
             since: now,
             retain_after_enqueue_failure: false,
             halted_after_backend_failure: false,
             timed_out: false,
             rejected_waiting_ack: false,
-            in_flight: None,
+            batches: VecDeque::new(),
+            failed_batches: Vec::new(),
             raw_prefix: None,
         });
         self.sequence
@@ -378,13 +363,108 @@ impl Fence {
     pub fn active(&self) -> bool {
         self.pending.is_some()
     }
+    pub fn context(&self) -> Option<Context> {
+        self.pending.as_ref().map(|pending| pending.context)
+    }
+    /// Enqueue directly behind Resume on the same worker. UI replies only
+    /// release recovery data; they never authorize the next submission.
+    pub fn submit(
+        &mut self,
+        context: Context,
+        bytes: &[u8],
+        paste: bool,
+        now: Instant,
+        send: impl FnOnce(u64, Arc<Vec<u8>>, bool) -> Result<(), String>,
+    ) -> Result<bool, String> {
+        let Some(pending) = self.pending.as_mut() else { return Ok(false); };
+        Self::check_submission(pending, context)?;
+        if !pending.bytes.is_empty() {
+            return Err("La entrada inicial aún no se envió al backend".into());
+        }
+        if bytes.is_empty() { return Ok(true); }
+        let bytes = Arc::new(bytes.to_vec());
+        if let Err(error) = send(pending.token, Arc::clone(&bytes), paste) {
+            pending.retain_after_enqueue_failure = true;
+            return Err(error);
+        }
+        if !pending.awaiting_ack() { pending.since = now; }
+        pending.batches.push_back(Batch {
+            bytes: Some(bytes),
+            since: now,
+        });
+        Ok(true)
+    }
+    /// Flush input held only because the backend had not attached yet.
+    /// Failure is locally unsent and requires an explicit recovery decision.
+    pub fn submit_buffered(
+        &mut self,
+        context: Context,
+        now: Instant,
+        send: impl FnOnce(u64, Arc<Vec<u8>>, Vec<(usize, usize)>) -> Result<(), String>,
+    ) -> Result<bool, String> {
+        let Some(pending) = self.pending.as_mut() else { return Ok(false); };
+        Self::check_submission(pending, context)?;
+        if pending.bytes.is_empty() { return Ok(true); }
+        let bytes = Arc::new(std::mem::take(&mut pending.bytes));
+        let ranges = std::mem::take(&mut pending.paste_ranges);
+        if let Err(error) = send(pending.token, Arc::clone(&bytes), ranges) {
+            pending.raw_prefix = Some(bytes);
+            pending.retain_after_enqueue_failure = true;
+            pending.halted_after_backend_failure = true;
+            return Err(error);
+        }
+        if !pending.awaiting_ack() { pending.since = now; }
+        pending.batches.push_back(Batch {
+            bytes: Some(bytes),
+            since: now,
+        });
+        Ok(true)
+    }
+    fn check_submission(pending: &mut Pending, context: Context) -> Result<(), String> {
+        if pending.context != context {
+            pending.retain_after_enqueue_failure = true;
+            return Err("Destino cambió durante la transición; entrada original conservada".into());
+        }
+        if pending.halted_after_backend_failure || pending.timed_out || pending.rejected_waiting_ack {
+            return Err("Entrada original conservada; este evento no se envió".into());
+        }
+        Ok(())
+    }
+    /// Snapshot earlier input so it can be sent together with a pending copy
+    /// and paste as a single ordered backend action.
+    pub fn waiting_input(&self, context: Context) -> Option<(u64, Vec<u8>, Vec<(usize, usize)>)> {
+        self.pending.as_ref().filter(|p| {
+            p.context == context && p.raw_prefix.is_none()
+                && !p.retain_after_enqueue_failure && !p.timed_out
+                && !p.halted_after_backend_failure && !p.rejected_waiting_ack
+        }).map(|p| (p.token, p.bytes.clone(), p.paste_ranges.clone()))
+    }
+    pub fn mark_ordered_paste(&mut self, context: Context, token: u64) -> bool {
+        let Some(pending) = self.pending.as_mut().filter(|p| {
+            p.context == context && p.token == token && p.raw_prefix.is_none()
+                && !p.retain_after_enqueue_failure && !p.timed_out
+                && !p.halted_after_backend_failure && !p.rejected_waiting_ack
+        }) else { return false; };
+        let now = Instant::now();
+        if !pending.awaiting_ack() { pending.since = now; }
+        pending.batches.push_back(Batch {
+            bytes: (!pending.bytes.is_empty())
+                .then(|| Arc::new(std::mem::take(&mut pending.bytes))),
+            since: now,
+        });
+        pending.paste_ranges.clear();
+        true
+    }
     pub fn timed_out(&self) -> bool {
         self.pending.as_ref().is_some_and(|p| p.timed_out)
     }
     pub fn awaiting_recovery_ack(&self) -> bool {
         self.pending
             .as_ref()
-            .is_some_and(|p| p.timed_out || p.rejected_waiting_ack)
+            .is_some_and(|p| {
+                (p.timed_out || p.rejected_waiting_ack || p.halted_after_backend_failure)
+                    && p.awaiting_ack()
+            })
     }
     pub fn recovery_blocked(&self) -> bool {
         self.pending.as_ref().is_some_and(|p| {
@@ -436,23 +516,16 @@ impl Fence {
         let p = self.pending.as_mut().expect("checked pending fence");
         p.raw_prefix = Some(Arc::new(bytes));
         p.retain_after_enqueue_failure = true;
-        if p.retrying_enqueue {
-            // This batch was rejected locally and has no outstanding ack.
-            p.halted_after_backend_failure = true;
-        } else {
-            p.rejected_waiting_ack = true;
-        }
+        p.rejected_waiting_ack = p.awaiting_ack();
+        p.halted_after_backend_failure = !p.rejected_waiting_ack;
         Ok(())
     }
     pub fn retained_guard(&self) -> Option<PendingGuard> {
-        self.pending
-            .as_ref()
-            .filter(|p| p.retain_after_enqueue_failure)
-            .cloned()
-            .map(PendingGuard)
+        let pending = self.pending.as_ref().filter(|p| p.retain_after_enqueue_failure)?;
+        Some(PendingGuard { pending: pending.clone(), uncertain: OnceLock::new() })
     }
     pub fn cancel_guarded(&mut self, guard: &PendingGuard) -> bool {
-        if self.pending.as_ref() != Some(&guard.0) {
+        if self.pending.as_ref() != Some(&guard.pending) {
             return false;
         }
         self.pending = None;
@@ -461,7 +534,7 @@ impl Fence {
     /// Return only the unsent text from the exact state shown to the user.
     /// Never reinterpret partial UTF-8 or include an earlier uncertain write.
     pub fn text_if_guarded(&self, guard: &PendingGuard) -> Option<&str> {
-        let pending = self.pending.as_ref().filter(|p| **p == guard.0)?;
+        let pending = self.pending.as_ref().filter(|p| **p == guard.pending)?;
         if !pending.bytes.is_empty() {
             return std::str::from_utf8(&pending.bytes).ok();
         }
@@ -469,8 +542,7 @@ impl Fence {
         // queue limit. Permit explicit copying without treating controls or
         // an uncertain in-flight batch as plain unsent text.
         let raw = pending.raw_prefix.as_ref()?;
-        if pending.in_flight.is_some()
-            || raw.len() > 2 * 1024 * 1024
+        if raw.len() > 2 * 1024 * 1024
             || raw
                 .iter()
                 .any(|b| (*b < 32 && !matches!(*b, 8 | 9 | 10 | 13)) || *b == 127)
@@ -479,16 +551,32 @@ impl Fence {
         }
         std::str::from_utf8(raw).ok()
     }
-    /// This earlier batch reached the backend, but may or may not have run.
-    pub fn uncertain_text_if_guarded(&self, guard: &PendingGuard) -> Option<&str> {
-        let pending = self.pending.as_ref().filter(|p| **p == guard.0)?;
-        std::str::from_utf8(pending.in_flight.as_ref()?).ok()
+    /// All submitted batches still lacking a successful acknowledgement, in
+    /// backend order. Concatenation is done only for the explicit quit snapshot.
+    pub fn uncertain_text_if_guarded<'a>(&self, guard: &'a PendingGuard) -> Option<&'a str> {
+        self.pending.as_ref().filter(|p| **p == guard.pending)?;
+        let uncertain = guard.uncertain.get_or_init(|| {
+            let pending = &guard.pending;
+            let mut bytes = pending.failed_batches.iter().chain(&pending.batches)
+                .filter_map(|batch| batch.bytes.as_ref());
+            bytes.next().map(|first| {
+                let Some(second) = bytes.next() else { return Arc::clone(first); };
+                let mut all = Vec::with_capacity(
+                    first.len() + second.len() + bytes.clone().map(|batch| batch.len()).sum::<usize>(),
+                );
+                all.extend_from_slice(first);
+                all.extend_from_slice(second);
+                for batch in bytes { all.extend_from_slice(batch); }
+                Arc::new(all)
+            })
+        });
+        std::str::from_utf8(uncertain.as_ref()?.as_slice()).ok()
     }
     /// Control sequences are exposed as hex only, never replayed as input.
     /// Limit the clipboard representation; the original allocation is retained.
     pub fn prefix_hex_if_guarded(&self, guard: &PendingGuard) -> Option<String> {
         use std::fmt::Write;
-        let pending = self.pending.as_ref().filter(|p| **p == guard.0)?;
+        let pending = self.pending.as_ref().filter(|p| **p == guard.pending)?;
         let raw = pending.raw_prefix.as_ref()?;
         if raw.len() > LIMIT {
             return None;
@@ -504,21 +592,11 @@ impl Fence {
             p.context == context
                 && p.token == token
                 && p.waiting_ready == ready
-                && !p.halted_after_backend_failure
-                && (ready || !p.retrying_enqueue)
+                && (ready || !p.batches.is_empty())
         })
     }
     pub fn cancel(&mut self) -> bool {
-        self.pending.take().is_some_and(|p| !p.bytes.is_empty())
-    }
-    pub fn detach(&mut self) -> Option<Detached> {
-        let pending = self.pending.take()?;
-        Some(Detached {
-            context: pending.context,
-            token: pending.token,
-            bytes: pending.bytes,
-            in_flight: !pending.waiting_ready && !pending.retrying_enqueue,
-        })
+        self.pending.take().is_some_and(|p| p.has_input())
     }
     pub fn expired(&self, now: Instant) -> bool {
         self.pending.as_ref().is_some_and(|p| {
@@ -526,8 +604,8 @@ impl Fence {
         })
     }
     /// An elapsed deadline is not evidence that tmux did not execute input.
-    /// Keep both batches and accept a matching late acknowledgement, but do
-    /// not enqueue later text automatically after the deadline.
+    /// Keep every outstanding batch and accept matching late acknowledgements,
+    /// without replaying any bytes after the deadline.
     pub fn mark_expired(&mut self, now: Instant) -> ResumeTimeout {
         self.mark_expired_with_prefix(now, Vec::new)
     }
@@ -545,7 +623,7 @@ impl Fence {
         if !prefix.is_empty() {
             pending.raw_prefix = Some(Arc::new(prefix));
         }
-        if pending.bytes.is_empty() && pending.in_flight.is_none() && pending.raw_prefix.is_none() {
+        if !pending.has_input() {
             self.pending = None;
             return ResumeTimeout::NoInput;
         }
@@ -553,40 +631,7 @@ impl Fence {
         pending.retain_after_enqueue_failure = true;
         ResumeTimeout::Retained
     }
-    /// A rejected local enqueue cannot have delivered these bytes. Keep them
-    /// ahead of later keystrokes and retry only against the same attachment.
-    pub fn retain_unsent(&mut self, context: Context, token: u64, bytes: Vec<u8>) -> bool {
-        let Some(pending) = self.pending.as_mut().filter(|p| {
-            p.context == context
-                && p.token == token
-                && !p.waiting_ready
-                && !p.halted_after_backend_failure
-                && !p.timed_out
-                && !p.rejected_waiting_ack
-        }) else {
-            return false;
-        };
-        let mut combined = bytes;
-        pending.in_flight = None;
-        combined.append(&mut pending.bytes);
-        pending.bytes = combined;
-        pending.retrying_enqueue = true;
-        pending.retain_after_enqueue_failure = true;
-        true
-    }
-    pub fn take_retry(&mut self) -> Option<(Context, u64, Vec<u8>)> {
-        let pending = self.pending.as_mut().filter(|p| {
-            p.retrying_enqueue
-                && !p.halted_after_backend_failure
-                && !p.timed_out
-                && !p.rejected_waiting_ack
-        })?;
-        pending.retrying_enqueue = false;
-        let bytes = std::mem::take(&mut pending.bytes);
-        pending.in_flight = Some(bytes.clone());
-        Some((pending.context, pending.token, bytes))
-    }
-    /// During the handshake, retain input in order until the target is ready.
+    /// Retain input only while its backend has not attached yet.
     pub fn push(&mut self, context: Context, bytes: &[u8]) -> Result<bool, String> {
         let Some(p) = self.pending.as_mut() else {
             return Ok(false);
@@ -601,17 +646,15 @@ impl Fence {
         p.bytes.extend_from_slice(bytes);
         Ok(true)
     }
-    /// A stale/wrong-project ack never drains another context. Success returns
-    /// exactly one batch; another acknowledgement is needed before releasing input.
-    pub fn ack(
-        &mut self,
-        context: Context,
-        token: u64,
-        ready: bool,
-        ok: bool,
-        now: Instant,
-    ) -> Option<Vec<u8>> {
-        self.ack_with_failure_prefix(context, token, ready, ok, now, Vec::new)
+    /// Record paste boundaries separately from their bytes so the backend can
+    /// use the destination application's current bracketed-paste mode.
+    pub fn push_paste(&mut self, context: Context, bytes: &[u8]) -> Result<bool, String> {
+        let start = self.pending.as_ref().map(|pending| pending.bytes.len()).unwrap_or(0);
+        if !self.push(context, bytes)? { return Ok(false); }
+        if !bytes.is_empty() {
+            self.pending.as_mut().expect("paste accepted").paste_ranges.push((start, start + bytes.len()));
+        }
+        Ok(true)
     }
     /// On an error the caller changes focus. Capture any partially routed
     /// terminal key before changing that focus and before releasing the fence.
@@ -622,13 +665,12 @@ impl Fence {
         token: u64,
         ready: bool,
         ok: bool,
-        now: Instant,
         take_prefix: impl FnOnce() -> Vec<u8>,
-    ) -> Option<Vec<u8>> {
+    ) -> bool {
         if !self.expects(context, token, ready) {
-            return None;
+            return false;
         }
-        if !ok && !self.awaiting_recovery_ack() {
+        if !ok && !self.recovery_blocked() {
             let prefix = take_prefix();
             if !prefix.is_empty() {
                 let pending = self.pending.as_mut().expect("matching fence exists");
@@ -636,479 +678,326 @@ impl Fence {
                 pending.raw_prefix = Some(Arc::new(prefix));
             }
         }
-        let p = self.pending.as_mut()?;
-        if p.token != token
-            || p.context != context
-            || p.waiting_ready != ready
-            || p.halted_after_backend_failure
-            || (!ready && p.retrying_enqueue)
-        {
-            return None;
+        let p = self.pending.as_mut().expect("matching fence exists");
+        let was_blocked = p.timed_out || p.rejected_waiting_ack || p.halted_after_backend_failure;
+        if ready {
+            p.waiting_ready = false;
+        } else {
+            let batch = p.batches.pop_front().expect("expected FIFO acknowledgement");
+            if !ok { p.failed_batches.push(batch); }
         }
-        if p.timed_out || p.rejected_waiting_ack {
-            if ok && !ready {
-                // A successful late write ack resolves only the earlier
-                // in-flight batch; later buffered bytes were not sent.
-                p.in_flight = None;
-            }
-            if ok && p.bytes.is_empty() && p.in_flight.is_none() && p.raw_prefix.is_none() {
+        if let Some(next) = p.batches.front() { p.since = next.since; }
+        if !ok || was_blocked {
+            if !p.has_input() && !p.awaiting_ack() {
                 self.pending = None;
             } else {
-                // Do not send buffered input after a timeout without a new
-                // explicit user decision, even if the late ready ack succeeds.
-                p.timed_out = false;
-                p.rejected_waiting_ack = false;
-                p.halted_after_backend_failure = true;
-            }
-            return None;
-        }
-        if !ok {
-            if p.bytes.is_empty() && p.in_flight.is_none() && p.raw_prefix.is_none() {
-                self.pending = None;
-            } else {
-                // Bytes in `bytes` have never left this fence. An earlier
-                // batch may have run, so do not retry or concatenate it here.
-                p.halted_after_backend_failure = true;
                 p.retain_after_enqueue_failure = true;
+                p.halted_after_backend_failure = true;
+                if !p.awaiting_ack() {
+                    p.timed_out = false;
+                    p.rejected_waiting_ack = false;
+                }
             }
-            return None;
+            return true;
         }
-        if !ready {
-            p.in_flight = None;
-        }
+        // A ready reply or an earlier batch must not drain data that is
+        // already queued on the worker, nor release direct PTY writes early.
+        if !p.batches.is_empty() { return true; }
         if p.bytes.is_empty() {
             self.pending = None;
-            return None;
+            return true;
         }
-        p.waiting_ready = false;
-        p.since = now;
-        let bytes = std::mem::take(&mut p.bytes);
-        p.in_flight = Some(bytes.clone());
-        Some(bytes)
+        true
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn context() -> Context {
+        Context { project: 1, attachment: 5 }
+    }
+
     #[test]
     fn unsent_input_during_reattach_is_retained_without_waiting_for_an_ack() {
-        let context = Context {
-            project: 2,
-            attachment: 7,
-        };
+        let context = Context { project: 2, attachment: 7 };
         let mut fence = Fence::default();
-        fence
-            .retain_before_backend(context, b"synthetic input".to_vec(), Instant::now())
-            .unwrap();
+        fence.retain_before_backend(context, b"synthetic input".to_vec(), Instant::now()).unwrap();
         assert!(fence.active());
         assert!(fence.recovery_blocked());
         assert!(!fence.awaiting_recovery_ack());
         let guard = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&guard), Some("synthetic input"));
-        assert!(
-            fence
-                .retain_before_backend(context, b"new".to_vec(), Instant::now())
-                .is_err()
-        );
+        assert!(fence.retain_before_backend(context, b"new".to_vec(), Instant::now()).is_err());
         assert!(fence.cancel_guarded(&guard));
         assert!(!fence.active());
-        fence
-            .retain_before_backend(context, b"\x1b[A".to_vec(), Instant::now())
-            .unwrap();
+        fence.retain_before_backend(context, b"\x1b[A".to_vec(), Instant::now()).unwrap();
         let guard = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&guard), None);
-        assert_eq!(
-            fence.prefix_hex_if_guarded(&guard).as_deref(),
-            Some("1b5b41")
-        );
+        assert_eq!(fence.prefix_hex_if_guarded(&guard).as_deref(), Some("1b5b41"));
         assert!(fence.cancel_guarded(&guard));
     }
+
     #[test]
     fn detached_ack_requires_the_original_attachment() {
         let now = Instant::now();
-        let original = Context {
-            project: 4,
-            attachment: 77,
-        };
-        let other = Context {
-            project: 4,
-            attachment: 78,
-        };
+        let original = Context { project: 4, attachment: 77 };
+        let other = Context { project: 4, attachment: 78 };
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
         let token = fence.begin(original, now);
-        fence.push(original, b"preserved").unwrap();
-        assert!(detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| Ok(())).unwrap());
-        assert_eq!(
-            deliveries.ack_for_context(other, token, true),
-            DeliveryAck::Unknown
-        );
+        fence.submit(original, b"preserved", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            panic!("already submitted")
+        }).unwrap());
+        assert_eq!(deliveries.ack_ready_for_context(other, token, true), DeliveryAck::Unknown);
+        assert_eq!(deliveries.ack_for_context(original, token, true), DeliveryAck::Unknown);
+        assert_eq!(deliveries.ack_ready_for_context(original, token, true), DeliveryAck::Pending);
+        assert_eq!(deliveries.ack_for_context(other, token, true), DeliveryAck::Unknown);
         assert!(deliveries.busy(original.project));
-        assert_eq!(
-            deliveries.ack_for_context(original, token, true),
-            DeliveryAck::Finished(None)
-        );
+        assert_eq!(deliveries.ack_for_context(original, token, true), DeliveryAck::Finished(None));
         assert!(!deliveries.busy(original.project));
     }
+
     #[test]
     fn quit_override_cannot_discard_input_that_changed_after_prompt() {
         let now = Instant::now();
-        let context = Context {
-            project: 1,
-            attachment: 5,
-        };
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
-        let token = fence.begin(context, now);
+        let token = fence.begin(context(), now);
         assert!(fence.retained_guard().is_none());
-        fence.push(context, b"first").unwrap();
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| Err(
-                "full".into()
-            ))
-            .is_err()
-        );
+        fence.push(context(), b"first").unwrap();
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            Err("full".into())
+        }).is_err());
         let stale = fence.retained_guard().unwrap();
-        fence.push(context, b"-later").unwrap();
+        fence.push(context(), b"-later").unwrap();
         assert!(!fence.cancel_guarded(&stale));
         let current = fence.retained_guard().unwrap();
         assert!(fence.cancel_guarded(&current));
         assert!(!fence.active());
-        assert!(fence.ack(context, token, true, true, now).is_none());
+        assert!(!fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
     }
+
     #[test]
     fn quit_override_expires_when_pending_input_is_accepted() {
         let now = Instant::now();
-        let context = Context {
-            project: 1,
-            attachment: 5,
-        };
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
-        let token = fence.begin(context, now);
-        fence.push(context, b"first").unwrap();
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| Err(
-                "full".into()
-            ))
-            .is_err()
-        );
+        let token = fence.begin(context(), now);
+        fence.push(context(), b"first").unwrap();
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            Err("full".into())
+        }).is_err());
         let stale = fence.retained_guard().unwrap();
-        assert_eq!(
-            fence.ack(context, token, true, true, now),
-            Some(b"first".to_vec())
-        );
+        assert!(fence.submit_buffered(context(), now, |id, bytes, ranges| {
+            assert_eq!(id, token);
+            assert_eq!(bytes.as_slice(), b"first");
+            assert!(ranges.is_empty());
+            Ok(())
+        }).unwrap());
         assert!(!fence.cancel_guarded(&stale));
         assert!(fence.active());
     }
-    #[test]
-    fn rejected_ack_enqueue_retries_in_order_without_inventing_an_ack() {
-        let now = Instant::now();
-        let context = Context {
-            project: 1,
-            attachment: 5,
-        };
-        let mut fence = Fence::default();
-        let mut deliveries = Deliveries::default();
-        let token = fence.begin(context, now);
-        fence.push(context, b"first").unwrap();
-        let batch = fence.ack(context, token, true, true, now).unwrap();
-        assert!(fence.retain_unsent(context, token, batch));
-        fence.push(context, b"-second").unwrap();
-        assert!(!fence.expired(now + TIMEOUT + Duration::from_secs(1)));
-        assert!(!fence.expects(context, token, false));
-        assert!(fence.ack(context, token, false, true, now).is_none());
-        let (owner, id, retry) = fence.take_retry().unwrap();
-        assert_eq!(
-            (owner, id, retry.as_slice()),
-            (context, token, b"first-second".as_slice())
-        );
-        assert!(fence.retain_unsent(owner, id, retry));
-        let mut sent = Vec::new();
-        assert_eq!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, bytes| {
-                sent.extend_from_slice(bytes);
-                Ok(())
-            }),
-            Ok(true)
-        );
-        assert_eq!(sent, b"first-second");
-        assert_eq!(deliveries.ack(1, token, true), DeliveryAck::Finished(None));
-        assert!(!deliveries.busy(1));
-    }
+
     #[test]
     fn failed_detach_enqueue_preserves_buffer_and_ready_ack_path() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
-        let context = Context {
-            project: 1,
-            attachment: 5,
-        };
-        let token = fence.begin(context, now);
-        fence.push(context, b"kept").unwrap();
-        let failure = detach_with_delivery(&mut fence, &mut deliveries, now, |owner, id, bytes| {
-            assert_eq!((owner, id, bytes), (context, token, b"kept".as_slice()));
-            Err("queue full".into())
-        });
+        let token = fence.begin(context(), now);
+        fence.push(context(), b"kept").unwrap();
+        let failure = detach_with_delivery_typed(
+            &mut fence, &mut deliveries, now, |owner, id, bytes, ranges| {
+                assert_eq!((owner, id, bytes), (context(), token, b"kept".as_slice()));
+                assert!(ranges.is_empty());
+                Err("queue full".into())
+            },
+        );
         assert_eq!(failure, Err("queue full".into()));
         assert!(fence.active());
         assert!(!deliveries.busy(1));
         assert!(!fence.expired(now + TIMEOUT + Duration::from_secs(1)));
-        assert_eq!(
-            fence.ack(context, token, true, true, now),
-            Some(b"kept".to_vec())
-        );
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
+        let guard = fence.retained_guard().unwrap();
+        assert_eq!(fence.text_if_guarded(&guard), Some("kept"));
+        assert_eq!(fence.uncertain_text_if_guarded(&guard), None);
     }
+
     #[test]
     fn failed_detach_enqueue_preserves_inflight_ack_and_later_bytes() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
-        let context = Context {
-            project: 1,
-            attachment: 5,
-        };
-        let token = fence.begin(context, now);
-        fence.push(context, b"first").unwrap();
-        assert_eq!(
-            fence.ack(context, token, true, true, now),
-            Some(b"first".to_vec())
-        );
-        fence.push(context, b"second").unwrap();
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| Err(
-                "queue full".into()
-            ))
-            .is_err()
-        );
+        let token = fence.begin(context(), now);
+        fence.submit(context(), b"first", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
+        fence.push(context(), b"second").unwrap();
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            Err("queue full".into())
+        }).is_err());
         assert!(!deliveries.busy(1));
-        assert!(fence.expects(context, token, false));
-        assert_eq!(
-            fence.ack(context, token, false, true, now),
-            Some(b"second".to_vec())
-        );
+        assert!(fence.expects(context(), token, false));
+        assert!(fence.ack_with_failure_prefix(context(), token, false, true, Vec::new));
+        let guard = fence.retained_guard().unwrap();
+        assert_eq!(fence.text_if_guarded(&guard), Some("second"));
+        assert_eq!(fence.uncertain_text_if_guarded(&guard), None);
     }
+
     #[test]
     fn accepted_detach_tracks_once_and_releases_fence() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
-        let context = Context {
-            project: 1,
-            attachment: 5,
-        };
-        let token = fence.begin(context, now);
-        fence.push(context, b"kept").unwrap();
+        let token = fence.begin(context(), now);
+        fence.push_paste(context(), b"kept").unwrap();
         let mut sent = Vec::new();
-        assert_eq!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |owner, id, bytes| {
-                assert_eq!((owner, id), (context, token));
+        assert_eq!(detach_with_delivery_typed(
+            &mut fence, &mut deliveries, now, |owner, id, bytes, ranges| {
+                assert_eq!((owner, id), (context(), token));
+                assert_eq!(ranges, &[(0, 4)]);
                 sent.extend_from_slice(bytes);
                 Ok(())
-            }),
-            Ok(true)
-        );
+            },
+        ), Ok(true));
         assert_eq!(sent, b"kept");
         assert!(!fence.active());
         assert!(deliveries.busy(1));
-        assert_eq!(deliveries.ack(1, token, true), DeliveryAck::Finished(None));
+        assert_eq!(deliveries.ack_ready_for_context(context(), token, true), DeliveryAck::Pending);
+        assert_eq!(deliveries.ack_for_context(context(), token, true), DeliveryAck::Finished(None));
     }
+
     #[test]
     fn detached_failed_batches_remain_separate_and_are_never_automatically_replayed() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
         let token = fence.begin(context(), now);
-        fence.push(context(), b"first possibly sent").unwrap();
-        assert_eq!(
-            fence.ack(context(), token, true, true, now),
-            Some(b"first possibly sent".to_vec())
-        );
-        fence.push(context(), b"second possibly sent").unwrap();
-        let mut accepted = Vec::new();
-        assert_eq!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, bytes| {
-                accepted.extend_from_slice(bytes);
-                Ok(())
-            }),
-            Ok(true)
-        );
-        assert_eq!(accepted, b"second possibly sent");
-        assert_eq!(
-            deliveries.ack(context().project, token, false),
-            DeliveryAck::Failed
-        );
+        fence.submit(context(), b"first possibly sent", false, now, |_, _, _| Ok(())).unwrap();
+        fence.submit(context(), b"second possibly sent", true, now, |_, _, _| Ok(())).unwrap();
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            panic!("already submitted")
+        }).unwrap());
+        assert_eq!(deliveries.ack_ready_for_context(context(), token, true), DeliveryAck::Pending);
+        assert_eq!(deliveries.ack_for_context(context(), token, false), DeliveryAck::Failed);
         let stale = deliveries.failed_guard().unwrap();
-        assert_eq!(
-            deliveries.failed_text_if_guarded(stale),
-            Some("first possibly sent")
-        );
+        assert_eq!(deliveries.failed_text_if_guarded(stale), Some("first possibly sent"));
         assert!(!deliveries.quit_ready(Some(deliveries.generation())));
-        assert_eq!(
-            deliveries.ack(context().project, token, false),
-            DeliveryAck::Failed
-        );
+        assert_eq!(deliveries.ack_for_context(context(), token, false), DeliveryAck::Failed);
         assert_eq!(deliveries.failed_text_if_guarded(stale), None);
         assert!(!deliveries.discard_failed_guarded(stale));
         let first = deliveries.failed_guard().unwrap();
-        assert_eq!(
-            deliveries.failed_text_if_guarded(first),
-            Some("first possibly sent")
-        );
+        assert_eq!(deliveries.failed_text_if_guarded(first), Some("first possibly sent"));
         assert!(deliveries.discard_failed_guarded(first));
         let second = deliveries.failed_guard().unwrap();
-        assert_eq!(
-            deliveries.failed_text_if_guarded(second),
-            Some("second possibly sent")
-        );
+        assert_eq!(deliveries.failed_text_if_guarded(second), Some("second possibly sent"));
         assert!(deliveries.discard_failed_guarded(second));
         assert!(!deliveries.any_busy());
-        assert_eq!(
-            deliveries.ack(context().project, token, false),
-            DeliveryAck::Unknown
-        );
+        assert_eq!(deliveries.ack_for_context(context(), token, false), DeliveryAck::Unknown);
     }
+
     #[test]
     fn terminal_delete_waits_for_resume_and_its_project_deliveries() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let mut deliveries = Deliveries::default();
-        let context = Context {
-            project: 1,
-            attachment: 5,
-        };
-        let token = fence.begin(context, now);
-        assert!(fence.push(context, b"queued").unwrap());
-        assert!(terminal_delete_busy(
-            &fence,
-            &deliveries,
-            1,
-            false,
-            false,
-            false
-        ));
-        let pending = fence.detach().unwrap();
-        assert_eq!(pending.bytes, b"queued");
-        assert!(deliveries.track(1, token, 1, now));
-        assert!(terminal_delete_busy(
-            &fence,
-            &deliveries,
-            1,
-            false,
-            false,
-            false
-        ));
-        assert!(!terminal_delete_busy(
-            &fence,
-            &deliveries,
-            2,
-            false,
-            false,
-            false
-        ));
-        assert_eq!(deliveries.ack(2, token, true), DeliveryAck::Unknown);
-        assert!(terminal_delete_busy(
-            &fence,
-            &deliveries,
-            1,
-            false,
-            false,
-            false
-        ));
-        assert_eq!(deliveries.ack(1, token, true), DeliveryAck::Finished(None));
-        assert!(!terminal_delete_busy(
-            &fence,
-            &deliveries,
-            1,
-            false,
-            false,
-            false
-        ));
-        for (search, rebind, open) in [
-            (true, false, false),
-            (false, true, false),
-            (false, false, true),
-        ] {
-            assert!(terminal_delete_busy(
-                &fence,
-                &deliveries,
-                1,
-                search,
-                rebind,
-                open
-            ));
+        let token = fence.begin(context(), now);
+        fence.submit(context(), b"queued", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(terminal_delete_busy(&fence, &deliveries, 1, false, false, false));
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            panic!("already submitted")
+        }).unwrap());
+        assert_eq!(deliveries.ack_ready_for_context(context(), token, true), DeliveryAck::Pending);
+        assert!(terminal_delete_busy(&fence, &deliveries, 1, false, false, false));
+        assert!(!terminal_delete_busy(&fence, &deliveries, 2, false, false, false));
+        let other = Context { project: 2, ..context() };
+        assert_eq!(deliveries.ack_for_context(other, token, true), DeliveryAck::Unknown);
+        assert!(terminal_delete_busy(&fence, &deliveries, 1, false, false, false));
+        assert_eq!(deliveries.ack_for_context(context(), token, true), DeliveryAck::Finished(None));
+        assert!(!terminal_delete_busy(&fence, &deliveries, 1, false, false, false));
+        for (search, rebind, open) in [(true, false, false), (false, true, false), (false, false, true)] {
+            assert!(terminal_delete_busy(&fence, &deliveries, 1, search, rebind, open));
         }
     }
+
     #[test]
     fn deferred_session_actions_wait_for_every_delivery_and_are_project_scoped() {
         let now = Instant::now();
         let mut deliveries = Deliveries::default();
-        assert!(!deliveries.track(1, 10, 0, now));
-        assert!(deliveries.track(1, 10, 2, now));
-        assert!(!deliveries.track(1, 10, 1, now));
-        assert!(deliveries.track(1, 11, 1, now));
-        assert!(deliveries.track(2, 12, 1, now));
+        let other = Context { project: 2, ..context() };
+        assert!(!deliveries.track_batches(context(), 10, false, VecDeque::new(), now));
+        assert!(deliveries.track_batches(context(), 10, false, vec![
+            Batch { bytes: None, since: now }, Batch { bytes: None, since: now },
+        ].into(), now));
+        assert!(!deliveries.track_batches(context(), 10, false,
+            vec![Batch { bytes: None, since: now }].into(), now));
+        assert!(deliveries.track_batches(context(), 11, false,
+            vec![Batch { bytes: None, since: now }].into(), now));
+        assert!(deliveries.track_batches(other, 12, false,
+            vec![Batch { bytes: None, since: now }].into(), now));
         assert!(deliveries.defer(1, DeferredAction::Reconnect));
         assert!(deliveries.defer(1, DeferredAction::CloseWorkspace));
         assert!(!deliveries.defer(3, DeferredAction::Reconnect));
-        assert_eq!(deliveries.ack(2, 10, true), DeliveryAck::Unknown);
-        assert_eq!(deliveries.ack(1, 10, true), DeliveryAck::Pending);
-        assert_eq!(deliveries.ack(1, 11, true), DeliveryAck::Pending);
-        assert_eq!(
-            deliveries.ack(1, 10, true),
-            DeliveryAck::Finished(Some(DeferredAction::CloseWorkspace))
-        );
+        assert_eq!(deliveries.ack_for_context(other, 10, true), DeliveryAck::Unknown);
+        assert_eq!(deliveries.ack_for_context(context(), 10, true), DeliveryAck::Pending);
+        assert_eq!(deliveries.ack_for_context(context(), 11, true), DeliveryAck::Pending);
+        assert_eq!(deliveries.ack_for_context(context(), 10, true),
+            DeliveryAck::Finished(Some(DeferredAction::CloseWorkspace)));
         assert!(!deliveries.busy(1));
         assert!(deliveries.busy(2));
-        assert_eq!(deliveries.ack(2, 12, true), DeliveryAck::Finished(None));
+        assert_eq!(deliveries.ack_for_context(other, 12, true), DeliveryAck::Finished(None));
     }
+
     #[test]
     fn failure_and_timeout_cancel_deferred_actions_without_assuming_non_delivery() {
         let now = Instant::now();
         let mut deliveries = Deliveries::default();
-        assert!(deliveries.track(1, 20, 2, now));
+        assert!(deliveries.track_batches(context(), 20, false, vec![
+            Batch { bytes: None, since: now }, Batch { bytes: None, since: now },
+        ].into(), now));
         assert!(deliveries.defer(1, DeferredAction::Reconnect));
-        assert_eq!(deliveries.ack(1, 20, false), DeliveryAck::Failed);
+        assert_eq!(deliveries.ack_for_context(context(), 20, false), DeliveryAck::Failed);
         assert!(deliveries.busy(1));
         assert!(deliveries.defer(1, DeferredAction::Reconnect));
-        assert_eq!(deliveries.ack(1, 20, true), DeliveryAck::Pending);
+        assert_eq!(deliveries.ack_for_context(context(), 20, true), DeliveryAck::Pending);
         let failed = deliveries.failed_guard().unwrap();
         assert_eq!(deliveries.failed_text_if_guarded(failed), None);
         assert!(deliveries.discard_failed_guarded(failed));
         assert!(!deliveries.busy(1));
-        assert!(deliveries.track(1, 21, 1, now));
+        assert!(deliveries.track_batches(context(), 21, false,
+            vec![Batch { bytes: None, since: now }].into(), now));
         assert!(deliveries.defer(1, DeferredAction::CloseWorkspace));
-        assert!(
-            deliveries
-                .warn_slow(now + TIMEOUT - Duration::from_nanos(1))
-                .is_empty()
-        );
+        assert!(deliveries.warn_slow(now + TIMEOUT - Duration::from_nanos(1)).is_empty());
         assert_eq!(deliveries.warn_slow(now + TIMEOUT), vec![1]);
         assert!(deliveries.warn_slow(now + TIMEOUT).is_empty());
         assert!(deliveries.busy(1));
         assert!(deliveries.defer(1, DeferredAction::Reconnect));
-        assert_eq!(deliveries.ack(1, 21, true), DeliveryAck::Finished(None));
+        assert_eq!(deliveries.ack_for_context(context(), 21, true), DeliveryAck::Finished(None));
         assert!(!deliveries.busy(1));
     }
+
     #[test]
     fn quit_override_covers_only_the_deliveries_the_user_was_warned_about() {
         let now = Instant::now();
         let mut deliveries = Deliveries::default();
+        let other = Context { project: 2, ..context() };
         assert!(deliveries.quit_ready(None));
-        assert!(deliveries.track(1, 10, 1, now));
+        assert!(deliveries.track_batches(context(), 10, false,
+            vec![Batch { bytes: None, since: now }].into(), now));
         assert!(deliveries.defer(1, DeferredAction::Reconnect));
         assert!(!deliveries.quit_ready(None));
         let approved = deliveries.generation();
         assert!(deliveries.quit_ready(Some(approved)));
         deliveries.cancel_deferred();
-        assert!(deliveries.track(2, 20, 1, now));
+        assert!(deliveries.track_batches(other, 20, false,
+            vec![Batch { bytes: None, since: now }].into(), now));
         assert!(!deliveries.quit_ready(Some(approved)));
-        assert_eq!(deliveries.ack(1, 10, true), DeliveryAck::Finished(None));
+        assert_eq!(deliveries.ack_for_context(context(), 10, true), DeliveryAck::Finished(None));
         assert!(!deliveries.quit_ready(Some(approved)));
-        assert_eq!(deliveries.ack(2, 20, true), DeliveryAck::Finished(None));
+        assert_eq!(deliveries.ack_for_context(other, 20, true), DeliveryAck::Finished(None));
         assert!(deliveries.quit_ready(None));
     }
+
     #[test]
     fn quit_intent_waits_and_user_activity_invalidates_a_scheduled_retry() {
         let mut intent = QuitIntent::default();
@@ -1129,103 +1018,82 @@ mod tests {
         intent.cancel();
         assert!(!intent.is_current(canceled));
     }
-    fn context() -> Context {
-        Context {
-            project: 1,
-            attachment: 5,
-        }
-    }
+
     #[test]
     fn rejected_control_waits_for_ack_without_sending_any_later_batch() {
         let now = Instant::now();
-        let c = context();
         let mut fence = Fence::default();
-        let token = fence.begin(c, now);
-        fence.push(c, b"before").unwrap();
-        assert!(fence.push(c, b"\x1bx").is_err());
+        let token = fence.begin(context(), now);
+        fence.push(context(), b"before").unwrap();
         fence.retain_rejected(b"\x1bx".to_vec()).unwrap();
         assert!(fence.recovery_blocked());
         assert!(fence.awaiting_recovery_ack());
-        assert!(fence.push(c, b"after").is_err());
+        assert!(fence.push(context(), b"after").is_err());
         assert!(fence.retain_rejected(b"second".to_vec()).is_err());
-        assert!(fence.ack(c, token + 1, true, true, now).is_none());
-        assert!(fence.ack(c, token, true, true, now).is_none());
+        assert!(!fence.ack_with_failure_prefix(context(), token + 1, true, true, Vec::new));
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
         let guard = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&guard), Some("before"));
         assert_eq!(fence.prefix_hex_if_guarded(&guard).as_deref(), Some("1b78"));
         assert!(fence.recovery_blocked());
         let mut deliveries = Deliveries::default();
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| panic!(
-                "must not send"
-            ))
-            .is_err()
-        );
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            panic!("must not send")
+        }).is_err());
         assert!(fence.cancel_guarded(&guard));
     }
+
     #[test]
     fn rejected_control_keeps_unsent_after_inflight_success_or_failure() {
         let now = Instant::now();
-        let c = context();
         for ok in [true, false] {
             let mut fence = Fence::default();
-            let token = fence.begin(c, now);
-            fence.push(c, b"first").unwrap();
-            assert_eq!(
-                fence.ack(c, token, true, true, now),
-                Some(b"first".to_vec())
-            );
-            fence.push(c, b"later").unwrap();
+            let token = fence.begin(context(), now);
+            fence.submit(context(), b"first", false, now, |_, _, _| Ok(())).unwrap();
+            assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
+            fence.push(context(), b"later").unwrap();
             fence.retain_rejected(b"\x1c".to_vec()).unwrap();
-            assert!(fence.ack(c, token, false, ok, now).is_none());
+            assert!(fence.ack_with_failure_prefix(context(), token, false, ok, Vec::new));
             let guard = fence.retained_guard().unwrap();
             assert_eq!(fence.text_if_guarded(&guard), Some("later"));
             assert_eq!(fence.prefix_hex_if_guarded(&guard).as_deref(), Some("1c"));
-            assert_eq!(
-                fence.uncertain_text_if_guarded(&guard),
-                (!ok).then_some("first")
-            );
+            assert_eq!(fence.uncertain_text_if_guarded(&guard), (!ok).then_some("first"));
         }
     }
+
     #[test]
-    fn rejected_control_during_local_enqueue_retry_does_not_wait_for_impossible_ack() {
+    fn immediate_text_submits_before_ready_and_preserves_fifo_ack_order() {
         let now = Instant::now();
-        let c = context();
         let mut fence = Fence::default();
-        let token = fence.begin(c, now);
-        fence.push(c, b"first").unwrap();
-        let bytes = fence.ack(c, token, true, true, now).unwrap();
-        assert!(fence.retain_unsent(c, token, bytes));
-        fence.retain_rejected(b"\x1b".to_vec()).unwrap();
-        assert!(!fence.awaiting_recovery_ack());
-        assert!(fence.recovery_blocked());
-        assert!(fence.take_retry().is_none());
-        let guard = fence.retained_guard().unwrap();
-        assert_eq!(fence.text_if_guarded(&guard), Some("first"));
-        assert_eq!(fence.prefix_hex_if_guarded(&guard).as_deref(), Some("1b"));
+        let token = fence.begin(context(), now);
+        let mut submitted = Vec::new();
+        fence.submit(context(), b"first\r", false, now, |id, bytes, paste| {
+            assert_eq!((id, paste), (token, false));
+            submitted.push(bytes);
+            Ok(())
+        }).unwrap();
+        assert!(fence.mark_ordered_paste(context(), token));
+        fence.submit(context(), "ñ second".as_bytes(), true, now, |id, bytes, paste| {
+            assert_eq!((id, paste), (token, true));
+            submitted.push(bytes);
+            Ok(())
+        }).unwrap();
+        assert_eq!(submitted.len(), 2);
+        assert_eq!(submitted[0].as_slice(), b"first\r");
+        assert_eq!(submitted[1].as_slice(), "ñ second".as_bytes());
+        assert!(!fence.ack_with_failure_prefix(context(), token, false, true, Vec::new));
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
+        for _ in 0..2 {
+            assert!(fence.ack_with_failure_prefix(context(), token, false, true, Vec::new));
+            assert!(fence.active());
+        }
+        assert!(fence.ack_with_failure_prefix(context(), token, false, true, Vec::new));
+        assert!(!fence.active());
+        assert_eq!(fence.submit(context(), b"direct", false, now, |_, _, _| {
+            panic!("no active fence")
+        }), Ok(false));
     }
-    #[test]
-    fn immediate_text_waits_for_ready_and_delivery_then_preserves_order() {
-        let now = Instant::now();
-        let mut f = Fence::default();
-        let token = f.begin(context(), now);
-        assert_eq!(f.push(context(), b"first\r"), Ok(true));
-        assert!(f.ack(context(), token, false, true, now).is_none());
-        assert_eq!(
-            f.ack(context(), token, true, true, now),
-            Some(b"first\r".to_vec())
-        );
-        assert!(f.active());
-        f.push(context(), "ñ second".as_bytes()).unwrap();
-        assert_eq!(
-            f.ack(context(), token, false, true, now),
-            Some("ñ second".as_bytes().to_vec())
-        );
-        assert!(f.active());
-        assert_eq!(f.ack(context(), token, false, true, now), None);
-        assert!(!f.active());
-        assert_eq!(f.push(context(), b"direct"), Ok(false));
-    }
+
     #[test]
     fn timeout_before_ready_keeps_unsent_input_and_late_ready_does_not_send_it() {
         let now = Instant::now();
@@ -1233,53 +1101,43 @@ mod tests {
         let mut deliveries = Deliveries::default();
         let token = fence.begin(context(), now);
         fence.push(context(), b"queued").unwrap();
-        assert_eq!(
-            fence.mark_expired(now + TIMEOUT - Duration::from_nanos(1)),
-            ResumeTimeout::NotExpired
-        );
+        assert_eq!(fence.mark_expired(now + TIMEOUT - Duration::from_nanos(1)), ResumeTimeout::NotExpired);
         assert_eq!(fence.mark_expired(now + TIMEOUT), ResumeTimeout::Retained);
         let stale = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&stale), Some("queued"));
         assert!(fence.push(context(), b"new").is_err());
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| panic!(
-                "must not enqueue after timeout"
-            ))
-            .is_err()
-        );
-        assert_eq!(fence.ack(context(), token + 1, true, true, now), None);
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            panic!("must not enqueue after timeout")
+        }).is_err());
+        assert!(!fence.ack_with_failure_prefix(context(), token + 1, true, true, Vec::new));
         assert!(fence.timed_out());
-        assert_eq!(fence.ack(context(), token, true, true, now), None);
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
         assert!(!fence.cancel_guarded(&stale));
         let current = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&current), Some("queued"));
         assert!(!fence.timed_out());
         assert!(fence.cancel_guarded(&current));
     }
+
     #[test]
     fn late_write_ack_resolves_only_the_earlier_batch() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let token = fence.begin(context(), now);
-        fence.push(context(), b"sent earlier").unwrap();
-        assert_eq!(
-            fence.ack(context(), token, true, true, now),
-            Some(b"sent earlier".to_vec())
-        );
-        fence.push(context(), b"not sent later").unwrap();
+        fence.submit(context(), b"sent earlier", false, now, |_, _, _| Ok(())).unwrap();
+        fence.submit(context(), b"sent later", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
         assert_eq!(fence.mark_expired(now + TIMEOUT), ResumeTimeout::Retained);
         let old = fence.retained_guard().unwrap();
-        assert_eq!(fence.uncertain_text_if_guarded(&old), Some("sent earlier"));
-        assert_eq!(
-            fence.ack(context(), token, false, true, now + TIMEOUT),
-            None
-        );
+        assert_eq!(fence.uncertain_text_if_guarded(&old), Some("sent earliersent later"));
+        assert!(fence.ack_with_failure_prefix(context(), token, false, true, Vec::new));
         assert!(!fence.cancel_guarded(&old));
         let new = fence.retained_guard().unwrap();
-        assert_eq!(fence.uncertain_text_if_guarded(&new), None);
-        assert_eq!(fence.text_if_guarded(&new), Some("not sent later"));
+        assert_eq!(fence.uncertain_text_if_guarded(&new), Some("sent later"));
+        assert_eq!(fence.text_if_guarded(&new), None);
         assert!(fence.cancel_guarded(&new));
     }
+
     #[test]
     fn timeout_with_no_input_clears_and_late_error_retains_uncertain_input() {
         let now = Instant::now();
@@ -1287,63 +1145,44 @@ mod tests {
         let old = fence.begin(context(), now);
         assert_eq!(fence.mark_expired(now + TIMEOUT), ResumeTimeout::NoInput);
         assert!(!fence.active());
-        assert_eq!(fence.ack(context(), old, true, true, now), None);
+        assert!(!fence.ack_with_failure_prefix(context(), old, true, true, Vec::new));
         let token = fence.begin(context(), now);
-        fence.push(context(), b"possibly sent").unwrap();
-        assert_eq!(
-            fence.ack(context(), token, true, true, now),
-            Some(b"possibly sent".to_vec())
-        );
+        fence.submit(context(), b"possibly sent", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
         assert_eq!(fence.mark_expired(now + TIMEOUT), ResumeTimeout::Retained);
-        assert_eq!(
-            fence.ack(context(), token, false, false, now + TIMEOUT),
-            None
-        );
+        assert!(fence.ack_with_failure_prefix(context(), token, false, false, Vec::new));
         let guard = fence.retained_guard().unwrap();
-        assert_eq!(
-            fence.uncertain_text_if_guarded(&guard),
-            Some("possibly sent")
-        );
+        assert_eq!(fence.uncertain_text_if_guarded(&guard), Some("possibly sent"));
         assert!(fence.cancel_guarded(&guard));
     }
+
     #[test]
     fn cancel_error_timeout_and_other_project_or_attachment_never_drain_bytes() {
         let now = Instant::now();
-        let mut f = Fence::default();
-        let old = f.begin(context(), now);
-        f.push(context(), b"old").unwrap();
-        assert!(f.cancel());
-        let token = f.begin(context(), now);
-        f.push(context(), b"new").unwrap();
-        for (ctx, id) in [
+        let mut fence = Fence::default();
+        let old = fence.begin(context(), now);
+        fence.submit(context(), b"old", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(fence.cancel());
+        let token = fence.begin(context(), now);
+        fence.submit(context(), b"new", false, now, |_, _, _| Ok(())).unwrap();
+        for (owner, id) in [
             (context(), old),
-            (
-                Context {
-                    project: 2,
-                    ..context()
-                },
-                token,
-            ),
-            (
-                Context {
-                    attachment: 6,
-                    ..context()
-                },
-                token,
-            ),
+            (Context { project: 2, ..context() }, token),
+            (Context { attachment: 6, ..context() }, token),
         ] {
-            assert!(f.ack(ctx, id, true, true, now).is_none());
+            assert!(!fence.ack_with_failure_prefix(owner, id, true, true, Vec::new));
         }
-        assert!(!f.expired(now));
-        assert!(f.expired(now + TIMEOUT));
-        assert!(f.ack(context(), token, true, false, now).is_none());
-        let guard = f.retained_guard().expect("unsent input is retained");
-        assert_eq!(f.text_if_guarded(&guard), Some("new"));
-        assert!(!f.expects(context(), token, true));
-        assert!(!f.expired(now + TIMEOUT + TIMEOUT));
-        assert!(f.cancel_guarded(&guard));
-        assert!(!f.active());
+        assert!(!fence.expired(now));
+        assert!(fence.expired(now + TIMEOUT));
+        assert!(fence.ack_with_failure_prefix(context(), token, true, false, Vec::new));
+        let guard = fence.retained_guard().expect("submitted input is retained");
+        assert_eq!(fence.uncertain_text_if_guarded(&guard), Some("new"));
+        assert!(!fence.expects(context(), token, true));
+        assert!(!fence.expired(now + TIMEOUT + TIMEOUT));
+        assert!(fence.cancel_guarded(&guard));
+        assert!(!fence.active());
     }
+
     #[test]
     fn wrong_context_keeps_queued_bytes_for_the_original_terminal() {
         let now = Instant::now();
@@ -1351,18 +1190,17 @@ mod tests {
         let original = context();
         let token = fence.begin(original, now);
         fence.push(original, b"pending").unwrap();
-        let other = Context {
-            project: original.project + 1,
-            ..original
-        };
-        assert!(fence.push(other, b"must-not-be-sent").is_err());
+        let other = Context { project: original.project + 1, ..original };
+        assert!(fence.submit(other, b"must-not-be-sent", false, now, |_, _, _| {
+            panic!("wrong destination")
+        }).is_err());
         assert!(fence.retained_guard().is_some());
         assert!(!fence.expired(now + TIMEOUT));
-        assert_eq!(
-            fence.ack(original, token, true, true, now),
-            Some(b"pending".to_vec())
-        );
+        assert!(fence.ack_with_failure_prefix(original, token, true, true, Vec::new));
+        let guard = fence.retained_guard().unwrap();
+        assert_eq!(fence.text_if_guarded(&guard), Some("pending"));
     }
+
     #[test]
     fn copying_requires_current_snapshot_and_valid_utf8() {
         let now = Instant::now();
@@ -1370,12 +1208,9 @@ mod tests {
         let mut deliveries = Deliveries::default();
         fence.begin(context(), now);
         fence.push(context(), b"before").unwrap();
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| Err(
-                "full".into()
-            ))
-            .is_err()
-        );
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            Err("full".into())
+        }).is_err());
         let old = fence.retained_guard().unwrap();
         fence.push(context(), b"-after").unwrap();
         assert_eq!(fence.text_if_guarded(&old), None);
@@ -1386,6 +1221,7 @@ mod tests {
         assert_eq!(fence.text_if_guarded(&partial), None);
         assert!(fence.cancel_guarded(&partial));
     }
+
     #[test]
     fn failed_ready_ack_retains_unsent_input_without_retry_or_retarget() {
         let now = Instant::now();
@@ -1393,119 +1229,73 @@ mod tests {
         let mut deliveries = Deliveries::default();
         let token = fence.begin(context(), now);
         fence.push(context(), b"not sent").unwrap();
-        assert_eq!(fence.ack(context(), token, true, false, now), None);
+        assert!(fence.ack_with_failure_prefix(context(), token, true, false, Vec::new));
         let guard = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&guard), Some("not sent"));
         assert!(fence.push(context(), b"new event").is_err());
-        assert!(
-            detach_with_delivery(&mut fence, &mut deliveries, now, |_, _, _| {
-                panic!("a failed transition must not send or retarget the bytes")
-            })
-            .is_err()
-        );
-        assert_eq!(fence.ack(context(), token, true, true, now), None);
+        assert!(detach_with_delivery_typed(&mut fence, &mut deliveries, now, |_, _, _, _| {
+            panic!("failed transition must not send or retarget bytes")
+        }).is_err());
+        assert!(!fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
         assert_eq!(fence.text_if_guarded(&guard), Some("not sent"));
         assert!(fence.cancel_guarded(&guard));
     }
+
     #[test]
-    fn failed_write_retains_only_later_unsent_bytes_and_never_replays_prior_batch() {
+    fn failed_write_retains_every_submitted_batch_without_replaying_any_of_them() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let token = fence.begin(context(), now);
-        fence.push(context(), b"possibly sent").unwrap();
-        assert_eq!(
-            fence.ack(context(), token, true, true, now),
-            Some(b"possibly sent".to_vec())
-        );
-        fence.push(context(), b"definitely unsent").unwrap();
-        assert_eq!(fence.ack(context(), token, false, false, now), None);
+        fence.submit(context(), b"possibly sent", false, now, |_, _, _| Ok(())).unwrap();
+        fence.submit(context(), b"dependent later text", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
+        assert!(fence.ack_with_failure_prefix(context(), token, false, false, Vec::new));
         let guard = fence.retained_guard().unwrap();
-        assert_eq!(fence.text_if_guarded(&guard), Some("definitely unsent"));
-        assert_eq!(
-            fence.uncertain_text_if_guarded(&guard),
-            Some("possibly sent")
-        );
-        assert!(fence.take_retry().is_none());
+        assert_eq!(fence.text_if_guarded(&guard), None);
+        assert_eq!(fence.uncertain_text_if_guarded(&guard), Some("possibly sentdependent later text"));
+        assert!(fence.submit(context(), b"new event", false, now, |_, _, _| {
+            panic!("failed chain cannot be retried")
+        }).is_err());
+        assert!(fence.ack_with_failure_prefix(context(), token, false, false, Vec::new));
+        let guard = fence.retained_guard().unwrap();
+        assert_eq!(fence.uncertain_text_if_guarded(&guard), Some("possibly sentdependent later text"));
         assert!(fence.cancel_guarded(&guard));
     }
+
     #[test]
     fn failed_write_without_later_input_retains_the_uncertain_batch() {
         let now = Instant::now();
         let mut fence = Fence::default();
         let token = fence.begin(context(), now);
-        fence.push(context(), b"possibly executed").unwrap();
-        assert_eq!(
-            fence.ack(context(), token, true, true, now),
-            Some(b"possibly executed".to_vec())
-        );
-        assert_eq!(fence.ack(context(), token, false, false, now), None);
+        fence.submit(context(), b"possibly executed", false, now, |_, _, _| Ok(())).unwrap();
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
+        assert!(fence.ack_with_failure_prefix(context(), token, false, false, Vec::new));
         let guard = fence.retained_guard().unwrap();
         assert_eq!(fence.text_if_guarded(&guard), None);
-        assert_eq!(
-            fence.uncertain_text_if_guarded(&guard),
-            Some("possibly executed")
-        );
+        assert_eq!(fence.uncertain_text_if_guarded(&guard), Some("possibly executed"));
         assert!(fence.cancel_guarded(&guard));
     }
-    #[test]
-    fn queue_limits_and_controls_reject_whole_events_and_keep_prior_text() {
-        let now = Instant::now();
-        let mut f = Fence::default();
-        let token = f.begin(context(), now);
-        let text = vec![b'x'; LIMIT];
-        f.push(context(), &text).unwrap();
-        assert!(f.push(context(), b"extra").is_err());
-        assert!(f.push(context(), b"\x01").is_err());
-        assert!(f.push(context(), b"\x1b[200~paste\x1b[201~").is_err());
-        assert_eq!(f.ack(context(), token, true, true, now), Some(text));
-        assert!(
-            f.push(
-                Context {
-                    project: 2,
-                    ..context()
-                },
-                b"wrong"
-            )
-            .is_err()
-        );
-        assert!(f.active());
-        assert_eq!(f.ack(context(), token, false, true, now), None);
-        assert!(!f.active());
-    }
-    #[test]
-    fn detached_batches_keep_original_target_token_and_delivery_state() {
-        let now = Instant::now();
-        let mut f = Fence::default();
-        let token = f.begin(context(), now);
-        f.push(context(), b"first\r").unwrap();
-        assert_eq!(
-            f.detach(),
-            Some(Detached {
-                context: context(),
-                token,
-                bytes: b"first\r".to_vec(),
-                in_flight: false,
-            })
-        );
-        assert!(!f.active());
-        assert!(f.ack(context(), token, true, true, now).is_none());
 
-        let token = f.begin(context(), now);
-        f.push(context(), b"first").unwrap();
-        assert_eq!(
-            f.ack(context(), token, true, true, now),
-            Some(b"first".to_vec())
-        );
-        f.push(context(), b"\r").unwrap();
-        assert_eq!(
-            f.detach(),
-            Some(Detached {
-                context: context(),
-                token,
-                bytes: b"\r".to_vec(),
-                in_flight: true,
-            })
-        );
-        assert!(!f.active());
+    #[test]
+    fn startup_buffer_keeps_controls_and_large_events_for_the_original_target() {
+        let now = Instant::now();
+        let mut fence = Fence::default();
+        let token = fence.begin(context(), now);
+        let mut text = vec![b'x'; LIMIT];
+        text.extend_from_slice(b"extra\x01\x1b[200~paste\x1b[201~");
+        fence.push(context(), &text).unwrap();
+        fence.submit_buffered(context(), now, |id, bytes, ranges| {
+            assert_eq!(id, token);
+            assert_eq!(bytes.as_slice(), text.as_slice());
+            assert!(ranges.is_empty());
+            Ok(())
+        }).unwrap();
+        assert!(fence.submit(Context { project: 2, ..context() }, b"wrong", false, now, |_, _, _| {
+            panic!("wrong target")
+        }).is_err());
+        assert!(fence.ack_with_failure_prefix(context(), token, true, true, Vec::new));
+        assert!(fence.active());
+        assert!(fence.ack_with_failure_prefix(context(), token, false, true, Vec::new));
+        assert!(!fence.active());
     }
 }

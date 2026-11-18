@@ -2,6 +2,7 @@
 
 | Recurso | Contenido |
 | --- | --- |
+| [CODEX-CONTINUATION.html](CODEX-CONTINUATION.html) | Handoff de entrada sin bloqueo: validación manual aplazada por el usuario y matriz pendiente. |
 | [RUNBOOK.html](RUNBOOK.html) | Estado, límites, operación y flujo de revisión público. |
 | [HISTORIA.html](HISTORIA.html) | Índice cronológico depurado de la historia local y límites de reconstrucción. |
 | [crates/workspace-core](../crates/workspace-core) | Modelo compartido de paneles, entrada y búsquedas. |

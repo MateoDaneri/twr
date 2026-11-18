@@ -3803,7 +3803,7 @@ mod tests {
             );
             let old = fence.retained_guard().unwrap();
             assert_eq!(fence.prefix_hex_if_guarded(&old).as_deref(), Some(expected));
-            assert!(fence.ack(context, token, true, true, now).is_none());
+            assert!(fence.ack_with_failure_prefix(context, token, true, true, Vec::new));
             assert!(fence.active());
             assert!(!fence.cancel_guarded(&old));
             let current = fence.retained_guard().unwrap();
@@ -3830,37 +3830,26 @@ mod tests {
             };
             let mut fence = Fence::default();
             let token = fence.begin(context, now);
-            fence.push(context, b"possibly sent").unwrap();
-            assert_eq!(
-                fence.ack(context, token, true, true, now),
-                Some(b"possibly sent".to_vec())
-            );
-            fence.push(context, b"not sent").unwrap();
+            fence.submit(context, b"possibly sent", false, now, |_, _, _| Ok(())).unwrap();
+            assert!(fence.ack_with_failure_prefix(context, token, true, true, Vec::new));
+            fence.submit(context, b"dependent text", false, now, |_, _, _| Ok(())).unwrap();
             assert_eq!(w.key(chord, bytes), Effect::None);
             let mut take = || match w.focus(Surface::Normal) {
                 Effect::Pty(prefix) => prefix,
                 _ => Vec::new(),
             };
-            assert!(
-                fence
-                    .ack_with_failure_prefix(context, token + 1, false, false, now, &mut take)
-                    .is_none()
-            );
-            assert!(
-                fence
-                    .ack_with_failure_prefix(context, token, false, false, now, &mut take)
-                    .is_none()
-            );
+            assert!(!fence.ack_with_failure_prefix(context, token + 1, false, false, &mut take));
+            assert!(fence.ack_with_failure_prefix(context, token, false, false, &mut take));
             assert_eq!(w.surface, Surface::Normal);
             let guard = fence.retained_guard().unwrap();
             assert_eq!(
                 fence.prefix_hex_if_guarded(&guard).as_deref(),
                 Some(expected)
             );
-            assert_eq!(fence.text_if_guarded(&guard), Some("not sent"));
+            assert_eq!(fence.text_if_guarded(&guard), None);
             assert_eq!(
                 fence.uncertain_text_if_guarded(&guard),
-                Some("possibly sent")
+                Some("possibly sentdependent text")
             );
             assert!(fence.recovery_blocked());
             assert!(fence.cancel_guarded(&guard));
@@ -3879,52 +3868,17 @@ mod tests {
         let mut fence = Fence::default();
         let token = fence.begin(context, now);
         assert_eq!(w.key("<Esc>", b"\x1b"), Effect::None);
-        assert!(
-            fence
-                .ack_with_failure_prefix(context, token, true, false, now, || {
-                    match w.focus(Surface::Normal) {
-                        Effect::Pty(prefix) => prefix,
-                        _ => Vec::new(),
-                    }
-                })
-                .is_none()
-        );
+        assert!(fence.ack_with_failure_prefix(context, token, true, false, || {
+            match w.focus(Surface::Normal) {
+                Effect::Pty(prefix) => prefix,
+                _ => Vec::new(),
+            }
+        }));
         let guard = fence.retained_guard().unwrap();
         assert_eq!(fence.prefix_hex_if_guarded(&guard).as_deref(), Some("1b"));
         assert_eq!(fence.text_if_guarded(&guard), None);
         assert_eq!(fence.uncertain_text_if_guarded(&guard), None);
         assert!(fence.recovery_blocked());
-    }
-    #[test]
-    fn pending_terminal_prefix_defers_focus_until_resume_batches_are_acknowledged() {
-        use crate::terminal_resume::{Context, Fence, router_prefix_blocks_detach};
-        let mut w = model();
-        w.focus(Surface::Terminal);
-        let now = Instant::now();
-        let context = Context {
-            project: 0,
-            attachment: 42,
-        };
-        let mut fence = Fence::default();
-        let token = fence.begin(context, now);
-        fence.push(context, b"earlier").unwrap();
-        assert_eq!(w.key("<Esc>", b"\x1b"), Effect::None);
-        let blocked = |f: &Fence, w: &Workspace| {
-            router_prefix_blocks_detach(
-                f,
-                w.surface == Surface::Terminal,
-                w.pending_since.is_some(),
-            )
-        };
-        assert!(blocked(&fence, &w));
-        assert_eq!(
-            fence.ack(context, token, true, true, now),
-            Some(b"earlier".to_vec())
-        );
-        assert!(blocked(&fence, &w));
-        assert!(fence.ack(context, token, false, true, now).is_none());
-        assert!(!blocked(&fence, &w));
-        assert_eq!(w.expire_prefix(), Effect::Pty(b"\x1b".to_vec()));
     }
     fn file_choices(count: usize) -> Vec<Choice> {
         (0..count)
